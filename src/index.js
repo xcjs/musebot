@@ -6,12 +6,14 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+console.log(`TOKEN: ${process.env.TOKEN}`);
+
 const production = process.env.NODE_ENV == "prod" || process.env.NODE_ENV == "production";
 const log = new Logger(production, "Shard Manager");
 
 log(LogLevel.Info, "Loading");
 
-const filePath = path.join(path.dirname(fileURLToPath(import.meta.url)), "bot.js");
+const filePath = path.join(path.dirname(fileURLToPath(import.meta.url)), "diffusionBot.js");
 const manager = new ShardingManager(filePath, { token: process.env.TOKEN });
 
 manager.on("shardCreate", async shard => {
