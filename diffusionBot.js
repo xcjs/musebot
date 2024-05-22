@@ -7,7 +7,7 @@ import { RenderRequest } from "./models/RenderRequest.js";
 dotenv.config();
 
 const model = process.env.MODEL;
-const servers = process.env.EASYDIFFUSION_HOSTS.split(",").map(url => ({ url: new URL(url), available: true }));;
+const servers = process.env.EASYDIFFUSION_HOSTS.split(",").map(url => ({ url: new URL(url), available: true }));
 const channels = process.env.CHANNELS.split(",");
 const requiresMention = getBoolean(process.env.REQUIRES_MENTION);
 const randomServer = getBoolean(process.env.RANDOM_SERVER);
@@ -269,10 +269,6 @@ client.on(Events.MessageCreate, async message => {
 
         const imageBuffer = new Buffer.from(statusResponse.output[0].data.split(",")[1], "base64");
         const attachment = new AttachmentBuilder(imageBuffer);
-
-        const embed = {
-            title: userInput
-        };
 
         // reply (will automatically stop typing)
         await replySplitMessage(message, attachment);

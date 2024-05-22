@@ -1,32 +1,12 @@
-import { ShardingManager, Events } from "discord.js";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { Logger, LogLevel } from "meklog";
-import dotenv from "dotenv";
 
-dotenv.config();
+import { EnvironmentSettings } from "./models/EnvironmentSettings";
+import { ShardingManagerManager } from "./services/ShardingManagerManager";
 
-console.log(`TOKEN: ${process.env.TOKEN}`);
+const environmentSettings = new EnvironmentSettings();
 
-const production = process.env.NODE_ENV == "prod" || process.env.NODE_ENV == "production";
-const log = new Logger(production, "Shard Manager");
+const botFilePath = path.join(path.dirname(fileURLToPath(import.meta.url)), "bot.js");
+const shardingManagerManager = new ShardingManagerManager(environmentSettings, botFilePath);
 
-log(LogLevel.Info, "Loading");
-
-const filePath = path.join(path.dirname(fileURLToPath(import.meta.url)), "diffusionBot.js");
-const manager = new ShardingManager(filePath, { token: process.env.TOKEN });
-
-manager.on("shardCreate", async shard => {
-	const shardLog = new Logger(production, `Shard #${shard.id}`);
-
-	shardLog(LogLevel.Info, "Created shard");
-
-	shard.once(Events.ClientReady, async () => {
-		shard.send({ shardID: shard.id, logger: shardLog.data });
-
-		shardLog(LogLevel.Info, "Shard ready");
-	});
-});
-
-manager.spawn();
-
+shardingManagerManager.spawn();
