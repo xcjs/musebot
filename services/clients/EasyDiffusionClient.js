@@ -43,7 +43,7 @@ export class EasyDiffusionClient {
                 }
 
                 // Keep trying as long as the response type is 425 - Too Early.
-            } while (response.status !== httpStatusCodes.tooEarly);
+            } while (response.status === httpStatusCodes.tooEarly);
         } catch (error) {
             this.#logger(LogLevel.Error, error);
             return null;
