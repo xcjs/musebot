@@ -2,6 +2,7 @@ import {Logger, LogLevel } from 'meklog'
 import fetch from 'node-fetch';
 
 import { httpMethods } from '../../enums/httpMethods';
+import { httpStatusCodes } from '../../enums/httpStatusCodes';
 import { RenderRequest } from '../../models/RenderRequest';
 
 export class EasyDiffusionClient {
@@ -36,10 +37,13 @@ export class EasyDiffusionClient {
         try {
             do {
                 const response = await fetch(renderResponse.stream, httpMethods.get);
-                await this.#sleep(1000);
+
+                if(response.status === httpStatusCodes.tooEarly) {
+                    await this.#sleep(1000);
+                }
 
                 // Keep trying as long as the response type is 425 - Too Early.
-            } while (response.status !== 425);
+            } while (response.status !== httpStatusCodes.tooEarly);
         } catch (error) {
             this.#logger(LogLevel.Error, error);
             return null;
