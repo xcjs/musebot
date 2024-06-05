@@ -47,12 +47,23 @@ export class DiscordClient {
 
     async #onMessageCreate(message) {
         this.#logger(LogLevel.Info, `Creating message "${message}"`);
-        await message.fetch();
-        const channelId = message.channel.id;
 
-        // Do nothing if the channelId isn't in the channel whitelist.
-        if (message.guild && !this.#environmentSettings.discordChannels.includes(channelId)) {
+        await message.fetch();
+
+        if(!this.#shouldCreateMessage(message)) {
+            this.#logger(LogLevel.Info, 'Message should not be created - skipping.')
             return;
         }
+    }
+
+    #shouldCreateMessage(message) {
+        return
+            !message.author.id // No messages without authors.
+            && !message.author.bot  // No messages by bots.
+            && message.author.id !== this.#client.user.id // No messages by this bot.
+            && !message.guild // Not a guild message.
+            && this.#environmentSettings.discordChannels.includes(message.channel.id) // The channel is in the configured whitelist.
+            && typeof message.content === 'string'
+            && message.content.length > 0;
     }
 }
