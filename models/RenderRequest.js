@@ -24,8 +24,8 @@ export class RenderRequest {
     original_prompt = '';
     active_tags = [];
     inactive_tags = [];
-    use_upscale = "RealESRGAN_x4plus";
-    upscale_amount = "4";
+    use_upscale = 'RealESRGAN_x4plus';
+    upscale_amount = '4';
     enable_vae_tiling = true;
     session_id = 0;
 
