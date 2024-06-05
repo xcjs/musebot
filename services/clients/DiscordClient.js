@@ -63,7 +63,7 @@ export class DiscordClient {
             && message.author.id !== this.#client.user.id // No messages by this bot.
             && !message.guild // Not a guild message.
             && this.#environmentSettings.discordChannels.includes(message.channel.id) // The channel is in the configured whitelist.
-            && typeof message.content === 'string'
-            && message.content.length > 0;
+            && typeof message.content === 'string' // Only respond to text-based messages.
+            && message.content.length > 0; // Only respond to messages with more than 0 characters.
     }
 }
