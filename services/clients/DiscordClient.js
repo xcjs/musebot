@@ -52,8 +52,8 @@ export class DiscordClient {
 
         await message.fetch();
 
-            if(!this.#shouldReply(message)) {
-            this.#logger(LogLevel.Info, 'Reply should not be created - skipping.');
+        if(!this.#shouldReply(message)) {
+            this.#logger(LogLevel.Info, 'Reply should not be created - skipping reply.');
             return;
         }
 
@@ -61,15 +61,18 @@ export class DiscordClient {
     }
 
     #shouldReply(message) {
-        return
-            message.guild
-            && message.author.id // The message should have an author.
+        const shouldReply =
+            !!message.guild
+            && !!message.author.id // The message should have an author.
             && !message.author.bot  // No messages by bots.
+            && !!message.mentions.members.find(x => x.id === this.#client.user.id) // The message explicitly tags this bot.
             && message.author.id !== this.#client.user.id // No messages by this bot.
             && (
                 this.#environmentSettings.discordChannels.length === 0
                 || this.#environmentSettings.discordChannels.includes(message.channel.id)) // The channel is in the configured whitelist if there is one.
             && typeof message.content === 'string' // Only respond to text-based messages.
             && message.content.length > 0; // Only respond to messages with more than 0 characters.
+
+        return shouldReply;
     }
 }
