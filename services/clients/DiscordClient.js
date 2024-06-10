@@ -62,7 +62,7 @@ export class DiscordClient {
 
     #shouldReply(message) {
         const shouldReply =
-            !!message.guild
+            !!message.guild // The message should be from a guild (server).
             && !!message.author.id // The message should have an author.
             && !message.author.bot  // No messages by bots.
             && !!message.mentions.members.find(x => x.id === this.#client.user.id) // The message explicitly tags this bot.
