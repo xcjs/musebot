@@ -30,7 +30,7 @@ export class DiscordClient {
     }
 
     login() {
-        this.#logger(LogLevel.Info, 'Performing client login.');
+        this.#logger(LogLevel.Info, 'Performing client login...');
         this.#client.login(this.#environmentSettings.discordToken);
     }
 
@@ -48,23 +48,27 @@ export class DiscordClient {
     }
 
     async #onMessageCreate(message) {
-        this.#logger(LogLevel.Info, `Discord message created: "${message}"`);
+        this.#logger(LogLevel.Info, `Discord message created. "${message.author.displayName} (${message.author.username}): ${message}"`);
 
         await message.fetch();
 
-        if(!this.#shouldReply(message)) {
-            this.#logger(LogLevel.Info, 'Reply should not be created - skipping.')
+            if(!this.#shouldReply(message)) {
+            this.#logger(LogLevel.Info, 'Reply should not be created - skipping.');
             return;
         }
+
+        this.#logger(LogLevel.Info, 'Replying to message...');
     }
 
     #shouldReply(message) {
         return
-            !message.author.id // No messages without authors.
+            message.guild
+            && message.author.id // The message should have an author.
             && !message.author.bot  // No messages by bots.
             && message.author.id !== this.#client.user.id // No messages by this bot.
-            && !message.guild // Not a guild message.
-            && this.#environmentSettings.discordChannels.includes(message.channel.id) // The channel is in the configured whitelist.
+            && (
+                this.#environmentSettings.discordChannels.length === 0
+                || this.#environmentSettings.discordChannels.includes(message.channel.id)) // The channel is in the configured whitelist if there is one.
             && typeof message.content === 'string' // Only respond to text-based messages.
             && message.content.length > 0; // Only respond to messages with more than 0 characters.
     }
