@@ -14,7 +14,7 @@ export class ShardingManagerManager {
         this.#environmentSettings = environmentSettings;
         this.#absoluteBotPath = absoluteBotPath;
 
-        this.#logger = new Logger(this.isProduction, 'ShardingManagerManager');
+        this.#logger = new Logger(this.#environmentSettings.isProduction, 'ShardingManagerManager');
 
         this.#shardingManager = new ShardingManager(this.#absoluteBotPath, { token: this.#environmentSettings.discordToken });
 
@@ -26,7 +26,9 @@ export class ShardingManagerManager {
     }
 
     #registerEvents() {
-        this.#shardingManager.on(discordEvents.shardCreate, this.#onShardCreate);
+        const self = this;
+
+        this.#shardingManager.on(discordEvents.shardCreate, (shard) => this.#onShardCreate.call(self, shard));
     }
 
     #onShardCreate(shard) {

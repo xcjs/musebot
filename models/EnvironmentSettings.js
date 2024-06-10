@@ -36,7 +36,7 @@ export class EnvironmentSettings {
         this.easyDiffusionHosts = process.env.EASY_DIFFUSION_DISCORD_BOT_EASY_DIFFUSION_HOSTS.split(',').map(url => new URL(url));
         this.easyDiffusionModel = process.env.EASY_DIFFUSION_DISCORD_BOT_EASY_DIFFUSION_MODEL;
 
-        this.botRequiresMention = (process.env.EASY_DIFFUSION_DISCORD_BOT_REQUIRES_MENTION.toLower() === 'true');
+        this.botRequiresMention = (process.env.EASY_DIFFUSION_DISCORD_BOT_REQUIRES_MENTION.toLowerCase() === 'true');
 
         this.#logger = new Logger(this.isProduction, 'EnvironmentSettings');
         this.#logConfiguration();

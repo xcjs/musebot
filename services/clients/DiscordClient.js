@@ -1,7 +1,7 @@
 import { AttachmentBuilder, Client, Events, GatewayIntentBits, MessageType, Partials } from 'discord.js';
 import {Logger, LogLevel } from 'meklog'
 
-import { EasyDiffusionClient } from '/services/clients/EasyDiffusionClient.js';
+import { EasyDiffusionClient } from './EasyDiffusionClient.js';
 
 export class DiscordClient {
     #environmentSettings = null;
@@ -10,7 +10,7 @@ export class DiscordClient {
 
     constructor(environmentSettings) {
         this.#environmentSettings = environmentSettings;
-        this.#logger = new Logger(this.isProduction, 'DiscordClient');
+        this.#logger = new Logger(this.#environmentSettings.isProduction, 'DiscordClient');
 
         this.#client = new Client({
             intents: [
@@ -35,11 +35,13 @@ export class DiscordClient {
     }
 
     #registerEvents() {
-        client.once(Events.ClientReady, this.#onClientReady);
-        client.on(Events.MessageCreate, this.#onMessageCreate);
+        const self = this;
+
+        this.#client.once(Events.ClientReady, (event) => this.#onClientReady.call(self, event));
+        this.#client.on(Events.MessageCreate, (message) => this.#onMessageCreate.call(self, message));
     }
 
-    async #onClientReady() {
+    async #onClientReady(event) {
         this.#logger(LogLevel.Info, 'Client is ready.');
         await this.#client.guilds.fetch();
         this.#client.user.setPresence({ activities: [], status: 'online' });
