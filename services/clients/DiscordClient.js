@@ -46,17 +46,17 @@ export class DiscordClient {
     }
 
     async #onMessageCreate(message) {
-        this.#logger(LogLevel.Info, `Creating message "${message}"`);
+        this.#logger(LogLevel.Info, `Discord message created: "${message}"`);
 
         await message.fetch();
 
-        if(!this.#shouldCreateMessage(message)) {
-            this.#logger(LogLevel.Info, 'Message should not be created - skipping.')
+        if(!this.#shouldReply(message)) {
+            this.#logger(LogLevel.Info, 'Reply should not be created - skipping.')
             return;
         }
     }
 
-    #shouldCreateMessage(message) {
+    #shouldReply(message) {
         return
             !message.author.id // No messages without authors.
             && !message.author.bot  // No messages by bots.
