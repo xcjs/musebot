@@ -1,5 +1,5 @@
-import { EnvironmentSettings } from './models/EnvironmentSettings';
-import { DiscordClient } from './services/clients/DiscordClient';
+import { EnvironmentSettings } from './models/EnvironmentSettings.js';
+import { DiscordClient } from './services/clients/DiscordClient.js';
 
 const environmentSettings = new EnvironmentSettings();
 const discordClient = new DiscordClient(environmentSettings);

@@ -1,7 +1,7 @@
 import { AttachmentBuilder, Client, Events, GatewayIntentBits, MessageType, Partials } from 'discord.js';
 import {Logger, LogLevel } from 'meklog'
 
-import { EasyDiffusionClient } from '/services/clients/EasyDiffusionClient';
+import { EasyDiffusionClient } from '/services/clients/EasyDiffusionClient.js';
 
 export class DiscordClient {
     #environmentSettings = null;

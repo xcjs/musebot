@@ -1,7 +1,7 @@
 import { ShardingManager, Events } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { discordEvents } from '../enums/discordEvents';
+import { discordEvents } from '../enums/discordEvents.js';
 
 export class ShardingManagerManager {
     #environmentSettings = null;

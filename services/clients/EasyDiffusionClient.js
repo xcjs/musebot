@@ -1,9 +1,9 @@
 import {Logger, LogLevel } from 'meklog'
 import fetch from 'node-fetch';
 
-import { httpMethods } from '../../enums/httpMethods';
-import { httpStatusCodes } from '../../enums/httpStatusCodes';
-import { RenderRequest } from '../../models/RenderRequest';
+import { httpMethods } from '../../enums/httpMethods.js';
+import { httpStatusCodes } from '../../enums/httpStatusCodes.js';
+import { RenderRequest } from '../../models/RenderRequest.js';
 
 export class EasyDiffusionClient {
     #environmentSettings = null;
