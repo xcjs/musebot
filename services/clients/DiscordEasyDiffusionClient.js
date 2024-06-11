@@ -3,7 +3,7 @@ import {Logger, LogLevel } from 'meklog'
 
 import { EasyDiffusionClient } from './EasyDiffusionClient.js';
 
-export class DiscordClient {
+export class DiscordEasyDiffusionClient {
     #environmentSettings = null;
 
     #client = null;
