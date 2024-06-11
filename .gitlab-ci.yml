@@ -1,0 +1,35 @@
+stages:
+  - build
+  - deploy
+
+Build:
+  stage: build
+  except:
+    - main
+  tags:
+    - docker
+  image: docker:stable
+  services:
+    - docker:stable-dind
+  before_script:
+    - export tagName=$(echo "${CI_COMMIT_REF_NAME}" | tr "/" "-")
+  script:
+    - docker build -t "musebot:${tagName}" .
+  after_script:
+    - tagName=$(echo "${CI_COMMIT_REF_NAME}" | tr "/" "-")
+    - docker image rm "musebot:${tagName}"
+
+Deploy:
+  stage: deploy
+  only:
+    - main
+  tags:
+    - docker
+  image: docker:stable
+  services:
+    - docker:stable-dind
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - docker build -t $CI_REGISTRY/musebot/musebot:latest .
+    - docker push $CI_REGISTRY/musebot/musebot:latest
