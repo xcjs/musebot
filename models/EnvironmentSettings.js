@@ -13,6 +13,7 @@ export class EnvironmentSettings {
     easyDiffusionModels = [];
 
     botRequiresMention = true;
+    botEmbedsJson = false;
 
     #logger = null;
 
@@ -37,6 +38,7 @@ export class EnvironmentSettings {
         this.easyDiffusionModels = process.env.EASY_DIFFUSION_DISCORD_BOT_EASY_DIFFUSION_MODELS.split(',');
 
         this.botRequiresMention = (process.env.EASY_DIFFUSION_DISCORD_BOT_REQUIRES_MENTION.toLowerCase() === 'true');
+        this.botEmbedsJson = (process.env.EASY_DIFFUSION_DISCORD_BOT_EMBEDS_JSON.toLowerCase() === 'true');
 
         this.#logger = new Logger(this.isProduction, 'EnvironmentSettings');
         this.#logConfiguration();
@@ -50,6 +52,7 @@ export class EnvironmentSettings {
         this.#logger(LogLevel.Info, `EASY_DIFFUSION_DISCORD_BOT_EASY_DIFFUSION_HOSTS: ${this.easyDiffusionHosts.join(', ')}`);
         this.#logger(LogLevel.Info, `EASY_DIFFUSION_DISCORD_BOT_EASY_DIFFUSION_MODELS: ${this.easyDiffusionModels.join(', ')}`);
         this.#logger(LogLevel.Info, `EASY_DIFFUSION_DISCORD_BOT_REQUIRES_MENTION: ${this.botRequiresMention}`);
+        this.#logger(LogLevel.Info, `EASY_DIFFUSION_DISCORD_BOT_EMBEDS_JSON: ${this.botEmbedsJson}`);
     }
 
     #validate() {

@@ -74,17 +74,25 @@ export class DiscordEasyDiffusionClient {
 
             const fileName = `${renderRequest.seed}_${renderRequest.prompt}`.substring(0, 128);
 
+            let files = [];
+
             const imageBuffer = new Buffer.from(streamResponse.output[0].data.split(",")[1], 'base64');
             const imageAttachment = new AttachmentBuilder(imageBuffer, {
                 name: `${fileName}.jpg`
             });
 
-            const jsonBuffer = new Buffer.from(JSON.stringify(renderRequest), 'utf-8');
-            const jsonAttachment = new AttachmentBuilder(jsonBuffer, {
-                name: `${fileName}.json`
-            });
+            files.push(imageAttachment);
 
-            await message.reply({ files: [imageAttachment, jsonAttachment] });
+            if(this.#environmentSettings.botEmbedsJson) {
+                const jsonBuffer = new Buffer.from(JSON.stringify(renderRequest), 'utf-8');
+                const jsonAttachment = new AttachmentBuilder(jsonBuffer, {
+                    name: `${fileName}.json`
+                });
+
+                files.push(jsonAttachment);
+            }
+
+            await message.reply({ files });
         } else {
             await message.reply({ content: "The dreams would not form for me this time. Maybe they will answer our call later." });
         }
