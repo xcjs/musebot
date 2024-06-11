@@ -5,7 +5,7 @@ stages:
 Build:
   stage: build
   except:
-    - master
+    - main
   tags:
     - docker
   image: docker:stable
@@ -22,7 +22,7 @@ Build:
 Deploy:
   stage: deploy
   only:
-    - master
+    - main
   tags:
     - docker
   image: docker:stable
