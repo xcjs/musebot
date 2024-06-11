@@ -134,7 +134,7 @@ export class DiscordEasyDiffusionClient {
     #stopTyping() {
         this.#logger(LogLevel.Info, 'Stopped typing.');
 
-        if(this.#typingInterval) {
+        if(this.#typingInterval !== null) {
             clearInterval(this.#typingInterval);
         }
     }
