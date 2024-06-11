@@ -73,6 +73,8 @@ export class EasyDiffusionClient {
 
                 // Keep trying as long as the response status is OK or 425 - Too Early.
             } while (response.ok || response.status === httpStatusCodes.tooEarly);
+
+            return null;
         } catch (error) {
             this.#logger(LogLevel.Error, `Checking the EasyDiffusion render stream failed: ${error}`);
             return null;
