@@ -31,5 +31,5 @@ Deploy:
   before_script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
-    - docker build -t $CI_REGISTRY/discord-easy-diffusion-bot/musebot:latest .
-    - docker push $CI_REGISTRY/discord-easy-diffusion-bot/musebot:latest
+    - docker build -t $CI_REGISTRY/xcjs/musebot:latest .
+    - docker push $CI_REGISTRY/xcjs/musebot:latest
