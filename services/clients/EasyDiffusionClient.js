@@ -4,30 +4,32 @@ import fetch from 'node-fetch';
 import { httpMethods } from '../../enums/httpMethods.js';
 import { httpStatusCodes } from '../../enums/httpStatusCodes.js';
 import { EasyDiffusionRenderRequest } from '../../models/EasyDiffusionRenderRequest.js';
+import { getRandomInt } from '../../utilities/random-utilities.js';
 
 export class EasyDiffusionClient {
     #environmentSettings = null;
+    #logger = null;
+
     #host = null;
     #model = null;
 
-    #logger = null;
     #retryDelayInMilliseconds = 1000;
 
     constructor(environmentSettings) {
         this.#environmentSettings = environmentSettings;
         this.#logger = new Logger(this.#environmentSettings.isProduction, 'EasyDiffusionClient');
+
+        this.#host = this.#selectHost();
+        this.#model = this.#selectModel();
     }
 
     async render(prompt) {
         this.#logger(LogLevel.Info, 'Sending render request to EasyDiffusion...');
 
-        const host = this.#environmentSettings.easyDiffusionHosts[0];
-        const model = this.#environmentSettings.easyDiffusionModel;
-
-        const request = new EasyDiffusionRenderRequest(model, prompt);
+        const request = new EasyDiffusionRenderRequest(this.#model, prompt);
 
         try {
-            const response = await fetch(new URL('render', host), {
+            const response = await fetch(new URL('render', this.#host), {
                 method: httpMethods.post,
                 headers: {
                     'Content-Type': 'application/json'
@@ -47,7 +49,7 @@ export class EasyDiffusionClient {
 
     async stream(renderExchange) {
         const renderResponse = renderExchange.response;
-        const streamUrl = new URL(renderResponse.stream, this.#environmentSettings.easyDiffusionHosts[0]);
+        const streamUrl = new URL(renderResponse.stream, this.#host);
 
         let response = null;
 
@@ -86,6 +88,24 @@ export class EasyDiffusionClient {
             this.#logger(LogLevel.Error, `Checking the EasyDiffusion render stream failed: ${error}`);
             return null;
         }
+    }
+
+    #selectHost() {
+        const host = this.#environmentSettings.easyDiffusionHosts[
+            getRandomInt(0, this.#environmentSettings.easyDiffusionHosts.length - 1)];
+
+        this.#logger(LogLevel.Info, `Selected host: ${host}`);
+
+        return host;
+    }
+
+    #selectModel() {
+        const model = this.#environmentSettings.easyDiffusionModels[
+            getRandomInt(0, this.#environmentSettings.easyDiffusionModels.length - 1)];
+
+        this.#logger(LogLevel.Info, `Selected model: ${model}`);
+
+        return model;
     }
 
     async #sleep(milliseconds) {

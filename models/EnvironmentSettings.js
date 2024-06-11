@@ -10,7 +10,7 @@ export class EnvironmentSettings {
     discordChannels = [];
 
     easyDiffusionHosts = [];
-    easyDiffusionModel = null;
+    easyDiffusionModels = [];
 
     botRequiresMention = true;
 
@@ -34,7 +34,7 @@ export class EnvironmentSettings {
         this.discordChannels = process.env.EASY_DIFFUSION_DISCORD_BOT_CHANNELS.split(',');
 
         this.easyDiffusionHosts = process.env.EASY_DIFFUSION_DISCORD_BOT_EASY_DIFFUSION_HOSTS.split(',').map(url => new URL(url));
-        this.easyDiffusionModel = process.env.EASY_DIFFUSION_DISCORD_BOT_EASY_DIFFUSION_MODEL;
+        this.easyDiffusionModels = process.env.EASY_DIFFUSION_DISCORD_BOT_EASY_DIFFUSION_MODELS.split(',');
 
         this.botRequiresMention = (process.env.EASY_DIFFUSION_DISCORD_BOT_REQUIRES_MENTION.toLowerCase() === 'true');
 
@@ -48,7 +48,7 @@ export class EnvironmentSettings {
         this.#logger(LogLevel.Info, `EASY_DIFFUSION_DISCORD_BOT_TOKEN: ${this.discordToken}`);
         this.#logger(LogLevel.Info, `EASY_DIFFUSION_DISCORD_BOT_CHANNELS: ${this.discordChannels.join(', ')}`);
         this.#logger(LogLevel.Info, `EASY_DIFFUSION_DISCORD_BOT_EASY_DIFFUSION_HOSTS: ${this.easyDiffusionHosts.join(', ')}`);
-        this.#logger(LogLevel.Info, `EASY_DIFFUSION_DISCORD_BOT_EASY_DIFFUSION_MODEL: ${this.easyDiffusionModel}`);
+        this.#logger(LogLevel.Info, `EASY_DIFFUSION_DISCORD_BOT_EASY_DIFFUSION_MODELS: ${this.easyDiffusionModels.join(', ')}`);
         this.#logger(LogLevel.Info, `EASY_DIFFUSION_DISCORD_BOT_REQUIRES_MENTION: ${this.botRequiresMention}`);
     }
 
@@ -69,8 +69,8 @@ export class EnvironmentSettings {
             throw new Error(`EASY_DIFFUSION_DISCORD_BOT_EASY_DIFFUSION_HOSTS requires at least one value.`);
         }
 
-        if(this.easyDiffusionModel === null || this.easyDiffusionModel.length === 0) {
-            throw new Error(`EASY_DIFFUSION_DISCORD_BOT_EASY_DIFFUSION_MODEL requires a value.`);
+        if(this.easyDiffusionModels.length === 0) {
+            throw new Error(`EASY_DIFFUSION_DISCORD_BOT_EASY_DIFFUSION_MODELS requires a value.`);
         }
     }
 }
