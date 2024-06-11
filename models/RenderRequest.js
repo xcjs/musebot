@@ -38,9 +38,9 @@ export class RenderRequest {
     }
 
     #getRandomSeed() {
+        const minCeiled = Math.ceil(0);
         const maxSeedValue = 4294967295;
 
-        const minCeiled = Math.ceil(min);
         // Add one to maxSeedValue since this excludes the ceiling value.
         const maxFloored = Math.floor(maxSeedValue + 1);
 
