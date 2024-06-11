@@ -32,14 +32,18 @@ export class EasyDiffusionClient {
                 body: JSON.stringify(request)
             });
 
-            return await response.json();
+            return {
+                request,
+                response: await response.json()
+            };
         } catch(error) {
             this.#logger(LogLevel.Info, error);
             return null;
         }
     }
 
-    async stream(renderResponse) {
+    async stream(renderExchange) {
+        const renderResponse = renderExchange.response;
         const streamUrl = new URL(renderResponse.stream, this.#environmentSettings.easyDiffusionHosts[0]);
 
         let response = null;

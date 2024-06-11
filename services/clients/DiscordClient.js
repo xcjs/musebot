@@ -65,16 +65,28 @@ export class DiscordClient {
         this.#logger(LogLevel.Info, 'Replying to message...');
 
         await this.#startTyping(message);
-        const renderResponse = await this.#renderImage(message);
+        const renderData = await this.#renderImage(message);
         this.#stopTyping();
 
-        if(renderResponse === null) {
-            await message.reply({ content: "The dreams would not form for me this time. Maybe they will answer our call later." });
-        } else {
-            const imageBuffer = new Buffer.from(renderResponse.output[0].data.split(",")[1], "base64");
-            const attachment = new AttachmentBuilder(imageBuffer);
+        if(renderData.renderExchange.response !== null) {
+            const renderRequest = renderData.renderExchange.request;
+            const streamResponse = renderData.streamResponse;
 
-            await message.reply({ files: [attachment] });
+            const fileName = `${renderRequest.seed}_${renderRequest.prompt}`.substring(0, 128);
+
+            const imageBuffer = new Buffer.from(streamResponse.output[0].data.split(",")[1], 'base64');
+            const imageAttachment = new AttachmentBuilder(imageBuffer, {
+                name: `${fileName}.jpg`
+            });
+
+            const jsonBuffer = new Buffer.from(JSON.stringify(renderRequest), 'utf-8');
+            const jsonAttachment = new AttachmentBuilder(jsonBuffer, {
+                name: `${fileName}.json`
+            });
+
+            await message.reply({ files: [imageAttachment, jsonAttachment] });
+        } else {
+            await message.reply({ content: "The dreams would not form for me this time. Maybe they will answer our call later." });
         }
     }
 
@@ -125,18 +137,21 @@ export class DiscordClient {
 
         this.#logger(LogLevel.Info, `Render prompt: ${prompt}`);
 
-        const renderResponse = await this.#easyDiffusionClient.render(prompt);
+        const renderExchange = await this.#easyDiffusionClient.render(prompt);
 
-        if(renderResponse === null) {
+        if(renderExchange.response === null) {
             return null;
         }
 
-        const streamResponse = await this.#easyDiffusionClient.stream(renderResponse);
+        const streamResponse = await this.#easyDiffusionClient.stream(renderExchange);
 
         if(streamResponse === null) {
             return null;
         }
 
-        return streamResponse;
+        return {
+            renderExchange,
+            streamResponse
+        };
     }
 }
