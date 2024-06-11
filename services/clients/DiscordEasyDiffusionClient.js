@@ -123,7 +123,9 @@ export class DiscordEasyDiffusionClient {
             await message.channel.sendTyping();
 
             this.#typingInterval = setInterval(async () => {
-                await message.channel.sendTyping();
+                if(this.#typingInterval !== null) {
+                    await message.channel.sendTyping();
+                }
             }, this.#sendTypingIntervalMilliseconds);
         } catch(error) {
             this.#logger(LogLevel.Error, `An error occurred while sending the typing status: ${error}`);
@@ -136,6 +138,7 @@ export class DiscordEasyDiffusionClient {
 
         if(this.#typingInterval !== null) {
             clearInterval(this.#typingInterval);
+            this.#typingInterval = null;
         }
     }
 
