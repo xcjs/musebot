@@ -11,7 +11,7 @@ export class EasyDiffusionClient {
 
     constructor(environmentSettings) {
         this.#environmentSettings = environmentSettings;
-        this.#logger = new Logger(this.isProduction, 'EasyDiffusionClient');
+        this.#logger = new Logger(this.#environmentSettings.isProduction, 'EasyDiffusionClient');
     }
 
     async render(prompt) {
