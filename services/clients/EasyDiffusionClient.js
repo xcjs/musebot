@@ -7,6 +7,9 @@ import { EasyDiffusionRenderRequest } from '../../models/EasyDiffusionRenderRequ
 
 export class EasyDiffusionClient {
     #environmentSettings = null;
+    #host = null;
+    #model = null;
+
     #logger = null;
     #retryDelayInMilliseconds = 1000;
 

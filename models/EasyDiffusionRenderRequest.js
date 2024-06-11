@@ -1,3 +1,5 @@
+import { getRandomInt } from '../utilities/random-utilities.js';
+
 export class EasyDiffusionRenderRequest {
     prompt = '';
     seed = 0;
@@ -38,12 +40,6 @@ export class EasyDiffusionRenderRequest {
     }
 
     #getRandomSeed() {
-        const minCeiled = Math.ceil(0);
-        const maxSeedValue = 4294967295;
-
-        // Add one to maxSeedValue since this excludes the ceiling value.
-        const maxFloored = Math.floor(maxSeedValue + 1);
-
-        return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled);
+        return getRandomInt(0, 4294967295);
     }
 }
