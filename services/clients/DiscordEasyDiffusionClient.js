@@ -66,7 +66,7 @@ export class DiscordEasyDiffusionClient {
         const renderData = await this.#renderImage(message);
         this.#stopTyping();
 
-        if(renderData.renderExchange.response !== null) {
+        if(renderData?.renderExchange?.response !== null) {
             const renderRequest = renderData.renderExchange.request;
             const streamResponse = renderData.streamResponse;
 

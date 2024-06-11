@@ -66,6 +66,10 @@ export class EasyDiffusionClient {
                     try {
                         responseBody = await response.json();
 
+                        if(responseBody.status === 'failed') {
+                            return null;
+                        }
+
                         if(responseBody.status === 'succeeded') {
                             return responseBody;
                         }
