@@ -8,8 +8,8 @@ export class EasyDiffusionRenderRequest {
     num_outputs = 1;
     num_inference_steps = 35;
     guidance_scale = 7.5;
-    width = 768; // The highest resolution allowed by Discord is 676x676
-    height = 768;
+    width = 1024; // The highest resolution allowed by Discord is 676x676.
+    height = 1024;
     vram_usage_level = 'balanced';
     sampler_name = 'euler_a';
     use_stable_diffusion_model = '';
