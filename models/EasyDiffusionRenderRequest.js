@@ -1,4 +1,4 @@
-export class RenderRequest {
+export class EasyDiffusionRenderRequest {
     prompt = '';
     seed = 0;
     used_random_seed = true;

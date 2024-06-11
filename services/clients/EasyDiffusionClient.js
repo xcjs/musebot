@@ -3,7 +3,7 @@ import fetch from 'node-fetch';
 
 import { httpMethods } from '../../enums/httpMethods.js';
 import { httpStatusCodes } from '../../enums/httpStatusCodes.js';
-import { RenderRequest } from '../../models/RenderRequest.js';
+import { EasyDiffusionRenderRequest } from '../../models/EasyDiffusionRenderRequest.js';
 
 export class EasyDiffusionClient {
     #environmentSettings = null;
@@ -21,7 +21,7 @@ export class EasyDiffusionClient {
         const host = this.#environmentSettings.easyDiffusionHosts[0];
         const model = this.#environmentSettings.easyDiffusionModel;
 
-        const request = new RenderRequest(model, prompt);
+        const request = new EasyDiffusionRenderRequest(model, prompt);
 
         try {
             const response = await fetch(new URL('render', host), {
