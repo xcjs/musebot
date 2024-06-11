@@ -130,7 +130,7 @@ export class DiscordEasyDiffusionClient {
     }
 
     async #renderImage(message) {
-        this.#easyDiffusionClient = new EasyDiffusionClient(environmentSettings);
+        this.#easyDiffusionClient = new EasyDiffusionClient(this.#environmentSettings);
 
         const botMention = message.mentions.members.find(x => x.id === this.#client.user.id).toString();
         const prompt = message.content.replace(botMention, '').trim();
