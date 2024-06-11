@@ -8,8 +8,8 @@ export class EasyDiffusionRenderRequest {
     num_outputs = 1;
     num_inference_steps = 35;
     guidance_scale = 7.5;
-    width = 1024;
-    height = 1024;
+    width = 768; // The highest resolution allowed by Discord is 676x676
+    height = 768;
     vram_usage_level = 'balanced';
     sampler_name = 'euler_a';
     use_stable_diffusion_model = '';
@@ -26,8 +26,6 @@ export class EasyDiffusionRenderRequest {
     original_prompt = '';
     active_tags = [];
     inactive_tags = [];
-    use_upscale = 'RealESRGAN_x4plus';
-    upscale_amount = '4';
     enable_vae_tiling = true;
     session_id = 0;
 

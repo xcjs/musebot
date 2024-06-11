@@ -66,7 +66,9 @@ export class DiscordEasyDiffusionClient {
         const renderData = await this.#renderImage(message);
         this.#stopTyping();
 
-        if(renderData?.renderExchange?.response !== null) {
+        if(renderData?.renderExchange?.response !== null
+            && renderData?.streamResponse != null
+        ) {
             const renderRequest = renderData.renderExchange.request;
             const streamResponse = renderData.streamResponse;
 
@@ -144,10 +146,6 @@ export class DiscordEasyDiffusionClient {
         }
 
         const streamResponse = await this.#easyDiffusionClient.stream(renderExchange);
-
-        if(streamResponse === null) {
-            return null;
-        }
 
         return {
             renderExchange,

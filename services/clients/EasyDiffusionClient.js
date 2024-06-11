@@ -48,7 +48,12 @@ export class EasyDiffusionClient {
     }
 
     async stream(renderExchange) {
-        const renderResponse = renderExchange.response;
+        const renderResponse = renderExchange?.response;
+
+        if(renderResponse === null) {
+            return null;
+        }
+
         const streamUrl = new URL(renderResponse.stream, this.#host);
 
         let response = null;
