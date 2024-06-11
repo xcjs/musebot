@@ -59,9 +59,10 @@ export class EasyDiffusionClient {
 
                         if(responseBody.status === 'succeeded') {
                             return responseBody;
-                        } else {
-                            await this.#sleep(this.#retryDelayInMilliseconds);
                         }
+
+                        await this.#sleep(this.#retryDelayInMilliseconds);
+
                     } catch {
                         // EasyDiffusion incorrectly uses the application/json response type for empty responses.
                         await this.#sleep(this.#retryDelayInMilliseconds);
