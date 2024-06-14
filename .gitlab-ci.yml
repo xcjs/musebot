@@ -9,9 +9,8 @@ Lint:
   tags:
     - docker
   before_script:
-    - export tagName=$(echo "${CI_COMMIT_REF_NAME}" | tr "/" "-")
-  script:
     - npm install
+  script:
     - npm run lint
 
 Build:
