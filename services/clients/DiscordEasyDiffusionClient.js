@@ -48,7 +48,6 @@ export class DiscordEasyDiffusionClient {
 
     async #onClientReady(event) {
         this.#logger(LogLevel.Info, 'Client is ready.');
-        await this.#client.guilds.fetch();
         this.#client.user.setPresence({ activities: [], status: 'online' });
     }
 
@@ -120,12 +119,10 @@ export class DiscordEasyDiffusionClient {
         this.#logger(LogLevel.Info, 'Sending typing status...');
 
         try {
-            await message.channel.sendTyping();
+            await this.#onTypingInterval(message);
 
             this.#typingInterval = setInterval(async () => {
-                if(this.#typingInterval !== null) {
-                    await message.channel.sendTyping();
-                }
+                await this.#onTypingInterval(message);
             }, this.#sendTypingIntervalMilliseconds);
         } catch(error) {
             this.#logger(LogLevel.Error, `An error occurred while sending the typing status: ${error}`);
@@ -133,10 +130,16 @@ export class DiscordEasyDiffusionClient {
         }
     }
 
+    async #onTypingInterval(message) {
+        if(this.#typingInterval !== null) {
+            await message.channel.sendTyping();
+        }
+    }
+
     #stopTyping() {
         this.#logger(LogLevel.Info, 'Stopped typing.');
 
-        if(this.#typingInterval !== null) {
+        if(!this.#typingInterval !== null) {
             clearInterval(this.#typingInterval);
             this.#typingInterval = null;
         }

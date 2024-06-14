@@ -1,15 +1,20 @@
 {
-	"name": "discord-easy-diffusion-bot",
-	"private": "true",
-	"main": "index.js",
-	"scripts": {
-		"start": "index.js"
-	},
-	"dependencies": {
-		"discord.js": "^14.14.1",
-		"dotenv": "^16.3.1",
-		"meklog": "^1.0.2",
-		"node-fetch": "^3.3.2"
-	},
-	"type": "module"
+  "name": "musebot",
+  "private": "true",
+  "license": "ISC",
+  "main": "index.js",
+  "scripts": {
+    "start": "index.js",
+    "build": "nexe --build --python /usr/bin/python3 -t 20.5.1 index.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "dotenv": "^16.3.1",
+    "meklog": "^1.0.2",
+    "node-fetch": "^3.3.2"
+  },
+  "type": "module",
+  "devDependencies": {
+    "nexe": "^4.0.0-rc.6"
+  }
 }
