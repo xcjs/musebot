@@ -30,6 +30,16 @@ Build:
     - tagName=$(echo "${CI_COMMIT_REF_NAME}" | tr "/" "-")
     - docker image rm "musebot:${tagName}"
 
+Build (Nexe):
+  stage: build
+  image: node:lts
+  tags:
+    - docker
+  before_script:
+    - npm install
+  script:
+    - npm run build
+
 Deploy:
   stage: deploy
   image: docker:stable
