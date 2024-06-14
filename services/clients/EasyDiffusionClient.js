@@ -1,3 +1,5 @@
+import path from 'node:path';
+
 import {Logger, LogLevel } from 'meklog'
 import fetch from 'node-fetch';
 
@@ -155,11 +157,11 @@ export class EasyDiffusionClient {
 
         stableDiffusionOptions.forEach(item => {
             if(typeof item === javaScriptTypes.string) {
-                models.push(parentName.length > 0 ? `${parentName}/${item}` : item);
+                models.push(path.join(parentName, item));
             } else if (this.#isDirectoryModelArrayPair(item)) {
-                models.concat(this.#flattenModelArray(item[1], parentName.length > 0 ? `${parentName}/${item[0]}` : item[0], models));
+                models.concat(this.#flattenModelArray(item[1], path.join(parentName, item[0]), models));
             } else if (Array.isArray(item)) {
-                models.concat(models.map(item => parentName.length > 0 ? `${parentName}/${item}` : item));
+                models.concat(models.map(item => path.join(parentName, item)));
             } else {
                 this.#logger(LogLevel.Warning, `Model option ${item} did not fit any expected model option type.`);
             }
