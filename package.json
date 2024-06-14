@@ -1,15 +1,16 @@
 {
-	"name": "discord-easy-diffusion-bot",
-	"private": "true",
-	"main": "index.js",
-	"scripts": {
-		"start": "index.js"
-	},
-	"dependencies": {
-		"discord.js": "^14.14.1",
-		"dotenv": "^16.3.1",
-		"meklog": "^1.0.2",
-		"node-fetch": "^3.3.2"
-	},
-	"type": "module"
+  "name": "musebot",
+  "private": "true",
+  "license": "Apache-2.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "index.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "dotenv": "^16.3.1",
+    "meklog": "^1.0.2",
+    "node-fetch": "^3.3.2"
+  },
+  "type": "module"
 }
