@@ -1,4 +1,4 @@
-# Discord Easy Diffusion Bot
+# Musebot
 
 A Discord Bot that allows users to queue jobs for
 [EasyDiffusion](https://easydiffusion.github.io/).
