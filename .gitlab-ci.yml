@@ -37,6 +37,11 @@ Build (Nexe):
     - npm install
   script:
     - npm run build
+  artifacts:
+    name: musebot_linux_amd64
+    paths:
+      - bin/musebot
+    expire_in: 1 week
 
 Deploy:
   stage: deploy
