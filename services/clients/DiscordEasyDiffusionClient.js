@@ -48,7 +48,6 @@ export class DiscordEasyDiffusionClient {
 
     async #onClientReady(event) {
         this.#logger(LogLevel.Info, 'Client is ready.');
-        await this.#client.guilds.fetch();
         this.#client.user.setPresence({ activities: [], status: 'online' });
     }
 
