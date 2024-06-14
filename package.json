@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "index.js",
-    "build": "nexe index.js",
+    "build": "nexe -b index.js",
     "lint": "eslint"
   },
   "dependencies": {
