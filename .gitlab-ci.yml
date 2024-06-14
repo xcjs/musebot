@@ -4,7 +4,7 @@ stages:
   - deploy
 
 Lint:
-  stage: Lint
+  stage: lint
   image: node:lts
   tags:
     - docker
