@@ -12,5 +12,8 @@
     "meklog": "^1.0.2",
     "node-fetch": "^3.3.2"
   },
-  "type": "module"
+  "type": "module",
+  "devDependencies": {
+    "nexe": "^4.0.0-rc.6"
+  }
 }
