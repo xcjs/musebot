@@ -1,3 +1,5 @@
+import { Buffer } from 'node:buffer';
+
 import { AttachmentBuilder, Client, Events, GatewayIntentBits, MessageType, Partials } from 'discord.js';
 import {Logger, LogLevel } from 'meklog'
 
@@ -46,7 +48,7 @@ export class DiscordEasyDiffusionClient {
         this.#client.on(Events.MessageCreate, (message) => this.#onMessageCreate.call(self, message));
     }
 
-    async #onClientReady(event) {
+    async #onClientReady() {
         this.#logger(LogLevel.Info, 'Client is ready.');
         this.#client.user.setPresence({ activities: [], status: 'online' });
     }
@@ -139,10 +141,8 @@ export class DiscordEasyDiffusionClient {
     #stopTyping() {
         this.#logger(LogLevel.Info, 'Stopped typing.');
 
-        if(!this.#typingInterval !== null) {
-            clearInterval(this.#typingInterval);
-            this.#typingInterval = null;
-        }
+        clearInterval(this.#typingInterval);
+        this.#typingInterval = null;
     }
 
     async #renderImage(message) {

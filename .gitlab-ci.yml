@@ -1,16 +1,27 @@
 stages:
+  - lint
   - build
   - deploy
 
+Lint:
+  stage: lint
+  image: node:lts
+  tags:
+    - docker
+  before_script:
+    - npm install
+  script:
+    - npm run lint
+
 Build:
   stage: build
+  image: docker:stable
+  services:
+    - docker:stable-dind
   except:
     - main
   tags:
     - docker
-  image: docker:stable
-  services:
-    - docker:stable-dind
   before_script:
     - export tagName=$(echo "${CI_COMMIT_REF_NAME}" | tr "/" "-")
   script:
@@ -21,13 +32,13 @@ Build:
 
 Deploy:
   stage: deploy
+  image: docker:stable
+  services:
+    - docker:stable-dind
   only:
     - main
   tags:
     - docker
-  image: docker:stable
-  services:
-    - docker:stable-dind
   before_script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
