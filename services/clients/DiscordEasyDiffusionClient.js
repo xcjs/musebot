@@ -10,7 +10,7 @@ export class DiscordEasyDiffusionClient {
     #easyDiffusionClient = null;
     #logger = null;
 
-    #sendTypingIntervalMilliseconds = 500;
+    #sendTypingIntervalMilliseconds = 10000;
     #typingInterval = null;
 
     constructor(environmentSettings) {
@@ -88,6 +88,8 @@ export class DiscordEasyDiffusionClient {
                 const jsonAttachment = new AttachmentBuilder(jsonBuffer, {
                     name: `${fileName}.json`
                 });
+
+                jsonAttachment.setSpoiler(true);
 
                 files.push(jsonAttachment);
             }
