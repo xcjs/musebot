@@ -22,8 +22,6 @@ Build:
     - main
   tags:
     - docker
-  before_script:
-    - export tagName=$(echo "${CI_COMMIT_REF_NAME}" | tr "/" "-")
   script:
     - docker build -t "musebot:${tagName}" .
   after_script:
