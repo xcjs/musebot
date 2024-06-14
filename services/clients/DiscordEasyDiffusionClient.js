@@ -10,7 +10,7 @@ export class DiscordEasyDiffusionClient {
     #easyDiffusionClient = null;
     #logger = null;
 
-    #sendTypingIntervalMilliseconds = 10000;
+    #sendTypingIntervalMilliseconds = 500;
     #typingInterval = null;
 
     constructor(environmentSettings) {
