@@ -34,8 +34,8 @@ export class EnvironmentSettings {
         this.discordToken = process.env.MUSEBOT_DISCORD_TOKEN;
         this.discordChannels = process.env.MUSEBOT_DISCORD_CHANNELS.split(',');
 
-        this.botRequiresMention = (process.env.MUSEBOT_REQUIRES_MENTION.toLowerCase() === 'true');
-        this.botEmbedsJson = (process.env.MUSEBOT_EMBEDS_JSON.toLowerCase() === 'true');
+        this.botRequiresMention = (process.env.MUSEBOT_REQUIRES_MENTION.toLowerCase() === true.toString());
+        this.botEmbedsJson = (process.env.MUSEBOT_EMBEDS_JSON.toLowerCase() === true.toString());
 
         this.easyDiffusionHosts = process.env.MUSEBOT_EASY_DIFFUSION_HOSTS.split(',').map(url => new URL(url));
         this.easyDiffusionModels = process.env.MUSEBOT_EASY_DIFFUSION_MODELS?.split(',') || [];
