@@ -38,7 +38,7 @@ export class EnvironmentSettings {
         this.botEmbedsJson = (process.env.MUSEBOT_EMBEDS_JSON.toLowerCase() === 'true');
 
         this.easyDiffusionHosts = process.env.MUSEBOT_EASY_DIFFUSION_HOSTS.split(',').map(url => new URL(url));
-        this.easyDiffusionModels = process.env.MUSEBOT_EASY_DIFFUSION_MODELS.split(',');
+        this.easyDiffusionModels = process.env.MUSEBOT_EASY_DIFFUSION_MODELS?.split(',') || [];
 
         this.#logger = new Logger(this.isProduction, 'EnvironmentSettings');
         this.#logConfiguration();
@@ -64,16 +64,8 @@ export class EnvironmentSettings {
             throw new Error(`EASY_DIFFUSION_DISCORD_BOT_TOKEN requires a value.`);
         }
 
-        if(this.discordChannels.length === 0) {
-            throw new Error(`EASY_DIFFUSION_DISCORD_BOT_CHANNELS requires at least one channel ID.`);
-        }
-
         if(this.easyDiffusionHosts.length === 0) {
-            throw new Error(`EASY_DIFFUSION_DISCORD_BOT_EASY_DIFFUSION_HOSTS requires at least one value.`);
-        }
-
-        if(this.easyDiffusionModels.length === 0) {
-            throw new Error(`EASY_DIFFUSION_DISCORD_BOT_EASY_DIFFUSION_MODELS requires a value.`);
+            throw new Error(`MUSEBOT_EASY_DIFFUSION_HOSTS requires at least one value.`);
         }
     }
 }
