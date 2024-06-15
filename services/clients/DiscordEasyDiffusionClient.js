@@ -1,9 +1,10 @@
 import { Buffer } from 'node:buffer';
 
-import { AttachmentBuilder, Client, Events, GatewayIntentBits, MessageType, Partials } from 'discord.js';
+import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, Client, Events, GatewayIntentBits, MessageType, Partials } from 'discord.js';
 import {Logger, LogLevel } from 'meklog'
 
 import { EasyDiffusionClient } from './EasyDiffusionClient.js';
+import { contentTypes } from '../../enums/contentTypes.js';
 
 export class DiscordEasyDiffusionClient {
     #environmentSettings = null;
@@ -47,6 +48,7 @@ export class DiscordEasyDiffusionClient {
 
         this.#client.once(Events.ClientReady, (event) => this.#onClientReady.call(self, event));
         this.#client.on(Events.MessageCreate, (message) => this.#onMessageCreate.call(self, message));
+        this.#client.on(Events.InteractionCreate, (interaction) => this.#onInteraction.call(self, interaction));
     }
 
     async #onClientReady() {
@@ -64,10 +66,12 @@ export class DiscordEasyDiffusionClient {
 
         this.#logger(LogLevel.Info, 'Replying to message...');
 
-        await this.#startTyping(message);
         const renderData = await this.#renderImage(message);
-        this.#stopTyping();
 
+        await this.#reply(message, renderData, false);
+    }
+
+    async #reply(message, renderData, shouldEditReply) {
         if(renderData?.renderExchange?.response !== null
             && renderData?.streamResponse != null
         ) {
@@ -75,17 +79,18 @@ export class DiscordEasyDiffusionClient {
             const streamResponse = renderData.streamResponse;
 
             const fileName = `${renderRequest.seed}_${renderRequest.prompt}`.substring(0, 128);
+            const jsonRequest = JSON.stringify(renderRequest);
 
             let files = [];
 
             const imageBuffer = new Buffer.from(streamResponse.output[0].data.split(",")[1], 'base64');
             const imageAttachment = new AttachmentBuilder(imageBuffer, {
-                name: `${fileName}.jpg`
+                name: `${fileName}.${renderRequest.output_format}`,
+                description: jsonRequest
             });
 
             files.push(imageAttachment);
 
-            const jsonRequest = JSON.stringify(renderRequest);
             this.#logger(LogLevel.Info, `Attaching render for "${renderRequest.prompt}": ${jsonRequest}`);
 
             if(this.#environmentSettings.botEmbedsJson) {
@@ -97,10 +102,57 @@ export class DiscordEasyDiffusionClient {
                 files.push(jsonAttachment);
             }
 
-            await message.reply({ files });
+            const retryButton = new ButtonBuilder()
+                .setCustomId('retry')
+                .setLabel('🔄')
+                .setStyle(ButtonStyle.Secondary);
+
+            const buttonRow = new ActionRowBuilder()
+			    .addComponents(retryButton);
+
+            const reply = {
+                files,
+                components: [buttonRow],
+            };
+
+            if(shouldEditReply) {
+                 await message.editReply(reply);
+            } else {
+                 await message.reply(reply);
+            }
         } else {
             await message.reply({ content: 'The dreams would not form for me this time. Maybe they will answer our call later.' });
         }
+    }
+
+    async #onInteraction(interaction) {
+        console.log(interaction);
+
+        if(interaction.customId !== 'retry') {
+            return;
+        }
+
+        const supportedContentTypes = [
+            contentTypes.jpeg,
+            contentTypes.jpg,
+            contentTypes.png
+        ]
+
+        const attachments = Array.from(interaction.message.attachments, ([name, value]) => ({ name, value }));
+        const imageAttachment = attachments.filter(x => supportedContentTypes.includes(x.value.contentType))[0].value;
+
+        if(!imageAttachment) {
+            return;
+        }
+
+        const renderRequest = JSON.parse(imageAttachment.description);
+        await interaction.deferReply();
+
+        interaction.content = renderRequest.prompt;
+
+        const renderData = await this.#renderImage(interaction);
+
+        await this.#reply(interaction, renderData, true);
     }
 
     #shouldReply(message) {
@@ -156,10 +208,12 @@ export class DiscordEasyDiffusionClient {
     }
 
     async #renderImage(message) {
+        await this.#startTyping(message);
+
         const easyDiffusionClient = new EasyDiffusionClient(this.#environmentSettings);
         this.#easyDiffusionClients.push(easyDiffusionClient);
 
-        const botMention = message.mentions.members.find(x => x.id === this.#client.user.id).toString();
+        const botMention = message.mentions?.members.find(x => x.id === this.#client.user.id)?.toString() || '';
         const prompt = message.content.replace(botMention, '').trim();
 
         this.#logger(LogLevel.Info, `Render prompt: ${prompt}`);
@@ -171,6 +225,8 @@ export class DiscordEasyDiffusionClient {
         }
 
         const streamResponse = await easyDiffusionClient.stream(renderExchange);
+
+        this.#stopTyping();
 
         return {
             renderExchange,

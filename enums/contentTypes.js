@@ -1,3 +1,6 @@
 export const contentTypes = {
-    json: 'application/json'
+    jpeg: 'image/jpeg',
+    jpg: 'image/jpg',
+    json: 'application/json',
+    png: 'image/png'
 };
