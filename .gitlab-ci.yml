@@ -13,22 +13,22 @@ Lint:
   script:
     - npm run lint
 
-Build:
+Build (Nexe):
   stage: build
-  image: docker:stable
-  services:
-    - docker:stable-dind
-  except:
+  image: node:lts
+  only:
     - main
   tags:
     - docker
   before_script:
-    - export tagName=$(echo "${CI_COMMIT_REF_NAME}" | tr "/" "-")
+    - npm install
   script:
-    - docker build -t "musebot:${tagName}" .
-  after_script:
-    - tagName=$(echo "${CI_COMMIT_REF_NAME}" | tr "/" "-")
-    - docker image rm "musebot:${tagName}"
+    - npm run build
+  artifacts:
+    name: musebot_linux_amd64
+    paths:
+      - bin/musebot
+    expire_in: 1 week
 
 Deploy:
   stage: deploy

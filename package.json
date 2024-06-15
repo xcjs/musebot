@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "index.js",
-    "build": "nexe --build --python /usr/bin/python3 -t 20.5.1 index.js",
+    "build": "nexe -b --python /usr/bin/python3 -o bin/musebot index.js",
     "lint": "eslint"
   },
   "dependencies": {
