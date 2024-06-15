@@ -71,6 +71,24 @@ export class DiscordEasyDiffusionClient {
         await this.#reply(message, renderData, false);
     }
 
+    #shouldReply(message) {
+        const shouldReply =
+            !message.system         // Not a system message.
+            && !!message.guild      // The message should be from a guild (server).
+            && message.type === MessageType.Default // The message is a default message type.
+            && !!message.author.id  // The message should have an author.
+            && !message.author.bot  // No messages by bots.
+            && !!message.mentions.members.find(x => x.id === this.#client.user.id) // The message explicitly tags this bot.
+            && message.author.id !== this.#client.user.id // No messages by this bot.
+            && (
+                this.#environmentSettings.discordChannels.length === 0
+                || this.#environmentSettings.discordChannels.includes(message.channel.id)) // The channel is in the configured whitelist if there is one.
+            && typeof message.content === 'string'  // Only respond to text-based messages.
+            && message.content.length > 0;          // Only respond to messages with more than 0 characters.
+
+        return shouldReply;
+    }
+
     async #reply(message, renderData, shouldEditReply) {
         if(renderData?.renderExchange?.response !== null
             && renderData?.streamResponse != null
@@ -78,7 +96,7 @@ export class DiscordEasyDiffusionClient {
             const renderRequest = renderData.renderExchange.request;
             const streamResponse = renderData.streamResponse;
 
-            const fileName = `${renderRequest.seed}_${renderRequest.prompt}`.substring(0, 128);
+            const fileName = this.#getFileNameFromPrompt(renderRequest);
             const jsonRequest = JSON.stringify(renderRequest);
 
             let files = [];
@@ -93,22 +111,18 @@ export class DiscordEasyDiffusionClient {
 
             this.#logger(LogLevel.Info, `Attaching render for "${renderRequest.prompt}": ${jsonRequest}`);
 
-            if(this.#environmentSettings.botEmbedsJson) {
-                const jsonBuffer = new Buffer.from(jsonRequest, 'utf-8');
-                const jsonAttachment = new AttachmentBuilder(jsonBuffer, {
-                    name: `${fileName}.json`
-                });
-
-                files.push(jsonAttachment);
-            }
-
             const retryButton = new ButtonBuilder()
                 .setCustomId('retry')
                 .setLabel('🔄')
                 .setStyle(ButtonStyle.Secondary);
 
+            const showSourceButton = new ButtonBuilder()
+                .setCustomId('showSource')
+                .setLabel('📝')
+                .setStyle(ButtonStyle.Secondary);
+
             const buttonRow = new ActionRowBuilder()
-			    .addComponents(retryButton);
+			    .addComponents(retryButton, showSourceButton);
 
             const reply = {
                 files,
@@ -126,11 +140,7 @@ export class DiscordEasyDiffusionClient {
     }
 
     async #onInteraction(interaction) {
-        console.log(interaction);
-
-        if(interaction.customId !== 'retry') {
-            return;
-        }
+        this.#logger(LogLevel.Info, `Beginning interaction response to custom action ${interaction.customId}...`);
 
         const supportedContentTypes = [
             contentTypes.jpeg,
@@ -146,31 +156,41 @@ export class DiscordEasyDiffusionClient {
         }
 
         const renderRequest = JSON.parse(imageAttachment.description);
-        await interaction.deferReply();
 
+        switch(interaction.customId) {
+            case 'retry':
+                await interaction.deferReply();
+                this.#retry(interaction, renderRequest);
+                break;
+            case 'showSource':
+                await interaction.deferReply();
+                this.#showSource(interaction, renderRequest, imageAttachment.description);
+                break;
+        }
+    }
+
+    async #retry(interaction, renderRequest) {
         interaction.content = renderRequest.prompt;
-
         const renderData = await this.#renderImage(interaction);
 
         await this.#reply(interaction, renderData, true);
     }
 
-    #shouldReply(message) {
-        const shouldReply =
-            !message.system         // Not a system message.
-            && !!message.guild      // The message should be from a guild (server).
-            && message.type === MessageType.Default // The message is a default message type.
-            && !!message.author.id  // The message should have an author.
-            && !message.author.bot  // No messages by bots.
-            && !!message.mentions.members.find(x => x.id === this.#client.user.id) // The message explicitly tags this bot.
-            && message.author.id !== this.#client.user.id // No messages by this bot.
-            && (
-                this.#environmentSettings.discordChannels.length === 0
-                || this.#environmentSettings.discordChannels.includes(message.channel.id)) // The channel is in the configured whitelist if there is one.
-            && typeof message.content === 'string'  // Only respond to text-based messages.
-            && message.content.length > 0;          // Only respond to messages with more than 0 characters.
+    async #showSource(interaction, renderRequest, jsonRequest) {
+        const jsonBuffer = new Buffer.from(jsonRequest, 'utf-8');
+        const jsonAttachment = new AttachmentBuilder(jsonBuffer, {
+            name: `${this.#getFileNameFromPrompt(renderRequest)}.json`
+        });
 
-        return shouldReply;
+        const reply = {
+            files: [jsonAttachment],
+        };
+
+        await interaction.editReply(reply);
+    }
+
+    #getFileNameFromPrompt(renderRequest) {
+        return `${renderRequest.seed}_${renderRequest.prompt}`.substring(0, 128);
     }
 
     async #startTyping(message) {

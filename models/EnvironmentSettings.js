@@ -13,7 +13,6 @@ export class EnvironmentSettings {
     easyDiffusionModels = [];
 
     botRequiresMention = true;
-    botEmbedsJson = false;
 
     #logger = null;
 
@@ -35,7 +34,6 @@ export class EnvironmentSettings {
         this.discordChannels = process.env.MUSEBOT_DISCORD_CHANNELS.split(',');
 
         this.botRequiresMention = (process.env.MUSEBOT_REQUIRES_MENTION.toLowerCase() === true.toString());
-        this.botEmbedsJson = (process.env.MUSEBOT_EMBEDS_JSON.toLowerCase() === true.toString());
 
         this.easyDiffusionHosts = process.env.MUSEBOT_EASY_DIFFUSION_HOSTS.split(',').map(url => new URL(url));
         this.easyDiffusionModels = process.env.MUSEBOT_EASY_DIFFUSION_MODELS?.split(',') || [];
@@ -50,7 +48,6 @@ export class EnvironmentSettings {
         this.#logger(LogLevel.Info, `MUSEBOT_DISCORD_TOKEN: ${this.discordToken}`);
         this.#logger(LogLevel.Info, `MUSEBOT_DISCORD_CHANNELS: ${this.discordChannels.join(', ')}`);
         this.#logger(LogLevel.Info, `MUSEBOT_REQUIRES_MENTION: ${this.botRequiresMention}`);
-        this.#logger(LogLevel.Info, `MUSEBOT_EMBEDS_JSON: ${this.botEmbedsJson}`);
         this.#logger(LogLevel.Info, `MUSEBOT_EASY_DIFFUSION_HOSTS: ${this.easyDiffusionHosts.join(', ')}`);
         this.#logger(LogLevel.Info, `MUSEBOT_EASY_DIFFUSION_MODELS: ${this.easyDiffusionModels.join(', ')}`);
     }
