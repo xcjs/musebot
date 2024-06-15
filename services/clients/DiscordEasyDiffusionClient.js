@@ -85,8 +85,11 @@ export class DiscordEasyDiffusionClient {
 
             files.push(imageAttachment);
 
+            const jsonRequest = JSON.stringify(renderRequest);
+            this.#logger(LogLevel.Info, `Attaching render for "${renderRequest.prompt}": ${jsonRequest}`);
+
             if(this.#environmentSettings.botEmbedsJson) {
-                const jsonBuffer = new Buffer.from(JSON.stringify(renderRequest), 'utf-8');
+                const jsonBuffer = new Buffer.from(jsonRequest, 'utf-8');
                 const jsonAttachment = new AttachmentBuilder(jsonBuffer, {
                     name: `${fileName}.json`
                 });
@@ -96,7 +99,7 @@ export class DiscordEasyDiffusionClient {
 
             await message.reply({ files });
         } else {
-            await message.reply({ content: "The dreams would not form for me this time. Maybe they will answer our call later." });
+            await message.reply({ content: 'The dreams would not form for me this time. Maybe they will answer our call later.' });
         }
     }
 
