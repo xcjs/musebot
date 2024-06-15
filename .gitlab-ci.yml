@@ -1,7 +1,7 @@
 stages:
   - lint
-  - build
   - deploy
+  - build
 
 Lint:
   stage: lint
@@ -12,6 +12,21 @@ Lint:
     - npm install
   script:
     - npm run lint
+
+Deploy:
+  stage: deploy
+  image: docker:stable
+  services:
+    - docker:stable-dind
+  only:
+    - main
+  tags:
+    - docker
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - docker build -t $CI_REGISTRY/xcjs/musebot:latest .
+    - docker push $CI_REGISTRY/xcjs/musebot:latest
 
 Build (Nexe):
   stage: build
@@ -29,18 +44,3 @@ Build (Nexe):
     paths:
       - bin/musebot
     expire_in: 1 week
-
-Deploy:
-  stage: deploy
-  image: docker:stable
-  services:
-    - docker:stable-dind
-  only:
-    - main
-  tags:
-    - docker
-  before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-  script:
-    - docker build -t $CI_REGISTRY/xcjs/musebot:latest .
-    - docker push $CI_REGISTRY/xcjs/musebot:latest
