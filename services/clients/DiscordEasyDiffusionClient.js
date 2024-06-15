@@ -9,11 +9,12 @@ export class DiscordEasyDiffusionClient {
     #environmentSettings = null;
 
     #client = null;
-    #easyDiffusionClient = null;
     #logger = null;
 
-    #sendTypingIntervalMilliseconds = 10000;
+    #sendTypingIntervalMilliseconds = 1000;
     #typingInterval = null;
+
+    #easyDiffusionClients = [];
 
     constructor(environmentSettings) {
         this.#environmentSettings = environmentSettings;
@@ -118,7 +119,9 @@ export class DiscordEasyDiffusionClient {
     }
 
     async #startTyping(message) {
-        this.#logger(LogLevel.Info, 'Sending typing status...');
+        if(this.#typingInterval !== null) {
+            return;
+        }
 
         try {
             await this.#onTypingInterval(message);
@@ -126,40 +129,45 @@ export class DiscordEasyDiffusionClient {
             this.#typingInterval = setInterval(async () => {
                 await this.#onTypingInterval(message);
             }, this.#sendTypingIntervalMilliseconds);
+
+            console.log(`Registered typing interval as interval #${this.#typingInterval}.`)
         } catch(error) {
             this.#logger(LogLevel.Error, `An error occurred while sending the typing status: ${error}`);
-            clearInterval(this.#typingInterval);
+            this.#stopTyping();
         }
     }
 
     async #onTypingInterval(message) {
-        if(this.#typingInterval !== null) {
+        if(this.#easyDiffusionClients.filter(x => x.isBusy).length > 0) {
             await message.channel.sendTyping();
         }
     }
 
     #stopTyping() {
-        this.#logger(LogLevel.Info, 'Stopped typing.');
-
-        clearInterval(this.#typingInterval);
-        this.#typingInterval = null;
+        if(this.#easyDiffusionClients.filter(x => x.isBusy).length === 0) {
+            this.#logger(LogLevel.Info, `Stopped typing and clearing interval #${this.#typingInterval}.`);
+            clearInterval(this.#typingInterval);
+            this.#typingInterval = null;
+            this.#easyDiffusionClients = [];
+        }
     }
 
     async #renderImage(message) {
-        this.#easyDiffusionClient = new EasyDiffusionClient(this.#environmentSettings);
+        const easyDiffusionClient = new EasyDiffusionClient(this.#environmentSettings);
+        this.#easyDiffusionClients.push(easyDiffusionClient);
 
         const botMention = message.mentions.members.find(x => x.id === this.#client.user.id).toString();
         const prompt = message.content.replace(botMention, '').trim();
 
         this.#logger(LogLevel.Info, `Render prompt: ${prompt}`);
 
-        const renderExchange = await this.#easyDiffusionClient.render(prompt);
+        const renderExchange = await easyDiffusionClient.render(prompt);
 
         if(renderExchange.response === null) {
             return null;
         }
 
-        const streamResponse = await this.#easyDiffusionClient.stream(renderExchange);
+        const streamResponse = await easyDiffusionClient.stream(renderExchange);
 
         return {
             renderExchange,
