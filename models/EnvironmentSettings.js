@@ -30,13 +30,13 @@ export class EnvironmentSettings {
 
         this.nodeEnvironment = process.env.NODE_ENV;
 
-        this.discordToken = process.env.MUSEBOT_DISCORD_TOKEN;
-        this.discordChannels = process.env.MUSEBOT_DISCORD_CHANNELS.split(',');
+        this.discordToken = process.env.MUSEBOT_DISCORD_TOKEN?.trim();
+        this.discordChannels = process.env.MUSEBOT_DISCORD_CHANNELS?.trim().split(',');
 
-        this.botRequiresMention = (process.env.MUSEBOT_REQUIRES_MENTION.toLowerCase() === true.toString());
+        this.botRequiresMention = (process.env.MUSEBOT_REQUIRES_MENTION?.trim().toLowerCase() === true.toString());
 
-        this.easyDiffusionHosts = process.env.MUSEBOT_EASY_DIFFUSION_HOSTS.split(',').map(url => new URL(url));
-        this.easyDiffusionModels = process.env.MUSEBOT_EASY_DIFFUSION_MODELS?.split(',') || [];
+        this.easyDiffusionHosts = process.env.MUSEBOT_EASY_DIFFUSION_HOSTS?.trim().split(',').map(url => new URL(url));
+        this.easyDiffusionModels = process.env.MUSEBOT_EASY_DIFFUSION_MODELS?.trim().split(',').filter(x => x.length > 0) || [];
 
         this.#logger = new Logger(this.isProduction, 'EnvironmentSettings');
         this.#logConfiguration();
