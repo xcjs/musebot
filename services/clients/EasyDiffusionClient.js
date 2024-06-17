@@ -102,7 +102,6 @@ export class EasyDiffusionClient {
                         }
 
                         await this.#sleep(this.#retryDelayInMilliseconds);
-
                     } catch {
                         // EasyDiffusion incorrectly uses the application/json response type for empty responses.
                         await this.#sleep(this.#retryDelayInMilliseconds);
