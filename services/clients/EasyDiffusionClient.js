@@ -130,7 +130,7 @@ export class EasyDiffusionClient {
             const response = await fetch(new URL('/get/models?scan_for_malicious=true', this.#host), {
                 headers: {
                     [httpHeaders.contentType]: contentTypes.json
-                },
+                }
             });
 
             return await response.json();
