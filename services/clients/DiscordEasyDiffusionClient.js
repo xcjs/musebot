@@ -89,6 +89,36 @@ export class DiscordEasyDiffusionClient {
         return shouldReply;
     }
 
+    async #onInteraction(interaction) {
+        this.#logger(LogLevel.Info, `Beginning interaction response to custom action ${interaction.customId}...`);
+
+        const supportedContentTypes = [
+            contentTypes.jpeg,
+            contentTypes.jpg,
+            contentTypes.png
+        ]
+
+        const attachments = Array.from(interaction.message.attachments, ([name, value]) => ({ name, value }));
+        const imageAttachment = attachments.filter(x => supportedContentTypes.includes(x.value.contentType))[0].value;
+
+        if(!imageAttachment) {
+            return;
+        }
+
+        const renderRequest = JSON.parse(imageAttachment.description);
+
+        switch(interaction.customId) {
+            case 'retry':
+                await interaction.deferReply();
+                this.#retry(interaction, renderRequest);
+                break;
+            case 'showSource':
+                await interaction.deferReply();
+                this.#showSource(interaction, renderRequest, imageAttachment.description);
+                break;
+        }
+    }
+
     async #reply(message, renderData, shouldEditReply) {
         if(renderData?.renderExchange?.response !== null
             && renderData?.streamResponse != null
@@ -136,36 +166,6 @@ export class DiscordEasyDiffusionClient {
             }
         } else {
             await message.reply({ content: 'The dreams would not form for me this time. Maybe they will answer our call later.' });
-        }
-    }
-
-    async #onInteraction(interaction) {
-        this.#logger(LogLevel.Info, `Beginning interaction response to custom action ${interaction.customId}...`);
-
-        const supportedContentTypes = [
-            contentTypes.jpeg,
-            contentTypes.jpg,
-            contentTypes.png
-        ]
-
-        const attachments = Array.from(interaction.message.attachments, ([name, value]) => ({ name, value }));
-        const imageAttachment = attachments.filter(x => supportedContentTypes.includes(x.value.contentType))[0].value;
-
-        if(!imageAttachment) {
-            return;
-        }
-
-        const renderRequest = JSON.parse(imageAttachment.description);
-
-        switch(interaction.customId) {
-            case 'retry':
-                await interaction.deferReply();
-                this.#retry(interaction, renderRequest);
-                break;
-            case 'showSource':
-                await interaction.deferReply();
-                this.#showSource(interaction, renderRequest, imageAttachment.description);
-                break;
         }
     }
 
