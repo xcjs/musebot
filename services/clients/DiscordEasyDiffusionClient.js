@@ -119,7 +119,7 @@ export class DiscordEasyDiffusionClient {
         }
     }
 
-    async #reply(message, renderData, shouldEditReply) {
+    async #reply(message, renderData, isInteractionReply) {
         if(renderData?.renderExchange?.response !== null
             && renderData?.streamResponse != null
         ) {
@@ -159,7 +159,7 @@ export class DiscordEasyDiffusionClient {
                 components: [buttonRow],
             };
 
-            if(shouldEditReply) {
+            if(isInteractionReply) {
                  await message.editReply(reply);
             } else {
                  await message.reply(reply);
