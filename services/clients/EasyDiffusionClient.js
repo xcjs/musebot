@@ -94,15 +94,12 @@ export class EasyDiffusionClient {
                         if(responseBody.status === 'failed') {
                             this.#isBusy = false;
                             return null;
-                        }
-
-                        if(responseBody.status === 'succeeded') {
+                        } else if(responseBody.status === 'succeeded') {
                             this.#isBusy = false;
                             return responseBody;
                         }
 
                         await this.#sleep(this.#retryDelayInMilliseconds);
-
                     } catch {
                         // EasyDiffusion incorrectly uses the application/json response type for empty responses.
                         await this.#sleep(this.#retryDelayInMilliseconds);
@@ -131,7 +128,7 @@ export class EasyDiffusionClient {
             const response = await fetch(new URL('/get/models?scan_for_malicious=true', this.#host), {
                 headers: {
                     [httpHeaders.contentType]: contentTypes.json
-                },
+                }
             });
 
             return await response.json();
@@ -180,6 +177,9 @@ export class EasyDiffusionClient {
                 this.#logger(LogLevel.Warning, `Model option ${item} did not fit any expected model option type.`);
             }
         });
+
+        // path.join on Windows returns '\' instead of '/'.
+        models = models.map(x => x.replace('\\', '/'));
 
         return models;
     }

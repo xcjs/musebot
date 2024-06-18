@@ -89,7 +89,37 @@ export class DiscordEasyDiffusionClient {
         return shouldReply;
     }
 
-    async #reply(message, renderData, shouldEditReply) {
+    async #onInteraction(interaction) {
+        this.#logger(LogLevel.Info, `Beginning interaction response to custom action ${interaction.customId}...`);
+
+        const supportedContentTypes = [
+            contentTypes.jpeg,
+            contentTypes.jpg,
+            contentTypes.png
+        ]
+
+        const attachments = Array.from(interaction.message.attachments, ([name, value]) => ({ name, value }));
+        const imageAttachment = attachments.filter(x => supportedContentTypes.includes(x.value.contentType))[0].value;
+
+        if(!imageAttachment) {
+            return;
+        }
+
+        const renderRequest = JSON.parse(imageAttachment.description);
+
+        await interaction.deferReply();
+
+        switch(interaction.customId) {
+            case 'retry':
+                this.#retry(interaction, renderRequest);
+                break;
+            case 'showSource':
+                this.#showSource(interaction, renderRequest, imageAttachment.description);
+                break;
+        }
+    }
+
+    async #reply(message, renderData, isInteractionReply) {
         if(renderData?.renderExchange?.response !== null
             && renderData?.streamResponse != null
         ) {
@@ -129,43 +159,14 @@ export class DiscordEasyDiffusionClient {
                 components: [buttonRow],
             };
 
-            if(shouldEditReply) {
-                 await message.editReply(reply);
+            if(isInteractionReply) {
+                reply.content = `${message.member} re-rendered \`${renderRequest.prompt}\`.`;
+                await message.editReply(reply);
             } else {
                  await message.reply(reply);
             }
         } else {
-            await message.reply({ content: 'The dreams would not form for me this time. Maybe they will answer our call later.' });
-        }
-    }
-
-    async #onInteraction(interaction) {
-        this.#logger(LogLevel.Info, `Beginning interaction response to custom action ${interaction.customId}...`);
-
-        const supportedContentTypes = [
-            contentTypes.jpeg,
-            contentTypes.jpg,
-            contentTypes.png
-        ]
-
-        const attachments = Array.from(interaction.message.attachments, ([name, value]) => ({ name, value }));
-        const imageAttachment = attachments.filter(x => supportedContentTypes.includes(x.value.contentType))[0].value;
-
-        if(!imageAttachment) {
-            return;
-        }
-
-        const renderRequest = JSON.parse(imageAttachment.description);
-
-        switch(interaction.customId) {
-            case 'retry':
-                await interaction.deferReply();
-                this.#retry(interaction, renderRequest);
-                break;
-            case 'showSource':
-                await interaction.deferReply();
-                this.#showSource(interaction, renderRequest, imageAttachment.description);
-                break;
+            await message.reply({ content: this.#environmentSettings.errorMessage });
         }
     }
 
@@ -183,7 +184,8 @@ export class DiscordEasyDiffusionClient {
         });
 
         const reply = {
-            files: [jsonAttachment],
+            content: `${interaction.member} wanted to see the request message for \`${renderRequest.prompt}\`.`,
+            files: [jsonAttachment]
         };
 
         await interaction.editReply(reply);
