@@ -94,9 +94,7 @@ export class EasyDiffusionClient {
                         if(responseBody.status === 'failed') {
                             this.#isBusy = false;
                             return null;
-                        }
-
-                        if(responseBody.status === 'succeeded') {
+                        } else if(responseBody.status === 'succeeded') {
                             this.#isBusy = false;
                             return responseBody;
                         }
