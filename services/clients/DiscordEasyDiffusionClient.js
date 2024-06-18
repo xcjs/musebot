@@ -160,7 +160,8 @@ export class DiscordEasyDiffusionClient {
             };
 
             if(isInteractionReply) {
-                 await message.editReply(reply);
+                reply.content = `${message.member} re-rendered \`${renderRequest.prompt}\`.`;
+                await message.editReply(reply);
             } else {
                  await message.reply(reply);
             }
