@@ -184,7 +184,8 @@ export class DiscordEasyDiffusionClient {
         });
 
         const reply = {
-            files: [jsonAttachment],
+            content: `${interaction.member} wanted to see the request message for \`${renderRequest.prompt}\`.`,
+            files: [jsonAttachment]
         };
 
         await interaction.editReply(reply);
