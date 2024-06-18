@@ -107,13 +107,13 @@ export class DiscordEasyDiffusionClient {
 
         const renderRequest = JSON.parse(imageAttachment.description);
 
+        await interaction.deferReply();
+
         switch(interaction.customId) {
             case 'retry':
-                await interaction.deferReply();
                 this.#retry(interaction, renderRequest);
                 break;
             case 'showSource':
-                await interaction.deferReply();
                 this.#showSource(interaction, renderRequest, imageAttachment.description);
                 break;
         }
