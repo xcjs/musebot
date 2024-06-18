@@ -178,6 +178,9 @@ export class EasyDiffusionClient {
             }
         });
 
+        // path.join on Windows returns '\' instead of '/'.
+        models = models.map(x => x.replace('\\', '/'));
+
         return models;
     }
 
