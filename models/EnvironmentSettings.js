@@ -13,6 +13,7 @@ export class EnvironmentSettings {
     easyDiffusionModels = [];
 
     botRequiresMention = true;
+    errorMessage = 'An error occurred while generating your image. Please try again later.';
 
     #logger = null;
 
@@ -34,6 +35,7 @@ export class EnvironmentSettings {
         this.discordChannels = process.env.MUSEBOT_DISCORD_CHANNELS?.trim().split(',');
 
         this.botRequiresMention = (process.env.MUSEBOT_REQUIRES_MENTION?.trim().toLowerCase() === true.toString());
+        this.errorMessage = process.env.MUSEBOT_ERROR_MESSAGE || this.errorMessage;
 
         this.easyDiffusionHosts = process.env.MUSEBOT_EASY_DIFFUSION_HOSTS?.trim().split(',').map(url => new URL(url));
         this.easyDiffusionModels = process.env.MUSEBOT_EASY_DIFFUSION_MODELS?.trim().split(',').filter(x => x.length > 0) || [];

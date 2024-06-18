@@ -166,7 +166,7 @@ export class DiscordEasyDiffusionClient {
                  await message.reply(reply);
             }
         } else {
-            await message.reply({ content: 'The dreams would not form for me this time. Maybe they will answer our call later.' });
+            await message.reply({ content: this.#environmentSettings.errorMessage });
         }
     }
 
