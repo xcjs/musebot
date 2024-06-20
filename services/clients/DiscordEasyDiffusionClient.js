@@ -152,17 +152,12 @@ export class DiscordEasyDiffusionClient {
                 .setLabel('📝')
                 .setStyle(ButtonStyle.Secondary);
 
-            const buttonRow = new ActionRowBuilder();
-
-            if(allowInteractions) {
-			    buttonRow.addComponents(retryButton, showSourceButton);
-            } else {
-                buttonRow.addComponents(showSourceButton);
-            }
+            const buttonRow = new ActionRowBuilder()
+                .addComponents(retryButton, showSourceButton);
 
             const reply = {
                 files,
-                components: [buttonRow],
+                components: allowInteractions ? [buttonRow] : []
             };
 
             try {
