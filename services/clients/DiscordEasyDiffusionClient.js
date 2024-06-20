@@ -130,11 +130,12 @@ export class DiscordEasyDiffusionClient {
             const jsonRequest = JSON.stringify(renderRequest);
 
             let files = [];
+            let allowRetry = jsonRequest.length <= 1024;
 
             const imageBuffer = new Buffer.from(streamResponse.output[0].data.split(",")[1], 'base64');
             const imageAttachment = new AttachmentBuilder(imageBuffer, {
                 name: `${fileName}.${renderRequest.output_format}`,
-                description: jsonRequest
+                description: allowRetry ? jsonRequest : null
             });
 
             files.push(imageAttachment);
@@ -151,22 +152,32 @@ export class DiscordEasyDiffusionClient {
                 .setLabel('📝')
                 .setStyle(ButtonStyle.Secondary);
 
-            const buttonRow = new ActionRowBuilder()
-			    .addComponents(retryButton, showSourceButton);
+            const buttonRow = new ActionRowBuilder();
+
+            if(allowRetry) {
+			    buttonRow.addComponents(retryButton, showSourceButton);
+            } else {
+                buttonRow.addComponents(showSourceButton);
+            }
 
             const reply = {
                 files,
                 components: [buttonRow],
             };
 
-            if(isInteractionReply) {
-                reply.content = `${message.member} re-rendered \`${renderRequest.prompt}\`.`;
-                await message.editReply(reply);
-            } else {
-                 await message.reply(reply);
+            try {
+                if(isInteractionReply) {
+                    reply.content = `${message.member} re-rendered \`${renderRequest.prompt}\`.`;
+                    await message.editReply(reply);
+                } else {
+                        await message.reply(reply);
+                }
+            } catch (error) {
+                this.#logger(LogLevel.Error, `An exception occurred while replying to a message: ${error}`);
+                await this.#replyWithError();
             }
         } else {
-            await message.reply({ content: this.#environmentSettings.errorMessage });
+            await this.#replyWithError();
         }
     }
 
@@ -254,5 +265,9 @@ export class DiscordEasyDiffusionClient {
             renderExchange,
             streamResponse
         };
+    }
+
+    async #replyWithError() {
+        await message.reply({ content: this.#environmentSettings.errorMessage });
     }
 }
