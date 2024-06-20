@@ -174,10 +174,10 @@ export class DiscordEasyDiffusionClient {
                 }
             } catch (error) {
                 this.#logger(LogLevel.Error, `An exception occurred while replying to a message: ${error}`);
-                await this.#replyWithError();
+                await this.#replyWithError(message);
             }
         } else {
-            await this.#replyWithError();
+            await this.#replyWithError(message);
         }
     }
 
@@ -267,7 +267,7 @@ export class DiscordEasyDiffusionClient {
         };
     }
 
-    async #replyWithError() {
+    async #replyWithError(message) {
         await message.reply({ content: this.#environmentSettings.errorMessage });
     }
 }
