@@ -130,12 +130,12 @@ export class DiscordEasyDiffusionClient {
             const jsonRequest = JSON.stringify(renderRequest);
 
             let files = [];
-            let allowRetry = jsonRequest.length <= 1024;
+            let allowInteractions = jsonRequest.length <= 1024;
 
             const imageBuffer = new Buffer.from(streamResponse.output[0].data.split(",")[1], 'base64');
             const imageAttachment = new AttachmentBuilder(imageBuffer, {
                 name: `${fileName}.${renderRequest.output_format}`,
-                description: allowRetry ? jsonRequest : null
+                description: allowInteractions ? jsonRequest : null
             });
 
             files.push(imageAttachment);
@@ -154,7 +154,7 @@ export class DiscordEasyDiffusionClient {
 
             const buttonRow = new ActionRowBuilder();
 
-            if(allowRetry) {
+            if(allowInteractions) {
 			    buttonRow.addComponents(retryButton, showSourceButton);
             } else {
                 buttonRow.addComponents(showSourceButton);
