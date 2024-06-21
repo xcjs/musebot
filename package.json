@@ -2,10 +2,10 @@
   "name": "musebot",
   "private": "true",
   "license": "ISC",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
-    "start": "index.js",
-    "build": "nexe -b --python /usr/bin/python3 -o bin/musebot index.js",
+    "start": "app.js",
+    "build": "nexe -b --python /usr/bin/python3 -o bin/musebot app.js",
     "lint": "eslint"
   },
   "dependencies": {
