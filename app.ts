@@ -1,12 +1,12 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { EnvironmentSettings } from './models/EnvironmentSettings.js';
-import { ShardingManagerManager } from './services/ShardingManagerManager.js';
+import { EnvironmentSettings } from './models/EnvironmentSettings.ts';
+import { ShardingManagerManager } from './services/ShardingManagerManager.ts';
 
 const environmentSettings = new EnvironmentSettings();
 
-const botFilePath = path.join(path.dirname(fileURLToPath(import.meta.url)), 'bot.js');
+const botFilePath = path.join(path.dirname(fileURLToPath(import.meta.url)), 'bot.ts');
 const shardingManagerManager = new ShardingManagerManager(environmentSettings, botFilePath);
 
 shardingManagerManager.spawn();
