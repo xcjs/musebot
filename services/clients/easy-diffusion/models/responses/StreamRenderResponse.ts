@@ -1,4 +1,4 @@
-export class RenderResponse {
+export class StreamRenderResponse {
     prompt: string;
     negative_prompt: string;
     seed: number;

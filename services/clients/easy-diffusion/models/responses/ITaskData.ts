@@ -2,9 +2,9 @@ import { Dictionary } from '../../../../../types/Dictionary';
 import { ImageOutputFormat } from '../../enums/ImageOutputFormat';
 import { MetadataOutputFormat } from '../../enums/MetadataOutputFormat'
 import { VRamUsageLevel } from '../../enums/VRamUsageLevel'
-import { Filter } from './Filter';
+import { IFilter } from './IFilter';
 
-export class TaskData {
+export interface ITaskData {
     request_id: number;
     session_id: number;
     vram_usage_level: VRamUsageLevel;
@@ -18,8 +18,8 @@ export class TaskData {
     use_lora_model: null;
     use_controlnet_model: null;
     use_embeddings_model: null;
-    filters: Array<string> = [];
-    filter_params: Dictionary<string, Filter>;
+    filters: Array<string>;
+    filter_params: Dictionary<string, IFilter>;
     control_filter_to_apply: null;
     enable_vae_tiling: boolean;
     show_only_filtered_image: boolean;
@@ -34,8 +34,4 @@ export class TaskData {
     output_lossless: boolean;
     save_to_disk_path: string | null;
     metadata_output_format: MetadataOutputFormat;
-
-    constructor() {
-
-    }
 }

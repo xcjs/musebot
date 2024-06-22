@@ -3,6 +3,7 @@ import { Buffer } from 'node:buffer';
 import {
     ActionRowBuilder,
     AttachmentBuilder,
+    BaseMessageOptions,
     ButtonBuilder,
     ButtonInteraction,
     ButtonStyle,
@@ -91,7 +92,7 @@ export class DiscordEasyDiffusionClient {
 
         const renderData = await this.#renderImage(message);
 
-        await this.#reply(message, renderData, false);
+        await this.#reply(message, renderData);
     }
 
     #shouldReply(message: Message) {
@@ -144,7 +145,7 @@ export class DiscordEasyDiffusionClient {
         }
     }
 
-    async #reply(message: Message | ButtonInteraction, renderData, isInteractionReply: boolean) {
+    async #reply(message: Message | ButtonInteraction, renderData) {
         if(renderData?.renderExchange?.response !== null
             && renderData?.streamResponse != null
         ) {
@@ -178,16 +179,27 @@ export class DiscordEasyDiffusionClient {
                 .setLabel('📝')
                 .setStyle(ButtonStyle.Secondary);
 
-            const buttonRow = new ActionRowBuilder()
+            const buttonRow = new ActionRowBuilder<ButtonBuilder>()
                 .addComponents(retryButton, showSourceButton);
 
-            const reply = {
+            const reply: BaseMessageOptions = {
                 files,
                 components: allowInteractions ? [buttonRow] : []
             };
 
             try {
-                if(isInteractionReply) {
+                switch(typeof message) {
+                    case (typeof Message):
+
+                        break;
+                    case (typeof ButtonInteraction):
+
+                        break;
+                    default:
+                        throw new Error(`An invalid interaction was provided: ${typeof message}`);
+                }
+
+                if(message instanceof ButtonInteraction) {
                     reply.content = `${message.member} re-rendered \`${renderRequest.prompt}\`.`;
                     await message.editReply(reply);
                 } else {
@@ -206,7 +218,7 @@ export class DiscordEasyDiffusionClient {
         interaction.content = renderRequest.prompt;
         const renderData = await this.#renderImage(interaction);
 
-        await this.#reply(interaction, renderData, true);
+        await this.#reply(interaction, renderData);
     }
 
     async #showSource(interaction, renderRequest, jsonRequest) {
@@ -252,12 +264,17 @@ export class DiscordEasyDiffusionClient {
         }
     }
 
-    #stopTyping() {
-        if(this.#easyDiffusionClients.filter(x => x.isBusy).length === 0) {
-            this.#logger(LogLevel.Info, `Stopped typing and clearing interval #${this.#typingInterval}.`);
-            clearInterval(this.#typingInterval as number);
-            this.#typingInterval = null;
-            this.#easyDiffusionClients = [];
+    #stopTyping(): void {
+        if(this.#easyDiffusionClients.filter(x => x.isBusy).length !== 0) {
+            return;
+        }
+
+        this.#logger(LogLevel.Info, `Stopped typing and clearing interval #${this.#typingInterval}.`);
+        this.#typingInterval = null;
+        this.#easyDiffusionClients = [];
+
+        if(this.#typingInterval !== null) {
+            clearInterval(this.#typingInterval);
         }
     }
 
@@ -274,7 +291,7 @@ export class DiscordEasyDiffusionClient {
 
         const renderExchange = await easyDiffusionClient.render(prompt);
 
-        if(renderExchange.response === null) {
+        if(renderExchange === null || renderExchange.response === null) {
             return null;
         }
 
@@ -288,7 +305,7 @@ export class DiscordEasyDiffusionClient {
         };
     }
 
-    async #replyWithError(message) {
+    async #replyWithError(message: Message | ButtonInteraction): Promise<void> {
         await message.reply({ content: this.#environmentSettings.errorMessage });
     }
 }

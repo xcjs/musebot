@@ -1,8 +1,8 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { EnvironmentSettings } from './models/EnvironmentSettings.ts';
-import { ShardingManagerManager } from './services/ShardingManagerManager.ts';
+import { EnvironmentSettings } from './models/EnvironmentSettings';
+import { ShardingManagerManager } from './services/ShardingManagerManager';
 
 const environmentSettings = new EnvironmentSettings();
 

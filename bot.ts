@@ -1,5 +1,5 @@
-import { EnvironmentSettings } from './models/EnvironmentSettings.ts';
-import { DiscordEasyDiffusionClient } from './services/clients/DiscordEasyDiffusionClient.ts';
+import { EnvironmentSettings } from './models/EnvironmentSettings';
+import { DiscordEasyDiffusionClient } from './services/clients/DiscordEasyDiffusionClient';
 
 const environmentSettings = new EnvironmentSettings();
 const discordEasyDiffusionClient = new DiscordEasyDiffusionClient(environmentSettings);

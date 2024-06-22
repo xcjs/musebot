@@ -9,20 +9,22 @@ import { HttpHeader } from '../../../enums/HttpHeader';
 import { HttpMethod } from '../../../enums/HttpMethod';
 import { HttpStatusCode } from '../../../enums/HttpStatusCode';
 import { JavaScriptType } from '../../../enums/JavaScriptType';
-import { HttpExchange } from '../../../models/HttpExchange';
+import { IHttpExchange } from '../../../models/IHttpExchange';
 import { RenderRequest } from './models/requests/RenderRequest';
 import { getRandomInt } from '../../../utilities/random-utilities';
 import { EnvironmentSettings } from '../../../models/EnvironmentSettings';
 import { StreamStatus } from './enums/StreamStatus';
-import { StreamResponse } from './models/responses/StreamResponse';
-import { RenderResponse } from './models/responses/RenderResponse';
+import { IRenderResponse } from './models/responses/IRenderResponse';
+import { IStreamResponse } from './models/responses/IStreamResponse';
+import { IModelsResponse } from './models/responses/IModelsResponse';
+import { JaggedRecursiveStringArray } from './types/JaggedRecursiveStringArray';
 
 export class EasyDiffusionClient {
     #environmentSettings: EnvironmentSettings;
     #logger;
 
-    #host: string;
-    #model: string;
+    #host: URL;
+    #model: string | null;
 
     #retryDelayInMilliseconds = 1000;
 
@@ -37,17 +39,29 @@ export class EasyDiffusionClient {
 
         this.#logger = Logger(this.#environmentSettings.isProduction, 'EasyDiffusionClient');
 
-        this.#host = this.#selectHost(this.#environmentSettings.easyDiffusionHosts);
+        const host = this.#selectHost(this.#environmentSettings.easyDiffusionHosts);
+
+        if(host === null) {
+            throw new Error('At least one EasyDiffusion host must be provided.');
+        }
+
+        this.#host = host;
         this.#model = this.#selectModel(this.#environmentSettings.easyDiffusionModels);
     }
 
-    async render(prompt: string): Promise<HttpExchange<RenderRequest, RenderResponse> | null> {
+    async render(prompt: string): Promise<IHttpExchange<RenderRequest, IRenderResponse> | null> {
         this.#logger(LogLevel.Info, 'Sending render request to EasyDiffusion...');
 
         // If no specific model was selected, we have to load available models
         // and choose one at random.
         if(this.#model === null) {
-            const models = await this.#mapModelsToArrayFromModelOptions(await this.getModels());
+            const modelsResponse = await this.getModels();
+
+            if(modelsResponse === null) {
+                return null;
+            }
+
+            const models = await this.#mapModelsToArrayFromModelOptions(modelsResponse);
             this.#model = this.#selectModel(models);
         }
 
@@ -64,7 +78,7 @@ export class EasyDiffusionClient {
 
             return {
                 request,
-                response: await response.json() as RenderResponse
+                response: await response.json() as IRenderResponse
             };
         } catch(error) {
             this.#logger(LogLevel.Info, error);
@@ -72,7 +86,7 @@ export class EasyDiffusionClient {
         }
     }
 
-    async stream(renderExchange) {
+    async stream(renderExchange: IHttpExchange<RenderRequest, IRenderResponse>) : Promise<IStreamResponse | null> {
         this.#isBusy = true;
 
         const renderResponse = renderExchange?.response;
@@ -94,7 +108,7 @@ export class EasyDiffusionClient {
                     await this.#sleep(this.#retryDelayInMilliseconds);
                 } else if(response.ok) {
                     try {
-                        const responseBody = await response.json() as StreamResponse;
+                        const responseBody = await response.json() as IStreamResponse;
 
                         if(responseBody.status === StreamStatus.Failed) {
                             this.#isBusy = false;
@@ -127,7 +141,7 @@ export class EasyDiffusionClient {
         }
     }
 
-    async getModels() {
+    async getModels(): Promise<IModelsResponse | null> {
         try {
             this.#logger(LogLevel.Info, `Loading Easy Diffusion options...`);
             const response = await fetch(new URL('/get/models?scan_for_malicious=true', this.#host), {
@@ -136,14 +150,14 @@ export class EasyDiffusionClient {
                 }
             });
 
-            return await response.json();
+            return await response.json() as IModelsResponse;
         } catch (error) {
             this.#logger(LogLevel.Error, `Loading EasyDiffusion options failed: ${error}`);
             return null;
         }
     }
 
-    #selectHost(hosts) {
+    #selectHost(hosts: Array<URL>) {
         const host = hosts[getRandomInt(0, hosts.length - 1)];
 
         this.#logger(LogLevel.Info, `Selected host: ${host}`);
@@ -151,7 +165,7 @@ export class EasyDiffusionClient {
         return host;
     }
 
-    #selectModel(models) {
+    #selectModel(models: Array<string>): string | null {
         if(models.length === 0) {
             return null;
         }
@@ -163,19 +177,23 @@ export class EasyDiffusionClient {
         return model;
     }
 
-    #mapModelsToArrayFromModelOptions(modelOptions) {
-        return this.#flattenModelArray(modelOptions.options['stable-diffusion'], '', []);
+    #mapModelsToArrayFromModelOptions(modelsResponse: IModelsResponse) {
+        return this.#flattenModelArray(modelsResponse.options['stable-diffusion'], '', []);
     }
 
-    #flattenModelArray(stableDiffusionOptions, parentName, models) {
+    #flattenModelArray(stableDiffusionOptions: JaggedRecursiveStringArray, parentName: string, models: Array<string>): Array<string> {
+        if(!Array.isArray(stableDiffusionOptions)) {
+            return models;
+        }
+
         models = models || [];
         parentName = parentName || '';
 
         stableDiffusionOptions.forEach(item => {
             if(typeof item === JavaScriptType.String) {
-                models.push(path.join(parentName, item));
+                models.push(path.join(parentName, item as string));
             } else if (this.#isDirectoryModelArrayPair(item)) {
-                models.concat(this.#flattenModelArray(item[1], path.join(parentName, item[0]), models));
+                models.concat(this.#flattenModelArray(item[1], path.join(parentName, item[0] as string), models));
             } else if (Array.isArray(item)) {
                 models.concat(models.map(item => path.join(parentName, item)));
             } else {
@@ -189,7 +207,7 @@ export class EasyDiffusionClient {
         return models;
     }
 
-    #isDirectoryModelArrayPair(modelOptions) {
+    #isDirectoryModelArrayPair(modelOptions: JaggedRecursiveStringArray): boolean {
         const isDirectoryModelArrayPair =
             modelOptions.length === 2
             && typeof modelOptions[0] === JavaScriptType.String
@@ -198,7 +216,7 @@ export class EasyDiffusionClient {
         return isDirectoryModelArrayPair;
     }
 
-    async #sleep(milliseconds) {
+    async #sleep(milliseconds: number): Promise<null> {
         return await new Promise((resolve) => {
             setTimeout(resolve, milliseconds);
         });
