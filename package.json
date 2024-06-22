@@ -3,6 +3,7 @@
   "private": "true",
   "license": "ISC",
   "main": "app.js",
+  "type": "module",
   "scripts": {
     "start": "app.js",
     "build": "nexe -b --python /usr/bin/python3 -o bin/musebot app.js",
@@ -15,11 +16,10 @@
     "node-fetch": "^3.3.2",
     "tsx": "^4.15.7"
   },
-  "type": "module",
   "devDependencies": {
     "@eslint/js": "^9.5.0",
-    "eslint": "^9.5.0",
     "globals": "^15.6.0",
+    "eslint": "^8.57.0",
     "nexe": "^4.0.0-rc.6",
     "typescript-eslint": "^7.13.1"
   }
