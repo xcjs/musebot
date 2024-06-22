@@ -25,7 +25,7 @@ export class EnvironmentSettings {
     constructor() {
         dotenv.config();
 
-        this.nodeEnvironment = NodeEnvironment[process.env.NODE_ENV as keyof typeof NodeEnvironment];
+        this.nodeEnvironment = process.env.NODE_ENV as NodeEnvironment;
 
         this.discordToken = process.env.MUSEBOT_DISCORD_TOKEN?.trim() || '';
         this.discordChannels = process.env.MUSEBOT_DISCORD_CHANNELS?.trim().split(',') || [];
