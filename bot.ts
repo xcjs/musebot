@@ -2,6 +2,6 @@ import { EnvironmentSettings } from './models/EnvironmentSettings';
 import { DiscordEasyDiffusionClient } from './services/clients/DiscordEasyDiffusionClient';
 
 const environmentSettings = new EnvironmentSettings();
-const discordEasyDiffusionClient = new DiscordEasyDiffusionClient(environmentSettings);
+const client = new DiscordEasyDiffusionClient(environmentSettings);
 
-discordEasyDiffusionClient.login();
+client.login();
