@@ -2,7 +2,7 @@
   "name": "musebot",
   "private": "true",
   "license": "ISC",
-  "main": "dist/app.js",
+  "main": "build/app.js",
   "scripts": {
     "prestart": "npm run build",
     "start": "node .",
