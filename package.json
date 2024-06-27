@@ -7,7 +7,7 @@
     "prestart": "npm run build",
     "start": "node .",
     "build": "tsc",
-    "debug": "",
+    "dev": "tsc -w",
     "prebuild:bin": "npm run build",
     "build:bin": "nexe -b --python /usr/bin/python3 -o bin/musebot build/app.js",
     "lint": "eslint"
