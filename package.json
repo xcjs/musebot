@@ -2,11 +2,13 @@
   "name": "musebot",
   "private": "true",
   "license": "ISC",
-  "main": "app.js",
-  "type": "module",
+  "main": "dist/app.js",
   "scripts": {
-    "start": "npx tsx app.ts",
-    "build": "nexe -b --python /usr/bin/python3 -o bin/musebot app.js",
+    "prestart": "npm run build",
+    "start": "node .",
+    "build": "tsc",
+    "prebuild:bin": "npm run build",
+    "build:bin": "nexe -b --python /usr/bin/python3 -o bin/musebot build/app.js",
     "lint": "eslint"
   },
   "dependencies": {
@@ -16,10 +18,11 @@
     "node-fetch": "^3.3.2",
     "tsx": "^4.15.7"
   },
+  "type": "module",
   "devDependencies": {
     "@eslint/js": "^9.5.0",
+    "eslint": "^9.5.0",
     "globals": "^15.6.0",
-    "eslint": "^8.57.0",
     "nexe": "^4.0.0-rc.6",
     "typescript-eslint": "^7.13.1"
   }
