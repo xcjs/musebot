@@ -1,8 +1,8 @@
-import { Dictionary } from '../../../../../types/Dictionary';
-import { ImageOutputFormat } from '../../enums/ImageOutputFormat';
-import { MetadataOutputFormat } from '../../enums/MetadataOutputFormat'
-import { VRamUsageLevel } from '../../enums/VRamUsageLevel'
-import { IFilter } from './IFilter';
+import { Dictionary } from '../../../../../types/Dictionary.js';
+import { ImageOutputFormat } from '../../enums/ImageOutputFormat.js';
+import { MetadataOutputFormat } from '../../enums/MetadataOutputFormat.js'
+import { VRamUsageLevel } from '../../enums/VRamUsageLevel.js'
+import { IFilter } from './IFilter.js';
 
 export interface ITaskData {
     request_id: number;

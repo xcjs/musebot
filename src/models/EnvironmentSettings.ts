@@ -3,7 +3,7 @@ import process from 'node:process';
 import dotenv from 'dotenv';
 import { Logger, LogLevel } from 'meklog';
 
-import { NodeEnvironment } from '../enums/NodeEnvironment';
+import { NodeEnvironment } from '../enums/NodeEnvironment.js';
 
 export class EnvironmentSettings {
     nodeEnvironment: NodeEnvironment;

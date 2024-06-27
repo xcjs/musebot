@@ -1,4 +1,4 @@
-import { RenderStatus } from '../../enums/RenderStatus'
+import { RenderStatus } from '../../enums/RenderStatus.js'
 
 export interface IRenderResponse {
     status: RenderStatus;

@@ -1,7 +1,7 @@
-import { StreamStatus } from '../../enums/StreamStatus';
-import { IRenderOutput } from './IRenderOutput';
-import { ITaskData } from './ITaskData';
-import { StreamRenderResponse } from './StreamRenderResponse';
+import { StreamStatus } from '../../enums/StreamStatus.js';
+import { IRenderOutput } from './IRenderOutput.js';
+import { ITaskData } from './ITaskData.js';
+import { StreamRenderResponse } from './StreamRenderResponse.js';
 
 export interface IStreamResponse {
     step: number | undefined;

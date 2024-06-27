@@ -17,13 +17,13 @@ import {
 
 import {Logger, LogLevel } from 'meklog'
 
-import { EasyDiffusionClient } from './easy-diffusion/EasyDiffusionClient';
-import { ContentType } from '../../enums/ContentType';
-import { EnvironmentSettings } from '../../models/EnvironmentSettings';
-import { BufferEncoding } from '../../enums/BufferEncoding';
-import { DiscordPresenceStatus } from '../../enums/DiscordPresenceStatus';
-import { JavaScriptType } from '../../enums/JavaScriptType';
-import { MusebotInteractionCustomId } from '../../enums/MusebotInteractionCustomId';
+import { EasyDiffusionClient } from './easy-diffusion/EasyDiffusionClient.js';
+import { ContentType } from '../../enums/ContentType.js';
+import { EnvironmentSettings } from '../../models/EnvironmentSettings.js';
+import { BufferEncoding } from '../../enums/BufferEncoding.js';
+import { DiscordPresenceStatus } from '../../enums/DiscordPresenceStatus.js';
+import { JavaScriptType } from '../../enums/JavaScriptType.js';
+import { MusebotInteractionCustomId } from '../../enums/MusebotInteractionCustomId.js';
 
 export class DiscordEasyDiffusionClient {
     #environmentSettings: EnvironmentSettings;

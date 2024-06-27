@@ -4,20 +4,20 @@ import {Logger, LogLevel } from 'meklog'
 import fetch from 'node-fetch';
 import type { Response as NodeFetchResponse } from 'node-fetch';
 
-import { ContentType } from '../../../enums/ContentType';
-import { HttpHeader } from '../../../enums/HttpHeader';
-import { HttpMethod } from '../../../enums/HttpMethod';
-import { HttpStatusCode } from '../../../enums/HttpStatusCode';
-import { JavaScriptType } from '../../../enums/JavaScriptType';
-import { IHttpExchange } from '../../../models/IHttpExchange';
-import { RenderRequest } from './models/requests/RenderRequest';
-import { getRandomInt } from '../../../utilities/random-utilities';
-import { EnvironmentSettings } from '../../../models/EnvironmentSettings';
-import { StreamStatus } from './enums/StreamStatus';
-import { IRenderResponse } from './models/responses/IRenderResponse';
-import { IStreamResponse } from './models/responses/IStreamResponse';
-import { IModelsResponse } from './models/responses/IModelsResponse';
-import { JaggedRecursiveStringArray } from './types/JaggedRecursiveStringArray';
+import { ContentType } from '../../../enums/ContentType.js';
+import { HttpHeader } from '../../../enums/HttpHeader.js';
+import { HttpMethod } from '../../../enums/HttpMethod.js';
+import { HttpStatusCode } from '../../../enums/HttpStatusCode.js';
+import { JavaScriptType } from '../../../enums/JavaScriptType.js';
+import { IHttpExchange } from '../../../models/IHttpExchange.js';
+import { RenderRequest } from './models/requests/RenderRequest.js';
+import { getRandomInt } from '../../../utilities/random-utilities.js';
+import { EnvironmentSettings } from '../../../models/EnvironmentSettings.js';
+import { StreamStatus } from './enums/StreamStatus.js';
+import { IRenderResponse } from './models/responses/IRenderResponse.js';
+import { IStreamResponse } from './models/responses/IStreamResponse.js';
+import { IModelsResponse } from './models/responses/IModelsResponse.js';
+import { JaggedRecursiveStringArray } from './types/JaggedRecursiveStringArray.js';
 
 export class EasyDiffusionClient {
     #environmentSettings: EnvironmentSettings;

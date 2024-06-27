@@ -1,5 +1,5 @@
-import { getRandomInt } from '../../../../../utilities/random-utilities';
-import { VRamUsageLevel } from '../../enums/VRamUsageLevel';
+import { getRandomInt } from '../../../../../utilities/random-utilities.js';
+import { VRamUsageLevel } from '../../enums/VRamUsageLevel.js';
 
 export class RenderRequest {
     prompt: string = '';
