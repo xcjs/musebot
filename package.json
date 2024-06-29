@@ -10,7 +10,7 @@
     "build": "tsc",
     "dev": "tsc -w",
     "prebuild:bin": "npm run build",
-    "build:bin": "nexe -b --python /usr/bin/python3 -o bin/musebot build/app.js",
+    "build:bin": "npx nexe -b --python /usr/bin/python3 -o bin/musebot build/app.js",
     "lint": "eslint"
   },
   "dependencies": {
