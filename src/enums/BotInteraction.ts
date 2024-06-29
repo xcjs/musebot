@@ -1,4 +1,4 @@
-export enum MusebotInteractionCustomId {
+export enum BotInteraction {
     Retry = 'retry',
     ShowSource = 'showSource'
 }

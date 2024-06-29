@@ -23,7 +23,11 @@ import { EnvironmentSettings } from '../../models/EnvironmentSettings.js';
 import { BufferEncoding } from '../../enums/BufferEncoding.js';
 import { DiscordPresenceStatus } from '../../enums/DiscordPresenceStatus.js';
 import { JavaScriptType } from '../../enums/JavaScriptType.js';
-import { MusebotInteractionCustomId } from '../../enums/MusebotInteractionCustomId.js';
+import { IHttpExchangeWithAttachedResponse } from '../../models/IHttpExchangeWithAttachedResponse.js';
+import { RenderRequest } from './easy-diffusion/models/requests/RenderRequest.js';
+import { IRenderResponse } from './easy-diffusion/models/responses/IRenderResponse.js';
+import { IStreamResponse } from './easy-diffusion/models/responses/IStreamResponse.js';
+import { BotInteraction } from '../../enums/BotInteraction.js';
 
 export class DiscordEasyDiffusionClient {
     #environmentSettings: EnvironmentSettings;
@@ -67,11 +71,11 @@ export class DiscordEasyDiffusionClient {
         const self = this;
 
         this.#client.once(Events.ClientReady, (event) => this.#onClientReady.call(self, event));
-        this.#client.on(Events.MessageCreate, (message) => this.#onMessageCreate.call(self, message));
-        this.#client.on(Events.InteractionCreate, (interaction) => this.#onInteraction.call(self, interaction));
+        this.#client.on(Events.MessageCreate, async (message) => await this.#onMessageCreate.call(self, message));
+        this.#client.on(Events.InteractionCreate, async (interaction) => await this.#onInteraction.call(self, interaction));
     }
 
-    async #onClientReady() {
+    #onClientReady(): Promise<void> {
         if(this.#client.user === null) {
             return;
         }
@@ -80,7 +84,7 @@ export class DiscordEasyDiffusionClient {
         this.#client.user.setPresence({ activities: [], status: DiscordPresenceStatus.Online });
     }
 
-    async #onMessageCreate(message: Message) {
+    async #onMessageCreate(message: Message): Promise<void> {
         this.#logger(LogLevel.Info, `Discord message created. ${message.author.displayName} (${message.author.username}): "${message}"`);
 
         if(!this.#shouldReply(message)) {
@@ -90,12 +94,12 @@ export class DiscordEasyDiffusionClient {
 
         this.#logger(LogLevel.Info, 'Replying to message...');
 
-        const renderData = await this.#renderImage(message);
+        const renderData = await this.#renderImage(message, null);
 
         await this.#reply(message, renderData);
     }
 
-    #shouldReply(message: Message) {
+    #shouldReply(message: Message): boolean {
         const shouldReply =
             !message.system         // Not a system message.
             && !!message.guild      // The message should be from a guild (server).
@@ -113,7 +117,7 @@ export class DiscordEasyDiffusionClient {
         return shouldReply;
     }
 
-    async #onInteraction(interaction: ButtonInteraction) {
+    async #onInteraction(interaction: ButtonInteraction): Promise<void> {
         this.#logger(LogLevel.Info, `Beginning interaction response to custom action ${interaction.customId}...`);
 
         const supportedContentTypes = [
@@ -124,8 +128,9 @@ export class DiscordEasyDiffusionClient {
 
         const attachments = Array.from(interaction.message.attachments, ([name, value]) => ({ name, value }));
 
-        const imageAttachment = attachments.filter(x =>
-            supportedContentTypes.includes(ContentType[x.value.contentType as keyof typeof ContentType]))[0].value;
+        const imageAttachment = attachments.filter(attachment =>
+            supportedContentTypes.includes(Object.values(ContentType)
+                .find(contentTypeValue => contentTypeValue === attachment.value.contentType)))[0].value;
 
         if(!imageAttachment?.description) {
             return;
@@ -136,92 +141,81 @@ export class DiscordEasyDiffusionClient {
         await interaction.deferReply();
 
         switch(interaction.customId) {
-            case MusebotInteractionCustomId.Retry:
+            case BotInteraction.Retry:
                 this.#retry(interaction, renderRequest);
                 break;
-            case MusebotInteractionCustomId.ShowSource:
+            case BotInteraction.ShowSource:
                 this.#showSource(interaction, renderRequest, imageAttachment.description);
                 break;
         }
     }
 
-    async #reply(message: Message | ButtonInteraction, renderData) {
-        if(renderData?.renderExchange?.response !== null
-            && renderData?.streamResponse != null
+    async #reply(interaction: Message | ButtonInteraction, renderData: IHttpExchangeWithAttachedResponse<RenderRequest, IRenderResponse, IStreamResponse> | null) {
+        if(renderData?.exchange?.response === null
+            && renderData?.response === null
         ) {
-            const renderRequest = renderData.renderExchange.request;
-            const streamResponse = renderData.streamResponse;
+            await this.#replyWithError(interaction);
+        }
 
-            const fileName = this.#getFileNameFromPrompt(renderRequest);
-            const jsonRequest = JSON.stringify(renderRequest);
+        const renderRequest = renderData.exchange.request;
+        const streamResponse = renderData.response;
 
-            const files: Array<AttachmentBuilder> = [];
-            const allowInteractions = jsonRequest.length <= 1024;
+        const fileName = this.#getFileNameFromPrompt(renderRequest);
+        const jsonRequest = JSON.stringify(renderRequest);
 
-            const imageBuffer = Buffer.from(streamResponse.output[0].data.split(",")[1], BufferEncoding.Base64);
+        const files: Array<AttachmentBuilder> = [];
+        const allowInteractions = jsonRequest.length <= 1024;
 
-            const imageAttachment = new AttachmentBuilder(imageBuffer, {
-                name: `${fileName}.${renderRequest.output_format}`,
-                description: allowInteractions ? jsonRequest : undefined
-            });
+        const imageBuffer = Buffer.from(streamResponse.output[0].data.split(",")[1], BufferEncoding.Base64);
 
-            files.push(imageAttachment);
+        const imageAttachment = new AttachmentBuilder(imageBuffer, {
+            name: `${fileName}.${renderRequest.output_format}`,
+            description: allowInteractions ? jsonRequest : undefined
+        });
 
-            this.#logger(LogLevel.Info, `Attaching render for "${renderRequest.prompt}": ${jsonRequest}`);
+        files.push(imageAttachment);
 
-            const retryButton = new ButtonBuilder()
-                .setCustomId('retry')
-                .setLabel('🔄')
-                .setStyle(ButtonStyle.Secondary);
+        this.#logger(LogLevel.Info, `Attaching render for "${renderRequest.prompt}": ${jsonRequest}`);
 
-            const showSourceButton = new ButtonBuilder()
-                .setCustomId('showSource')
-                .setLabel('📝')
-                .setStyle(ButtonStyle.Secondary);
+        const retryButton = new ButtonBuilder()
+            .setCustomId(BotInteraction.Retry)
+            .setLabel('🔄')
+            .setStyle(ButtonStyle.Secondary);
 
-            const buttonRow = new ActionRowBuilder<ButtonBuilder>()
-                .addComponents(retryButton, showSourceButton);
+        const showSourceButton = new ButtonBuilder()
+            .setCustomId(BotInteraction.ShowSource)
+            .setLabel('📝')
+            .setStyle(ButtonStyle.Secondary);
 
-            const reply: BaseMessageOptions = {
-                files,
-                components: allowInteractions ? [buttonRow] : []
-            };
+        const buttonRow = new ActionRowBuilder<ButtonBuilder>()
+            .addComponents(retryButton, showSourceButton);
 
-            try {
-                switch(typeof message) {
-                    case (typeof Message):
+        const reply: BaseMessageOptions = {
+            files,
+            components: allowInteractions ? [buttonRow] : []
+        };
 
-                        break;
-                    case (typeof ButtonInteraction):
-
-                        break;
-                    default:
-                        throw new Error(`An invalid interaction was provided: ${typeof message}`);
-                }
-
-                if(message instanceof ButtonInteraction) {
-                    reply.content = `${message.member} re-rendered \`${renderRequest.prompt}\`.`;
-                    await message.editReply(reply);
-                } else {
-                        await message.reply(reply);
-                }
-            } catch (error) {
-                this.#logger(LogLevel.Error, `An exception occurred while replying to a message: ${error}`);
-                await this.#replyWithError(message);
+        try {
+            if(interaction instanceof Message) {
+                await interaction.reply(reply);
+            } else if(interaction instanceof ButtonInteraction) {
+                reply.content = `${interaction.member} re-rendered \`${renderRequest.prompt}\`.`;
+                await (interaction as ButtonInteraction).editReply(reply);
+            } else {
+                throw new Error(`An invalid interaction was provided: ${typeof interaction}`);
             }
-        } else {
-            await this.#replyWithError(message);
+        } catch (error) {
+            this.#logger(LogLevel.Error, `An exception occurred while replying to a message: ${error}`);
+            await this.#replyWithError(interaction);
         }
     }
 
-    async #retry(interaction, renderRequest) {
-        interaction.content = renderRequest.prompt;
-        const renderData = await this.#renderImage(interaction);
-
+    async #retry(interaction: ButtonInteraction, renderRequest: RenderRequest): Promise<void> {
+        const renderData = await this.#renderImage(interaction, renderRequest.prompt);
         await this.#reply(interaction, renderData);
     }
 
-    async #showSource(interaction, renderRequest, jsonRequest) {
+    async #showSource(interaction, renderRequest, jsonRequest): Promise<void> {
         const jsonBuffer = Buffer.from(jsonRequest, BufferEncoding.UTF8);
         const jsonAttachment = new AttachmentBuilder(jsonBuffer, {
             name: `${this.#getFileNameFromPrompt(renderRequest)}.json`
@@ -235,11 +229,11 @@ export class DiscordEasyDiffusionClient {
         await interaction.editReply(reply);
     }
 
-    #getFileNameFromPrompt(renderRequest) {
+    #getFileNameFromPrompt(renderRequest: RenderRequest): string {
         return `${renderRequest.seed}_${renderRequest.prompt}`.substring(0, 128);
     }
 
-    async #startTyping(message: Message) {
+    async #startTyping(message: Message | ButtonInteraction): Promise<void> {
         if(this.#typingInterval !== null) {
             return;
         }'utf-8'
@@ -258,7 +252,7 @@ export class DiscordEasyDiffusionClient {
         }
     }
 
-    async #onTypingInterval(message: Message) {
+    async #onTypingInterval(message: Message | ButtonInteraction): Promise<void> {
         if(this.#easyDiffusionClients.filter(x => x.isBusy).length > 0) {
             await message.channel.sendTyping();
         }
@@ -278,14 +272,22 @@ export class DiscordEasyDiffusionClient {
         }
     }
 
-    async #renderImage(message: Message) {
-        await this.#startTyping(message);
+    async #renderImage(interaction: Message | ButtonInteraction, prompt: string | null)
+        : Promise<IHttpExchangeWithAttachedResponse<RenderRequest, IRenderResponse, IStreamResponse> | null> {
+        let botMention: string = '';
+        prompt = prompt || '';
+
+        if(interaction instanceof Message) {
+            botMention = interaction.mentions.members.find(x => x.id === this.#client.user?.id)?.toString() || '';
+            prompt = interaction.content;
+        }
+
+        prompt = prompt.replace(botMention, '').trim();
+
+        await this.#startTyping(interaction);
 
         const easyDiffusionClient = new EasyDiffusionClient(this.#environmentSettings);
         this.#easyDiffusionClients.push(easyDiffusionClient);
-
-        const botMention = message.mentions?.members?.find(x => x.id === this.#client.user?.id)?.toString() || '';
-        const prompt = message.content.replace(botMention, '').trim();
 
         this.#logger(LogLevel.Info, `Render prompt: ${prompt}`);
 
@@ -300,8 +302,8 @@ export class DiscordEasyDiffusionClient {
         this.#stopTyping();
 
         return {
-            renderExchange,
-            streamResponse
+            exchange: renderExchange,
+            response: streamResponse
         };
     }
 

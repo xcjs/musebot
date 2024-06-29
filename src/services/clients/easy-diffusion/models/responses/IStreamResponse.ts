@@ -8,9 +8,8 @@ export interface IStreamResponse {
     step_time: number | undefined;
     total_steps: number | undefined;
 
-    status: StreamStatus | undefined;
-    render_request: StreamRenderResponse | undefined;
-    task_data: ITaskData | undefined;
-
     output: Array<IRenderOutput> | undefined;
+    render_request: StreamRenderResponse | undefined;
+    status: StreamStatus | undefined;
+    task_data: ITaskData | undefined;
 }
