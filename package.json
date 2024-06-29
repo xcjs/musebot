@@ -6,6 +6,7 @@
   "scripts": {
     "prestart": "npm run build",
     "start": "node .",
+    "start:only": "node .",
     "build": "tsc",
     "dev": "tsc -w",
     "prebuild:bin": "npm run build",
