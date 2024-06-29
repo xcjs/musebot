@@ -1,3 +1,5 @@
 .env
 bin/
+build/
 node_modules/
+*.js

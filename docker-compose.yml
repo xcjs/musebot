@@ -2,6 +2,7 @@ version: '3'
 
 services:
   musebot:
+    container_name: musebot
     build: .
     env_file: .env
     restart: unless-stopped

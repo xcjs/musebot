@@ -9,4 +9,5 @@ const environmentSettings = new EnvironmentSettings();
 const botFilePath = path.join(path.dirname(fileURLToPath(import.meta.url)), 'bot.js');
 const shardingManagerManager = new ShardingManagerManager(environmentSettings, botFilePath);
 
+
 shardingManagerManager.spawn();

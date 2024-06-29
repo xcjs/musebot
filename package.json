@@ -2,23 +2,29 @@
   "name": "musebot",
   "private": "true",
   "license": "ISC",
-  "main": "index.js",
+  "main": "build/app.js",
   "scripts": {
-    "start": "index.js",
-    "build": "nexe -b --python /usr/bin/python3 -o bin/musebot index.js",
+    "prestart": "npm run build",
+    "start": "node .",
+    "start:only": "node .",
+    "build": "tsc",
+    "dev": "tsc -w",
+    "prebuild:bin": "npm run build",
+    "build:bin": "nexe -b --python /usr/bin/python3 -o bin/musebot build/app.js",
     "lint": "eslint"
   },
   "dependencies": {
     "discord.js": "^14.14.1",
     "dotenv": "^16.3.1",
     "meklog": "^1.0.2",
-    "node-fetch": "^3.3.2"
+    "node-fetch": "^3.3.2",
+    "typescript": "^5.5.2"
   },
   "type": "module",
   "devDependencies": {
-    "@eslint/js": "^9.5.0",
-    "eslint": "^9.5.0",
-    "globals": "^15.4.0",
-    "nexe": "^4.0.0-rc.6"
+    "eslint": "^8.57.0",
+    "globals": "^15.6.0",
+    "nexe": "^4.0.0-rc.6",
+    "typescript-eslint": "^7.14.1"
   }
 }
