@@ -15,7 +15,7 @@ import {
     Partials
 } from 'discord.js';
 
-import {Logger, LogLevel } from 'meklog'
+import {Logger, LogLevel } from 'meklog';
 
 import { EasyDiffusionClient } from './easy-diffusion/EasyDiffusionClient.js';
 import { ContentType } from '../../enums/ContentType.js';
