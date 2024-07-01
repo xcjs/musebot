@@ -49,12 +49,19 @@ export class EasyDiffusionClient {
         this.#model = this.#selectModel(this.#environmentSettings.easyDiffusionModels);
     }
 
-    async render(prompt: string): Promise<IHttpExchange<RenderRequest, IRenderResponse> | null> {
+    async render(prompt: string | RenderRequest): Promise<IHttpExchange<RenderRequest, IRenderResponse> | null> {
         this.#logger(LogLevel.Info, 'Sending render request to EasyDiffusion...');
 
-        // If no specific model was selected, we have to load available models
-        // and choose one at random.
+        let request: RenderRequest;
+
+        if(prompt instanceof RenderRequest) {
+            this.#model = prompt.use_stable_diffusion_model;
+            request = prompt;
+        }
+
         if(this.#model === null) {
+            this.#logger(LogLevel.Info, 'No model was provided - loading available models and selecting one at random.');
+
             const modelsResponse = await this.getModels();
 
             if(modelsResponse === null) {
@@ -65,7 +72,9 @@ export class EasyDiffusionClient {
             this.#model = this.#selectModel(models);
         }
 
-        const request = new RenderRequest(this.#model, prompt);
+        request = prompt instanceof RenderRequest
+            ? prompt
+            : new RenderRequest(this.#model, prompt);
 
         try {
             const response = await fetch(new URL('render', this.#host), {

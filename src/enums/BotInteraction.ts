@@ -1,4 +1,6 @@
 export enum BotInteraction {
     Retry = 'retry',
-    ShowSource = 'showSource'
+    ShowSource = 'showSource',
+    GuidanceScaleMinus = 'guidanceScaleMinus',
+    GuidanceScalePlus = 'guidanceScalePlus'
 }

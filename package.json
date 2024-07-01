@@ -1,8 +1,11 @@
 {
   "name": "musebot",
+  "version": "2.0.0",
+  "description": "A Discord bot that connects to various generative AI APIs.",
   "private": "true",
   "license": "ISC",
   "main": "build/app.js",
+  "type": "module",
   "scripts": {
     "prestart": "npm run build",
     "start": "node .",
@@ -20,7 +23,6 @@
     "node-fetch": "^3.3.2",
     "typescript": "^5.5.2"
   },
-  "type": "module",
   "devDependencies": {
     "eslint": "^8.57.0",
     "globals": "^15.6.0",
