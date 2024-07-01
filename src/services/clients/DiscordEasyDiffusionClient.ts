@@ -286,7 +286,7 @@ export class DiscordEasyDiffusionClient {
     async #startTyping(message: Message | ButtonInteraction): Promise<void> {
         if(this.#typingInterval !== null) {
             return;
-        }'utf-8'
+        }
 
         try {
             await this.#onTypingInterval(message);
