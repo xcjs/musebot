@@ -6,6 +6,9 @@ import { Logger, LogLevel } from 'meklog';
 import { NodeEnvironment } from '../enums/NodeEnvironment.js';
 
 export class EnvironmentSettings {
+    packageName: string;
+    version: string;
+
     nodeEnvironment: NodeEnvironment;
 
     discordToken: string;
@@ -26,6 +29,9 @@ export class EnvironmentSettings {
     constructor() {
         dotenv.config();
 
+        this.packageName = process.env.npm_package_name;
+        this.version = process.env.npm_package_version;
+
         this.nodeEnvironment = process.env.NODE_ENV as NodeEnvironment;
 
         this.discordToken = process.env.MUSEBOT_DISCORD_TOKEN?.trim() || '';
@@ -43,6 +49,8 @@ export class EnvironmentSettings {
     }
 
     #logConfiguration() {
+        this.#logger(LogLevel.Info, `Package Name: ${this.packageName}`);
+        this.#logger(LogLevel.Info, `Package Version: ${this.version}`);
         this.#logger(LogLevel.Info, `NODE_ENV: ${this.nodeEnvironment}`);
         this.#logger(LogLevel.Info, `MUSEBOT_DISCORD_TOKEN: ${this.discordToken}`);
         this.#logger(LogLevel.Info, `MUSEBOT_DISCORD_CHANNELS: ${this.discordChannels.join(', ')}`);
