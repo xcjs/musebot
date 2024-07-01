@@ -30,7 +30,7 @@ export class RenderRequest {
     enable_vae_tiling = true;
     session_id = 0;
 
-    constructor(model, prompt) {
+    constructor(model: string, prompt: string) {
         this.use_stable_diffusion_model = model;
         this.prompt = prompt;
         this.original_prompt = prompt;
@@ -38,7 +38,18 @@ export class RenderRequest {
         this.seed = this.#getRandomSeed();
     }
 
-    #getRandomSeed() {
+    toString(): string {
+        return JSON.stringify(this);
+    }
+
+    #getRandomSeed(): number {
         return getRandomInt(0, 4294967295);
+    }
+
+    static JsonFactory(renderRequestJson: string): RenderRequest {
+        const requestObj = JSON.parse(renderRequestJson) as RenderRequest;
+        const request = new RenderRequest(requestObj.use_stable_diffusion_model, requestObj.prompt);
+
+        return Object.assign(request, requestObj);
     }
 }

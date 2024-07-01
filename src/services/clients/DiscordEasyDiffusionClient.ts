@@ -28,6 +28,7 @@ import { RenderRequest } from './easy-diffusion/models/requests/RenderRequest.js
 import { IRenderResponse } from './easy-diffusion/models/responses/IRenderResponse.js';
 import { IStreamResponse } from './easy-diffusion/models/responses/IStreamResponse.js';
 import { BotInteraction } from '../../enums/BotInteraction.js';
+import { StableDiffusionGuidanceScaleLimit } from '../../enums/StableDiffusionGuidanceScaleLimit.js';
 
 export class DiscordEasyDiffusionClient {
     #environmentSettings: EnvironmentSettings;
@@ -39,6 +40,8 @@ export class DiscordEasyDiffusionClient {
     #typingInterval: NodeJS.Timeout | null = null;
 
     #easyDiffusionClients: Array<EasyDiffusionClient> = [];
+
+    #guidanceScaleInterval = .5;
 
     constructor(environmentSettings) {
         this.#environmentSettings = environmentSettings;
@@ -136,16 +139,33 @@ export class DiscordEasyDiffusionClient {
             return;
         }
 
-        const renderRequest = JSON.parse(imageAttachment.description);
+        const renderRequest = RenderRequest.JsonFactory(imageAttachment.description);
 
         await interaction.deferReply();
 
         switch(interaction.customId) {
             case BotInteraction.Retry:
-                this.#retry(interaction, renderRequest);
+                this.#retry(interaction, renderRequest.prompt);
                 break;
             case BotInteraction.ShowSource:
                 this.#showSource(interaction, renderRequest, imageAttachment.description);
+                break;
+            case BotInteraction.GuidanceScaleMinus:
+                renderRequest.guidance_scale = renderRequest.guidance_scale - this.#guidanceScaleInterval < StableDiffusionGuidanceScaleLimit.Min
+                    ? renderRequest.guidance_scale
+                    : renderRequest.guidance_scale - this.#guidanceScaleInterval
+
+                this.#retry(interaction, renderRequest);
+                break;
+            case BotInteraction.GuidanceScalePlus:
+                renderRequest.guidance_scale = renderRequest.guidance_scale + this.#guidanceScaleInterval > StableDiffusionGuidanceScaleLimit.Max
+                    ? renderRequest.guidance_scale
+                    : renderRequest.guidance_scale + this.#guidanceScaleInterval;
+
+                this.#retry(interaction, renderRequest);
+                break;
+            default:
+                this.#logger(LogLevel.Warning, `An unknown interaction was passed: ${interaction.customId}.`);
                 break;
         }
     }
@@ -164,13 +184,13 @@ export class DiscordEasyDiffusionClient {
         const jsonRequest = JSON.stringify(renderRequest);
 
         const files: Array<AttachmentBuilder> = [];
-        const allowInteractions = jsonRequest.length <= 1024;
+        const areInteractionsAvailable = jsonRequest.length <= 1024;
 
         const imageBuffer = Buffer.from(streamResponse.output[0].data.split(",")[1], BufferEncoding.Base64);
 
         const imageAttachment = new AttachmentBuilder(imageBuffer, {
             name: `${fileName}.${renderRequest.output_format}`,
-            description: allowInteractions ? jsonRequest : undefined
+            description: areInteractionsAvailable ? jsonRequest : null
         });
 
         files.push(imageAttachment);
@@ -184,15 +204,33 @@ export class DiscordEasyDiffusionClient {
 
         const showSourceButton = new ButtonBuilder()
             .setCustomId(BotInteraction.ShowSource)
-            .setLabel('📝')
+            .setLabel('{ }')
+            .setStyle(ButtonStyle.Secondary);
+
+        const guidanceScaleMinus = new ButtonBuilder()
+            .setCustomId(BotInteraction.GuidanceScaleMinus)
+            .setLabel('➖')
+            .setStyle(ButtonStyle.Secondary);
+
+        const guidanceScalePlusButton = new ButtonBuilder()
+            .setCustomId(BotInteraction.GuidanceScalePlus)
+            .setLabel('➕')
             .setStyle(ButtonStyle.Secondary);
 
         const buttonRow = new ActionRowBuilder<ButtonBuilder>()
             .addComponents(retryButton, showSourceButton);
 
+        if(renderRequest.guidance_scale - this.#guidanceScaleInterval > StableDiffusionGuidanceScaleLimit.Min) {
+            buttonRow.addComponents(guidanceScaleMinus);
+        }
+
+        if(renderRequest.guidance_scale + this.#guidanceScaleInterval < StableDiffusionGuidanceScaleLimit.Max) {
+            buttonRow.addComponents(guidanceScalePlusButton);
+        }
+
         const reply: BaseMessageOptions = {
             files,
-            components: allowInteractions ? [buttonRow] : []
+            components: areInteractionsAvailable ? [buttonRow] : []
         };
 
         try {
@@ -200,6 +238,18 @@ export class DiscordEasyDiffusionClient {
                 await interaction.reply(reply);
             } else if(interaction instanceof ButtonInteraction) {
                 reply.content = `${interaction.member} re-rendered \`${renderRequest.prompt}\`.`;
+
+                switch(interaction.customId) {
+                    case BotInteraction.GuidanceScaleMinus:
+                        reply.content = `${reply.content}\n`
+                            + `The guidance scale was decreased from ${renderRequest.guidance_scale + this.#guidanceScaleInterval} to ${renderRequest.guidance_scale}.`;
+                        break;
+                    case BotInteraction.GuidanceScalePlus:
+                        reply.content = `${reply.content}\n`
+                            + `The guidance scale was increased from ${renderRequest.guidance_scale - this.#guidanceScaleInterval} to ${renderRequest.guidance_scale}.`;
+                        break;
+                }
+
                 await (interaction as ButtonInteraction).editReply(reply);
             } else {
                 throw new Error(`An invalid interaction was provided: ${typeof interaction}`);
@@ -210,8 +260,8 @@ export class DiscordEasyDiffusionClient {
         }
     }
 
-    async #retry(interaction: ButtonInteraction, renderRequest: RenderRequest): Promise<void> {
-        const renderData = await this.#renderImage(interaction, renderRequest.prompt);
+    async #retry(interaction: ButtonInteraction, prompt: string | RenderRequest): Promise<void> {
+        const renderData = await this.#renderImage(interaction, prompt);
         await this.#reply(interaction, renderData);
     }
 
@@ -245,7 +295,7 @@ export class DiscordEasyDiffusionClient {
                 await this.#onTypingInterval(message);
             }, this.#sendTypingIntervalMilliseconds);
 
-            console.log(`Registered typing interval as interval #${this.#typingInterval}.`)
+            this.#logger(LogLevel.Info, `Registered typing interval as interval #${this.#typingInterval}.`);
         } catch(error) {
             this.#logger(LogLevel.Error, `An error occurred while sending the typing status: ${error}`);
             this.#stopTyping();
@@ -272,17 +322,19 @@ export class DiscordEasyDiffusionClient {
         }
     }
 
-    async #renderImage(interaction: Message | ButtonInteraction, prompt: string | null)
+    async #renderImage(interaction: Message | ButtonInteraction, prompt: string | RenderRequest |  null)
         : Promise<IHttpExchangeWithAttachedResponse<RenderRequest, IRenderResponse, IStreamResponse> | null> {
         let botMention: string = '';
         prompt = prompt || '';
 
-        if(interaction instanceof Message) {
+        if(interaction instanceof Message && !(prompt instanceof RenderRequest)) {
             botMention = interaction.mentions.members.find(x => x.id === this.#client.user?.id)?.toString() || '';
             prompt = interaction.content;
         }
 
-        prompt = prompt.replace(botMention, '').trim();
+        prompt = prompt instanceof RenderRequest
+            ? prompt
+            : prompt.replace(botMention, '').trim();
 
         await this.#startTyping(interaction);
 
