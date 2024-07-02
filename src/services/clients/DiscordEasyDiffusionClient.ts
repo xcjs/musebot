@@ -337,6 +337,15 @@ export class DiscordEasyDiffusionClient {
             ? prompt
             : prompt.replace(botMention, '').trim();
 
+        if(typeof prompt === JavaScriptType.String && (prompt as string).substring(0, 1) === '{') {
+            try {
+                prompt = RenderRequest.JsonFactory(prompt as string);
+                prompt.num_outputs = 1;
+            } catch(error) {
+                this.#logger(LogLevel.Info, `A possible JSON prompt was received, but could not be deserialized to ${typeof RenderRequest}.`);
+            }
+        }
+
         await this.#startTyping(interaction);
 
         const easyDiffusionClient = new EasyDiffusionClient(this.#environmentSettings);
