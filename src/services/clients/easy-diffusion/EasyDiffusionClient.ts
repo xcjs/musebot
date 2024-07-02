@@ -101,6 +101,7 @@ export class EasyDiffusionClient {
         const renderResponse = renderExchange?.response;
 
         if(renderResponse === null) {
+            this.#isBusy = false;
             return null;
         }
 
