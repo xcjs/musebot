@@ -1,6 +1,6 @@
 {
   "name": "musebot",
-  "version": "2.0.0",
+  "version": "2.1.1",
   "description": "A Discord bot that connects to various generative AI APIs.",
   "private": "true",
   "license": "ISC",
@@ -17,7 +17,7 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "discord.js": "^14.14.1",
+    "discord.js": "14.14.1",
     "dotenv": "^16.3.1",
     "meklog": "^1.0.2",
     "node-fetch": "^3.3.2",
