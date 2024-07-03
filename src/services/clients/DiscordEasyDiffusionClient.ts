@@ -251,7 +251,6 @@ export class DiscordEasyDiffusionClient {
                 }
 
                 await (interaction as ButtonInteraction).editReply(reply);
-                await this.#stopTyping();
             } else {
                 throw new Error(`An invalid interaction was provided: ${typeof interaction}`);
             }
