@@ -2,24 +2,26 @@ import { getRandomInt } from '../../../../../utilities/random-utilities.js';
 import { VRamUsageLevel } from '../../enums/VRamUsageLevel.js';
 
 export class RenderRequest {
-    prompt: string = '';
-    seed: number = 0;
-    used_random_seed: boolean = true;
-    negative_prompt: string = '';
-    num_outputs: number = 1;
-    num_inference_steps: number = 35;
-    guidance_scale: number = 7.5;
-    width: number = 1024; // The highest resolution allowed by Discord is 676x676.
-    height: number = 1024;
-    vram_usage_level: VRamUsageLevel = VRamUsageLevel.Balanced;
-    sampler_name: string = 'euler_a';
-    use_stable_diffusion_model: string = '';
-    clip_skip: boolean = false;
-    use_vae_model: string = '';
-    stream_progress_updates: boolean = true;
-    stream_image_progress: boolean = false;
-    show_only_filtered_image: boolean = true;
-    block_nsfw: boolean = false;
+    prompt = '';
+    seed = 0;
+    used_random_seed = true;
+    negative_prompt = '';
+    num_outputs = 1;
+    num_inference_steps = 35;
+    guidance_scale = 7.5;
+    width = 1024; // Discord image previews are 676x676.
+    height = 1024;
+    vram_usage_level = VRamUsageLevel.Balanced;
+    sampler_name = 'euler_a';
+    use_stable_diffusion_model = '';
+    use_upscale = 'RealESRGAN_x4plus';
+    clip_skip = false;
+    use_vae_model = '';
+    stream_progress_updates = true;
+    upscale_amount = '4';
+    stream_image_progress = false;
+    show_only_filtered_image = true;
+    block_nsfw = false;
     output_format = 'jpeg';
     output_quality = 75;
     output_lossless = false;
