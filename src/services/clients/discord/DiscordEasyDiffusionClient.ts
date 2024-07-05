@@ -17,18 +17,18 @@ import {
 
 import {Logger, LogLevel } from 'meklog';
 
-import { EasyDiffusionClient } from './easy-diffusion/EasyDiffusionClient.js';
-import { ContentType } from '../../enums/ContentType.js';
-import { EnvironmentSettings } from '../../models/EnvironmentSettings.js';
-import { BufferEncoding } from '../../enums/BufferEncoding.js';
-import { DiscordPresenceStatus } from '../../enums/DiscordPresenceStatus.js';
-import { JavaScriptType } from '../../enums/JavaScriptType.js';
-import { IHttpExchangeWithAttachedResponse } from '../../models/IHttpExchangeWithAttachedResponse.js';
-import { RenderRequest } from './easy-diffusion/models/requests/RenderRequest.js';
-import { IRenderResponse } from './easy-diffusion/models/responses/IRenderResponse.js';
-import { IStreamResponse } from './easy-diffusion/models/responses/IStreamResponse.js';
-import { BotInteraction } from '../../enums/BotInteraction.js';
-import { StableDiffusionGuidanceScaleLimit } from '../../enums/StableDiffusionGuidanceScaleLimit.js';
+import { EasyDiffusionClient } from '../easy-diffusion/EasyDiffusionClient.js';
+import { ContentType } from '../../../enums/ContentType.js';
+import { EnvironmentSettings } from '../../../models/EnvironmentSettings.js';
+import { BufferEncoding } from '../../../enums/BufferEncoding.js';
+import { DiscordPresenceStatus } from './enums/DiscordPresenceStatus.js';
+import { JavaScriptType } from '../../../enums/JavaScriptType.js';
+import { IHttpExchangeWithAttachedResponse } from '../../../models/IHttpExchangeWithAttachedResponse.js';
+import { RenderRequest } from '../easy-diffusion/models/requests/RenderRequest.js';
+import { IRenderResponse } from '../easy-diffusion/models/responses/IRenderResponse.js';
+import { IStreamResponse } from '../easy-diffusion/models/responses/IStreamResponse.js';
+import { BotInteraction } from '../../../enums/BotInteraction.js';
+import { StableDiffusionGuidanceScaleLimit } from '../../../enums/StableDiffusionGuidanceScaleLimit.js';
 
 export class DiscordEasyDiffusionClient {
     #environmentSettings: EnvironmentSettings;
