@@ -17,34 +17,43 @@ import {
 
 import {Logger, LogLevel } from 'meklog';
 
-import { EasyDiffusionClient } from './easy-diffusion/EasyDiffusionClient.js';
-import { ContentType } from '../../enums/ContentType.js';
-import { EnvironmentSettings } from '../../models/EnvironmentSettings.js';
-import { BufferEncoding } from '../../enums/BufferEncoding.js';
-import { DiscordPresenceStatus } from '../../enums/DiscordPresenceStatus.js';
-import { JavaScriptType } from '../../enums/JavaScriptType.js';
-import { IHttpExchangeWithAttachedResponse } from '../../models/IHttpExchangeWithAttachedResponse.js';
-import { RenderRequest } from './easy-diffusion/models/requests/RenderRequest.js';
-import { IRenderResponse } from './easy-diffusion/models/responses/IRenderResponse.js';
-import { IStreamResponse } from './easy-diffusion/models/responses/IStreamResponse.js';
-import { BotInteraction } from '../../enums/BotInteraction.js';
-import { StableDiffusionGuidanceScaleLimit } from '../../enums/StableDiffusionGuidanceScaleLimit.js';
+import { EasyDiffusionClient } from '../easy-diffusion/EasyDiffusionClient.js';
+import { ContentType } from '../../../enums/ContentType.js';
+import { EnvironmentSettings } from '../../../models/EnvironmentSettings.js';
+import { BufferEncoding } from '../../../enums/BufferEncoding.js';
+import { DiscordPresenceStatus } from './enums/DiscordPresenceStatus.js';
+import { JavaScriptType } from '../../../enums/JavaScriptType.js';
+import { IHttpExchangeWithAttachedResponse } from '../../../models/IHttpExchangeWithAttachedResponse.js';
+import { RenderRequest } from '../easy-diffusion/models/requests/RenderRequest.js';
+import { IRenderResponse } from '../easy-diffusion/models/responses/IRenderResponse.js';
+import { IStreamResponse } from '../easy-diffusion/models/responses/IStreamResponse.js';
+import { BotInteraction } from '../../../enums/BotInteraction.js';
+import { StableDiffusionGuidanceScaleLimit } from '../../../enums/StableDiffusionGuidanceScaleLimit.js';
+import { TypingService } from './services/TypingService.js';
 
 export class DiscordEasyDiffusionClient {
     #environmentSettings: EnvironmentSettings;
+    #typingService: TypingService;
 
     #client: DiscordClient;
     #logger;
-
-    #sendTypingIntervalMilliseconds = 1000;
-    #typingInterval: NodeJS.Timeout | null = null;
 
     #easyDiffusionClients: Array<EasyDiffusionClient> = [];
 
     #guidanceScaleInterval = .5;
 
-    constructor(environmentSettings) {
+    get easyDiffusionClients(): Array<EasyDiffusionClient> {
+        return this.#easyDiffusionClients;
+    }
+
+    set easyDiffusionClients(easyDiffusionClients) {
+        this.#easyDiffusionClients = easyDiffusionClients;
+    }
+
+    constructor(environmentSettings: EnvironmentSettings, typingService: TypingService) {
         this.#environmentSettings = environmentSettings;
+        this.#typingService = typingService;
+
         this.#logger = new Logger(this.#environmentSettings.isProduction, 'DiscordClient');
 
         this.#client = new DiscordClient({
@@ -283,45 +292,6 @@ export class DiscordEasyDiffusionClient {
         return `${renderRequest.seed}_${renderRequest.prompt}`.substring(0, 128);
     }
 
-    async #startTyping(message: Message | ButtonInteraction): Promise<void> {
-        if(this.#typingInterval !== null) {
-            return;
-        }
-
-        try {
-            await this.#onTypingInterval(message);
-
-            this.#typingInterval = setInterval(async () => {
-                await this.#onTypingInterval(message);
-            }, this.#sendTypingIntervalMilliseconds);
-
-            this.#logger(LogLevel.Info, `Registered typing interval as interval #${this.#typingInterval}.`);
-        } catch(error) {
-            this.#logger(LogLevel.Error, `An error occurred while sending the typing status: ${error}`);
-            this.#stopTyping();
-        }
-    }
-
-    async #onTypingInterval(message: Message | ButtonInteraction): Promise<void> {
-        if(this.#easyDiffusionClients.filter(x => x.isBusy).length > 0) {
-            await message.channel.sendTyping();
-        }
-    }
-
-    #stopTyping(): void {
-        if(this.#easyDiffusionClients.filter(x => x.isBusy).length !== 0) {
-            return;
-        }
-
-        this.#logger(LogLevel.Info, `Stopped typing and clearing interval #${this.#typingInterval}.`);
-        this.#typingInterval = null;
-        this.#easyDiffusionClients = [];
-
-        if(this.#typingInterval !== null) {
-            clearInterval(this.#typingInterval);
-        }
-    }
-
     async #renderImage(interaction: Message | ButtonInteraction, prompt: string | RenderRequest |  null)
         : Promise<IHttpExchangeWithAttachedResponse<RenderRequest, IRenderResponse, IStreamResponse> | null> {
         let botMention: string = '';
@@ -345,7 +315,7 @@ export class DiscordEasyDiffusionClient {
             }
         }
 
-        await this.#startTyping(interaction);
+        await this.#typingService.startTyping(interaction, () => DiscordEasyDiffusionClient.shouldBeTyping(this));
 
         const easyDiffusionClient = new EasyDiffusionClient(this.#environmentSettings);
         this.#easyDiffusionClients.push(easyDiffusionClient);
@@ -360,8 +330,6 @@ export class DiscordEasyDiffusionClient {
 
         const streamResponse = await easyDiffusionClient.stream(renderExchange);
 
-        this.#stopTyping();
-
         return {
             exchange: renderExchange,
             response: streamResponse
@@ -370,5 +338,10 @@ export class DiscordEasyDiffusionClient {
 
     async #replyWithError(message: Message | ButtonInteraction): Promise<void> {
         await message.reply({ content: this.#environmentSettings.errorMessage });
+    }
+
+    static shouldBeTyping(client: DiscordEasyDiffusionClient): boolean {
+        client.easyDiffusionClients = client.easyDiffusionClients.filter(x => x.isBusy);
+        return client.easyDiffusionClients.length > 0;
     }
 }
