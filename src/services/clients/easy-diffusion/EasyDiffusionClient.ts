@@ -28,7 +28,7 @@ export class EasyDiffusionClient {
 
     #retryDelayInMilliseconds = 1000;
 
-    #isBusy = false;
+    #isBusy = true;
 
     get isBusy() {
         return this.#isBusy;
@@ -96,8 +96,6 @@ export class EasyDiffusionClient {
     }
 
     async stream(renderExchange: IHttpExchange<RenderRequest, IRenderResponse>) : Promise<IStreamResponse | null> {
-        this.#isBusy = true;
-
         const renderResponse = renderExchange?.response;
 
         if(renderResponse === null) {
