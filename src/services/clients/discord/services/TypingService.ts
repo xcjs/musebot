@@ -7,7 +7,7 @@ export class TypingService {
 
     #logger;
 
-    #sendTypingIntervalMilliseconds = 10000;
+    #sendTypingIntervalMilliseconds = 1000;
     #typingInterval: NodeJS.Timeout | null = null;
 
     #shouldBeTypingCallback: () => boolean;
