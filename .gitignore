@@ -1,5 +1,6 @@
 .env
 bin/
 build/
+dist/
 node_modules/
 *.js
