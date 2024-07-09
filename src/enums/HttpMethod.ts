@@ -4,4 +4,4 @@ export enum HttpMethod {
     Head = 'HEAD',
     Post = 'POST',
     Put = 'PUT'
-};
+}
