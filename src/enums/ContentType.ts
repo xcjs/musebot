@@ -3,4 +3,4 @@ export enum ContentType {
     Jpg = 'image/jpg',
     Json = 'application/json',
     Png = 'image/png'
-};
+}
