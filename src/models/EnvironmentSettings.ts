@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import { Logger, LogLevel } from 'meklog';
 
 import { NodeEnvironment } from '../enums/NodeEnvironment.js';
+import { BotFunction } from '../enums/BotFunction.js';
 
 export class EnvironmentSettings {
     packageName: string;
@@ -11,14 +12,20 @@ export class EnvironmentSettings {
 
     nodeEnvironment: NodeEnvironment;
 
+    botFunction: BotFunction;
+
     discordToken: string;
     discordChannels: Array<string> = [];
 
     easyDiffusionHosts: Array<URL> = [];
     easyDiffusionModels: Array<string> = [];
 
+    ollamaHosts: Array<URL> = [];
+    ollamaModels: Array<string> = [];
+    ollamaSystemPrompt: string;
+
     botRequiresMention: boolean = true;
-    errorMessage: string = 'An error occurred while generating your image. Please try again later.';
+    errorMessage: string = 'An error occurred while generating a response. Please try again later.';
 
     #logger;
 
@@ -34,6 +41,8 @@ export class EnvironmentSettings {
 
         this.nodeEnvironment = process.env.NODE_ENV as NodeEnvironment;
 
+        this.botFunction = process.env.MUSEBOT_FUNCTION as BotFunction;
+
         this.discordToken = process.env.MUSEBOT_DISCORD_TOKEN?.trim() || '';
         this.discordChannels = process.env.MUSEBOT_DISCORD_CHANNELS?.trim().split(',') || [];
 
@@ -43,11 +52,15 @@ export class EnvironmentSettings {
         this.easyDiffusionHosts = process.env.MUSEBOT_EASY_DIFFUSION_HOSTS?.trim().split(',').map(url => new URL(url)) || [];
         this.easyDiffusionModels = process.env.MUSEBOT_EASY_DIFFUSION_MODELS?.trim().split(',').filter(x => x.length > 0) || [];
 
+        this.ollamaHosts = process.env.MUSEBOT_OLLAMA_HOSTS?.trim().split(',').map(url => new URL(url)) || [];
+        this.ollamaModels = process.env.MUSEBOT_OLLAMA_MODELS?.trim().split(',').filter(x => x.length > 0) || [];
+        this.ollamaSystemPrompt = process.env.MUSEBOT_OLLAMA_SYSTEM_PROMPT || '';
+
         this.#logger = new Logger(this.isProduction, 'EnvironmentSettings');
 
-        this.#logConfiguration(shouldLogEnvironmentSettings);
-
         this.#validate();
+
+        this.#logConfiguration(shouldLogEnvironmentSettings);
     }
 
     #logConfiguration(shouldLogEnvironmentSettings: boolean): void {
@@ -58,11 +71,13 @@ export class EnvironmentSettings {
         this.#logger(LogLevel.Info, `Package Name: ${this.packageName}`);
         this.#logger(LogLevel.Info, `Package Version: ${this.version}`);
         this.#logger(LogLevel.Info, `NODE_ENV: ${this.nodeEnvironment}`);
-        this.#logger(LogLevel.Info, `MUSEBOT_DISCORD_TOKEN: ${this.discordToken}`);
         this.#logger(LogLevel.Info, `MUSEBOT_DISCORD_CHANNELS: ${this.discordChannels.join(', ')}`);
         this.#logger(LogLevel.Info, `MUSEBOT_REQUIRES_MENTION: ${this.botRequiresMention}`);
         this.#logger(LogLevel.Info, `MUSEBOT_EASY_DIFFUSION_HOSTS: ${this.easyDiffusionHosts.join(', ')}`);
         this.#logger(LogLevel.Info, `MUSEBOT_EASY_DIFFUSION_MODELS: ${this.easyDiffusionModels.join(', ')}`);
+        this.#logger(LogLevel.Info, `MUSEBOT_OLLAMA_HOSTS: ${this.ollamaHosts.join(', ')}`);
+        this.#logger(LogLevel.Info, `MUSEBOT_OLLAMA_MODELS: ${this.ollamaModels.join(', ')}`);
+        this.#logger(LogLevel.Info, `MUSEBOT_OLLAMA_SYSTEM_PROMPT: ${this.ollamaSystemPrompt}`);
     }
 
     #validate(): void {
@@ -72,6 +87,18 @@ export class EnvironmentSettings {
 
         if(this.easyDiffusionHosts.length === 0) {
             throw new Error(`MUSEBOT_EASY_DIFFUSION_HOSTS requires at least one value.`);
+        }
+
+        if(this.easyDiffusionModels.length === 0) {
+            this.#logger(LogLevel.Info, 'MUSEBOT_EASY_DIFFUSION_MODELS had no value - a random model will be selected per render.');
+        }
+
+        if(this.ollamaHosts.length === 0) {
+            throw new Error(`MUSEBOT_OLLAMA_HOSTS requires at least one value.`);
+        }
+
+        if(this.ollamaModels.length === 0) {
+            this.#logger(LogLevel.Info, 'MUSEBOT_OLLAMA_MODELS had no value - a random model will be selected per response.');
         }
     }
 }
