@@ -28,7 +28,7 @@ import { RenderRequest } from '../easy-diffusion/models/requests/RenderRequest.j
 import { IRenderResponse } from '../easy-diffusion/models/responses/IRenderResponse.js';
 import { IStreamResponse } from '../easy-diffusion/models/responses/IStreamResponse.js';
 import { BotInteraction } from '../../../enums/BotInteraction.js';
-import { StableDiffusionGuidanceScaleLimit } from '../../../enums/StableDiffusionGuidanceScaleLimit.js';
+import { StableDiffusionGuidanceScaleLimit } from '../easy-diffusion/enums/StableDiffusionGuidanceScaleLimit.js';
 import { TypingService } from './services/TypingService.js';
 
 export class DiscordEasyDiffusionClient {
