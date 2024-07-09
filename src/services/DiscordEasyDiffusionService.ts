@@ -17,21 +17,21 @@ import {
 
 import {Logger, LogLevel } from 'meklog';
 
-import { EasyDiffusionClient } from '../easy-diffusion/EasyDiffusionClient.js';
-import { ContentType } from '../../../enums/ContentType.js';
-import { EnvironmentSettings } from '../../../models/EnvironmentSettings.js';
-import { BufferEncoding } from '../../../enums/BufferEncoding.js';
-import { DiscordPresenceStatus } from './enums/DiscordPresenceStatus.js';
-import { JavaScriptType } from '../../../enums/JavaScriptType.js';
-import { IHttpExchangeWithAttachedResponse } from '../../../models/IHttpExchangeWithAttachedResponse.js';
-import { RenderRequest } from '../easy-diffusion/models/requests/RenderRequest.js';
-import { IRenderResponse } from '../easy-diffusion/models/responses/IRenderResponse.js';
-import { IStreamResponse } from '../easy-diffusion/models/responses/IStreamResponse.js';
-import { BotInteraction } from '../../../enums/BotInteraction.js';
-import { StableDiffusionGuidanceScaleLimit } from '../easy-diffusion/enums/StableDiffusionGuidanceScaleLimit.js';
-import { TypingService } from './services/TypingService.js';
+import { EasyDiffusionClient } from './clients/easy-diffusion/EasyDiffusionClient.js';
+import { ContentType } from '../enums/ContentType.js';
+import { EnvironmentSettings } from '../models/EnvironmentSettings.js';
+import { BufferEncoding } from '../enums/BufferEncoding.js';
+import { DiscordPresenceStatus } from './clients/discord/enums/DiscordPresenceStatus.js';
+import { JavaScriptType } from '../enums/JavaScriptType.js';
+import { IHttpExchangeWithAttachedResponse } from '../models/IHttpExchangeWithAttachedResponse.js';
+import { RenderRequest } from './clients/easy-diffusion/models/requests/RenderRequest.js';
+import { IRenderResponse } from './clients/easy-diffusion/models/responses/IRenderResponse.js';
+import { IStreamResponse } from './clients/easy-diffusion/models/responses/IStreamResponse.js';
+import { BotInteraction } from '../enums/BotInteraction.js';
+import { StableDiffusionGuidanceScaleLimit } from './clients/easy-diffusion/enums/StableDiffusionGuidanceScaleLimit.js';
+import { TypingService } from './clients/discord/services/TypingService.js';
 
-export class DiscordEasyDiffusionClient {
+export class DiscordEasyDiffusionService {
     #environmentSettings: EnvironmentSettings;
     #typingService: TypingService;
 
@@ -315,7 +315,7 @@ export class DiscordEasyDiffusionClient {
             }
         }
 
-        await this.#typingService.startTyping(interaction, () => DiscordEasyDiffusionClient.shouldBeTyping(this));
+        await this.#typingService.startTyping(interaction, () => DiscordEasyDiffusionService.shouldBeTyping(this));
 
         const easyDiffusionClient = new EasyDiffusionClient(this.#environmentSettings);
         this.#easyDiffusionClients.push(easyDiffusionClient);
@@ -340,7 +340,7 @@ export class DiscordEasyDiffusionClient {
         await message.reply({ content: this.#environmentSettings.errorMessage });
     }
 
-    static shouldBeTyping(client: DiscordEasyDiffusionClient): boolean {
+    static shouldBeTyping(client: DiscordEasyDiffusionService): boolean {
         client.easyDiffusionClients = client.easyDiffusionClients.filter(x => x.isBusy);
         return client.easyDiffusionClients.length > 0;
     }
