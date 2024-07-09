@@ -38,7 +38,7 @@ Build:
   script:
     - npm run build
 
-Build (Nexe):
+Build Distributable:
   stage: build
   image: node:lts
   only:
@@ -49,8 +49,11 @@ Build (Nexe):
     - npm install
   script:
     - npm run build:bin
+    - cp -f .env.example bin/.env
+    - cp -f logo.jpg bin/logo.jpg
+    - cp -f README.md bin/README.md
   artifacts:
     name: musebot_linux_amd64
     paths:
-      - bin/musebot
+      - bin/
     expire_in: 1 week
