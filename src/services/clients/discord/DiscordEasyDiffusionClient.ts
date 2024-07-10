@@ -284,7 +284,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
 
         prompt = prompt instanceof RenderRequest
             ? prompt
-            : prompt.replace(botMention, '').trim();
+            : prompt.replaceAll(botMention, '').trim();
 
         if(typeof prompt === JavaScriptType.String && (prompt as string).substring(0, 1) === '{') {
             try {
