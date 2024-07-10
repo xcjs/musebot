@@ -30,14 +30,9 @@ import { IStreamResponse } from '../easy-diffusion/models/responses/IStreamRespo
 import { BotInteraction } from '../../../enums/BotInteraction.js';
 import { StableDiffusionGuidanceScaleLimit } from '../easy-diffusion/enums/StableDiffusionGuidanceScaleLimit.js';
 import { TypingService } from './services/TypingService.js';
+import { BaseDiscordClient } from './BaseDiscordClient.js';
 
-export class DiscordEasyDiffusionClient {
-    #environmentSettings: EnvironmentSettings;
-    #typingService: TypingService;
-
-    #client: DiscordClient;
-    #logger;
-
+export class DiscordEasyDiffusionClient extends BaseDiscordClient {
     #easyDiffusionClients: Array<EasyDiffusionClient> = [];
 
     #guidanceScaleInterval = .5;
@@ -51,12 +46,14 @@ export class DiscordEasyDiffusionClient {
     }
 
     constructor(environmentSettings: EnvironmentSettings, typingService: TypingService) {
-        this.#environmentSettings = environmentSettings;
-        this.#typingService = typingService;
+        super(environmentSettings, typingService);
 
-        this.#logger = new Logger(this.#environmentSettings.isProduction, 'DiscordClient');
+        this.environmentSettings = environmentSettings;
+        this.typingService = typingService;
 
-        this.#client = new DiscordClient({
+        this.logger = new Logger(this.environmentSettings.isProduction, 'DiscordEasyDiffusionClient');
+
+        this.client = new DiscordClient({
             intents: [
                 GatewayIntentBits.Guilds,
                 GatewayIntentBits.GuildMessages,
@@ -74,37 +71,37 @@ export class DiscordEasyDiffusionClient {
     }
 
     login() {
-        this.#logger(LogLevel.Info, 'Performing client login...');
-        this.#client.login(this.#environmentSettings.discordToken);
+        this.logger(LogLevel.Info, 'Performing client login...');
+        this.client.login(this.environmentSettings.discordToken);
     }
 
     #registerEvents() {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this;
 
-        this.#client.once(Events.ClientReady, (event) => this.#onClientReady.call(self, event));
-        this.#client.on(Events.MessageCreate, async (message) => await this.#onMessageCreate.call(self, message));
-        this.#client.on(Events.InteractionCreate, async (interaction) => await this.#onInteraction.call(self, interaction));
+        this.client.once(Events.ClientReady, (event) => this.#onClientReady.call(self, event));
+        this.client.on(Events.MessageCreate, async (message) => await this.#onMessageCreate.call(self, message));
+        this.client.on(Events.InteractionCreate, async (interaction) => await this.#onInteraction.call(self, interaction));
     }
 
     #onClientReady(): Promise<void> {
-        if(this.#client.user === null) {
+        if(this.client.user === null) {
             return;
         }
 
-        this.#logger(LogLevel.Info, 'Client is ready.');
-        this.#client.user.setPresence({ activities: [], status: DiscordPresenceStatus.Online });
+        this.logger(LogLevel.Info, 'Client is ready.');
+        this.client.user.setPresence({ activities: [], status: DiscordPresenceStatus.Online });
     }
 
     async #onMessageCreate(message: Message): Promise<void> {
-        this.#logger(LogLevel.Info, `Discord message created. ${message.author.displayName} (${message.author.username}): "${message}"`);
+        this.logger(LogLevel.Info, `Discord message created. ${message.author.displayName} (${message.author.username}): "${message}"`);
 
         if(!this.#shouldReply(message)) {
-            this.#logger(LogLevel.Info, 'Reply should not be created - skipping reply.');
+            this.logger(LogLevel.Info, 'Reply should not be created - skipping reply.');
             return;
         }
 
-        this.#logger(LogLevel.Info, 'Replying to message...');
+        this.logger(LogLevel.Info, 'Replying to message...');
 
         const renderData = await this.#renderImage(message, null);
 
@@ -118,11 +115,11 @@ export class DiscordEasyDiffusionClient {
             && message.type === MessageType.Default // The message is a default message type.
             && !!message.author.id  // The message should have an author.
             && !message.author.bot  // No messages by bots.
-            && !!message.mentions.members?.find(x => x.id === this.#client.user?.id) // The message explicitly tags this bot.
-            && message.author.id !== this.#client.user?.id // No messages by this bot.
+            && !!message.mentions.members?.find(x => x.id === this.client.user?.id) // The message explicitly tags this bot.
+            && message.author.id !== this.client.user?.id // No messages by this bot.
             && (
-                this.#environmentSettings.discordChannels.length === 0
-                || this.#environmentSettings.discordChannels.includes(message.channel.id)) // The channel is in the configured whitelist if there is one.
+                this.environmentSettings.discordChannels.length === 0
+                || this.environmentSettings.discordChannels.includes(message.channel.id)) // The channel is in the configured whitelist if there is one.
             && typeof message.content === JavaScriptType.String  // Only respond to text-based messages.
             && message.content.length > 0;                       // Only respond to messages with more than 0 characters.
 
@@ -130,7 +127,7 @@ export class DiscordEasyDiffusionClient {
     }
 
     async #onInteraction(interaction: ButtonInteraction): Promise<void> {
-        this.#logger(LogLevel.Info, `Beginning interaction response to custom action ${interaction.customId}...`);
+        this.logger(LogLevel.Info, `Beginning interaction response to custom action ${interaction.customId}...`);
 
         const supportedContentTypes = [
             ContentType.Jpeg,
@@ -174,7 +171,7 @@ export class DiscordEasyDiffusionClient {
                 this.#retry(interaction, renderRequest);
                 break;
             default:
-                this.#logger(LogLevel.Warning, `An unknown interaction was passed: ${interaction.customId}.`);
+                this.logger(LogLevel.Warning, `An unknown interaction was passed: ${interaction.customId}.`);
                 break;
         }
     }
@@ -204,7 +201,7 @@ export class DiscordEasyDiffusionClient {
 
         files.push(imageAttachment);
 
-        this.#logger(LogLevel.Info, `Attaching render for "${renderRequest.prompt}": ${jsonRequest}`);
+        this.logger(LogLevel.Info, `Attaching render for "${renderRequest.prompt}": ${jsonRequest}`);
 
         const retryButton = new ButtonBuilder()
             .setCustomId(BotInteraction.Retry)
@@ -264,7 +261,7 @@ export class DiscordEasyDiffusionClient {
                 throw new Error(`An invalid interaction was provided: ${typeof interaction}`);
             }
         } catch (error) {
-            this.#logger(LogLevel.Error, `An exception occurred while replying to a message: ${error}`);
+            this.logger(LogLevel.Error, `An exception occurred while replying to a message: ${error}`);
             await this.#replyWithError(interaction);
         }
     }
@@ -298,7 +295,7 @@ export class DiscordEasyDiffusionClient {
         prompt = prompt || '';
 
         if(interaction instanceof Message && !(prompt instanceof RenderRequest)) {
-            botMention = interaction.mentions.members.find(x => x.id === this.#client.user?.id)?.toString() || '';
+            botMention = interaction.mentions.members.find(x => x.id === this.client.user?.id)?.toString() || '';
             prompt = interaction.content;
         }
 
@@ -311,16 +308,16 @@ export class DiscordEasyDiffusionClient {
                 prompt = RenderRequest.JsonFactory(prompt as string);
                 prompt.num_outputs = 1;
             } catch(error) {
-                this.#logger(LogLevel.Info, `A possible JSON prompt was received, but could not be deserialized to ${typeof RenderRequest}.`);
+                this.logger(LogLevel.Info, `A possible JSON prompt was received, but could not be deserialized to ${typeof RenderRequest}.`);
             }
         }
 
-        await this.#typingService.startTyping(interaction, () => DiscordEasyDiffusionClient.shouldBeTyping(this));
+        await this.typingService.startTyping(interaction, () => DiscordEasyDiffusionClient.shouldBeTyping(this));
 
-        const easyDiffusionClient = new EasyDiffusionClient(this.#environmentSettings);
+        const easyDiffusionClient = new EasyDiffusionClient(this.environmentSettings);
         this.#easyDiffusionClients.push(easyDiffusionClient);
 
-        this.#logger(LogLevel.Info, `Render prompt: ${prompt}`);
+        this.logger(LogLevel.Info, `Render prompt: ${prompt}`);
 
         const renderExchange = await easyDiffusionClient.render(prompt);
 
@@ -337,7 +334,7 @@ export class DiscordEasyDiffusionClient {
     }
 
     async #replyWithError(message: Message | ButtonInteraction): Promise<void> {
-        await message.reply({ content: this.#environmentSettings.errorMessage });
+        await message.reply({ content: this.environmentSettings.errorMessage });
     }
 
     static shouldBeTyping(client: DiscordEasyDiffusionClient): boolean {
