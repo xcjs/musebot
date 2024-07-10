@@ -1,5 +1,6 @@
 stages:
   - lint
+  - transpile
   - deploy
   - build
 
@@ -12,6 +13,16 @@ Lint:
     - npm install
   script:
     - npm run lint
+
+Transpile:
+  stage: transpile
+  image: node:lts
+  tags:
+    - docker
+  before_script:
+    - npm install
+  script:
+    - npm run build
 
 Deploy:
   stage: deploy
@@ -28,21 +39,9 @@ Deploy:
     - docker build -t $CI_REGISTRY/xcjs/musebot:latest .
     - docker push $CI_REGISTRY/xcjs/musebot:latest
 
-Build:
-  stage: build
-  image: node:lts
-  tags:
-    - docker
-  before_script:
-    - npm install
-  script:
-    - npm run build
-
 Build Distributable:
   stage: build
   image: node:lts
-  only:
-    - main
   tags:
     - docker
   before_script:

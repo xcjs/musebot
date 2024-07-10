@@ -1,4 +1,4 @@
-FROM node:20
+FROM node:lts
 
 COPY . .
 RUN npm i --omit=dev --no-package-lock && npm run build
