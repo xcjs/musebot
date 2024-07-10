@@ -7,14 +7,12 @@ import { BaseDiscordClient } from './BaseDiscordClient.js';
 import { DiscordPresenceStatus } from './enums/DiscordPresenceStatus.js';
 import { JavaScriptType } from '../../../enums/JavaScriptType.js';
 import { OllamaClient } from '../ollama/OllamaClient.js';
+import { DiscordConstants } from './enums/DiscordConstants.js';
 
 export class DiscordOllamaClient extends BaseDiscordClient {
     ollamaClients: Array<OllamaClient> = [];
 
     #context: Array<Array<number>> = [];
-
-    // Discord has a max content length of 2000 characters.
-    #maxResponseLength = 2000;
 
     constructor(environmentSettings: EnvironmentSettings, typingService: TypingService) {
         super(environmentSettings, typingService);
@@ -100,12 +98,12 @@ export class DiscordOllamaClient extends BaseDiscordClient {
         const responses: Array<string> = [];
 
         while(response.length > 0) {
-            if(response.length <= this.#maxResponseLength) {
+            if(response.length <= DiscordConstants.ContentMaxLength) {
                 responses.push(response);
                 return responses;
             }
 
-            const splitPosition = response.substring(0, this.#maxResponseLength).lastIndexOf(' ');
+            const splitPosition = response.substring(0, DiscordConstants.ContentMaxLength).lastIndexOf(' ');
             responses.push(response.substring(0, splitPosition));
 
             response = response.substring(splitPosition);

@@ -38,13 +38,16 @@ export class OllamaClient {
         this.#model = this.#selectModel(this.#environmentSettings.ollamaModels);
     }
 
-    async sendMessage(message: string, context: Array<number>): Promise<IHttpExchange<GenerateRequest, GenerateResponse | null>> {
+    async sendMessage(message: string, context: Array<number> | null): Promise<IHttpExchange<GenerateRequest, GenerateResponse | null>> {
         const request = new GenerateRequest();
 
         request.system = this.#environmentSettings.ollamaSystemPrompt;
         request.model = this.#model;
         request.prompt = message;
-        request.context = context;
+
+        if(context) {
+            request.context = context;
+        }
 
         this.#isBusy = true;
 

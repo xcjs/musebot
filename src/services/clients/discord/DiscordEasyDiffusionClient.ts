@@ -28,19 +28,14 @@ import { BotInteraction } from '../../../enums/BotInteraction.js';
 import { StableDiffusionGuidanceScaleLimit } from '../easy-diffusion/enums/StableDiffusionGuidanceScaleLimit.js';
 import { TypingService } from './services/TypingService.js';
 import { BaseDiscordClient } from './BaseDiscordClient.js';
+import { OllamaClient } from '../ollama/OllamaClient.js';
+import { DiscordConstants } from './enums/DiscordConstants.js';
 
 export class DiscordEasyDiffusionClient extends BaseDiscordClient {
-    #easyDiffusionClients: Array<EasyDiffusionClient> = [];
+    easyDiffusionClients: Array<EasyDiffusionClient> = [];
+    ollamaClients: Array<OllamaClient> = [];
 
     #guidanceScaleInterval = .5;
-
-    get easyDiffusionClients(): Array<EasyDiffusionClient> {
-        return this.#easyDiffusionClients;
-    }
-
-    set easyDiffusionClients(easyDiffusionClients) {
-        this.#easyDiffusionClients = easyDiffusionClients;
-    }
 
     constructor(environmentSettings: EnvironmentSettings, typingService: TypingService) {
         super(environmentSettings, typingService);
@@ -124,34 +119,59 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
             supportedContentTypes.includes(Object.values(ContentType)
                 .find(contentTypeValue => contentTypeValue === attachment.value.contentType)))[0].value;
 
-        if(!imageAttachment?.description) {
-            return;
-        }
+        let renderRequest: RenderRequest = null;
 
-        const renderRequest = RenderRequest.JsonFactory(imageAttachment.description);
+        if(imageAttachment?.description) {
+            renderRequest = RenderRequest.FromJson(imageAttachment.description);
+        }
 
         await interaction.deferReply();
 
         switch(interaction.customId) {
             case BotInteraction.Retry:
+                if(!renderRequest) {
+                    return;
+                }
+
                 this.#retry(interaction, renderRequest.prompt);
                 break;
             case BotInteraction.ShowSource:
+                if(!renderRequest) {
+                    return;
+                }
+
                 this.#showSource(interaction, renderRequest, imageAttachment.description);
                 break;
             case BotInteraction.GuidanceScaleMinus:
+                if(!renderRequest) {
+                    return;
+                }
+
                 renderRequest.guidance_scale = renderRequest.guidance_scale - this.#guidanceScaleInterval < StableDiffusionGuidanceScaleLimit.Min
                     ? renderRequest.guidance_scale
                     : renderRequest.guidance_scale - this.#guidanceScaleInterval
 
-                this.#retry(interaction, renderRequest);
+                await this.#retry(interaction, renderRequest);
                 break;
             case BotInteraction.GuidanceScalePlus:
+                if(!renderRequest) {
+                    return;
+                }
+
                 renderRequest.guidance_scale = renderRequest.guidance_scale + this.#guidanceScaleInterval > StableDiffusionGuidanceScaleLimit.Max
                     ? renderRequest.guidance_scale
                     : renderRequest.guidance_scale + this.#guidanceScaleInterval;
 
-                this.#retry(interaction, renderRequest);
+                await this.#retry(interaction, renderRequest);
+                break;
+            case BotInteraction.Randomize:
+                {
+                    const ollamaClient = new OllamaClient(this.environmentSettings);
+                    const exchange = await ollamaClient.sendMessage('Describe a visual scene with extraordinary detail.', null);
+
+                    const renderData = await this.#renderImage(interaction, exchange.response.response);
+                    await this.#reply(interaction, renderData);
+                }
                 break;
             default:
                 this.logger(LogLevel.Warning, `An unknown interaction was passed: ${interaction.customId}.`);
@@ -173,13 +193,13 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
         const jsonRequest = JSON.stringify(renderRequest);
 
         const files: Array<AttachmentBuilder> = [];
-        const areInteractionsAvailable = jsonRequest.length <= 1024;
+        const areDescriptionInteractionsAvailable = jsonRequest.length <= 1024;
 
         const imageBuffer = Buffer.from(streamResponse.output[0].data.split(",")[1], BufferEncoding.Base64);
 
         const imageAttachment = new AttachmentBuilder(imageBuffer, {
             name: `${fileName}.${renderRequest.output_format}`,
-            description: areInteractionsAvailable ? jsonRequest : null
+            description: areDescriptionInteractionsAvailable ? jsonRequest : null
         });
 
         files.push(imageAttachment);
@@ -206,8 +226,15 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
             .setLabel('➕')
             .setStyle(ButtonStyle.Secondary);
 
+        const randomizeButton = new ButtonBuilder()
+            .setCustomId(BotInteraction.Randomize)
+            .setLabel('🎲')
+            .setStyle(ButtonStyle.Danger);
+
         const buttonRow = new ActionRowBuilder<ButtonBuilder>()
             .addComponents(retryButton, showSourceButton);
+
+        const nonDescriptionButtonRow = new ActionRowBuilder<ButtonBuilder>();
 
         if(renderRequest.guidance_scale - this.#guidanceScaleInterval > StableDiffusionGuidanceScaleLimit.Min) {
             buttonRow.addComponents(guidanceScaleMinus);
@@ -217,16 +244,23 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
             buttonRow.addComponents(guidanceScalePlusButton);
         }
 
+        if(this.environmentSettings.ollamaHosts.length > 0) {
+            buttonRow.addComponents(randomizeButton);
+            nonDescriptionButtonRow.addComponents(randomizeButton);
+        }
+
         const reply: BaseMessageOptions = {
             files,
-            components: areInteractionsAvailable ? [buttonRow] : []
+            components: areDescriptionInteractionsAvailable ? [buttonRow] : [nonDescriptionButtonRow]
         };
 
         try {
             if(interaction instanceof Message) {
                 await interaction.reply(reply);
             } else if(interaction instanceof ButtonInteraction) {
-                reply.content = `${interaction.member} re-rendered \`${renderRequest.prompt}\`.`;
+                if(interaction.customId != BotInteraction.Randomize) {
+                    reply.content = `${interaction.member} re-rendered \`${renderRequest.prompt.substring(DiscordConstants.ContentMaxLength)}\`.`;
+                }
 
                 switch(interaction.customId) {
                     case BotInteraction.GuidanceScaleMinus:
@@ -236,6 +270,9 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
                     case BotInteraction.GuidanceScalePlus:
                         reply.content = `${reply.content}\n`
                             + `The guidance scale was increased from ${renderRequest.guidance_scale - this.#guidanceScaleInterval} to ${renderRequest.guidance_scale}.`;
+                        break;
+                    case BotInteraction.Randomize:
+                        reply.content = 'Two AIs whisper to each other over the the ancient `TCP/IP` protocol. They present you with this.';
                         break;
                 }
 
@@ -288,7 +325,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
 
         if(typeof prompt === JavaScriptType.String && (prompt as string).substring(0, 1) === '{') {
             try {
-                prompt = RenderRequest.JsonFactory(prompt as string);
+                prompt = RenderRequest.FromJson(prompt as string);
                 prompt.num_outputs = 1;
             } catch(error) {
                 this.logger(LogLevel.Info, `A possible JSON prompt was received, but could not be deserialized to ${typeof RenderRequest}.`);
@@ -298,7 +335,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
         await this.typingService.startTyping(interaction, () => DiscordEasyDiffusionClient.shouldBeTyping(this));
 
         const easyDiffusionClient = new EasyDiffusionClient(this.environmentSettings);
-        this.#easyDiffusionClients.push(easyDiffusionClient);
+        this.easyDiffusionClients.push(easyDiffusionClient);
 
         this.logger(LogLevel.Info, `Render prompt: ${prompt}`);
 
@@ -322,6 +359,8 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
 
     static shouldBeTyping(client: DiscordEasyDiffusionClient): boolean {
         client.easyDiffusionClients = client.easyDiffusionClients.filter(x => x.isBusy);
-        return client.easyDiffusionClients.length > 0;
+        client.ollamaClients = client.ollamaClients.filter(x => x.isBusy);
+
+        return client.easyDiffusionClients.length > 0 || client.ollamaClients.length > 0;
     }
 }
