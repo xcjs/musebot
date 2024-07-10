@@ -1,8 +1,6 @@
 import path from 'node:path';
 
 import {Logger, LogLevel } from 'meklog'
-import fetch from 'node-fetch';
-import type { Response as NodeFetchResponse } from 'node-fetch';
 
 import { ContentType } from '../../../enums/ContentType.js';
 import { HttpHeader } from '../../../enums/HttpHeader.js';
@@ -106,7 +104,7 @@ export class EasyDiffusionClient {
         const streamUrl = new URL(renderResponse.stream, this.#host);
 
         try {
-            let response : NodeFetchResponse;
+            let response : Response;
 
             do {
                 this.#logger(LogLevel.Info, `Checking response stream at ${renderResponse.stream}`);
