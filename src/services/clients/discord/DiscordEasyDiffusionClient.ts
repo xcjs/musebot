@@ -193,7 +193,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
         const jsonRequest = JSON.stringify(renderRequest);
 
         const files: Array<AttachmentBuilder> = [];
-        const areDescriptionInteractionsAvailable = jsonRequest.length <= 1024;
+        const areDescriptionInteractionsAvailable = jsonRequest.length <= DiscordConstants.ImageDescriptionMaxLength;
 
         const imageBuffer = Buffer.from(streamResponse.output[0].data.split(",")[1], BufferEncoding.Base64);
 
