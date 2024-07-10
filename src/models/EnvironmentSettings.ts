@@ -58,7 +58,7 @@ export class EnvironmentSettings {
 
         this.#logger = new Logger(this.isProduction, 'EnvironmentSettings');
 
-        this.#validate();
+        this.#validate(shouldLogEnvironmentSettings);
 
         this.#logConfiguration(shouldLogEnvironmentSettings);
     }
@@ -80,7 +80,11 @@ export class EnvironmentSettings {
         this.#logger(LogLevel.Info, `MUSEBOT_OLLAMA_SYSTEM_PROMPT: ${this.ollamaSystemPrompt}`);
     }
 
-    #validate(): void {
+    #validate(shouldLogEnvironmentSettings: boolean): void {
+        if(shouldLogEnvironmentSettings) {
+            return;
+        }
+
         if(this.discordToken.length === 0) {
             throw new Error(`EASY_DIFFUSION_DISCORD_BOT_TOKEN requires a value.`);
         }
