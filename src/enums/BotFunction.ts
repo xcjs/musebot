@@ -1,4 +1,4 @@
 export enum BotFunction {
-    image = 'image',
-    text = 'text'
+    Images = 'images',
+    Text = 'text'
 }
