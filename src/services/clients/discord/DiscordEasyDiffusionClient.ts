@@ -7,12 +7,9 @@ import {
     ButtonBuilder,
     ButtonInteraction,
     ButtonStyle,
-    Client as DiscordClient,
     Events,
-    GatewayIntentBits,
     Message,
-    MessageType,
-    Partials
+    MessageType
 } from 'discord.js';
 
 import {Logger, LogLevel } from 'meklog';
@@ -52,20 +49,6 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
         this.typingService = typingService;
 
         this.logger = new Logger(this.environmentSettings.isProduction, 'DiscordEasyDiffusionClient');
-
-        this.client = new DiscordClient({
-            intents: [
-                GatewayIntentBits.Guilds,
-                GatewayIntentBits.GuildMessages,
-                GatewayIntentBits.GuildMembers,
-                GatewayIntentBits.DirectMessages,
-                GatewayIntentBits.MessageContent
-            ],
-            allowedMentions: { users: [], roles: [], repliedUser: false },
-            partials: [
-                Partials.Channel
-            ]
-        });
 
         this.#registerEvents();
     }

@@ -1,4 +1,4 @@
-import { Client } from 'discord.js';
+import { Client as DiscordClient, GatewayIntentBits, Partials } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
 import { EnvironmentSettings } from '../../../models/EnvironmentSettings';
@@ -8,13 +8,27 @@ export class BaseDiscordClient {
     protected environmentSettings: EnvironmentSettings;
     protected typingService: TypingService;
 
+    protected client: DiscordClient;
     protected logger;
 
-    protected client: Client;
 
     constructor(environmentSettings: EnvironmentSettings, typingService: TypingService) {
         this.environmentSettings = environmentSettings;
         this.typingService = typingService;
+
+        this.client = new DiscordClient({
+            intents: [
+                GatewayIntentBits.Guilds,
+                GatewayIntentBits.GuildMessages,
+                GatewayIntentBits.GuildMembers,
+                GatewayIntentBits.DirectMessages,
+                GatewayIntentBits.MessageContent
+            ],
+            allowedMentions: { users: [], roles: [], repliedUser: false },
+            partials: [
+                Partials.Channel
+            ]
+        });
 
         this.logger = new Logger(this.environmentSettings.isProduction, 'BaseDiscordClient');
     }
