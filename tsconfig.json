@@ -18,7 +18,7 @@
     // Don't coalesce watch notification
     "synchronousWatchDirectory": true,
     // Finally, an additional setting for reducing the amount of possible
-    // files to track  work from these directories
+    // files to track work from these directories
     "excludeDirectories": ["**/node_modules", "build"]
   }
 }
