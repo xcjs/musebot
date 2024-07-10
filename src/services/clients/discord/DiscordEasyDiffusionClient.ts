@@ -259,7 +259,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
                 await interaction.reply(reply);
             } else if(interaction instanceof ButtonInteraction) {
                 if(interaction.customId !== BotInteraction.Randomize) {
-                    reply.content = `${interaction.member} re-rendered \`${renderRequest.prompt.substring(0, DiscordConstants.ContentMaxLength)}\`.`;
+                    reply.content = `${interaction.member} re-rendered \`${renderRequest.prompt}\`.`.substring(0, DiscordConstants.ContentMaxLength);
                 }
 
                 switch(interaction.customId) {
