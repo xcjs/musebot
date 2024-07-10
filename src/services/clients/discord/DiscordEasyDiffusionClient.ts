@@ -193,7 +193,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
         const jsonRequest = JSON.stringify(renderRequest);
 
         const files: Array<AttachmentBuilder> = [];
-        const areDescriptionInteractionsAvailable = jsonRequest.length <= 1024;
+        const areDescriptionInteractionsAvailable = jsonRequest.length <= DiscordConstants.ImageDescriptionMaxLength;
 
         const imageBuffer = Buffer.from(streamResponse.output[0].data.split(",")[1], BufferEncoding.Base64);
 
@@ -259,7 +259,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
                 await interaction.reply(reply);
             } else if(interaction instanceof ButtonInteraction) {
                 if(interaction.customId !== BotInteraction.Randomize) {
-                    reply.content = `${interaction.member} re-rendered \`${renderRequest.prompt.substring(0, DiscordConstants.ContentMaxLength)}\`.`;
+                    reply.content = `${interaction.member} re-rendered \`${renderRequest.prompt}\`.`.substring(0, DiscordConstants.ContentMaxLength);
                 }
 
                 switch(interaction.customId) {
