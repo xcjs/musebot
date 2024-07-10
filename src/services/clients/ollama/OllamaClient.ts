@@ -1,4 +1,4 @@
-import { EnvironmentSettings } from '../../../models/EnvironmentSettings';
+import { EnvironmentSettings } from '../../../models/EnvironmentSettings.js';
 
 export class OllamaClient {
     #environmentSettings: EnvironmentSettings;

@@ -1,9 +1,9 @@
+import { Message } from 'discord.js';
 import { Logger } from 'meklog';
 
-import { Message } from 'discord.js';
-import { EnvironmentSettings } from '../../../models/EnvironmentSettings';
-import { TypingService } from './services/TypingService';
-import { BaseDiscordClient } from './BaseDiscordClient';
+import { EnvironmentSettings } from '../../../models/EnvironmentSettings.js';
+import { TypingService } from './services/TypingService.js';
+import { BaseDiscordClient } from './BaseDiscordClient.js';
 
 export class DiscordOllamaClient extends BaseDiscordClient {
     #conversation: Array<Message> = [];
