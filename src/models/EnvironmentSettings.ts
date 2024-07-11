@@ -24,6 +24,8 @@ export class EnvironmentSettings {
     ollamaModels: Array<string> = [];
     ollamaSystemPrompt: string;
 
+    easyDiffusionOllamaPrompt: string = 'Describe something or someone with extraordinary detail.';
+
     botRequiresMention: boolean = true;
     errorMessage: string = 'An error occurred while generating a response. Please try again later.';
 
@@ -56,6 +58,8 @@ export class EnvironmentSettings {
         this.ollamaModels = process.env.MUSEBOT_OLLAMA_MODELS?.trim().split(',').filter(x => x.length > 0) || [];
         this.ollamaSystemPrompt = process.env.MUSEBOT_OLLAMA_SYSTEM_PROMPT || '';
 
+        this.easyDiffusionOllamaPrompt = process.env.MUSEBOT_EASY_DIFFUSION_OLLAMA_PROMPT || this.easyDiffusionOllamaPrompt;
+
         this.#logger = new Logger(this.isProduction, 'EnvironmentSettings');
 
         this.#validate(shouldLogEnvironmentSettings);
@@ -78,6 +82,7 @@ export class EnvironmentSettings {
         this.#logger(LogLevel.Info, `MUSEBOT_OLLAMA_HOSTS: ${this.ollamaHosts.join(', ')}`);
         this.#logger(LogLevel.Info, `MUSEBOT_OLLAMA_MODELS: ${this.ollamaModels.join(', ')}`);
         this.#logger(LogLevel.Info, `MUSEBOT_OLLAMA_SYSTEM_PROMPT: ${this.ollamaSystemPrompt}`);
+        this.#logger(LogLevel.Info, `MUSEBOT_EASY_DIFFUSION_OLLAMA_PROMPT: ${this.easyDiffusionOllamaPrompt}`);
     }
 
     #validate(shouldLogEnvironmentSettings: boolean): void {
