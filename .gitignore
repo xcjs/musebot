@@ -1,4 +1,5 @@
 .env
+.parcel-cache/
 bin/
 build/
 dist/
