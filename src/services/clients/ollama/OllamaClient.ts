@@ -31,7 +31,7 @@ export class OllamaClient {
         const host = this.#selectHost(this.#environmentSettings.ollamaHosts);
 
         if(host === null) {
-            throw new Error('At least one EasyDiffusion host must be provided.');
+            throw new Error('At least one Ollama host must be provided.');
         }
 
         this.#host = host;
