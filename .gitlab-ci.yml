@@ -22,7 +22,7 @@ Transpile:
   before_script:
     - npm install
   script:
-    - npm run build
+    - npm run parcel
 
 Deploy:
   stage: deploy
