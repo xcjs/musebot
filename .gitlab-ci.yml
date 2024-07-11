@@ -50,7 +50,7 @@ Build Distributable:
     - npm run build:bin
     - cp -f .env.example bin/.env
     - cp -f logo.jpg bin/logo.jpg
-    - cp -f README.md bin/README.md
+    - cp -rf docs/ bin/docs/
   artifacts:
     name: musebot_linux_amd64
     paths:
