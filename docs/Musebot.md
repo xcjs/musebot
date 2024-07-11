@@ -79,6 +79,7 @@ these steps:
 
 1. In Discord, go to `User Settings` » `Advanced` » `Enable Developer Mode`.
 2. Right click on a channel for Musebot to use and click `Copy Channel ID`.
+3. Add the channel ID(s) to the `MUSEBOT_DISCORD_CHANNELS` environment variable.
 
 ## Start Musebot
 
