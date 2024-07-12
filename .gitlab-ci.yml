@@ -39,7 +39,7 @@ Deploy:
     - docker build -t $CI_REGISTRY/xcjs/musebot:latest .
     - docker push $CI_REGISTRY/xcjs/musebot:latest
 
-Build Distributable:
+Build (Nexe):
   stage: build
   image: node:lts
   tags:
