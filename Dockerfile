@@ -19,6 +19,6 @@ USER node
 
 WORKDIR /home/node/app
 
-COPY --from=builder bin .
+COPY --from=builder /home/node/app/bin .
 
 CMD ["./musebot"]
