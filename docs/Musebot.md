@@ -88,7 +88,7 @@ these steps:
 2. If you wish to run Musebot as a system service, there are several
    recommendations:
 
-   * Add musebot to a Docker container.
+   * Add Musebot to a Docker container.
    * Or create a systemd service for Musebot.
 
    Additional runtime options may be provided at a later date.
