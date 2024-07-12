@@ -3,6 +3,7 @@ import process from 'node:process';
 import dotenv from 'dotenv';
 import { Logger, LogLevel } from 'meklog';
 
+import nodePackage from '../../package.json';
 import { NodeEnvironment } from '../enums/NodeEnvironment.js';
 import { BotFunction } from '../enums/BotFunction.js';
 
@@ -38,8 +39,8 @@ export class EnvironmentSettings {
     constructor(shouldLogEnvironmentSettings: boolean = true) {
         dotenv.config();
 
-        this.packageName = process.env.npm_package_name;
-        this.version = process.env.npm_package_version;
+        this.packageName = nodePackage.name;
+        this.version = nodePackage.version;
 
         this.nodeEnvironment = process.env.NODE_ENV as NodeEnvironment;
 

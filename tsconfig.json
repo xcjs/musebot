@@ -7,6 +7,7 @@
     "outDir": "build/",
     "sourceMap": true,
     "skipLibCheck": true,
+    "resolveJsonModule": true
   },
     "watchOptions": {
     // Use native file system events for files and directories
