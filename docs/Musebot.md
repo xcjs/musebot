@@ -30,10 +30,11 @@ Musebot currently supports the following operating systems and architectures:
 2. Ensure that musebot is set as executable.
 
    `chmod +x musebot`
-3. Configure Musebot using the provided .env file and place it in the same
-   directory as the Musebot executable. The .env file is documented to explain
+3. Rename `.env.example` to `.env`.
+4. Configure Musebot using the provided `.env` file and place it in the same
+   directory as the Musebot executable. The `.env` file is documented to explain
    the use case of each provided environment variable.
-4. Continue to Bot Registration.
+5. Continue to Bot Registration.
 
 ## Bot Registration
 

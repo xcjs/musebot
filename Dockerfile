@@ -1,8 +1,24 @@
-FROM node:lts
+FROM node:lts AS builder
+
+WORKDIR /home/node/app
 
 COPY . .
-RUN npm i --omit=dev --no-package-lock && npm run build
+
+RUN chown -R node:node /home/node
 
 USER node
 
-CMD ["npm", "run", "start:only"]
+RUN npm install && npm run build:bin \
+    && cp -f .env.example bin/.env.example \
+    && cp -f logo.jpg bin/logo.jpg \
+    && cp -rf docs/ bin/docs/
+
+FROM node:lts AS runner
+
+USER node
+
+WORKDIR /home/node/app
+
+COPY --from=builder bin .
+
+CMD ["./musebot"]
