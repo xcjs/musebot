@@ -32,6 +32,7 @@ import { OllamaClient } from '../ollama/OllamaClient.js';
 import { DiscordConstants } from './enums/DiscordConstants.js';
 import { MAX_FILE_NAME_LENGTH, MAX_TEXT_LINE_LENGTH } from '../../../enums/FileConstants.js';
 import { wrapTextToMaxLineLength } from '../../../utilities/string-utilities.js';
+import { getRandomInt } from '../../../utilities/random-utilities.js';
 
 export class DiscordEasyDiffusionClient extends BaseDiscordClient {
     easyDiffusionClients: Array<EasyDiffusionClient> = [];
@@ -169,7 +170,8 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
             case BotInteraction.Randomize:
                 {
                     const ollamaClient = new OllamaClient(this.environmentSettings);
-                    const exchange = await ollamaClient.sendMessage(this.environmentSettings.easyDiffusionOllamaPrompt, null);
+                    const prompt = this.environmentSettings.easyDiffusionOllamaPrompts[getRandomInt(0, this.environmentSettings.easyDiffusionOllamaPrompts.length - 1)];
+                    const exchange = await ollamaClient.sendMessage(prompt, null);
 
                     const renderData = await this.#renderImage(interaction, exchange.response.response);
                     await this.#reply(interaction, renderData);
