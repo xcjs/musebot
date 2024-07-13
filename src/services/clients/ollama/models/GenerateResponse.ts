@@ -12,7 +12,7 @@ export class GenerateResponse {
     eval_count: number;
     eval_duration: number;
 
-    get tokensPerSecond() {
+    get tokensPerSecond(): number {
         return this.eval_count / this.eval_duration * (10 ** 9);
     }
 }
