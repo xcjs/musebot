@@ -30,6 +30,7 @@ import { TypingService } from './services/TypingService.js';
 import { BaseDiscordClient } from './BaseDiscordClient.js';
 import { OllamaClient } from '../ollama/OllamaClient.js';
 import { DiscordConstants } from './enums/DiscordConstants.js';
+import { FILE_NAME_LENGTH } from '../../../enums/FileConstants.js';
 
 export class DiscordEasyDiffusionClient extends BaseDiscordClient {
     easyDiffusionClients: Array<EasyDiffusionClient> = [];
@@ -277,7 +278,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
 
                             const promptBuffer = Buffer.from(renderRequest.prompt, BufferEncoding.UTF8);
                             reply.files.push(new AttachmentBuilder(promptBuffer, {
-                                name: `${renderRequest.prompt.substring(0, 64)}.txt`
+                                name: `${renderRequest.prompt.substring(0, FILE_NAME_LENGTH)}.txt`
                             }));
                         }
                         break;
@@ -313,7 +314,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
     }
 
     #getFileNameFromPrompt(renderRequest: RenderRequest): string {
-        return `${renderRequest.seed}_${renderRequest.prompt}`.substring(0, 128);
+        return `${renderRequest.seed}_${renderRequest.prompt}`.substring(0, FILE_NAME_LENGTH);
     }
 
     async #renderImage(interaction: Message | ButtonInteraction, prompt: string | RenderRequest |  null)
