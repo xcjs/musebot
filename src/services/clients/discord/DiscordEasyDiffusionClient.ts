@@ -272,8 +272,14 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
                             + `The guidance scale was increased from ${renderRequest.guidance_scale - this.#guidanceScaleInterval} to ${renderRequest.guidance_scale}.`;
                         break;
                     case BotInteraction.Randomize:
-                        reply.content = `Two AIs whisper to each other over the the ancient \`TCP/IP\` protocol. They present ${interaction.member} with this.`;
-                        reply.files.push(Buffer.from(renderRequest.prompt, BufferEncoding.UTF8));
+                        {
+                            reply.content = `Two AIs whisper to each other over the the ancient \`TCP/IP\` protocol. They present ${interaction.member} with this.`;
+
+                            const promptBuffer = Buffer.from(renderRequest.prompt, BufferEncoding.UTF8);
+                            reply.files.push(new AttachmentBuilder(promptBuffer, {
+                                name: `${renderRequest.prompt.substring(0, 64)}.txt`
+                            }));
+                        }
                         break;
                 }
 
