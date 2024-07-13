@@ -53,7 +53,7 @@ export class OllamaClient {
 
         this.#logger(LogLevel.Info, `Calling ollama API at ${this.#host} with the prompt: ${message}.`);
 
-        if(context) {
+        if(context && context.length) {
             this.#logger(LogLevel.Info, `A context value of ${context.join(', ')} is provided.`);
         }
 

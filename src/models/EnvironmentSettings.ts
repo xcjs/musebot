@@ -83,7 +83,7 @@ export class EnvironmentSettings {
         this.#logger(LogLevel.Info, `MUSEBOT_OLLAMA_HOSTS: ${this.ollamaHosts.join(', ')}`);
         this.#logger(LogLevel.Info, `MUSEBOT_OLLAMA_MODELS: ${this.ollamaModels.join(', ')}`);
         this.#logger(LogLevel.Info, `MUSEBOT_OLLAMA_SYSTEM_PROMPT: ${this.ollamaSystemPrompt}`);
-        this.#logger(LogLevel.Info, `MUSEBOT_EASY_DIFFUSION_OLLAMA_PROMPTS: ${this.easyDiffusionOllamaPrompts.join(', ')}`);
+        this.#logger(LogLevel.Info, `MUSEBOT_EASY_DIFFUSION_OLLAMA_PROMPTS: ${this.easyDiffusionOllamaPrompts.join(' | ')}`);
     }
 
     #validate(shouldLogEnvironmentSettings: boolean): void {

@@ -31,7 +31,7 @@ import { BaseDiscordClient } from './BaseDiscordClient.js';
 import { OllamaClient } from '../ollama/OllamaClient.js';
 import { DiscordConstants } from './enums/DiscordConstants.js';
 import { MAX_FILE_NAME_LENGTH, MAX_TEXT_LINE_LENGTH } from '../../../enums/FileConstants.js';
-import { wrapTextToMaxLineLength } from '../../../utilities/string-utilities.js';
+import { wrapText } from '../../../utilities/string-utilities.js';
 import { getRandomInt } from '../../../utilities/random-utilities.js';
 
 export class DiscordEasyDiffusionClient extends BaseDiscordClient {
@@ -279,7 +279,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
                         {
                             reply.content = `Two AIs whisper to each other over the the ancient \`TCP/IP\` protocol. They present ${interaction.member} with this.`;
 
-                            const promptBuffer = Buffer.from(wrapTextToMaxLineLength(renderRequest.prompt, MAX_TEXT_LINE_LENGTH),
+                            const promptBuffer = Buffer.from(wrapText(renderRequest.prompt, MAX_TEXT_LINE_LENGTH),
                                 BufferEncoding.UTF8);
                             reply.files.push(new AttachmentBuilder(promptBuffer, {
                                 name: `${renderRequest.prompt.substring(0, MAX_FILE_NAME_LENGTH)}.txt`
