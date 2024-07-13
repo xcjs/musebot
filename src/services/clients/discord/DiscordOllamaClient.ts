@@ -20,7 +20,7 @@ export class DiscordOllamaClient extends BaseDiscordClient {
     ollamaClients: Array<OllamaClient> = [];
     easyDiffusionClients: Array<EasyDiffusionClient> = [];
 
-    #context: Array<Array<number>> = [];
+    #context: Array<number> = [];
 
     constructor(environmentSettings: EnvironmentSettings, typingService: TypingService, featureService: FeatureService) {
         super(environmentSettings, typingService, featureService);
@@ -84,7 +84,7 @@ export class DiscordOllamaClient extends BaseDiscordClient {
         const ollamaClient = new OllamaClient(this.environmentSettings);
         this.ollamaClients.push(ollamaClient);
 
-        const context = this.#context.flat();
+        const context = this.#context;
 
         const botMention = message.mentions.members.find(x => x.id === this.client.user?.id)?.toString() || '';
 
@@ -103,7 +103,7 @@ export class DiscordOllamaClient extends BaseDiscordClient {
             }
         });
 
-        this.#context.push(exchange.response.context);
+        this.#context = exchange.response.context;
     }
 
     async #attachImage(message: Message, imagePrompt: string): Promise<void> {
