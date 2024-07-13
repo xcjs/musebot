@@ -273,6 +273,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
                         break;
                     case BotInteraction.Randomize:
                         reply.content = `Two AIs whisper to each other over the the ancient \`TCP/IP\` protocol. They present ${interaction.member} with this.`;
+                        reply.files.push(Buffer.from(renderRequest.prompt, BufferEncoding.UTF8));
                         break;
                 }
 
