@@ -1,5 +1,5 @@
-import { EnvironmentSettings } from '../EnvironmentSettings';
-import { SupportedFeature } from './enum/SupportedFeature';
+import { EnvironmentSettings } from '../EnvironmentSettings.js';
+import { SupportedFeature } from './enum/SupportedFeature.js';
 
 export class FeatureService {
     #environmentSettings: EnvironmentSettings;
