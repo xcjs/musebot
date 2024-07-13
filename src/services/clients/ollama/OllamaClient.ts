@@ -1,6 +1,6 @@
 import { Logger, LogLevel } from 'meklog';
 
-import { EnvironmentSettings } from '../../../models/EnvironmentSettings.js';
+import { EnvironmentSettings } from '../../EnvironmentSettings.js';
 import { GenerateRequest } from './models/GenerateRequest.js';
 import { getRandomInt } from '../../../utilities/random-utilities.js';
 import { ContentType } from '../../../enums/ContentType.js';

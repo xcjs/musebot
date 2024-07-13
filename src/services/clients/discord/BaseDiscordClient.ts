@@ -1,7 +1,7 @@
 import { Client as DiscordClient, GatewayIntentBits, Partials } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { EnvironmentSettings } from '../../../models/EnvironmentSettings.js';
+import { EnvironmentSettings } from '../../EnvironmentSettings.js';
 import { TypingService } from './services/TypingService.js';
 import { DiscordConstants } from './enums/DiscordConstants.js';
 

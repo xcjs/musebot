@@ -10,7 +10,7 @@ import { JavaScriptType } from '../../../enums/JavaScriptType.js';
 import { IHttpExchange } from '../../../models/IHttpExchange.js';
 import { RenderRequest } from './models/requests/RenderRequest.js';
 import { getRandomInt } from '../../../utilities/random-utilities.js';
-import { EnvironmentSettings } from '../../../models/EnvironmentSettings.js';
+import { EnvironmentSettings } from '../../EnvironmentSettings.js';
 import { StreamStatus } from './enums/StreamStatus.js';
 import { IRenderResponse } from './models/responses/IRenderResponse.js';
 import { IStreamResponse } from './models/responses/IStreamResponse.js';

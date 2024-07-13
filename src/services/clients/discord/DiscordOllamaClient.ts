@@ -1,7 +1,7 @@
 import { AttachmentBuilder, Events, Message, MessageType } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { EnvironmentSettings } from '../../../models/EnvironmentSettings.js';
+import { EnvironmentSettings } from '../../EnvironmentSettings.js';
 import { TypingService } from './services/TypingService.js';
 import { BaseDiscordClient } from './BaseDiscordClient.js';
 import { DiscordPresenceStatus } from './enums/DiscordPresenceStatus.js';
