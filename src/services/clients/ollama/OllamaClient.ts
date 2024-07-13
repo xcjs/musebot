@@ -51,7 +51,7 @@ export class OllamaClient {
 
         this.#isBusy = true;
 
-        this.#logger(LogLevel.Info, `Calling ollama API at ${this.#host} with the prompt: message.`);
+        this.#logger(LogLevel.Info, `Calling ollama API at ${this.#host} with the prompt: ${message}.`);
 
         if(context) {
             this.#logger(LogLevel.Info, `A context value of ${context.join(', ')} is provided.`);
