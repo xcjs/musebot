@@ -1,4 +1,4 @@
-import { Events, Message, MessageType } from 'discord.js';
+import { AttachmentBuilder, Events, Message, MessageType } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
 import { EnvironmentSettings } from '../../../models/EnvironmentSettings.js';
@@ -8,9 +8,15 @@ import { DiscordPresenceStatus } from './enums/DiscordPresenceStatus.js';
 import { JavaScriptType } from '../../../enums/JavaScriptType.js';
 import { OllamaClient } from '../ollama/OllamaClient.js';
 import { DiscordConstants } from './enums/DiscordConstants.js';
+import { splitText } from '../../../utilities/string-utilities.js';
+import { EasyDiffusionClient } from '../easy-diffusion/EasyDiffusionClient.js';
+import { BufferEncoding } from '../../../enums/BufferEncoding.js';
+import { RenderRequest } from '../easy-diffusion/models/requests/RenderRequest.js';
+import { MAX_FILE_NAME_LENGTH } from '../../../enums/FileConstants.js';
 
 export class DiscordOllamaClient extends BaseDiscordClient {
     ollamaClients: Array<OllamaClient> = [];
+    easyDiffusionClients: Array<EasyDiffusionClient> = [];
 
     #context: Array<Array<number>> = [];
 
@@ -85,35 +91,63 @@ export class DiscordOllamaClient extends BaseDiscordClient {
         await this.typingService.startTyping(message, () => DiscordOllamaClient.shouldBeTyping(this));
 
         const exchange = await ollamaClient.sendMessage(formattedMessage, context);
-        const responses = this.#splitResponse(exchange.response.response);
+        const responses = splitText(exchange.response.response, DiscordConstants.ContentMaxLength);
 
-        responses.forEach(async response => {
-            await message.reply(response);
+        responses.forEach(async (response, i) => {
+            if(i < responses.length - 1) {
+                await message.reply(response);
+            } else {
+                const lastReply = await message.reply(response);
+                await this.#attachImage(lastReply, exchange.response.response);
+            }
         });
 
         this.#context.push(exchange.response.context);
     }
 
-    #splitResponse(response: string): Array<string> {
-        const responses: Array<string> = [];
+    async #attachImage(message: Message, imagePrompt: string): Promise<void> {
+        const easyDiffusionClient = new EasyDiffusionClient(this.environmentSettings);
+        this.easyDiffusionClients.push(easyDiffusionClient);
 
-        while(response.length > 0) {
-            if(response.length <= DiscordConstants.ContentMaxLength) {
-                responses.push(response);
-                return responses;
-            }
+        this.logger(LogLevel.Info, `Image render prompt: ${imagePrompt}`);
 
-            const splitPosition = response.substring(0, DiscordConstants.ContentMaxLength).lastIndexOf(' ');
-            responses.push(response.substring(0, splitPosition));
+        await this.typingService.startTyping(message, () => DiscordOllamaClient.shouldBeTyping(this));
 
-            response = response.substring(splitPosition);
+        const renderExchange = await easyDiffusionClient.render(imagePrompt);
+
+        if(renderExchange === null || renderExchange.response === null) {
+            return;
         }
 
-        return responses;
+        const streamResponse = await easyDiffusionClient.stream(renderExchange);
+
+        if(streamResponse === null) {
+            return;
+        }
+
+        const renderRequest = renderExchange.request;
+
+        const files: Array<AttachmentBuilder> = [];
+        const imageBuffer = Buffer.from(streamResponse.output[0].data.split(",")[1], BufferEncoding.Base64);
+
+        files.push(new AttachmentBuilder(imageBuffer, {
+            name: `${this.#getFileNameFromPrompt(renderRequest)}.${renderRequest.output_format}`
+        }));
+
+        await message.edit({
+            content: message.content,
+            files: files
+        });
+    }
+
+    #getFileNameFromPrompt(renderRequest: RenderRequest): string {
+        return `${renderRequest.seed}_${renderRequest.prompt}`.substring(0, MAX_FILE_NAME_LENGTH);
     }
 
     static shouldBeTyping(client: DiscordOllamaClient): boolean {
         client.ollamaClients = client.ollamaClients.filter(x => x.isBusy);
-        return client.ollamaClients.length > 0;
+        client.easyDiffusionClients = client.easyDiffusionClients.filter(x => x.isBusy);
+
+        return client.ollamaClients.length > 0 || client.easyDiffusionClients.length > 0;
     }
 }
