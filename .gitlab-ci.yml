@@ -1,5 +1,6 @@
 stages:
   - lint
+  - transpile
   - deploy
   - build
 
@@ -12,6 +13,16 @@ Lint:
     - npm install
   script:
     - npm run lint
+
+Transpile:
+  stage: transpile
+  image: node:lts
+  tags:
+    - docker
+  before_script:
+    - npm install
+  script:
+    - npm run parcel
 
 Deploy:
   stage: deploy
@@ -28,21 +39,9 @@ Deploy:
     - docker build -t $CI_REGISTRY/xcjs/musebot:latest .
     - docker push $CI_REGISTRY/xcjs/musebot:latest
 
-Build:
+Build (Nexe):
   stage: build
   image: node:lts
-  tags:
-    - docker
-  before_script:
-    - npm install
-  script:
-    - npm run build
-
-Build Distributable:
-  stage: build
-  image: node:lts
-  only:
-    - main
   tags:
     - docker
   before_script:
@@ -51,7 +50,7 @@ Build Distributable:
     - npm run build:bin
     - cp -f .env.example bin/.env
     - cp -f logo.jpg bin/logo.jpg
-    - cp -f README.md bin/README.md
+    - cp -rf docs/ bin/docs/
   artifacts:
     name: musebot_linux_amd64
     paths:

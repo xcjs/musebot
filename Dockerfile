@@ -1,7 +1,8 @@
-FROM node:20
+FROM node:lts
 
+WORKDIR /home/node/app
 COPY . .
-RUN npm i --omit=dev --no-package-lock && npm run build
+RUN npm install --omit dev --no-package-lock && npm run build
 
 USER node
 

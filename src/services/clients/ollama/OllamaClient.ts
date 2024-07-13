@@ -31,7 +31,7 @@ export class OllamaClient {
         const host = this.#selectHost(this.#environmentSettings.ollamaHosts);
 
         if(host === null) {
-            throw new Error('At least one EasyDiffusion host must be provided.');
+            throw new Error('At least one Ollama host must be provided.');
         }
 
         this.#host = host;
@@ -50,6 +50,12 @@ export class OllamaClient {
         }
 
         this.#isBusy = true;
+
+        this.#logger(LogLevel.Info, `Calling ollama API at ${this.#host} with the prompt: message.`);
+
+        if(context) {
+            this.#logger(LogLevel.Info, `A context value of ${context.join(', ')} is provided.`);
+        }
 
         try {
             const response = await fetch(new URL('api/generate', this.#host), {

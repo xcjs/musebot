@@ -167,7 +167,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
             case BotInteraction.Randomize:
                 {
                     const ollamaClient = new OllamaClient(this.environmentSettings);
-                    const exchange = await ollamaClient.sendMessage('Describe something or someone with extraordinary detail.', null);
+                    const exchange = await ollamaClient.sendMessage(this.environmentSettings.easyDiffusionOllamaPrompt, null);
 
                     const renderData = await this.#renderImage(interaction, exchange.response.response);
                     await this.#reply(interaction, renderData);

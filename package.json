@@ -1,26 +1,29 @@
 {
   "name": "musebot",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "A Discord bot that connects to various generative AI APIs.",
   "private": "true",
   "license": "ISC",
-  "main": "build/app.js",
+  "main": "dist/musebot.cjs",
   "type": "module",
   "scripts": {
-    "prestart": "npm run build",
+    "prestart": "npm run parcel",
     "start": "node .",
     "start:only": "node .",
     "build": "tsc",
+    "preparcel": "npm run build",
+    "parcel": "parcel build build/src/app.js",
     "dev": "tsc -w",
-    "prebuild:bin": "npm run build",
-    "build:bin": "npx nexe -b --python /usr/bin/python3 -o bin/musebot build/bot.js",
-    "lint": "eslint"
+    "prebuild:bin": "npm run parcel",
+    "build:bin": "npx nexe -b --python /usr/bin/python3 -o bin/musebot dist/musebot.cjs",
+    "lint": "eslint",
+    "clean": "mkdir -p .parcel-cache/ bin/ build/ dist/ && rm -r .parcel-cache/ bin/ build/ dist/"
   },
   "dependencies": {
     "discord.js": "14.14.1",
     "dotenv": "^16.3.1",
     "meklog": "^1.0.2",
-    "node-fetch": "^3.3.2",
+    "parcel": "^2.12.0",
     "typescript": "^5.5.2"
   },
   "devDependencies": {

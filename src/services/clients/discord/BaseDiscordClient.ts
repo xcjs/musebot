@@ -1,8 +1,9 @@
 import { Client as DiscordClient, GatewayIntentBits, Partials } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { EnvironmentSettings } from '../../../models/EnvironmentSettings';
-import { TypingService } from './services/TypingService';
+import { EnvironmentSettings } from '../../../models/EnvironmentSettings.js';
+import { TypingService } from './services/TypingService.js';
+import { DiscordConstants } from './enums/DiscordConstants.js';
 
 export class BaseDiscordClient {
     protected environmentSettings: EnvironmentSettings;
@@ -27,7 +28,8 @@ export class BaseDiscordClient {
             allowedMentions: { users: [], roles: [], repliedUser: false },
             partials: [
                 Partials.Channel
-            ]
+            ],
+            shards: DiscordConstants.ShardCountAuto
         });
 
         this.logger = new Logger(this.environmentSettings.isProduction, 'BaseDiscordClient');

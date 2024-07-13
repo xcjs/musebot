@@ -3,6 +3,7 @@ import process from 'node:process';
 import dotenv from 'dotenv';
 import { Logger, LogLevel } from 'meklog';
 
+import nodePackage from '../../package.json';
 import { NodeEnvironment } from '../enums/NodeEnvironment.js';
 import { BotFunction } from '../enums/BotFunction.js';
 
@@ -24,6 +25,8 @@ export class EnvironmentSettings {
     ollamaModels: Array<string> = [];
     ollamaSystemPrompt: string;
 
+    easyDiffusionOllamaPrompt: string = 'Describe something or someone with extraordinary detail.';
+
     botRequiresMention: boolean = true;
     errorMessage: string = 'An error occurred while generating a response. Please try again later.';
 
@@ -36,8 +39,8 @@ export class EnvironmentSettings {
     constructor(shouldLogEnvironmentSettings: boolean = true) {
         dotenv.config();
 
-        this.packageName = process.env.npm_package_name;
-        this.version = process.env.npm_package_version;
+        this.packageName = nodePackage.name;
+        this.version = nodePackage.version;
 
         this.nodeEnvironment = process.env.NODE_ENV as NodeEnvironment;
 
@@ -55,6 +58,8 @@ export class EnvironmentSettings {
         this.ollamaHosts = process.env.MUSEBOT_OLLAMA_HOSTS?.trim().split(',').map(url => new URL(url)) || [];
         this.ollamaModels = process.env.MUSEBOT_OLLAMA_MODELS?.trim().split(',').filter(x => x.length > 0) || [];
         this.ollamaSystemPrompt = process.env.MUSEBOT_OLLAMA_SYSTEM_PROMPT || '';
+
+        this.easyDiffusionOllamaPrompt = process.env.MUSEBOT_EASY_DIFFUSION_OLLAMA_PROMPT || this.easyDiffusionOllamaPrompt;
 
         this.#logger = new Logger(this.isProduction, 'EnvironmentSettings');
 
@@ -78,6 +83,7 @@ export class EnvironmentSettings {
         this.#logger(LogLevel.Info, `MUSEBOT_OLLAMA_HOSTS: ${this.ollamaHosts.join(', ')}`);
         this.#logger(LogLevel.Info, `MUSEBOT_OLLAMA_MODELS: ${this.ollamaModels.join(', ')}`);
         this.#logger(LogLevel.Info, `MUSEBOT_OLLAMA_SYSTEM_PROMPT: ${this.ollamaSystemPrompt}`);
+        this.#logger(LogLevel.Info, `MUSEBOT_EASY_DIFFUSION_OLLAMA_PROMPT: ${this.easyDiffusionOllamaPrompt}`);
     }
 
     #validate(shouldLogEnvironmentSettings: boolean): void {
