@@ -16,7 +16,7 @@ import {Logger, LogLevel } from 'meklog';
 
 import { EasyDiffusionClient } from '../easy-diffusion/EasyDiffusionClient.js';
 import { ContentType } from '../../../enums/ContentType.js';
-import { EnvironmentSettings } from '../../../models/EnvironmentSettings.js';
+import { EnvironmentSettings } from '../../EnvironmentSettings.js';
 import { BufferEncoding } from '../../../enums/BufferEncoding.js';
 import { DiscordPresenceStatus } from './enums/DiscordPresenceStatus.js';
 import { JavaScriptType } from '../../../enums/JavaScriptType.js';
@@ -33,6 +33,8 @@ import { DiscordConstants } from './enums/DiscordConstants.js';
 import { MAX_FILE_NAME_LENGTH, MAX_TEXT_LINE_LENGTH } from '../../../enums/FileConstants.js';
 import { wrapText } from '../../../utilities/string-utilities.js';
 import { getRandomInt } from '../../../utilities/random-utilities.js';
+import { FeatureService } from '../../features/FeatureService.js';
+import { SupportedFeature } from '../../features/enum/SupportedFeature.js';
 
 export class DiscordEasyDiffusionClient extends BaseDiscordClient {
     easyDiffusionClients: Array<EasyDiffusionClient> = [];
@@ -40,8 +42,8 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
 
     #guidanceScaleInterval = .5;
 
-    constructor(environmentSettings: EnvironmentSettings, typingService: TypingService) {
-        super(environmentSettings, typingService);
+    constructor(environmentSettings: EnvironmentSettings, typingService: TypingService, featureService: FeatureService) {
+        super(environmentSettings, typingService, featureService);
 
         this.environmentSettings = environmentSettings;
         this.typingService = typingService;
@@ -248,7 +250,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
             buttonRow.addComponents(guidanceScalePlusButton);
         }
 
-        if(this.environmentSettings.ollamaHosts.length > 0) {
+        if(this.featureService.hasFeature(SupportedFeature.RandomImageGeneration)) {
             buttonRow.addComponents(randomizeButton);
             nonDescriptionButtonRow.addComponents(randomizeButton);
         }

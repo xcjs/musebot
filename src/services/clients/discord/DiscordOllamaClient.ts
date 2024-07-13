@@ -1,7 +1,7 @@
 import { AttachmentBuilder, Events, Message, MessageType } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { EnvironmentSettings } from '../../../models/EnvironmentSettings.js';
+import { EnvironmentSettings } from '../../EnvironmentSettings.js';
 import { TypingService } from './services/TypingService.js';
 import { BaseDiscordClient } from './BaseDiscordClient.js';
 import { DiscordPresenceStatus } from './enums/DiscordPresenceStatus.js';
@@ -13,6 +13,8 @@ import { EasyDiffusionClient } from '../easy-diffusion/EasyDiffusionClient.js';
 import { BufferEncoding } from '../../../enums/BufferEncoding.js';
 import { RenderRequest } from '../easy-diffusion/models/requests/RenderRequest.js';
 import { MAX_FILE_NAME_LENGTH } from '../../../enums/FileConstants.js';
+import { FeatureService } from '../../features/FeatureService.js';
+import { SupportedFeature } from '../../features/enum/SupportedFeature.js';
 
 export class DiscordOllamaClient extends BaseDiscordClient {
     ollamaClients: Array<OllamaClient> = [];
@@ -20,8 +22,8 @@ export class DiscordOllamaClient extends BaseDiscordClient {
 
     #context: Array<Array<number>> = [];
 
-    constructor(environmentSettings: EnvironmentSettings, typingService: TypingService) {
-        super(environmentSettings, typingService);
+    constructor(environmentSettings: EnvironmentSettings, typingService: TypingService, featureService: FeatureService) {
+        super(environmentSettings, typingService, featureService);
 
         this.environmentSettings = environmentSettings;
         this.typingService = typingService;
@@ -94,11 +96,10 @@ export class DiscordOllamaClient extends BaseDiscordClient {
         const responses = splitText(exchange.response.response, DiscordConstants.ContentMaxLength);
 
         responses.forEach(async (response, i) => {
-            if(i < responses.length - 1) {
-                await message.reply(response);
-            } else {
-                const lastReply = await message.reply(response);
-                await this.#attachImage(lastReply, exchange.response.response);
+            const reply = await message.reply(response);
+
+            if(i === responses.length - 1 && this.featureService.hasFeature(SupportedFeature.ImagesAttachedToText)) {
+                await this.#attachImage(reply, exchange.response.response);
             }
         });
 

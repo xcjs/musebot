@@ -1,6 +1,6 @@
 import { ButtonInteraction, Message } from 'discord.js';
 import {Logger, LogLevel } from 'meklog';
-import { EnvironmentSettings } from '../../../../models/EnvironmentSettings';
+import { EnvironmentSettings } from '../../../EnvironmentSettings';
 
 export class TypingService {
     #environmentSettings: EnvironmentSettings;

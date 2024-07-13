@@ -108,7 +108,7 @@ export class EnvironmentSettings {
         }
 
         if(this.ollamaModels.length === 0) {
-            this.#logger(LogLevel.Info, 'MUSEBOT_OLLAMA_MODELS had no value - a random model will be selected per response.');
+            this.#logger(LogLevel.Info, 'MUSEBOT_OLLAMA_MODELS had no value - random model selection is not yet supported.');
         }
     }
 }
