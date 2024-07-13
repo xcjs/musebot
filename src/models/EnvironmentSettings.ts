@@ -3,7 +3,7 @@ import process from 'node:process';
 import dotenv from 'dotenv';
 import { Logger, LogLevel } from 'meklog';
 
-import nodePackage from '../../package.json';
+import nodePackage from '../../package.json' with { type: 'json' };
 import { NodeEnvironment } from '../enums/NodeEnvironment.js';
 import { BotFunction } from '../enums/BotFunction.js';
 
