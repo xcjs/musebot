@@ -59,7 +59,7 @@ export class EnvironmentSettings {
         this.ollamaModels = process.env.MUSEBOT_OLLAMA_MODELS?.trim().split(',').filter(x => x.length > 0) || [];
         this.ollamaSystemPrompt = process.env.MUSEBOT_OLLAMA_SYSTEM_PROMPT || '';
 
-        this.easyDiffusionOllamaPrompts = process.env.MUSEBOT_EASY_DIFFUSION_OLLAMA_PROMPTS.split('|') || this.easyDiffusionOllamaPrompts;
+        this.easyDiffusionOllamaPrompts = process.env.MUSEBOT_EASY_DIFFUSION_OLLAMA_PROMPTS?.split('|') || this.easyDiffusionOllamaPrompts;
 
         this.#logger = new Logger(this.isProduction, 'EnvironmentSettings');
 
