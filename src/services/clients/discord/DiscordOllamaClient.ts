@@ -59,7 +59,7 @@ export class DiscordOllamaClient extends BaseDiscordClient {
         }
 
         this.logger(LogLevel.Info, 'Replying to message...');
-        await this.#reply(message);
+        await this.#replyWithStream(message);
     }
 
     #shouldReply(message: Message): boolean {
@@ -102,6 +102,43 @@ export class DiscordOllamaClient extends BaseDiscordClient {
                 await this.#attachImage(reply, exchange.response.response);
             }
         });
+
+        this.#context = exchange.response.context;
+    }
+
+    async #replyWithStream(message: Message): Promise<void> {
+        const ollamaClient = new OllamaClient(this.environmentSettings);
+        this.ollamaClients.push(ollamaClient);
+
+        const context = this.#context;
+
+        const botMention = message.mentions.members.find(x => x.id === this.client.user?.id)?.toString() || '';
+
+        const formattedMessage = `${message.author.displayName}: ${message.content.replaceAll(botMention, '')}`;
+
+        await this.typingService.startTyping(message, () => DiscordOllamaClient.shouldBeTyping(this));
+
+        const exchange = await ollamaClient.sendMessage(formattedMessage, context);
+        //const responses = splitText(exchange.response.response, DiscordConstants.ContentMaxLength);
+
+        let reply: Message<boolean> | null = null;
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        for await (const token of exchange.response as any) {
+            if(reply === null || reply.content.length + token.length === DiscordConstants.ContentMaxLength) {
+                reply = await message.reply(token);
+            } else {
+                reply.edit(`${reply.content}${token}`);
+            }
+        }
+
+        // responses.forEach(async (response, i) => {
+        //     const reply = await message.reply(response);
+
+        //     if(i === responses.length - 1 && this.featureService.hasFeature(SupportedFeature.ImagesAttachedToText)) {
+        //         await this.#attachImage(reply, exchange.response.response);
+        //     }
+        // });
 
         this.#context = exchange.response.context;
     }

@@ -1,5 +1,6 @@
 import { Logger, LogLevel } from 'meklog';
 import { GenerateRequest, GenerateResponse, Ollama } from 'ollama';
+//import { AbortableAsyncIterator } from '../../../../node_modules/ollama/src/utils';
 
 import { EnvironmentSettings } from '../../EnvironmentSettings.js';
 import { getRandomInt } from '../../../utilities/random-utilities.js';
@@ -56,6 +57,36 @@ export class OllamaClient {
         try {
             this.#isBusy = true;
             const response = await this.#client.generate({ ...request, stream: false });
+            this.#isBusy = false;
+
+            return {
+                request,
+                response
+            };
+        } catch(error) {
+            this.#logger(LogLevel.Info, error);
+            this.#isBusy = false;
+            return null;
+        }
+    }
+
+    async sendMessageAndGetStream(message: string, context: Array<number> | null): Promise<IHttpExchange<GenerateRequest, AsyncIterable<GenerateResponse>> | null> {
+        const request: GenerateRequest = {
+            context,
+            model: this.#model,
+            prompt: message,
+            system: this.#environmentSettings.ollamaSystemPrompt
+        };
+
+        this.#logger(LogLevel.Info, `Calling Ollama API at ${this.#host} with the prompt: ${message}.`);
+
+        if(context && context.length) {
+            this.#logger(LogLevel.Info, `A context value of ${context.join(', ')} is provided.`);
+        }
+
+        try {
+            this.#isBusy = true;
+            const response = await this.#client.generate({ ...request, stream: true });
             this.#isBusy = false;
 
             return {
