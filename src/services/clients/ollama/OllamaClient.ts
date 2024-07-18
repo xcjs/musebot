@@ -69,7 +69,7 @@ export class OllamaClient {
         }
     }
 
-    calculateTokensPerSecond(response: GenerateResponse): number {
+    static calculateTokensPerSecond(response: GenerateResponse): number {
         return response.eval_count / response.eval_duration * (10 ** 9);
     }
 
