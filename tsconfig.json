@@ -7,7 +7,10 @@
     "outDir": "build/",
     "sourceMap": true,
     "skipLibCheck": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "lib": [
+      "ES2022", "dom", "dom.iterable"
+    ]
   },
     "watchOptions": {
     // Use native file system events for files and directories
