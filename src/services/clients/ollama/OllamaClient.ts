@@ -1,18 +1,15 @@
 import { Logger, LogLevel } from 'meklog';
+import { GenerateRequest, GenerateResponse, Ollama } from 'ollama';
 
 import { EnvironmentSettings } from '../../EnvironmentSettings.js';
-import { GenerateRequest } from './models/GenerateRequest.js';
 import { getRandomInt } from '../../../utilities/random-utilities.js';
-import { ContentType } from '../../../enums/ContentType.js';
-import { HttpMethod } from '../../../enums/HttpMethod.js';
-import { HttpHeader } from '../../../enums/HttpHeader.js';
-import { GenerateResponse } from './models/GenerateResponse.js';
 import { IHttpExchange } from '../../../models/IHttpExchange.js';
 
 export class OllamaClient {
     #environmentSettings: EnvironmentSettings;
 
     #logger;
+    #client: Ollama;
 
     #host: URL;
     #model: string;
@@ -35,48 +32,45 @@ export class OllamaClient {
         }
 
         this.#host = host;
+        this.#client = new Ollama({
+            host: host.toString(),
+        });
+
         this.#model = this.#selectModel(this.#environmentSettings.ollamaModels);
     }
 
     async sendMessage(message: string, context: Array<number> | null): Promise<IHttpExchange<GenerateRequest, GenerateResponse | null>> {
-        const request = new GenerateRequest();
+        const request: GenerateRequest = {
+            context,
+            model: this.#model,
+            prompt: message,
+            system: this.#environmentSettings.ollamaSystemPrompt
+        };
 
-        request.system = this.#environmentSettings.ollamaSystemPrompt;
-        request.model = this.#model;
-        request.prompt = message;
-
-        if(context) {
-            request.context = context;
-        }
-
-        this.#isBusy = true;
-
-        this.#logger(LogLevel.Info, `Calling ollama API at ${this.#host} with the prompt: ${message}.`);
+        this.#logger(LogLevel.Info, `Calling Ollama API at ${this.#host} with the prompt: ${message}.`);
 
         if(context && context.length) {
             this.#logger(LogLevel.Info, `A context value of ${context.join(', ')} is provided.`);
         }
 
         try {
-            const response = await fetch(new URL('api/generate', this.#host), {
-                method: HttpMethod.Post,
-                headers: {
-                    [HttpHeader.ContentType]: ContentType.Json
-                },
-                body: JSON.stringify(request)
-            });
-
+            this.#isBusy = true;
+            const response = await this.#client.generate({ ...request, stream: false });
             this.#isBusy = false;
 
             return {
                 request,
-                response: await response.json() as GenerateResponse
+                response
             };
         } catch(error) {
             this.#logger(LogLevel.Info, error);
             this.#isBusy = false;
             return null;
         }
+    }
+
+    calculateTokensPerSecond(response: GenerateResponse): number {
+        return response.eval_count / response.eval_duration * (10 ** 9);
     }
 
     #selectHost(hosts: Array<URL>) {
