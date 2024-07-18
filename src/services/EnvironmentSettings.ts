@@ -24,6 +24,7 @@ export class EnvironmentSettings {
     ollamaHosts: Array<URL> = [];
     ollamaModels: Array<string> = [];
     ollamaSystemPrompt: string;
+    ollamaStreamsResponse: boolean = false;
 
     easyDiffusionOllamaPrompts: Array<string> = ['Describe something or someone with extraordinary detail.'];
 
@@ -58,6 +59,7 @@ export class EnvironmentSettings {
         this.ollamaHosts = process.env.MUSEBOT_OLLAMA_HOSTS?.trim().split(',').map(url => new URL(url)) || [];
         this.ollamaModels = process.env.MUSEBOT_OLLAMA_MODELS?.trim().split(',').filter(x => x.length > 0) || [];
         this.ollamaSystemPrompt = process.env.MUSEBOT_OLLAMA_SYSTEM_PROMPT || '';
+        this.ollamaStreamsResponse = (process.env.MUSEBOT_OLLAMA_STREAMS_RESPONSE?.trim().toLowerCase() === true.toString());
 
         this.easyDiffusionOllamaPrompts = process.env.MUSEBOT_EASY_DIFFUSION_OLLAMA_PROMPTS?.split('|') || this.easyDiffusionOllamaPrompts;
 

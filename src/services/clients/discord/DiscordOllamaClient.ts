@@ -1,4 +1,4 @@
-import { AttachmentBuilder, Events, Message, MessageType } from 'discord.js';
+import { AttachmentBuilder, ButtonInteraction, Events, Message, MessageType } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
 import { EnvironmentSettings } from '../../EnvironmentSettings.js';
@@ -21,6 +21,12 @@ export class DiscordOllamaClient extends BaseDiscordClient {
     easyDiffusionClients: Array<EasyDiffusionClient> = [];
 
     #context: Array<number> = [];
+
+    #isBusy = false;
+
+    get isBusy() {
+        return this.#isBusy;
+    }
 
     constructor(environmentSettings: EnvironmentSettings, typingService: TypingService, featureService: FeatureService) {
         super(environmentSettings, typingService, featureService);
@@ -59,7 +65,12 @@ export class DiscordOllamaClient extends BaseDiscordClient {
         }
 
         this.logger(LogLevel.Info, 'Replying to message...');
-        await this.#replyWithStream(message);
+
+        if(this.environmentSettings.ollamaStreamsResponse) {
+            await this.#replyWithStream(message);
+        } else {
+            await this.#reply(message);
+        }
     }
 
     #shouldReply(message: Message): boolean {
@@ -93,6 +104,12 @@ export class DiscordOllamaClient extends BaseDiscordClient {
         await this.typingService.startTyping(message, () => DiscordOllamaClient.shouldBeTyping(this));
 
         const exchange = await ollamaClient.sendMessage(formattedMessage, context);
+
+        if(exchange === null) {
+            await this.#replyWithError(message);
+            return;
+        }
+
         const responses = splitText(exchange.response.response, DiscordConstants.ContentMaxLength);
 
         responses.forEach(async (response, i) => {
@@ -117,30 +134,57 @@ export class DiscordOllamaClient extends BaseDiscordClient {
         const formattedMessage = `${message.author.displayName}: ${message.content.replaceAll(botMention, '')}`;
 
         await this.typingService.startTyping(message, () => DiscordOllamaClient.shouldBeTyping(this));
+        this.#isBusy = true;
 
-        const exchange = await ollamaClient.sendMessage(formattedMessage, context);
+        const exchange = await ollamaClient.sendMessageAndGetStream(formattedMessage, context);
         //const responses = splitText(exchange.response.response, DiscordConstants.ContentMaxLength);
 
-        let reply: Message<boolean> | null = null;
+        if(exchange === null) {
+            await this.#replyWithError(message);
+            this.#isBusy = false;
+            return;
+        }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        for await (const token of exchange.response as any) {
-            if(reply === null || reply.content.length + token.length === DiscordConstants.ContentMaxLength) {
-                reply = await message.reply(token);
-            } else {
-                reply.edit(`${reply.content}${token}`);
+        let reply: Message<boolean> | null = null;
+        let startTime = performance.now();
+        let fullResponse = '';
+        let responseBatch = '';
+
+        for await (const response of exchange.response) {
+            console.log(`Appending "${response.response}"`);
+            responseBatch += response.response;
+
+            if(performance.now() - startTime >= 1000 / DiscordConstants.MaxRequestsPerSecond || response.done) {
+                console.log('Flushing response batch.');
+
+                if(reply === null || reply.content.length + responseBatch.length > DiscordConstants.ContentMaxLength) {
+                    reply = await message.reply(responseBatch);
+                } else if(responseBatch.length > DiscordConstants.ContentMaxLength) {
+                    const responseBatches = splitText(responseBatch, DiscordConstants.ContentMaxLength);
+
+                    responseBatches.forEach(async (response) => {
+                        await message.reply(response);
+                    });
+                }
+                else {
+                    await reply.edit(`${reply.content}${responseBatch}`);
+                }
+
+                fullResponse += responseBatch;
+                responseBatch = '';
+
+                startTime = performance.now();
+            }
+
+            if(response.done) {
+                this.#context = response.context;
+                this.#isBusy = false;
             }
         }
 
-        // responses.forEach(async (response, i) => {
-        //     const reply = await message.reply(response);
-
-        //     if(i === responses.length - 1 && this.featureService.hasFeature(SupportedFeature.ImagesAttachedToText)) {
-        //         await this.#attachImage(reply, exchange.response.response);
-        //     }
-        // });
-
-        this.#context = exchange.response.context;
+        if(this.featureService.hasFeature(SupportedFeature.ImagesAttachedToText)) {
+            await this.#attachImage(reply, fullResponse);
+        }
     }
 
     async #attachImage(message: Message, imagePrompt: string): Promise<void> {
@@ -182,10 +226,16 @@ export class DiscordOllamaClient extends BaseDiscordClient {
         return `${renderRequest.seed}_${renderRequest.prompt}`.substring(0, MAX_FILE_NAME_LENGTH);
     }
 
+    async #replyWithError(message: Message | ButtonInteraction): Promise<void> {
+        await message.reply({ content: this.environmentSettings.errorMessage });
+    }
+
     static shouldBeTyping(client: DiscordOllamaClient): boolean {
         client.ollamaClients = client.ollamaClients.filter(x => x.isBusy);
         client.easyDiffusionClients = client.easyDiffusionClients.filter(x => x.isBusy);
 
-        return client.ollamaClients.length > 0 || client.easyDiffusionClients.length > 0;
+        return client.ollamaClients.length > 0
+            || client.easyDiffusionClients.length > 0
+            || client.isBusy;
     }
 }
