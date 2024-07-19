@@ -16,7 +16,7 @@ import {Logger, LogLevel } from 'meklog';
 
 import { EasyDiffusionClient } from '../easy-diffusion/EasyDiffusionClient.js';
 import { ContentType } from '../../../enums/ContentType.js';
-import { EnvironmentSettings } from '../../../models/EnvironmentSettings.js';
+import { EnvironmentSettings } from '../../EnvironmentSettings.js';
 import { BufferEncoding } from '../../../enums/BufferEncoding.js';
 import { DiscordPresenceStatus } from './enums/DiscordPresenceStatus.js';
 import { JavaScriptType } from '../../../enums/JavaScriptType.js';
@@ -30,6 +30,11 @@ import { TypingService } from './services/TypingService.js';
 import { BaseDiscordClient } from './BaseDiscordClient.js';
 import { OllamaClient } from '../ollama/OllamaClient.js';
 import { DiscordConstants } from './enums/DiscordConstants.js';
+import { MAX_FILE_NAME_LENGTH, MAX_TEXT_LINE_LENGTH } from '../../../enums/FileConstants.js';
+import { wrapText } from '../../../utilities/string-utilities.js';
+import { getRandomInt } from '../../../utilities/random-utilities.js';
+import { FeatureService } from '../../features/FeatureService.js';
+import { SupportedFeature } from '../../features/enum/SupportedFeature.js';
 
 export class DiscordEasyDiffusionClient extends BaseDiscordClient {
     easyDiffusionClients: Array<EasyDiffusionClient> = [];
@@ -37,8 +42,8 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
 
     #guidanceScaleInterval = .5;
 
-    constructor(environmentSettings: EnvironmentSettings, typingService: TypingService) {
-        super(environmentSettings, typingService);
+    constructor(environmentSettings: EnvironmentSettings, typingService: TypingService, featureService: FeatureService) {
+        super(environmentSettings, typingService, featureService);
 
         this.environmentSettings = environmentSettings;
         this.typingService = typingService;
@@ -167,7 +172,8 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
             case BotInteraction.Randomize:
                 {
                     const ollamaClient = new OllamaClient(this.environmentSettings);
-                    const exchange = await ollamaClient.sendMessage(this.environmentSettings.easyDiffusionOllamaPrompt, null);
+                    const prompt = this.environmentSettings.easyDiffusionOllamaPrompts[getRandomInt(0, this.environmentSettings.easyDiffusionOllamaPrompts.length - 1)];
+                    const exchange = await ollamaClient.sendMessage(prompt, null);
 
                     const renderData = await this.#renderImage(interaction, exchange.response.response);
                     await this.#reply(interaction, renderData);
@@ -244,7 +250,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
             buttonRow.addComponents(guidanceScalePlusButton);
         }
 
-        if(this.environmentSettings.ollamaHosts.length > 0) {
+        if(this.featureService.hasFeature(SupportedFeature.RandomImageGeneration)) {
             buttonRow.addComponents(randomizeButton);
             nonDescriptionButtonRow.addComponents(randomizeButton);
         }
@@ -272,7 +278,15 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
                             + `The guidance scale was increased from ${renderRequest.guidance_scale - this.#guidanceScaleInterval} to ${renderRequest.guidance_scale}.`;
                         break;
                     case BotInteraction.Randomize:
-                        reply.content = `Two AIs whisper to each other over the the ancient \`TCP/IP\` protocol. They present ${interaction.member} with this.`;
+                        {
+                            reply.content = `Two AIs whisper to each other over the the ancient \`TCP/IP\` protocol. They present ${interaction.member} with this.`;
+
+                            const promptBuffer = Buffer.from(wrapText(renderRequest.prompt, MAX_TEXT_LINE_LENGTH),
+                                BufferEncoding.UTF8);
+                            reply.files.push(new AttachmentBuilder(promptBuffer, {
+                                name: `${renderRequest.prompt.substring(0, MAX_FILE_NAME_LENGTH)}.txt`
+                            }));
+                        }
                         break;
                 }
 
@@ -306,7 +320,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
     }
 
     #getFileNameFromPrompt(renderRequest: RenderRequest): string {
-        return `${renderRequest.seed}_${renderRequest.prompt}`.substring(0, 128);
+        return `${renderRequest.seed}_${renderRequest.prompt}`.substring(0, MAX_FILE_NAME_LENGTH);
     }
 
     async #renderImage(interaction: Message | ButtonInteraction, prompt: string | RenderRequest |  null)

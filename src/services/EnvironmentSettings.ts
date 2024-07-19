@@ -3,7 +3,7 @@ import process from 'node:process';
 import dotenv from 'dotenv';
 import { Logger, LogLevel } from 'meklog';
 
-import nodePackage from '../../package.json';
+import nodePackage from '../../package.json' with { type: 'json' };
 import { NodeEnvironment } from '../enums/NodeEnvironment.js';
 import { BotFunction } from '../enums/BotFunction.js';
 
@@ -24,8 +24,9 @@ export class EnvironmentSettings {
     ollamaHosts: Array<URL> = [];
     ollamaModels: Array<string> = [];
     ollamaSystemPrompt: string;
+    ollamaStreamsResponse: boolean = false;
 
-    easyDiffusionOllamaPrompt: string = 'Describe something or someone with extraordinary detail.';
+    easyDiffusionOllamaPrompts: Array<string> = ['Describe something or someone with extraordinary detail.'];
 
     botRequiresMention: boolean = true;
     errorMessage: string = 'An error occurred while generating a response. Please try again later.';
@@ -58,8 +59,9 @@ export class EnvironmentSettings {
         this.ollamaHosts = process.env.MUSEBOT_OLLAMA_HOSTS?.trim().split(',').map(url => new URL(url)) || [];
         this.ollamaModels = process.env.MUSEBOT_OLLAMA_MODELS?.trim().split(',').filter(x => x.length > 0) || [];
         this.ollamaSystemPrompt = process.env.MUSEBOT_OLLAMA_SYSTEM_PROMPT || '';
+        this.ollamaStreamsResponse = (process.env.MUSEBOT_OLLAMA_STREAMS_RESPONSE?.trim().toLowerCase() === true.toString());
 
-        this.easyDiffusionOllamaPrompt = process.env.MUSEBOT_EASY_DIFFUSION_OLLAMA_PROMPT || this.easyDiffusionOllamaPrompt;
+        this.easyDiffusionOllamaPrompts = process.env.MUSEBOT_EASY_DIFFUSION_OLLAMA_PROMPTS?.split('|') || this.easyDiffusionOllamaPrompts;
 
         this.#logger = new Logger(this.isProduction, 'EnvironmentSettings');
 
@@ -83,7 +85,7 @@ export class EnvironmentSettings {
         this.#logger(LogLevel.Info, `MUSEBOT_OLLAMA_HOSTS: ${this.ollamaHosts.join(', ')}`);
         this.#logger(LogLevel.Info, `MUSEBOT_OLLAMA_MODELS: ${this.ollamaModels.join(', ')}`);
         this.#logger(LogLevel.Info, `MUSEBOT_OLLAMA_SYSTEM_PROMPT: ${this.ollamaSystemPrompt}`);
-        this.#logger(LogLevel.Info, `MUSEBOT_EASY_DIFFUSION_OLLAMA_PROMPT: ${this.easyDiffusionOllamaPrompt}`);
+        this.#logger(LogLevel.Info, `MUSEBOT_EASY_DIFFUSION_OLLAMA_PROMPTS: ${this.easyDiffusionOllamaPrompts.join(' | ')}`);
     }
 
     #validate(shouldLogEnvironmentSettings: boolean): void {
@@ -108,7 +110,7 @@ export class EnvironmentSettings {
         }
 
         if(this.ollamaModels.length === 0) {
-            this.#logger(LogLevel.Info, 'MUSEBOT_OLLAMA_MODELS had no value - a random model will be selected per response.');
+            this.#logger(LogLevel.Info, 'MUSEBOT_OLLAMA_MODELS had no value - random model selection is not yet supported.');
         }
     }
 }
