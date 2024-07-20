@@ -32,6 +32,8 @@ export class PromptRenderTask extends BaseTask {
         this.#logger = new Logger(environmentSettings.isProduction, 'PromptRenderTask');
     }
 
+    // TODO: Move all error handling up to the TaskQueue and reject promises
+    // internally within tasks.
     override async process(): Promise<void> {
         this.taskStatus = TaskStatus.Busy;
         const renderData = await this.#renderImage();
