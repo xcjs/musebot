@@ -35,6 +35,8 @@ import { wrapText } from '../../../utilities/string-utilities.js';
 import { getRandomInt } from '../../../utilities/random-utilities.js';
 import { FeatureService } from '../../features/FeatureService.js';
 import { SupportedFeature } from '../../features/enum/SupportedFeature.js';
+import { TaskQueue } from '../../tasks/services/TaskQueue.js';
+import { PromptRenderTask } from '../easy-diffusion/tasks/PromptRenderTask.js';
 
 export class DiscordEasyDiffusionClient extends BaseDiscordClient {
     easyDiffusionClients: Array<EasyDiffusionClient> = [];
@@ -42,8 +44,8 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
 
     #guidanceScaleInterval = .5;
 
-    constructor(environmentSettings: EnvironmentSettings, typingService: TypingService, featureService: FeatureService) {
-        super(environmentSettings, typingService, featureService);
+    constructor(environmentSettings: EnvironmentSettings, taskQueue: TaskQueue, typingService: TypingService, featureService: FeatureService) {
+        super(environmentSettings, taskQueue, typingService, featureService);
 
         this.environmentSettings = environmentSettings;
         this.typingService = typingService;
@@ -86,9 +88,11 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
 
         this.logger(LogLevel.Info, 'Replying to message...');
 
-        const renderData = await this.#renderImage(message, null);
+        // const renderData = await this.#renderImage(message, null);
 
-        await this.#reply(message, renderData);
+        // await this.#reply(message, renderData);
+
+        this.taskQueue.add(new PromptRenderTask(this.environmentSettings, this.client, message, null));
     }
 
     #shouldReply(message: Message): boolean {

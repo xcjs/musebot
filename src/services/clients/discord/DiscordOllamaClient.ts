@@ -15,6 +15,7 @@ import { RenderRequest } from '../easy-diffusion/models/requests/RenderRequest.j
 import { MAX_FILE_NAME_LENGTH } from '../../../enums/FileConstants.js';
 import { FeatureService } from '../../features/FeatureService.js';
 import { SupportedFeature } from '../../features/enum/SupportedFeature.js';
+import { TaskQueue } from '../../tasks/services/TaskQueue.js';
 
 export class DiscordOllamaClient extends BaseDiscordClient {
     ollamaClients: Array<OllamaClient> = [];
@@ -28,8 +29,8 @@ export class DiscordOllamaClient extends BaseDiscordClient {
         return this.#isBusy;
     }
 
-    constructor(environmentSettings: EnvironmentSettings, typingService: TypingService, featureService: FeatureService) {
-        super(environmentSettings, typingService, featureService);
+    constructor(environmentSettings: EnvironmentSettings, taskQueue: TaskQueue, typingService: TypingService, featureService: FeatureService) {
+        super(environmentSettings, taskQueue, typingService, featureService);
 
         this.environmentSettings = environmentSettings;
         this.typingService = typingService;

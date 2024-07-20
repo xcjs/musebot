@@ -68,6 +68,10 @@ export class EasyDiffusionClient {
 
             const models = await this.#mapModelsToArrayFromModelOptions(modelsResponse);
             this.#model = this.#selectModel(models);
+
+            if(prompt instanceof RenderRequest) {
+                prompt.use_stable_diffusion_model = this.#model;
+            }
         }
 
         request = prompt instanceof RenderRequest

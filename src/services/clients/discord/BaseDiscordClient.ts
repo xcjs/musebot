@@ -5,18 +5,20 @@ import { EnvironmentSettings } from '../../EnvironmentSettings.js';
 import { TypingService } from './services/TypingService.js';
 import { DiscordConstants } from './enums/DiscordConstants.js';
 import { FeatureService } from '../../features/FeatureService.js';
+import { TaskQueue } from '../../tasks/services/TaskQueue.js';
 
 export class BaseDiscordClient {
     protected environmentSettings: EnvironmentSettings;
+    protected taskQueue: TaskQueue;
     protected typingService: TypingService;
     protected featureService: FeatureService;
 
     protected client: DiscordClient;
     protected logger;
 
-
-    constructor(environmentSettings: EnvironmentSettings, typingService: TypingService, featureService: FeatureService) {
+    constructor(environmentSettings: EnvironmentSettings, taskQueue: TaskQueue, typingService: TypingService, featureService: FeatureService) {
         this.environmentSettings = environmentSettings;
+        this.taskQueue = taskQueue;
         this.typingService = typingService;
         this.featureService = featureService;
 

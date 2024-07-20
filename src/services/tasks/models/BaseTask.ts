@@ -1,22 +1,27 @@
-import { TaskStatus } from '../enums/TaskStatus';
+import { TaskStatus } from '../enums/TaskStatus.js';
 
 export abstract class BaseTask {
-    protected _taskStatus: TaskStatus = TaskStatus.Idle;
-    protected _numAttempts = 0;
+    #taskStatus: TaskStatus = TaskStatus.Idle;
+    #numAttempts = 0;
 
     get taskStatus(): TaskStatus {
-        return this._taskStatus;
+        return this.#taskStatus;
+    }
+
+    set taskStatus(taskStatus: TaskStatus) {
+        if(taskStatus === TaskStatus.Failed) {
+            this.#numAttempts++;
+        }
+
+        this.#taskStatus = taskStatus;
     }
 
     get numAttempts(): number {
-        return this._numAttempts;
+        return this.#numAttempts;
     }
 
-    constructor() {
-
-    }
-
-    incrementAttempts(): void {
-        this._numAttempts++;
+    process(): Promise<void> {
+        // Reject by default, because this method is intended to be overridden.
+        return Promise.reject();
     }
 }

@@ -13,7 +13,7 @@ export class RenderRequest {
     height = 1024;
     vram_usage_level = VRamUsageLevel.Balanced;
     sampler_name = 'euler_a';
-    use_stable_diffusion_model = '';
+    use_stable_diffusion_model: string | null = null;
     use_upscale = 'RealESRGAN_x4plus';
     clip_skip = false;
     use_vae_model = '';
@@ -32,7 +32,8 @@ export class RenderRequest {
     enable_vae_tiling = true;
     session_id = 0;
 
-    constructor(model: string, prompt: string) {
+    // TODO: model should not be nullable.
+    constructor(model: string | null, prompt: string) {
         this.use_stable_diffusion_model = model;
         this.prompt = prompt;
         this.original_prompt = prompt;
