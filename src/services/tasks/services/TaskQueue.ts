@@ -34,7 +34,13 @@ export class TaskQueue {
 
             this.#logger(LogLevel.Info, `Processing the task queue. This task has been attempted ${task.numAttempts} time(s).`);
 
-            await (task.process());
+            try {
+                await task.process();
+            } catch(error) {
+                this.#logger.log(`An exception occurred while processing a ${typeof task} task: ${error}`);
+                task.taskStatus = TaskStatus.Failed;
+            }
+
             task = this.#getNextTask();
         }
 

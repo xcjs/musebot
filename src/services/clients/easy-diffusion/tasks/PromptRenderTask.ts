@@ -32,38 +32,28 @@ export class PromptRenderTask extends BaseTask {
         this.#logger = new Logger(environmentSettings.isProduction, 'PromptRenderTask');
     }
 
-    // TODO: Move all error handling up to the TaskQueue and reject promises
-    // internally within tasks.
     override async process(): Promise<void> {
         this.taskStatus = TaskStatus.Busy;
+
         const renderData = await this.#renderImage();
-
-        if(renderData === null) {
-            this.taskStatus = TaskStatus.Failed;
-            return;
-        }
-
-        if(!await this.#reply(renderData)) {
-            this.taskStatus = TaskStatus.Failed;
-            return;
-        }
+        await this.#reply(renderData);
 
         this.taskStatus = TaskStatus.Successful;
     }
 
-    async #renderImage(): Promise<IHttpExchangeWithAttachedResponse<RenderRequest, IRenderResponse, IStreamResponse> | null> {
+    async #renderImage(): Promise<IHttpExchangeWithAttachedResponse<RenderRequest, IRenderResponse, IStreamResponse>> {
         this.#logger(LogLevel.Info, `Render prompt: ${this.#request.prompt}`);
 
         const renderExchange = await this.#easyDiffusionClient.render(this.#request);
 
         if(renderExchange === null || renderExchange.response === null) {
-            return null;
+            return Promise.reject('The render request failed.');
         }
 
         const streamResponse = await this.#easyDiffusionClient.stream(renderExchange);
 
         if(streamResponse === null) {
-            return null;
+            return Promise.reject('The stream request failed.');
         }
 
         return {
@@ -72,7 +62,7 @@ export class PromptRenderTask extends BaseTask {
         };
     }
 
-    async #reply(renderData: IHttpExchangeWithAttachedResponse<RenderRequest, IRenderResponse, IStreamResponse> | null): Promise<boolean> {
+    async #reply(renderData: IHttpExchangeWithAttachedResponse<RenderRequest, IRenderResponse, IStreamResponse> | null): Promise<void> {
         const renderRequest = renderData.exchange.request;
         const streamResponse = renderData.response;
 
@@ -95,13 +85,7 @@ export class PromptRenderTask extends BaseTask {
             files
         };
 
-        try {
-            await this.#message.reply(reply);
-            return true;
-        } catch(error) {
-            this.#logger(LogLevel.Error, `An exception occurred while replying: ${error}`);
-            return false;
-        }
+        await this.#message.reply(reply);
     }
 
     #getFileNameFromPrompt(renderRequest: RenderRequest): string {
