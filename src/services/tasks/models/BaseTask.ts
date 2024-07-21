@@ -3,6 +3,11 @@ import { TaskStatus } from '../enums/TaskStatus.js';
 export abstract class BaseTask {
     #taskStatus: TaskStatus = TaskStatus.Idle;
     #numAttempts = 0;
+    #createdTime: Date;
+
+    constructor() {
+        this.#createdTime = new Date();
+    }
 
     get taskStatus(): TaskStatus {
         return this.#taskStatus;
@@ -18,6 +23,10 @@ export abstract class BaseTask {
 
     get numAttempts(): number {
         return this.#numAttempts;
+    }
+
+    get createdTime() {
+        return this.#createdTime;
     }
 
     process(): Promise<void> {

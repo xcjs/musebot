@@ -59,7 +59,6 @@ export class TaskQueue {
         return this.#queue[0];
     }
 
-    // TODO: Move failed jobs to the end of the queue. Also add timestamps to the beginning and end of a job.
     #cleanQueue(): void {
         this.#logger(LogLevel.Info, 'Removing completed or failed entries from the queue...');
 
@@ -71,5 +70,25 @@ export class TaskQueue {
                         return task;
             }
         });
+
+        const failedTasks = this.#queue.filter(x => x.taskStatus === TaskStatus.Failed && x.numAttempts < this.#maxTaskAttempts)
+            .sort((a, b) => {
+                if(a.createdTime < b.createdTime) {
+                    return -1;
+                } else {
+                    return 1;
+                }
+            });
+
+        const otherTasks = this.#queue.filter(x => x.taskStatus !== TaskStatus.Failed)
+            .sort((a, b) => {
+                if(a.createdTime < b.createdTime) {
+                    return -1;
+                } else {
+                    return 1;
+                }
+            });
+
+        this.#queue = otherTasks.concat(failedTasks);
     }
 }
