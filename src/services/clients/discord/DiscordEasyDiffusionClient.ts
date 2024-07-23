@@ -88,11 +88,13 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
 
         this.logger(LogLevel.Info, 'Replying to message...');
 
-        // const renderData = await this.#renderImage(message, null);
-
-        // await this.#reply(message, renderData);
-
-        this.taskQueue.add(new PromptRenderTask(this.environmentSettings, this.client, message, null));
+        this.taskQueue.add(new PromptRenderTask(
+            this.environmentSettings,
+            this.featureService,
+            this.client,
+            new EasyDiffusionClient(this.environmentSettings),
+            message,
+            null));
     }
 
     #shouldReply(message: Message): boolean {

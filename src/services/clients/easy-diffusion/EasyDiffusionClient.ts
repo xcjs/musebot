@@ -60,13 +60,7 @@ export class EasyDiffusionClient {
         if(this.#model === null) {
             this.#logger(LogLevel.Info, 'No model was provided - loading available models and selecting one at random.');
 
-            const modelsResponse = await this.getModels();
-
-            if(modelsResponse === null) {
-                return null;
-            }
-
-            const models = await this.#mapModelsToArrayFromModelOptions(modelsResponse);
+            const models = await this.getModels();
             this.#model = this.#selectModel(models);
 
             if(prompt instanceof RenderRequest) {
@@ -151,7 +145,7 @@ export class EasyDiffusionClient {
         }
     }
 
-    async getModels(): Promise<IModelsResponse | null> {
+    async getModels(): Promise<Array<string>> {
         try {
             this.#logger(LogLevel.Info, `Loading Easy Diffusion options...`);
             const response = await fetch(new URL('/get/models?scan_for_malicious=true', this.#host), {
@@ -160,10 +154,12 @@ export class EasyDiffusionClient {
                 }
             });
 
-            return await response.json() as IModelsResponse;
+            const modelsResponse = await response.json() as IModelsResponse;
+
+            return this.#flattenModelArray(modelsResponse.options['stable-diffusion'], '', []);
         } catch (error) {
             this.#logger(LogLevel.Error, `Loading EasyDiffusion options failed: ${error}`);
-            return null;
+            return [];
         }
     }
 

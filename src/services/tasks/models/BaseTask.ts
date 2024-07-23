@@ -30,7 +30,6 @@ export abstract class BaseTask {
     }
 
     process(): Promise<void> {
-        // Reject by default, because this method is intended to be overridden.
-        return Promise.reject();
+        return Promise.reject('The base process() method must be overridden.');
     }
 }

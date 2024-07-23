@@ -11,18 +11,31 @@ import { IStreamResponse } from '../models/responses/IStreamResponse.js';
 import { TaskStatus } from '../../../tasks/enums/TaskStatus.js';
 import { MAX_FILE_NAME_LENGTH } from '../../../../enums/FileConstants.js';
 import { BufferEncoding } from '../../../../enums/BufferEncoding.js';
+import { DiscordConstants } from '../../discord/enums/DiscordConstants.js';
+import { StatefulImageGenerationActionRow } from '../../discord/components/buttonRows/StatefulImageGenerationActionRow.js';
+import { FeatureService } from '../../../features/FeatureService.js';
+import { StatelessImageGenerationActionRow } from '../../discord/components/buttonRows/StatelessImageGenerationActionRow.js';
 
 export class PromptRenderTask extends BaseTask {
-    #request: RenderRequest;
+    #featureService: FeatureService;
     #easyDiffusionClient: EasyDiffusionClient;
+
+    #request: RenderRequest;
     #message: Message;
 
     #logger;
 
-    constructor(environmentSettings: EnvironmentSettings, discordClient: DiscordClient, message: Message, model: string | null) {
-        super();
+    constructor(
+        environmentSettings: EnvironmentSettings,
+        featureService: FeatureService,
+        discordClient: DiscordClient,
+        easyDiffusionClient: EasyDiffusionClient,
+        message: Message,
+        model: string | null) {
 
-        this.#easyDiffusionClient = new EasyDiffusionClient(environmentSettings);
+        super();
+        this.#featureService = featureService;
+        this.#easyDiffusionClient = easyDiffusionClient;
         this.#message = message;
 
         const botMention = message.mentions.members.find(x => x.id === discordClient.user?.id)?.toString() || '';
@@ -79,10 +92,15 @@ export class PromptRenderTask extends BaseTask {
 
         files.push(imageAttachment);
 
+        const isStatefulResponse = jsonRequest.length <= DiscordConstants.ImageDescriptionMaxLength;
+
         this.#logger(LogLevel.Info, `Attaching render for "${renderRequest.prompt}": ${jsonRequest}`);
 
         const reply: BaseMessageOptions = {
-            files
+            files,
+            components: [isStatefulResponse ?
+                new StatefulImageGenerationActionRow(this.#featureService).build() :
+                new StatelessImageGenerationActionRow(this.#featureService).build()]
         };
 
         await this.#message.reply(reply);
