@@ -8,8 +8,7 @@ import {
     ButtonInteraction,
     ButtonStyle,
     Events,
-    Message,
-    MessageType
+    Message
 } from 'discord.js';
 
 import {Logger, LogLevel } from 'meklog';
@@ -26,14 +25,12 @@ import { IRenderResponse } from '../easy-diffusion/models/responses/IRenderRespo
 import { IStreamResponse } from '../easy-diffusion/models/responses/IStreamResponse.js';
 import { BotInteraction } from '../../../enums/BotInteraction.js';
 import { StableDiffusionGuidanceScaleLimit } from '../easy-diffusion/enums/StableDiffusionGuidanceScaleLimit.js';
-import { TypingService } from './services/TypingService.js';
 import { BaseDiscordClient } from './BaseDiscordClient.js';
 import { OllamaClient } from '../ollama/OllamaClient.js';
 import { DiscordConstants } from './enums/DiscordConstants.js';
 import { MAX_FILE_NAME_LENGTH, MAX_TEXT_LINE_LENGTH } from '../../../enums/FileConstants.js';
 import { wrapText } from '../../../utilities/string-utilities.js';
 import { getRandomInt } from '../../../utilities/random-utilities.js';
-import { FeatureService } from '../../features/FeatureService.js';
 import { SupportedFeature } from '../../features/enum/SupportedFeature.js';
 import { TaskQueue } from '../../tasks/services/TaskQueue.js';
 import { PromptRenderTask } from '../easy-diffusion/tasks/PromptRenderTask.js';
@@ -44,11 +41,10 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
 
     #guidanceScaleInterval = .5;
 
-    constructor(environmentSettings: EnvironmentSettings, taskQueue: TaskQueue, typingService: TypingService, featureService: FeatureService) {
-        super(environmentSettings, taskQueue, typingService, featureService);
+    constructor(environmentSettings: EnvironmentSettings, taskQueue: TaskQueue) {
+        super(environmentSettings, taskQueue);
 
         this.environmentSettings = environmentSettings;
-        this.typingService = typingService;
 
         this.logger = new Logger(this.environmentSettings.isProduction, 'DiscordEasyDiffusionClient');
 
@@ -81,7 +77,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
     async #onMessageCreate(message: Message): Promise<void> {
         this.logger(LogLevel.Info, `Discord message created. ${message.author.displayName} (${message.author.username}): "${message}"`);
 
-        if(!this.#shouldReply(message)) {
+        if(!this.replyService.shouldReply(message)) {
             this.logger(LogLevel.Info, 'Reply should not be created - skipping reply.');
             return;
         }
@@ -97,24 +93,6 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
             null));
 
         this.typingService.startTyping(message);
-    }
-
-    #shouldReply(message: Message): boolean {
-        const shouldReply =
-            !message.system         // Not a system message.
-            && !!message.guild      // The message should be from a guild (server).
-            && message.type === MessageType.Default // The message is a default message type.
-            && !!message.author.id  // The message should have an author.
-            && !message.author.bot  // No messages by bots.
-            && !!message.mentions.members?.find(x => x.id === this.client.user?.id) // The message explicitly tags this bot.
-            && message.author.id !== this.client.user?.id // No messages by this bot.
-            && (
-                this.environmentSettings.discordChannels.length === 0
-                || this.environmentSettings.discordChannels.includes(message.channel.id)) // The channel is in the configured whitelist if there is one.
-            && typeof message.content === JavaScriptType.String  // Only respond to text-based messages.
-            && message.content.length > 0;                       // Only respond to messages with more than 0 characters.
-
-        return shouldReply;
     }
 
     async #onInteraction(interaction: ButtonInteraction): Promise<void> {

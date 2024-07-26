@@ -1,11 +1,9 @@
-import { AttachmentBuilder, ButtonInteraction, Events, Message, MessageType } from 'discord.js';
+import { AttachmentBuilder, ButtonInteraction, Events, Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
 import { EnvironmentSettings } from '../../EnvironmentSettings.js';
-import { TypingService } from './services/TypingService.js';
 import { BaseDiscordClient } from './BaseDiscordClient.js';
 import { DiscordPresenceStatus } from './enums/DiscordPresenceStatus.js';
-import { JavaScriptType } from '../../../enums/JavaScriptType.js';
 import { OllamaClient } from '../ollama/OllamaClient.js';
 import { DiscordConstants } from './enums/DiscordConstants.js';
 import { splitText } from '../../../utilities/string-utilities.js';
@@ -13,7 +11,6 @@ import { EasyDiffusionClient } from '../easy-diffusion/EasyDiffusionClient.js';
 import { BufferEncoding } from '../../../enums/BufferEncoding.js';
 import { RenderRequest } from '../easy-diffusion/models/requests/RenderRequest.js';
 import { MAX_FILE_NAME_LENGTH } from '../../../enums/FileConstants.js';
-import { FeatureService } from '../../features/FeatureService.js';
 import { SupportedFeature } from '../../features/enum/SupportedFeature.js';
 import { TaskQueue } from '../../tasks/services/TaskQueue.js';
 
@@ -23,11 +20,10 @@ export class DiscordOllamaClient extends BaseDiscordClient {
 
     #context: Array<number> = [];
 
-    constructor(environmentSettings: EnvironmentSettings, taskQueue: TaskQueue, typingService: TypingService, featureService: FeatureService) {
-        super(environmentSettings, taskQueue, typingService, featureService);
+    constructor(environmentSettings: EnvironmentSettings, taskQueue: TaskQueue) {
+        super(environmentSettings, taskQueue);
 
         this.environmentSettings = environmentSettings;
-        this.typingService = typingService;
 
         this.logger = new Logger(this.environmentSettings.isProduction, 'DiscordOllamaClient');
 
@@ -54,7 +50,7 @@ export class DiscordOllamaClient extends BaseDiscordClient {
     async #onMessageCreate(message: Message): Promise<void> {
         this.logger(LogLevel.Info, `Discord message created. ${message.author.displayName} (${message.author.username}): "${message}"`);
 
-        if(!this.#shouldReply(message)) {
+        if(!this.replyService.shouldReply(message)) {
             this.logger(LogLevel.Info, 'Reply should not be created - skipping reply.');
             return;
         }
@@ -66,24 +62,6 @@ export class DiscordOllamaClient extends BaseDiscordClient {
         } else {
             await this.#reply(message);
         }
-    }
-
-    #shouldReply(message: Message): boolean {
-        const shouldReply =
-            !message.system         // Not a system message.
-            && !!message.guild      // The message should be from a guild (server).
-            && message.type === MessageType.Default // The message is a default message type.
-            && !!message.author.id  // The message should have an author.
-            && !message.author.bot  // No messages by bots.
-            && !!message.mentions.members?.find(x => x.id === this.client.user?.id) // The message explicitly tags this bot.
-            && message.author.id !== this.client.user?.id // No messages by this bot.
-            && (
-                this.environmentSettings.discordChannels.length === 0
-                || this.environmentSettings.discordChannels.includes(message.channel.id)) // The channel is in the configured whitelist if there is one.
-            && typeof message.content === JavaScriptType.String  // Only respond to text-based messages.
-            && message.content.length > 0;                       // Only respond to messages with more than 0 characters.
-
-        return shouldReply;
     }
 
     async #reply(message: Message): Promise<void> {
