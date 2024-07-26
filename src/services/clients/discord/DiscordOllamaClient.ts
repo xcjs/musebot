@@ -23,12 +23,6 @@ export class DiscordOllamaClient extends BaseDiscordClient {
 
     #context: Array<number> = [];
 
-    #isBusy = false;
-
-    get isBusy() {
-        return this.#isBusy;
-    }
-
     constructor(environmentSettings: EnvironmentSettings, taskQueue: TaskQueue, typingService: TypingService, featureService: FeatureService) {
         super(environmentSettings, taskQueue, typingService, featureService);
 
@@ -102,8 +96,6 @@ export class DiscordOllamaClient extends BaseDiscordClient {
 
         const formattedMessage = `${message.author.displayName}: ${message.content.replaceAll(botMention, '')}`;
 
-        await this.typingService.startTyping(message, () => DiscordOllamaClient.shouldBeTyping(this));
-
         const exchange = await ollamaClient.sendMessage(formattedMessage, context);
 
         if(exchange === null) {
@@ -134,15 +126,11 @@ export class DiscordOllamaClient extends BaseDiscordClient {
 
         const formattedMessage = `${message.author.displayName}: ${message.content.replaceAll(botMention, '')}`;
 
-        await this.typingService.startTyping(message, () => DiscordOllamaClient.shouldBeTyping(this));
-        this.#isBusy = true;
-
         const exchange = await ollamaClient.sendMessageAndGetStream(formattedMessage, context);
         //const responses = splitText(exchange.response.response, DiscordConstants.ContentMaxLength);
 
         if(exchange === null) {
             await this.#replyWithError(message);
-            this.#isBusy = false;
             return;
         }
 
@@ -179,7 +167,6 @@ export class DiscordOllamaClient extends BaseDiscordClient {
 
             if(response.done) {
                 this.#context = response.context;
-                this.#isBusy = false;
             }
         }
 
@@ -193,8 +180,6 @@ export class DiscordOllamaClient extends BaseDiscordClient {
         this.easyDiffusionClients.push(easyDiffusionClient);
 
         this.logger(LogLevel.Info, `Image render prompt: ${imagePrompt}`);
-
-        await this.typingService.startTyping(message, () => DiscordOllamaClient.shouldBeTyping(this));
 
         const renderExchange = await easyDiffusionClient.render(imagePrompt);
 
@@ -229,14 +214,5 @@ export class DiscordOllamaClient extends BaseDiscordClient {
 
     async #replyWithError(message: Message | ButtonInteraction): Promise<void> {
         await message.reply({ content: this.environmentSettings.errorMessage });
-    }
-
-    static shouldBeTyping(client: DiscordOllamaClient): boolean {
-        client.ollamaClients = client.ollamaClients.filter(x => x.isBusy);
-        client.easyDiffusionClients = client.easyDiffusionClients.filter(x => x.isBusy);
-
-        return client.ollamaClients.length > 0
-            || client.easyDiffusionClients.length > 0
-            || client.isBusy;
     }
 }

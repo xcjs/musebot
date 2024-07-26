@@ -9,7 +9,7 @@ import { TaskQueue } from './services/tasks/services/TaskQueue.js';
 
 const environmentSettings = new EnvironmentSettings();
 const taskQueue = new TaskQueue(environmentSettings);
-const typingService = new TypingService(environmentSettings);
+const typingService = new TypingService(environmentSettings, taskQueue);
 const featureService = new FeatureService(environmentSettings);
 
 let client: BaseDiscordClient;

@@ -1,6 +1,5 @@
 import { Logger, LogLevel } from 'meklog';
 import { GenerateRequest, GenerateResponse, Ollama } from 'ollama';
-//import { AbortableAsyncIterator } from '../../../../node_modules/ollama/src/utils';
 
 import { EnvironmentSettings } from '../../EnvironmentSettings.js';
 import { getRandomInt } from '../../../utilities/random-utilities.js';
@@ -14,12 +13,6 @@ export class OllamaClient {
 
     #host: URL;
     #model: string;
-
-    #isBusy = true;
-
-    get isBusy() {
-        return this.#isBusy;
-    }
 
     constructor(environmentSettings: EnvironmentSettings) {
         this.#environmentSettings = environmentSettings;
@@ -55,9 +48,7 @@ export class OllamaClient {
         }
 
         try {
-            this.#isBusy = true;
             const response = await this.#client.generate({ ...request, stream: false });
-            this.#isBusy = false;
 
             return {
                 request,
@@ -65,7 +56,6 @@ export class OllamaClient {
             };
         } catch(error) {
             this.#logger(LogLevel.Info, error);
-            this.#isBusy = false;
             return null;
         }
     }
@@ -85,9 +75,7 @@ export class OllamaClient {
         }
 
         try {
-            this.#isBusy = true;
             const response = await this.#client.generate({ ...request, stream: true });
-            this.#isBusy = false;
 
             return {
                 request,
@@ -95,7 +83,6 @@ export class OllamaClient {
             };
         } catch(error) {
             this.#logger(LogLevel.Info, error);
-            this.#isBusy = false;
             return null;
         }
     }

@@ -7,9 +7,13 @@ import { BaseTask } from '../models/BaseTask.js';
 export class TaskQueue {
     #queue: Array<BaseTask> = [];
     #maxTaskAttempts: 100;
-    #active = false;
+    #isActive = false;
 
     #logger;
+
+    get isActive() {
+        return this.#isActive;
+    }
 
     constructor(environmentSettings: EnvironmentSettings) {
         this.#logger = new Logger(environmentSettings.isProduction, 'TaskQueue');
@@ -23,14 +27,14 @@ export class TaskQueue {
     }
 
     async #processQueue(): Promise<void> {
-        if(this.#active) {
+        if(this.#isActive) {
             return;
         }
 
         let task: BaseTask = this.#getNextTask();
 
         while(task !== null) {
-            this.#active = true;
+            this.#isActive = true;
 
             this.#logger(LogLevel.Info, `Processing the task queue. This task has been attempted ${task.numAttempts} time(s).`);
 
@@ -44,7 +48,7 @@ export class TaskQueue {
             task = this.#getNextTask();
         }
 
-        this.#active = false;
+        this.#isActive = false;
     }
 
     #getNextTask(): BaseTask | null {

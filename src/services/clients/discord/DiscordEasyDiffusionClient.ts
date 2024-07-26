@@ -95,6 +95,8 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
             new EasyDiffusionClient(this.environmentSettings),
             message,
             null));
+
+        this.typingService.startTyping(message);
     }
 
     #shouldReply(message: Message): boolean {
@@ -352,8 +354,6 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
             }
         }
 
-        await this.typingService.startTyping(interaction, () => DiscordEasyDiffusionClient.shouldBeTyping(this));
-
         const easyDiffusionClient = new EasyDiffusionClient(this.environmentSettings);
         this.easyDiffusionClients.push(easyDiffusionClient);
 
@@ -375,12 +375,5 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
 
     async #replyWithError(message: Message | ButtonInteraction): Promise<void> {
         await message.reply({ content: this.environmentSettings.errorMessage });
-    }
-
-    static shouldBeTyping(client: DiscordEasyDiffusionClient): boolean {
-        client.easyDiffusionClients = client.easyDiffusionClients.filter(x => x.isBusy);
-        client.ollamaClients = client.ollamaClients.filter(x => x.isBusy);
-
-        return client.easyDiffusionClients.length > 0 || client.ollamaClients.length > 0;
     }
 }

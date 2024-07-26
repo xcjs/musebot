@@ -26,12 +26,6 @@ export class EasyDiffusionClient {
 
     #retryDelayInMilliseconds = 1000;
 
-    #isBusy = true;
-
-    get isBusy() {
-        return this.#isBusy;
-    }
-
     constructor(environmentSettings: EnvironmentSettings) {
         this.#environmentSettings = environmentSettings;
 
@@ -95,7 +89,6 @@ export class EasyDiffusionClient {
         const renderResponse = renderExchange?.response;
 
         if(renderResponse === null) {
-            this.#isBusy = false;
             return null;
         }
 
@@ -115,10 +108,8 @@ export class EasyDiffusionClient {
                         const responseBody = await response.json() as IStreamResponse;
 
                         if(responseBody.status === StreamStatus.Failed) {
-                            this.#isBusy = false;
                             return null;
                         } else if(responseBody.status === StreamStatus.Succeeded) {
-                            this.#isBusy = false;
                             return responseBody;
                         }
 
@@ -128,19 +119,15 @@ export class EasyDiffusionClient {
                         await this.#sleep(this.#retryDelayInMilliseconds);
                     }
                 } else {
-                    this.#isBusy = false;
                     return null;
                 }
 
                 // Keep trying as long as the response status is OK or 425 - Too Early.
             } while (response.ok || response.status === HttpStatusCode.TooEarly);
 
-            this.#isBusy = false;
             return null;
         } catch (error) {
             this.#logger(LogLevel.Error, `Checking the EasyDiffusion render stream failed: ${error}`);
-
-            this.#isBusy = false;
             return null;
         }
     }
