@@ -79,8 +79,6 @@ export class EasyDiffusionReplyService {
         const jsonRequest = JSON.stringify(renderRequest);
         const isStatefulResponse = jsonRequest.length <= DiscordConstants.ImageDescriptionMaxLength;
 
-        const files: Array<AttachmentBuilder> = [];
-
         const imageBuffer = Buffer.from(streamResponse.output[0].data.split(',')[1], BufferEncoding.Base64);
 
         const imageAttachment = new AttachmentBuilder(imageBuffer, {
@@ -88,10 +86,10 @@ export class EasyDiffusionReplyService {
             description: isStatefulResponse ? jsonRequest : null
         });
 
-        files.push(imageAttachment);
+        let files: Array<AttachmentBuilder> = [imageAttachment];
 
         if(files) {
-            files.concat(additionalAttachments);
+            files = files.concat(additionalAttachments);
         }
 
         this.#logger(LogLevel.Info, `Attaching render for "${renderRequest.prompt}": ${jsonRequest}`);
