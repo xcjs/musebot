@@ -61,7 +61,7 @@ export class RandomRenderTask extends BaseTask {
             BufferEncoding.UTF8);
 
         const promptAttachment = new AttachmentBuilder(promptBuffer, {
-            name: `${request.prompt.substring(0, MAX_FILE_NAME_LENGTH)}.txt`
+            name: `${request.prompt.substring(0, MAX_FILE_NAME_LENGTH)}.md`
         });
 
         await this.#easyDiffusionReplyService.reply(this.#interaction, renderData, content, [promptAttachment]);
