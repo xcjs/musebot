@@ -26,7 +26,7 @@ export class RenderRequest {
     output_quality = 75;
     output_lossless = false;
     metadata_output_format = false;
-    original_prompt = '';
+    original_prompt: string;
     active_tags = [];
     inactive_tags = [];
     enable_vae_tiling = true;
