@@ -70,7 +70,8 @@ export class EasyDiffusionReplyService {
     async reply(
         interaction: Message | ButtonInteraction,
         renderData: IHttpExchangeWithAttachedResponse<RenderRequest, IRenderResponse, IStreamResponse>,
-        content: string | null): Promise<void> {
+        content: string | null,
+        additionalAttachments: Array<AttachmentBuilder> | null): Promise<void> {
         const renderRequest = renderData.exchange.request;
         const streamResponse = renderData.response;
 
@@ -88,6 +89,10 @@ export class EasyDiffusionReplyService {
         });
 
         files.push(imageAttachment);
+
+        if(files) {
+            files.concat(additionalAttachments);
+        }
 
         this.#logger(LogLevel.Info, `Attaching render for "${renderRequest.prompt}": ${jsonRequest}`);
 

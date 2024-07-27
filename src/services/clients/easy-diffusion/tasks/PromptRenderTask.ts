@@ -51,7 +51,7 @@ export class PromptRenderTask extends BaseTask {
         const request = new RenderRequest(model, prompt);
 
         const renderData = await this.#easyDiffusionReplyService.renderImage(request);
-        await this.#easyDiffusionReplyService.reply(this.#message, renderData, null);
+        await this.#easyDiffusionReplyService.reply(this.#message, renderData, null, null);
 
         this.taskStatus = TaskStatus.Successful;
     }
