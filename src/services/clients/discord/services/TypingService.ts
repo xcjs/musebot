@@ -1,25 +1,25 @@
 import { ButtonInteraction, Message } from 'discord.js';
 import {Logger, LogLevel } from 'meklog';
 import { EnvironmentSettings } from '../../../EnvironmentSettings';
+import { TaskQueue } from '../../../tasks/services/TaskQueue';
 
 export class TypingService {
     #environmentSettings: EnvironmentSettings;
+    #taskQueue: TaskQueue;
 
     #logger;
 
     #sendTypingIntervalMilliseconds = 1000;
     #typingInterval: NodeJS.Timeout | null = null;
 
-    #shouldBeTypingCallback: () => boolean;
-
-    constructor(environmentSettings: EnvironmentSettings) {
+    constructor(environmentSettings: EnvironmentSettings, taskQueue: TaskQueue) {
         this.#environmentSettings = environmentSettings;
+        this.#taskQueue = taskQueue;
+
         this.#logger = new Logger(this.#environmentSettings.isProduction, 'TypingService');
     }
 
-    async startTyping(message: Message | ButtonInteraction, shouldBeTypingCallback: () => boolean): Promise<void> {
-        this.#shouldBeTypingCallback = shouldBeTypingCallback;
-
+    async startTyping(message: Message | ButtonInteraction): Promise<void> {
         if(this.#typingInterval !== null) {
             return;
         }
@@ -39,7 +39,7 @@ export class TypingService {
     }
 
     #stopTyping(): void {
-        if(this.#shouldBeTypingCallback()) {
+        if(this.#taskQueue.isActive) {
             return;
         }
 
@@ -53,7 +53,7 @@ export class TypingService {
     async #onTypingInterval(message: Message | ButtonInteraction): Promise<void> {
         console.log('Typing interval called.');
 
-        if(this.#shouldBeTypingCallback()) {
+        if(this.#taskQueue.isActive) {
             await message.channel.sendTyping();
         } else {
             this.#stopTyping();

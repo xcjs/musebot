@@ -5,3 +5,13 @@ export function getRandomInt(minValue, maxValue) {
 
     return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled);
 }
+
+export function getRandomArrayEntry<T>(items: Array<T>): T {
+    if(items.length === 0) {
+        return null;
+    }
+
+    const model = items[getRandomInt(0, items.length - 1)];
+
+    return model;
+}
