@@ -38,4 +38,8 @@ export abstract class BaseTask {
     process(): Promise<void> {
         return Promise.reject('The base process() method must be overridden.');
     }
+
+    postProcess(): Promise<void> {
+        return Promise.reject('The base postProcess() method must be overridden.');
+    }
 }

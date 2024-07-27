@@ -109,6 +109,10 @@ export class EasyDiffusionReplyService {
         }
     }
 
+    async replyWithError(interaction: Message | ButtonInteraction): Promise<void> {
+        await interaction.reply({ content: this.#environmentSettings.errorMessage });
+    }
+
     getFileNameFromPrompt(renderRequest: RenderRequest): string {
         return `${renderRequest.seed}_${renderRequest.prompt}`.substring(0, MAX_FILE_NAME_LENGTH);
     }

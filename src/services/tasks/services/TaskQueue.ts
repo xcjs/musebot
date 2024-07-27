@@ -6,8 +6,9 @@ import { BaseTask } from '../models/BaseTask.js';
 import { TaskType } from '../enums/TaskType.js';
 
 export class TaskQueue {
+    #environmentSettings: EnvironmentSettings;
+
     #queue: Array<BaseTask> = [];
-    #maxTaskAttempts: 100;
     #isActive = false;
 
     #logger;
@@ -17,6 +18,7 @@ export class TaskQueue {
     }
 
     constructor(environmentSettings: EnvironmentSettings) {
+        this.#environmentSettings = environmentSettings;
         this.#logger = new Logger(environmentSettings.isProduction, 'TaskQueue');
     }
 
@@ -47,9 +49,14 @@ export class TaskQueue {
 
             try {
                 await task.process();
+                await task.postProcess();
             } catch(error) {
                 this.#logger(LogLevel.Error, `An exception occurred while processing a ${typeof task} task: ${error}`);
                 task.taskStatus = TaskStatus.Failed;
+
+                if(task.numAttempts === this.#environmentSettings.maxTaskAttempts) {
+                    await task.postProcess();
+                }
             }
 
             task = this.#getNextTask();
@@ -77,15 +84,17 @@ export class TaskQueue {
             if(task.taskStatus === TaskStatus.Idle
                 || task.taskStatus === TaskStatus.Busy
                 || (task.taskStatus === TaskStatus.Failed
-                    && task.numAttempts < this.#maxTaskAttempts)) {
+                    && task.numAttempts < this.#environmentSettings.maxTaskAttempts)) {
                         return task;
             }
         });
 
-        const failedTasks = incompleteTasks.filter(x => x.taskStatus === TaskStatus.Failed && x.numAttempts < this.#maxTaskAttempts)
+        const failedTasks = incompleteTasks.filter(
+            x => x.taskStatus === TaskStatus.Failed && x.numAttempts < this.#environmentSettings.maxTaskAttempts)
             .sort(this.#compareByDate);
 
-        const nonFailedTasks = incompleteTasks.filter(x => x.taskStatus !== TaskStatus.Failed && x.taskStatus !== TaskStatus.Complete)
+        const nonFailedTasks = incompleteTasks.filter(
+            x => x.taskStatus !== TaskStatus.Failed && x.taskStatus !== TaskStatus.Complete)
             .sort(this.#compareByDate);
 
         this.#queue = nonFailedTasks.concat(failedTasks);

@@ -59,4 +59,10 @@ export class JsonRenderTask extends BaseTask {
 
         this.taskStatus = TaskStatus.Successful;
     }
+
+    override async postProcess(): Promise<void> {
+        if(this.taskStatus === TaskStatus.Failed) {
+            await this.#easyDiffusionReplyService.replyWithError(this.#message);
+        }
+    }
 }

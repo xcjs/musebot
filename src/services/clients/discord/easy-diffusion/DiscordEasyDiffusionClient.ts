@@ -149,8 +149,4 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
             this.#easyDiffusionReplyService,
             interaction));
     }
-
-    async #replyWithError(message: Message | ButtonInteraction): Promise<void> {
-        await message.reply({ content: this.environmentSettings.errorMessage });
-    }
 }
