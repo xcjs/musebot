@@ -18,6 +18,7 @@ import { RetryRenderTask } from '../../easy-diffusion/tasks/RetryRenderTask.js';
 import { ShowSourceTask } from '../../easy-diffusion/tasks/ShowSourceTask.js';
 import { DecreaseGuidanceScaleRenderTask } from '../../easy-diffusion/tasks/DecreaseGuidanceScaleRenderTask.js';
 import { IncreaseGuidanceScaleRenderTask } from '../../easy-diffusion/tasks/IncreaseGuidanceScaleRenderTask.js';
+import { RandomRenderTask } from '../../easy-diffusion/tasks/RandomRenderTask.js';
 
 export class DiscordEasyDiffusionClient extends BaseDiscordClient {
     #easyDiffusionClient: EasyDiffusionClient;
@@ -142,7 +143,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
     }
 
     async #randomize(interaction: ButtonInteraction) {
-        await this.taskQueue.add(new IncreaseGuidanceScaleRenderTask(
+        await this.taskQueue.add(new RandomRenderTask(
             this.environmentSettings,
             this.#easyDiffusionClient,
             this.#easyDiffusionReplyService,

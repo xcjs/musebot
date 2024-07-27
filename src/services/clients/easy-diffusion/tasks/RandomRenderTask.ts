@@ -3,9 +3,9 @@ import { Logger, LogLevel } from 'meklog';
 
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
-import { EasyDiffusionClient } from '../EasyDiffusionClient';
-import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiffusionReplyService';
-import { TaskStatus } from '../../../tasks/enums/TaskStatus';
+import { EasyDiffusionClient } from '../EasyDiffusionClient.js';
+import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiffusionReplyService.js';
+import { TaskStatus } from '../../../tasks/enums/TaskStatus.js';
 import { getRandomArrayEntry } from '../../../../utilities/random-utilities.js';
 import { RenderRequest } from '../models/requests/RenderRequest.js';
 import { OllamaClient } from '../../ollama/OllamaClient.js';
