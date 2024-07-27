@@ -45,6 +45,10 @@ export class RenderRequest {
         return JSON.stringify(this);
     }
 
+    refreshSeed() {
+        this.seed = this.#getRandomSeed();
+    }
+
     #getRandomSeed(): number {
         return getRandomInt(0, 4294967295);
     }

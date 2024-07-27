@@ -22,49 +22,18 @@ export class EasyDiffusionClient {
     #logger;
 
     #host: URL;
-    #model: string | null;
 
     #retryDelayInMilliseconds = 1000;
 
     constructor(environmentSettings: EnvironmentSettings) {
         this.#environmentSettings = environmentSettings;
-
         this.#logger = Logger(this.#environmentSettings.isProduction, 'EasyDiffusionClient');
 
-        const host = this.#selectHost(this.#environmentSettings.easyDiffusionHosts);
-
-        if(host === null) {
-            throw new Error('At least one EasyDiffusion host must be provided.');
-        }
-
-        this.#host = host;
-        this.#model = this.#selectModel(this.#environmentSettings.easyDiffusionModels);
+        this.#host = this.#selectHost(this.#environmentSettings.easyDiffusionHosts);
     }
 
-    async render(prompt: string | RenderRequest): Promise<IHttpExchange<RenderRequest, IRenderResponse> | null> {
+    async render(renderRequest: RenderRequest): Promise<IHttpExchange<RenderRequest, IRenderResponse> | null> {
         this.#logger(LogLevel.Info, 'Sending render request to EasyDiffusion...');
-
-        let request: RenderRequest;
-
-        if(prompt instanceof RenderRequest) {
-            this.#model = prompt.use_stable_diffusion_model;
-            request = prompt;
-        }
-
-        if(this.#model === null) {
-            this.#logger(LogLevel.Info, 'No model was provided - loading available models and selecting one at random.');
-
-            const models = await this.getModels();
-            this.#model = this.#selectModel(models);
-
-            if(prompt instanceof RenderRequest) {
-                prompt.use_stable_diffusion_model = this.#model;
-            }
-        }
-
-        request = prompt instanceof RenderRequest
-            ? prompt
-            : new RenderRequest(this.#model, prompt);
 
         try {
             const response = await fetch(new URL('render', this.#host), {
@@ -72,11 +41,11 @@ export class EasyDiffusionClient {
                 headers: {
                     [HttpHeader.ContentType]: ContentType.Json
                 },
-                body: JSON.stringify(request)
+                body: JSON.stringify(renderRequest)
             });
 
             return {
-                request,
+                request: renderRequest,
                 response: await response.json() as IRenderResponse
             };
         } catch(error) {
@@ -143,7 +112,7 @@ export class EasyDiffusionClient {
 
             const modelsResponse = await response.json() as IModelsResponse;
 
-            return this.#flattenModelArray(modelsResponse.options['stable-diffusion'], '', []);
+            return this.#mapModelsToArrayFromModelOptions(modelsResponse);
         } catch (error) {
             this.#logger(LogLevel.Error, `Loading EasyDiffusion options failed: ${error}`);
             return [];
@@ -156,18 +125,6 @@ export class EasyDiffusionClient {
         this.#logger(LogLevel.Info, `Selected host: ${host}`);
 
         return host;
-    }
-
-    #selectModel(models: Array<string>): string | null {
-        if(models.length === 0) {
-            return null;
-        }
-
-        const model = models[getRandomInt(0, models.length - 1)];
-
-        this.#logger(LogLevel.Info, `Selected model: ${model}`);
-
-        return model;
     }
 
     #mapModelsToArrayFromModelOptions(modelsResponse: IModelsResponse) {

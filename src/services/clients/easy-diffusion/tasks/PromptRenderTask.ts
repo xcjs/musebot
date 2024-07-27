@@ -15,12 +15,14 @@ import { DiscordConstants } from '../../discord/enums/DiscordConstants.js';
 import { StatefulImageGenerationActionRow } from '../../discord/components/buttonRows/StatefulImageGenerationActionRow.js';
 import { FeatureService } from '../../../features/FeatureService.js';
 import { StatelessImageGenerationActionRow } from '../../discord/components/buttonRows/StatelessImageGenerationActionRow.js';
+import { getRandomArrayEntry } from '../../../../utilities/random-utilities.js';
 
 export class PromptRenderTask extends BaseTask {
+    #environmentSettings: EnvironmentSettings;
     #featureService: FeatureService;
+    #discordClient: DiscordClient;
     #easyDiffusionClient: EasyDiffusionClient;
 
-    #request: RenderRequest;
     #message: Message;
 
     #logger;
@@ -30,17 +32,14 @@ export class PromptRenderTask extends BaseTask {
         featureService: FeatureService,
         discordClient: DiscordClient,
         easyDiffusionClient: EasyDiffusionClient,
-        message: Message,
-        model: string | null) {
+        message: Message) {
 
         super();
+        this.#environmentSettings = environmentSettings;
         this.#featureService = featureService;
+        this.#discordClient = discordClient;
         this.#easyDiffusionClient = easyDiffusionClient;
         this.#message = message;
-
-        const botMention = message.mentions.members.find(x => x.id === discordClient.user?.id)?.toString() || '';
-        const prompt = message.content.replaceAll(botMention, '');
-        this.#request = new RenderRequest(model, prompt);
 
         this.#logger = new Logger(environmentSettings.isProduction, 'PromptRenderTask');
     }
@@ -48,16 +47,27 @@ export class PromptRenderTask extends BaseTask {
     override async process(): Promise<void> {
         this.taskStatus = TaskStatus.Busy;
 
-        const renderData = await this.#renderImage();
+        const botMention = this.#message.mentions.members.find(x => x.id === this.#discordClient.user?.id)?.toString() || '';
+        const prompt = this.#message.content.replaceAll(botMention, '');
+
+        const model = this.#environmentSettings.easyDiffusionModels.length > 0 ?
+            getRandomArrayEntry(this.#environmentSettings.easyDiffusionModels) :
+            getRandomArrayEntry(await this.#easyDiffusionClient.getModels());
+
+        this.#logger(LogLevel.Info, `Using ${model} as the selected EasyDiffusion model.`);
+
+        const request = new RenderRequest(model, prompt);
+
+        const renderData = await this.#renderImage(request);
         await this.#reply(renderData);
 
         this.taskStatus = TaskStatus.Successful;
     }
 
-    async #renderImage(): Promise<IHttpExchangeWithAttachedResponse<RenderRequest, IRenderResponse, IStreamResponse>> {
-        this.#logger(LogLevel.Info, `Render prompt: ${this.#request.prompt}`);
+    async #renderImage(request: RenderRequest): Promise<IHttpExchangeWithAttachedResponse<RenderRequest, IRenderResponse, IStreamResponse>> {
+        this.#logger(LogLevel.Info, `Render prompt: ${request.prompt}`);
 
-        const renderExchange = await this.#easyDiffusionClient.render(this.#request);
+        const renderExchange = await this.#easyDiffusionClient.render(request);
 
         if(renderExchange === null || renderExchange.response === null) {
             return Promise.reject('The render request failed.');
