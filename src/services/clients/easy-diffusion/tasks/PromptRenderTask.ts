@@ -7,7 +7,7 @@ import { EasyDiffusionClient } from '../EasyDiffusionClient.js';
 import { RenderRequest } from '../models/requests/RenderRequest.js';
 import { TaskStatus } from '../../../tasks/enums/TaskStatus.js';
 import { getRandomArrayEntry } from '../../../../utilities/random-utilities.js';
-import { EasyDiffusionReplyService } from '../../discord/easyDiffusion/EasyDiffusionReplyService.js';
+import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiffusionReplyService.js';
 
 export class PromptRenderTask extends BaseTask {
     #environmentSettings: EnvironmentSettings;
@@ -40,7 +40,7 @@ export class PromptRenderTask extends BaseTask {
         this.taskStatus = TaskStatus.Busy;
 
         const botMention = this.#message.mentions.members.find(x => x.id === this.#discordClient.user?.id)?.toString() || '';
-        const prompt = this.#message.content.replaceAll(botMention, '');
+        const prompt = this.#message.content.replaceAll(botMention, '').trim();
 
         const model = this.#environmentSettings.easyDiffusionModels.length > 0 ?
             getRandomArrayEntry(this.#environmentSettings.easyDiffusionModels) :

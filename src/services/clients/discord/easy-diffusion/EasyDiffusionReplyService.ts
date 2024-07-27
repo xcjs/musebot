@@ -1,4 +1,4 @@
-import { AttachmentBuilder, BaseMessageOptions, ButtonInteraction, Message } from 'discord.js';
+import { Attachment, AttachmentBuilder, BaseMessageOptions, ButtonInteraction, Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
 import { IHttpExchangeWithAttachedResponse } from '../../../../models/IHttpExchangeWithAttachedResponse.js';
@@ -13,6 +13,7 @@ import { StatelessImageGenerationActionRow } from '../components/buttonRows/Stat
 import { FeatureService } from '../../../features/FeatureService.js';
 import { MAX_FILE_NAME_LENGTH } from '../../../../enums/FileConstants.js';
 import { EasyDiffusionClient } from '../../easy-diffusion/EasyDiffusionClient.js';
+import { ContentType } from '../../../../enums/ContentType.js';
 
 export class EasyDiffusionReplyService {
     #easyDiffusionClient: EasyDiffusionClient;
@@ -25,6 +26,22 @@ export class EasyDiffusionReplyService {
         this.#featureService = featureService;
 
         this.#logger = new Logger(environmentSettings.isProduction, 'EasyDiffusionReplyService');
+    }
+
+    getAttachmentsByType(interaction: Message | ButtonInteraction, contentTypes: Array<ContentType>): Array<Attachment> {
+        let attachments: Array<Attachment>;
+
+        if(interaction instanceof Message) {
+            attachments = Array.from(interaction.attachments, ([name, value]) => ({ name, value })).map(x => x.value);
+        } else if(interaction instanceof ButtonInteraction) {
+            attachments = Array.from(interaction.message.attachments, ([name, value]) => ({ name, value })).map(x => x.value);
+        }
+
+        const matchingAttachments = attachments.filter(attachment =>
+            contentTypes.includes(Object.values(ContentType)
+                .find(contentTypeValue => contentTypeValue === attachment.contentType)));
+
+        return matchingAttachments;
     }
 
     async renderImage(request: RenderRequest): Promise<IHttpExchangeWithAttachedResponse<RenderRequest, IRenderResponse, IStreamResponse>> {
@@ -52,7 +69,7 @@ export class EasyDiffusionReplyService {
         const renderRequest = renderData.exchange.request;
         const streamResponse = renderData.response;
 
-        const fileName = this.#getFileNameFromPrompt(renderRequest);
+        const fileName = this.getFileNameFromPrompt(renderRequest);
         const jsonRequest = JSON.stringify(renderRequest);
         const isStatefulResponse = jsonRequest.length <= DiscordConstants.ImageDescriptionMaxLength;
 
@@ -83,7 +100,7 @@ export class EasyDiffusionReplyService {
         }
     }
 
-    #getFileNameFromPrompt(renderRequest: RenderRequest): string {
+    getFileNameFromPrompt(renderRequest: RenderRequest): string {
         return `${renderRequest.seed}_${renderRequest.prompt}`.substring(0, MAX_FILE_NAME_LENGTH);
     }
 }

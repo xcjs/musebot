@@ -3,6 +3,7 @@ import { Logger, LogLevel } from 'meklog';
 import { EnvironmentSettings } from '../../EnvironmentSettings.js';
 import { TaskStatus } from '../enums/TaskStatus.js';
 import { BaseTask } from '../models/BaseTask.js';
+import { TaskType } from '../enums/TaskType.js';
 
 export class TaskQueue {
     #queue: Array<BaseTask> = [];
@@ -22,7 +23,13 @@ export class TaskQueue {
     async add(task: BaseTask): Promise<void> {
         this.#logger(LogLevel.Info, 'Adding a task to the task queue.');
 
-        this.#queue.push(task);
+        if(task.taskType === TaskType.Instant) {
+            this.#logger(LogLevel.Info, 'The task type is instant and will process immediately.');
+            await task.process();
+        } else {
+            this.#queue.push(task);
+        }
+
         await this.#processQueue();
     }
 
@@ -76,23 +83,19 @@ export class TaskQueue {
         });
 
         const failedTasks = this.#queue.filter(x => x.taskStatus === TaskStatus.Failed && x.numAttempts < this.#maxTaskAttempts)
-            .sort((a, b) => {
-                if(a.createdTime < b.createdTime) {
-                    return -1;
-                } else {
-                    return 1;
-                }
-            });
+            .sort(this.#compareByDate);
 
         const otherTasks = this.#queue.filter(x => x.taskStatus !== TaskStatus.Failed)
-            .sort((a, b) => {
-                if(a.createdTime < b.createdTime) {
-                    return -1;
-                } else {
-                    return 1;
-                }
-            });
+            .sort(this.#compareByDate);
 
         this.#queue = otherTasks.concat(failedTasks);
+    }
+
+    #compareByDate(a, b): number {
+        if(a.createdTime < b.createdTime) {
+            return -1;
+        } else {
+            return 1;
+        }
     }
 }

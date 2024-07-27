@@ -32,6 +32,7 @@ import { PromptRenderTask } from '../../easy-diffusion/tasks/PromptRenderTask.js
 import { EasyDiffusionReplyService } from './EasyDiffusionReplyService.js';
 import { FeatureService } from '../../../features/FeatureService.js';
 import { RetryRenderTask } from '../../easy-diffusion/tasks/RetryRenderTask.js';
+import { ShowSourceTask } from '../../easy-diffusion/tasks/ShowSourceTask.js';
 
 export class DiscordEasyDiffusionClient extends BaseDiscordClient {
     #easyDiffusionClient: EasyDiffusionClient;
@@ -100,6 +101,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
     async #onInteraction(interaction: ButtonInteraction): Promise<void> {
         this.logger(LogLevel.Info, `Beginning interaction response to custom action ${interaction.customId}...`);
 
+        await interaction.deferReply();
         await this.typingService.startTyping(interaction);
 
         switch(interaction.customId) {
@@ -107,11 +109,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
                 await this.#retry(interaction);
                 break;
             case BotInteraction.ShowSource:
-                // if(!renderRequest) {
-                //     return;
-                // }
-
-                // this.#showSource(interaction, renderRequest, imageAttachment.description);
+                await this.#showSource(interaction);
                 break;
             case BotInteraction.GuidanceScaleMinus:
                 // if(!renderRequest) {
@@ -155,6 +153,13 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
         await this.taskQueue.add(new RetryRenderTask(
             this.environmentSettings,
             this.#easyDiffusionClient,
+            this.#easyDiffusionReplyService,
+            interaction));
+    }
+
+    async #showSource(interaction: ButtonInteraction): Promise<void> {
+        await this.taskQueue.add(new ShowSourceTask(
+            this.environmentSettings,
             this.#easyDiffusionReplyService,
             interaction));
     }
@@ -273,67 +278,6 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
             await this.#replyWithError(interaction);
         }
     }
-
-    // async #retry(interaction: ButtonInteraction, prompt: string | RenderRequest): Promise<void> {
-    //     const renderData = await this.#renderImage(interaction, prompt);
-    //     await this.#reply(interaction, renderData);
-    // }
-
-    async #showSource(interaction, renderRequest, jsonRequest): Promise<void> {
-        const jsonBuffer = Buffer.from(jsonRequest, BufferEncoding.UTF8);
-        const jsonAttachment = new AttachmentBuilder(jsonBuffer, {
-            // name: `${this.#getFileNameFromPrompt(renderRequest)}.json`
-        });
-
-        const reply = {
-            content: `${interaction.member} wanted to see the request message for \`${renderRequest.prompt}\`.`,
-            files: [jsonAttachment]
-        };
-
-        await interaction.editReply(reply);
-    }
-
-    // async #renderImage(interaction: Message | ButtonInteraction, prompt: string | RenderRequest |  null)
-    //     : Promise<IHttpExchangeWithAttachedResponse<RenderRequest, IRenderResponse, IStreamResponse> | null> {
-    //     let botMention: string = '';
-    //     prompt = prompt || '';
-
-    //     if(interaction instanceof Message && !(prompt instanceof RenderRequest)) {
-    //         botMention = interaction.mentions.members.find(x => x.id === this.client.user?.id)?.toString() || '';
-    //         prompt = interaction.content;
-    //     }
-
-    //     prompt = prompt instanceof RenderRequest
-    //         ? prompt
-    //         : prompt.replaceAll(botMention, '').trim();
-
-    //     if(typeof prompt === JavaScriptType.String && (prompt as string).substring(0, 1) === '{') {
-    //         try {
-    //             prompt = RenderRequest.FromJson(prompt as string);
-    //             prompt.num_outputs = 1;
-    //         } catch(error) {
-    //             this.logger(LogLevel.Info, `A possible JSON prompt was received, but could not be deserialized to ${typeof RenderRequest}.`);
-    //         }
-    //     }
-
-    //     const easyDiffusionClient = new EasyDiffusionClient(this.environmentSettings);
-    //     this.easyDiffusionClients.push(easyDiffusionClient);
-
-    //     this.logger(LogLevel.Info, `Render prompt: ${prompt}`);
-
-    //     const renderExchange = await easyDiffusionClient.render(prompt);
-
-    //     if(renderExchange === null || renderExchange.response === null) {
-    //         return null;
-    //     }
-
-    //     const streamResponse = await easyDiffusionClient.stream(renderExchange);
-
-    //     return {
-    //         exchange: renderExchange,
-    //         response: streamResponse
-    //     };
-    // }
 
     async #replyWithError(message: Message | ButtonInteraction): Promise<void> {
         await message.reply({ content: this.environmentSettings.errorMessage });

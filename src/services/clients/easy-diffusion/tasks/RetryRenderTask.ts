@@ -8,7 +8,7 @@ import { TaskStatus } from '../../../tasks/enums/TaskStatus.js';
 import { ContentType } from '../../../../enums/ContentType.js';
 import { RenderRequest } from '../models/requests/RenderRequest.js';
 import { getRandomArrayEntry } from '../../../../utilities/random-utilities.js';
-import { EasyDiffusionReplyService } from '../../discord/easyDiffusion/EasyDiffusionReplyService.js';
+import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiffusionReplyService.js';
 
 export class RetryRenderTask extends BaseTask {
     #environmentSettings: EnvironmentSettings;
@@ -37,19 +37,13 @@ export class RetryRenderTask extends BaseTask {
     override async process(): Promise<void> {
         this.taskStatus = TaskStatus.Busy;
 
-        await this.#interaction.deferReply();
-
-        const supportedContentTypes = [
+        const imageTypes = [
             ContentType.Jpeg,
             ContentType.Jpg,
             ContentType.Png
         ];
 
-        const attachments = Array.from(this.#interaction.message.attachments, ([name, value]) => ({ name, value }));
-
-        const imageAttachment = attachments.filter(attachment =>
-            supportedContentTypes.includes(Object.values(ContentType)
-                .find(contentTypeValue => contentTypeValue === attachment.value.contentType)))[0].value;
+        const imageAttachment = this.#easyDiffusionReplyService.getAttachmentsByType(this.#interaction, imageTypes)[0];
 
         let request: RenderRequest = null;
 
