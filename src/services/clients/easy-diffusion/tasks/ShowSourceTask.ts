@@ -9,9 +9,11 @@ import { BufferEncoding } from '../../../../enums/BufferEncoding.js';
 import { ContentType } from '../../../../enums/ContentType.js';
 import { RenderRequest } from '../models/requests/RenderRequest.js';
 import { TaskType } from '../../../tasks/enums/TaskType.js';
+import { ReplyService } from '../../discord/ReplyService.js';
 
 export class ShowSourceTask extends BaseTask {
     #easyDiffusionReplyService: EasyDiffusionReplyService;
+    #replyService: ReplyService;
 
     #interaction: ButtonInteraction;
 
@@ -19,10 +21,12 @@ export class ShowSourceTask extends BaseTask {
 
     constructor(environmentSettings: EnvironmentSettings,
         easyDiffusionReplyService: EasyDiffusionReplyService,
+        replyService: ReplyService,
         interaction: ButtonInteraction) {
         super();
 
         this.#easyDiffusionReplyService = easyDiffusionReplyService;
+        this.#replyService = replyService;
         this.#interaction = interaction;
 
         this.#logger = new Logger(environmentSettings.isProduction, 'ShowSourceTask');
@@ -63,7 +67,7 @@ export class ShowSourceTask extends BaseTask {
 
     override async postProcess(): Promise<void> {
         if(this.taskStatus === TaskStatus.Failed) {
-            await this.#easyDiffusionReplyService.replyWithError(this.#interaction);
+            await this.#replyService.replyWithError(this.#interaction);
         }
     }
 }

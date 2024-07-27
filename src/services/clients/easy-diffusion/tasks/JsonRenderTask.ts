@@ -3,16 +3,15 @@ import { Logger, LogLevel } from 'meklog';
 
 import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
-import { EasyDiffusionClient } from '../EasyDiffusionClient.js';
 import { RenderRequest } from '../models/requests/RenderRequest.js';
 import { TaskStatus } from '../../../tasks/enums/TaskStatus.js';
 import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiffusionReplyService.js';
+import { ReplyService } from '../../discord/ReplyService.js';
 
 export class JsonRenderTask extends BaseTask {
-    #environmentSettings: EnvironmentSettings;
     #discordClient: DiscordClient;
     #easyDiffusionReplyService: EasyDiffusionReplyService;
-    #easyDiffusionClient: EasyDiffusionClient;
+    #replyService: ReplyService;
 
     #message: Message;
 
@@ -21,14 +20,12 @@ export class JsonRenderTask extends BaseTask {
     constructor(
         environmentSettings: EnvironmentSettings,
         discordClient: DiscordClient,
-        easyDiffusionClient: EasyDiffusionClient,
         easyDiffusionReplyService: EasyDiffusionReplyService,
+        replyService: ReplyService,
         message: Message) {
         super();
 
-        this.#environmentSettings = environmentSettings;
         this.#discordClient = discordClient;
-        this.#easyDiffusionClient = easyDiffusionClient;
         this.#easyDiffusionReplyService = easyDiffusionReplyService;
         this.#message = message;
 
@@ -62,7 +59,7 @@ export class JsonRenderTask extends BaseTask {
 
     override async postProcess(): Promise<void> {
         if(this.taskStatus === TaskStatus.Failed) {
-            await this.#easyDiffusionReplyService.replyWithError(this.#message);
+            await this.#replyService.replyWithError(this.#message);
         }
     }
 }

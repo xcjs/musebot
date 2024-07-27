@@ -12,11 +12,13 @@ import { OllamaClient } from '../../ollama/OllamaClient.js';
 import { wrapText } from '../../../../utilities/string-utilities.js';
 import { MAX_FILE_NAME_LENGTH, MAX_TEXT_LINE_LENGTH } from '../../../../enums/FileConstants.js';
 import { BufferEncoding } from '../../../../enums/BufferEncoding.js';
+import { ReplyService } from '../../discord/ReplyService.js';
 
 export class RandomRenderTask extends BaseTask {
     #environmentSettings: EnvironmentSettings;
-    #easyDiffusionReplyService: EasyDiffusionReplyService;
     #easyDiffusionClient: EasyDiffusionClient;
+    #easyDiffusionReplyService: EasyDiffusionReplyService;
+    #replyService: ReplyService;
 
     #interaction: ButtonInteraction;
 
@@ -26,12 +28,14 @@ export class RandomRenderTask extends BaseTask {
         environmentSettings: EnvironmentSettings,
         easyDiffusionClient: EasyDiffusionClient,
         easyDiffusionReplyService: EasyDiffusionReplyService,
+        replyService: ReplyService,
         interaction: ButtonInteraction) {
         super();
 
         this.#environmentSettings = environmentSettings;
         this.#easyDiffusionClient = easyDiffusionClient;
         this.#easyDiffusionReplyService = easyDiffusionReplyService;
+        this.#replyService = replyService;
         this.#interaction = interaction;
 
         this.#logger = new Logger(environmentSettings.isProduction, 'RandomRenderTask');
@@ -71,7 +75,7 @@ export class RandomRenderTask extends BaseTask {
 
     override async postProcess(): Promise<void> {
         if(this.taskStatus === TaskStatus.Failed) {
-            await this.#easyDiffusionReplyService.replyWithError(this.#interaction);
+            await this.#replyService.replyWithError(this.#interaction);
         }
     }
 }

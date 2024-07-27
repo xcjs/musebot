@@ -10,11 +10,13 @@ import { RenderRequest } from '../models/requests/RenderRequest.js';
 import { getRandomArrayEntry } from '../../../../utilities/random-utilities.js';
 import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiffusionReplyService.js';
 import { DiscordConstants } from '../../discord/enums/DiscordConstants.js';
+import { ReplyService } from '../../discord/ReplyService.js';
 
 export class RetryRenderTask extends BaseTask {
     #environmentSettings: EnvironmentSettings;
-    #easyDiffusionReplyService: EasyDiffusionReplyService;
     #easyDiffusionClient: EasyDiffusionClient;
+    #easyDiffusionReplyService: EasyDiffusionReplyService;
+    #replyService: ReplyService;
 
     #interaction: ButtonInteraction;
 
@@ -24,12 +26,14 @@ export class RetryRenderTask extends BaseTask {
         environmentSettings: EnvironmentSettings,
         easyDiffusionClient: EasyDiffusionClient,
         easyDiffusionReplyService: EasyDiffusionReplyService,
+        replyService: ReplyService,
         interaction: ButtonInteraction) {
         super();
 
         this.#environmentSettings = environmentSettings;
         this.#easyDiffusionClient = easyDiffusionClient;
         this.#easyDiffusionReplyService = easyDiffusionReplyService;
+        this.#replyService = replyService;
         this.#interaction = interaction;
 
         this.#logger = new Logger(environmentSettings.isProduction, 'RetryRenderTask');
@@ -70,7 +74,7 @@ export class RetryRenderTask extends BaseTask {
 
     override async postProcess(): Promise<void> {
         if(this.taskStatus === TaskStatus.Failed) {
-            await this.#easyDiffusionReplyService.replyWithError(this.#interaction);
+            await this.#replyService.replyWithError(this.#interaction);
         }
     }
 }

@@ -10,12 +10,14 @@ import { getRandomArrayEntry } from '../../../../utilities/random-utilities.js';
 import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiffusionReplyService.js';
 import { TaskQueue } from '../../../tasks/services/TaskQueue.js';
 import { JsonRenderTask } from './JsonRenderTask.js';
+import { ReplyService } from '../../discord/ReplyService.js';
 
 export class PromptRenderTask extends BaseTask {
     #environmentSettings: EnvironmentSettings;
     #discordClient: DiscordClient;
     #easyDiffusionReplyService: EasyDiffusionReplyService;
     #easyDiffusionClient: EasyDiffusionClient;
+    #replyService: ReplyService;
     #taskQueue: TaskQueue;
 
     #message: Message;
@@ -27,6 +29,7 @@ export class PromptRenderTask extends BaseTask {
         discordClient: DiscordClient,
         easyDiffusionClient: EasyDiffusionClient,
         easyDiffusionReplyService: EasyDiffusionReplyService,
+        replyService: ReplyService,
         message: Message,
         taskQueue: TaskQueue) {
         super();
@@ -35,6 +38,7 @@ export class PromptRenderTask extends BaseTask {
         this.#discordClient = discordClient;
         this.#easyDiffusionClient = easyDiffusionClient;
         this.#easyDiffusionReplyService = easyDiffusionReplyService;
+        this.#replyService = replyService;
         this.#message = message;
         this.#taskQueue = taskQueue;
 
@@ -51,8 +55,8 @@ export class PromptRenderTask extends BaseTask {
             this.#taskQueue.add(new JsonRenderTask(
                 this.#environmentSettings,
                 this.#discordClient,
-                this.#easyDiffusionClient,
                 this.#easyDiffusionReplyService,
+                this.#replyService,
                 this.#message));
 
             this.taskStatus = TaskStatus.Complete;
@@ -75,7 +79,7 @@ export class PromptRenderTask extends BaseTask {
 
     override async postProcess(): Promise<void> {
         if(this.taskStatus === TaskStatus.Failed) {
-            await this.#easyDiffusionReplyService.replyWithError(this.#message);
+            await this.#replyService.replyWithError(this.#message);
         }
     }
 }

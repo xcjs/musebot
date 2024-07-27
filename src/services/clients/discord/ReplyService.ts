@@ -1,4 +1,4 @@
-import { Client, Message, MessageType } from 'discord.js';
+import { ButtonInteraction, Client, Message, MessageType } from 'discord.js';
 
 import { EnvironmentSettings } from '../../EnvironmentSettings.js';
 import { JavaScriptType } from '../../../enums/JavaScriptType.js';
@@ -28,5 +28,9 @@ export class ReplyService {
             && message.content.length > 0;                       // Only respond to messages with more than 0 characters.
 
         return shouldReply;
+    }
+
+    async replyWithError(interaction: Message | ButtonInteraction): Promise<void> {
+        await interaction.reply({ content: this.#environmentSettings.errorMessage });
     }
 }

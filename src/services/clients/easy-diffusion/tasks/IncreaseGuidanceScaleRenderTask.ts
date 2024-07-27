@@ -9,11 +9,13 @@ import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiffusionReplyService.js';
 import { EasyDiffusionClient } from '../EasyDiffusionClient.js';
 import { RenderRequest } from '../models/requests/RenderRequest.js';
+import { ReplyService } from '../../discord/ReplyService.js';
 
 export class IncreaseGuidanceScaleRenderTask extends BaseTask {
     #environmentSettings: EnvironmentSettings;
-    #easyDiffusionReplyService: EasyDiffusionReplyService;
     #easyDiffusionClient: EasyDiffusionClient;
+    #easyDiffusionReplyService: EasyDiffusionReplyService;
+    #replyService: ReplyService;
 
     #interaction: ButtonInteraction;
 
@@ -23,12 +25,14 @@ export class IncreaseGuidanceScaleRenderTask extends BaseTask {
         environmentSettings: EnvironmentSettings,
         easyDiffusionClient: EasyDiffusionClient,
         easyDiffusionReplyService: EasyDiffusionReplyService,
+        replyService: ReplyService,
         interaction: ButtonInteraction) {
         super();
 
         this.#environmentSettings = environmentSettings;
         this.#easyDiffusionClient = easyDiffusionClient;
         this.#easyDiffusionReplyService = easyDiffusionReplyService;
+        this.#replyService = replyService;
         this.#interaction = interaction;
 
         this.#logger = new Logger(environmentSettings.isProduction, 'IncreaseGuidanceScaleRenderTask');
@@ -71,7 +75,7 @@ export class IncreaseGuidanceScaleRenderTask extends BaseTask {
 
     override async postProcess(): Promise<void> {
         if(this.taskStatus === TaskStatus.Failed) {
-            await this.#easyDiffusionReplyService.replyWithError(this.#interaction);
+            await this.#replyService.replyWithError(this.#interaction);
         }
     }
 }
