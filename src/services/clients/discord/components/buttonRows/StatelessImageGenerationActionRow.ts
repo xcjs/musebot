@@ -2,7 +2,6 @@ import { ActionRowBuilder, ButtonBuilder } from 'discord.js';
 
 import { BaseComponent } from '../BaseComponent.js';
 import { RandomizeButton } from '../buttons/RandomizeButton.js';
-import { RetryButton } from '../buttons/RetryButton.js';
 import { FeatureService } from '../../../../features/FeatureService.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 
@@ -12,10 +11,7 @@ export class StatelessImageGenerationActionRow extends BaseComponent<ActionRowBu
     }
 
     override build(): ActionRowBuilder<ButtonBuilder> {
-        const retryButton = new RetryButton(this.featureService).build();
-
-        const actionRowBuilder = new ActionRowBuilder<ButtonBuilder>()
-            .addComponents(retryButton);
+        const actionRowBuilder = new ActionRowBuilder<ButtonBuilder>();
 
         if(this.featureService.hasFeature(SupportedFeature.RandomImageGeneration)) {
             const randomizeButton = new RandomizeButton(this.featureService).build();
