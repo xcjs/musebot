@@ -1,7 +1,7 @@
 import { Client, Message, MessageType } from 'discord.js';
 
-import { EnvironmentSettings } from '../../EnvironmentSettings';
-import { JavaScriptType } from '../../../enums/JavaScriptType';
+import { EnvironmentSettings } from '../../EnvironmentSettings.js';
+import { JavaScriptType } from '../../../enums/JavaScriptType.js';
 
 export class ReplyService {
     #environmentSettings: EnvironmentSettings;

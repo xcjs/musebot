@@ -10,11 +10,9 @@ import {
     Events,
     Message
 } from 'discord.js';
-
 import {Logger, LogLevel } from 'meklog';
 
 import { EasyDiffusionClient } from '../../easy-diffusion/EasyDiffusionClient.js';
-import { ContentType } from '../../../../enums/ContentType.js';
 import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
 import { BufferEncoding } from '../../../../enums/BufferEncoding.js';
 import { DiscordPresenceStatus } from '../enums/DiscordPresenceStatus.js';
@@ -25,24 +23,31 @@ import { IStreamResponse } from '../../easy-diffusion/models/responses/IStreamRe
 import { BotInteraction } from '../../../../enums/BotInteraction.js';
 import { StableDiffusionGuidanceScaleLimit } from '../../easy-diffusion/enums/StableDiffusionGuidanceScaleLimit.js';
 import { BaseDiscordClient } from '../BaseDiscordClient.js';
-import { OllamaClient } from '../../ollama/OllamaClient.js';
 import { DiscordConstants } from '../enums/DiscordConstants.js';
-import { MAX_FILE_NAME_LENGTH, MAX_TEXT_LINE_LENGTH } from '../../../../enums/FileConstants.js';
+import { MAX_TEXT_LINE_LENGTH } from '../../../../enums/FileConstants.js';
 import { wrapText } from '../../../../utilities/string-utilities.js';
 import { SupportedFeature } from '../../../features/enum/SupportedFeature.js';
 import { TaskQueue } from '../../../tasks/services/TaskQueue.js';
 import { PromptRenderTask } from '../../easy-diffusion/tasks/PromptRenderTask.js';
+import { EasyDiffusionReplyService } from './EasyDiffusionReplyService.js';
+import { FeatureService } from '../../../features/FeatureService.js';
+import { RetryRenderTask } from '../../easy-diffusion/tasks/RetryRenderTask.js';
 
 export class DiscordEasyDiffusionClient extends BaseDiscordClient {
-    easyDiffusionClients: Array<EasyDiffusionClient> = [];
-    ollamaClients: Array<OllamaClient> = [];
+    #easyDiffusionClient: EasyDiffusionClient;
+    #easyDiffusionReplyService: EasyDiffusionReplyService;
 
     #guidanceScaleInterval = .5;
 
-    constructor(environmentSettings: EnvironmentSettings, taskQueue: TaskQueue) {
+    constructor(
+        environmentSettings: EnvironmentSettings,
+        taskQueue: TaskQueue,
+        featureService: FeatureService) {
         super(environmentSettings, taskQueue);
 
         this.environmentSettings = environmentSettings;
+        this.#easyDiffusionClient = new EasyDiffusionClient(environmentSettings);
+        this.#easyDiffusionReplyService = new EasyDiffusionReplyService(environmentSettings, this.#easyDiffusionClient, featureService);
 
         this.logger = new Logger(this.environmentSettings.isProduction, 'DiscordEasyDiffusionClient');
 
@@ -82,53 +87,31 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
 
         this.logger(LogLevel.Info, 'Replying to message...');
 
-        this.taskQueue.add(new PromptRenderTask(
-            this.environmentSettings,
-            this.featureService,
-            this.client,
-            new EasyDiffusionClient(this.environmentSettings),
-            message));
+        await this.typingService.startTyping(message);
 
-        this.typingService.startTyping(message);
+        await this.taskQueue.add(new PromptRenderTask(
+            this.environmentSettings,
+            this.client,
+            this.#easyDiffusionClient,
+            this.#easyDiffusionReplyService,
+            message));
     }
 
     async #onInteraction(interaction: ButtonInteraction): Promise<void> {
         this.logger(LogLevel.Info, `Beginning interaction response to custom action ${interaction.customId}...`);
 
-        const supportedContentTypes = [
-            ContentType.Jpeg,
-            ContentType.Jpg,
-            ContentType.Png
-        ]
-
-        const attachments = Array.from(interaction.message.attachments, ([name, value]) => ({ name, value }));
-
-        const imageAttachment = attachments.filter(attachment =>
-            supportedContentTypes.includes(Object.values(ContentType)
-                .find(contentTypeValue => contentTypeValue === attachment.value.contentType)))[0].value;
-
-        let renderRequest: RenderRequest = null;
-
-        if(imageAttachment?.description) {
-            renderRequest = RenderRequest.FromJson(imageAttachment.description);
-        }
-
-        await interaction.deferReply();
+        await this.typingService.startTyping(interaction);
 
         switch(interaction.customId) {
             case BotInteraction.Retry:
+                await this.#retry(interaction);
+                break;
+            case BotInteraction.ShowSource:
                 // if(!renderRequest) {
                 //     return;
                 // }
 
-                // this.#retry(interaction, renderRequest.prompt);
-                break;
-            case BotInteraction.ShowSource:
-                if(!renderRequest) {
-                    return;
-                }
-
-                this.#showSource(interaction, renderRequest, imageAttachment.description);
+                // this.#showSource(interaction, renderRequest, imageAttachment.description);
                 break;
             case BotInteraction.GuidanceScaleMinus:
                 // if(!renderRequest) {
@@ -168,12 +151,12 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
         }
     }
 
-    async #onRetry(interaction: ButtonInteraction, renderRequest: RenderRequest) {
-        if(!renderRequest) {
-            return;
-        }
-
-        // this.#retry(interaction, renderRequest.prompt);
+    async #retry(interaction: ButtonInteraction): Promise<void> {
+        await this.taskQueue.add(new RetryRenderTask(
+            this.environmentSettings,
+            this.#easyDiffusionClient,
+            this.#easyDiffusionReplyService,
+            interaction));
     }
 
     async #reply(interaction: Message | ButtonInteraction, renderData: IHttpExchangeWithAttachedResponse<RenderRequest, IRenderResponse, IStreamResponse> | null) {
@@ -186,7 +169,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
         const renderRequest = renderData.exchange.request;
         const streamResponse = renderData.response;
 
-        const fileName = this.#getFileNameFromPrompt(renderRequest);
+        // const fileName = this.#getFileNameFromPrompt(renderRequest);
         const jsonRequest = JSON.stringify(renderRequest);
 
         const files: Array<AttachmentBuilder> = [];
@@ -195,7 +178,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
         const imageBuffer = Buffer.from(streamResponse.output[0].data.split(",")[1], BufferEncoding.Base64);
 
         const imageAttachment = new AttachmentBuilder(imageBuffer, {
-            name: `${fileName}.${renderRequest.output_format}`,
+            // name: `${fileName}.${renderRequest.output_format}`,
             description: areDescriptionInteractionsAvailable ? jsonRequest : null
         });
 
@@ -275,7 +258,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
                             const promptBuffer = Buffer.from(wrapText(renderRequest.prompt, MAX_TEXT_LINE_LENGTH),
                                 BufferEncoding.UTF8);
                             reply.files.push(new AttachmentBuilder(promptBuffer, {
-                                name: `${renderRequest.prompt.substring(0, MAX_FILE_NAME_LENGTH)}.txt`
+                                // name: `${renderRequest.prompt.substring(0, MAX_FILE_NAME_LENGTH)}.txt`
                             }));
                         }
                         break;
@@ -299,7 +282,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
     async #showSource(interaction, renderRequest, jsonRequest): Promise<void> {
         const jsonBuffer = Buffer.from(jsonRequest, BufferEncoding.UTF8);
         const jsonAttachment = new AttachmentBuilder(jsonBuffer, {
-            name: `${this.#getFileNameFromPrompt(renderRequest)}.json`
+            // name: `${this.#getFileNameFromPrompt(renderRequest)}.json`
         });
 
         const reply = {
@@ -308,10 +291,6 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
         };
 
         await interaction.editReply(reply);
-    }
-
-    #getFileNameFromPrompt(renderRequest: RenderRequest): string {
-        return `${renderRequest.seed}_${renderRequest.prompt}`.substring(0, MAX_FILE_NAME_LENGTH);
     }
 
     // async #renderImage(interaction: Message | ButtonInteraction, prompt: string | RenderRequest |  null)

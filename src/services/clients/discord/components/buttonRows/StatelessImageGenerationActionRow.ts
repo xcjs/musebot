@@ -1,10 +1,10 @@
 import { ActionRowBuilder, ButtonBuilder } from 'discord.js';
 
-import { BaseComponent } from '../BaseComponent';
-import { RandomizeButton } from '../buttons/RandomizeButton';
-import { RetryButton } from '../buttons/RetryButton';
+import { BaseComponent } from '../BaseComponent.js';
+import { RandomizeButton } from '../buttons/RandomizeButton.js';
+import { RetryButton } from '../buttons/RetryButton.js';
 import { FeatureService } from '../../../../features/FeatureService.js';
-import { SupportedFeature } from '../../../../features/enum/SupportedFeature';
+import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 
 export class StatelessImageGenerationActionRow extends BaseComponent<ActionRowBuilder<ButtonBuilder>> {
     constructor(featureService: FeatureService) {

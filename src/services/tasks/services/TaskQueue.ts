@@ -41,7 +41,7 @@ export class TaskQueue {
             try {
                 await task.process();
             } catch(error) {
-                this.#logger.log(`An exception occurred while processing a ${typeof task} task: ${error}`);
+                this.#logger(LogLevel.Error, `An exception occurred while processing a ${typeof task} task: ${error}`);
                 task.taskStatus = TaskStatus.Failed;
             }
 
