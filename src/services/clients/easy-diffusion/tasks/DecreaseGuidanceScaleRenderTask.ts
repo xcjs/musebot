@@ -62,7 +62,7 @@ export class DecreaseGuidanceScaleRenderTask extends BaseTask {
 
         const renderData = await this.#easyDiffusionReplyService.renderImage(request);
         const content = `The guidance scale was decreased from ${request.guidance_scale
-            + this.#environmentSettings.easyDiffusionGuidanceScaleInterval} to ${request.guidance_scale}.`;
+            + this.#environmentSettings.easyDiffusionGuidanceScaleInterval} to ${request.guidance_scale} by ${this.#interaction.member}.`;
 
         await this.#easyDiffusionReplyService.reply(this.#interaction, renderData, content, null);
 
