@@ -40,6 +40,8 @@ export class RandomRenderTask extends BaseTask {
     override async process(): Promise<void> {
         this.taskStatus = TaskStatus.Busy;
 
+        this.#logger(LogLevel.Info, 'Processing a RandomRenderTask.');
+
         const model = this.#environmentSettings.easyDiffusionModels.length > 0 ?
             getRandomArrayEntry(this.#environmentSettings.easyDiffusionModels) :
             getRandomArrayEntry(await this.#easyDiffusionClient.getModels());

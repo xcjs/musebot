@@ -37,6 +37,8 @@ export class IncreaseGuidanceScaleRenderTask extends BaseTask {
     override async process(): Promise<void> {
         this.taskStatus = TaskStatus.Busy;
 
+        this.#logger(LogLevel.Info, 'Processing a IncreaseGuidanceScaleRenderTask.');
+
         const imageTypes = [
             ContentType.Jpeg,
             ContentType.Jpg,

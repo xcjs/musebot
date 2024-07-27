@@ -73,7 +73,7 @@ export class TaskQueue {
     #cleanQueue(): void {
         this.#logger(LogLevel.Info, 'Removing completed or failed entries from the queue...');
 
-        this.#queue = this.#queue.filter(task => {
+        const incompleteTasks = this.#queue.filter(task => {
             if(task.taskStatus === TaskStatus.Idle
                 || task.taskStatus === TaskStatus.Busy
                 || (task.taskStatus === TaskStatus.Failed
@@ -82,13 +82,13 @@ export class TaskQueue {
             }
         });
 
-        const failedTasks = this.#queue.filter(x => x.taskStatus === TaskStatus.Failed && x.numAttempts < this.#maxTaskAttempts)
+        const failedTasks = incompleteTasks.filter(x => x.taskStatus === TaskStatus.Failed && x.numAttempts < this.#maxTaskAttempts)
             .sort(this.#compareByDate);
 
-        const otherTasks = this.#queue.filter(x => x.taskStatus !== TaskStatus.Failed)
+        const nonFailedTasks = incompleteTasks.filter(x => x.taskStatus !== TaskStatus.Failed && x.taskStatus !== TaskStatus.Complete)
             .sort(this.#compareByDate);
 
-        this.#queue = otherTasks.concat(failedTasks);
+        this.#queue = nonFailedTasks.concat(failedTasks);
     }
 
     #compareByDate(a: BaseTask, b: BaseTask): number {

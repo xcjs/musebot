@@ -78,7 +78,8 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
             this.client,
             this.#easyDiffusionClient,
             this.#easyDiffusionReplyService,
-            message));
+            message,
+            this.taskQueue));
     }
 
     async #onInteraction(interaction: ButtonInteraction): Promise<void> {
