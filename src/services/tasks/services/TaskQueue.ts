@@ -91,7 +91,7 @@ export class TaskQueue {
         this.#queue = otherTasks.concat(failedTasks);
     }
 
-    #compareByDate(a, b): number {
+    #compareByDate(a: BaseTask, b: BaseTask): number {
         if(a.createdTime < b.createdTime) {
             return -1;
         } else {
