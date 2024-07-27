@@ -16,12 +16,14 @@ import { EasyDiffusionClient } from '../../easy-diffusion/EasyDiffusionClient.js
 import { ContentType } from '../../../../enums/ContentType.js';
 
 export class EasyDiffusionReplyService {
+    #environmentSettings: EnvironmentSettings;
     #easyDiffusionClient: EasyDiffusionClient;
     #featureService: FeatureService;
 
     #logger;
 
     constructor(environmentSettings: EnvironmentSettings, easyDiffusionClient: EasyDiffusionClient, featureService: FeatureService) {
+        this.#environmentSettings = environmentSettings;
         this.#easyDiffusionClient = easyDiffusionClient;
         this.#featureService = featureService;
 
@@ -65,7 +67,10 @@ export class EasyDiffusionReplyService {
         };
     }
 
-    async reply(interaction: Message | ButtonInteraction, renderData: IHttpExchangeWithAttachedResponse<RenderRequest, IRenderResponse, IStreamResponse>): Promise<void> {
+    async reply(
+        interaction: Message | ButtonInteraction,
+        renderData: IHttpExchangeWithAttachedResponse<RenderRequest, IRenderResponse, IStreamResponse>,
+        content: string | null): Promise<void> {
         const renderRequest = renderData.exchange.request;
         const streamResponse = renderData.response;
 
@@ -75,7 +80,7 @@ export class EasyDiffusionReplyService {
 
         const files: Array<AttachmentBuilder> = [];
 
-        const imageBuffer = Buffer.from(streamResponse.output[0].data.split(",")[1], BufferEncoding.Base64);
+        const imageBuffer = Buffer.from(streamResponse.output[0].data.split(',')[1], BufferEncoding.Base64);
 
         const imageAttachment = new AttachmentBuilder(imageBuffer, {
             name: `${fileName}.${renderRequest.output_format}`,
@@ -87,9 +92,10 @@ export class EasyDiffusionReplyService {
         this.#logger(LogLevel.Info, `Attaching render for "${renderRequest.prompt}": ${jsonRequest}`);
 
         const reply: BaseMessageOptions = {
+            content,
             files,
             components: [isStatefulResponse ?
-                new StatefulImageGenerationActionRow(this.#featureService).build() :
+                new StatefulImageGenerationActionRow(this.#environmentSettings, this.#featureService, renderRequest).build() :
                 new StatelessImageGenerationActionRow(this.#featureService).build()]
         };
 

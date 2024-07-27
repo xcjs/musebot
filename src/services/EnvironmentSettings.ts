@@ -20,6 +20,7 @@ export class EnvironmentSettings {
 
     easyDiffusionHosts: Array<URL> = [];
     easyDiffusionModels: Array<string> = [];
+    easyDiffusionGuidanceScaleInterval: number = .5;
 
     ollamaHosts: Array<URL> = [];
     ollamaModels: Array<string> = [];

@@ -9,6 +9,7 @@ import { ContentType } from '../../../../enums/ContentType.js';
 import { RenderRequest } from '../models/requests/RenderRequest.js';
 import { getRandomArrayEntry } from '../../../../utilities/random-utilities.js';
 import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiffusionReplyService.js';
+import { DiscordConstants } from '../../discord/enums/DiscordConstants.js';
 
 export class RetryRenderTask extends BaseTask {
     #environmentSettings: EnvironmentSettings;
@@ -59,7 +60,8 @@ export class RetryRenderTask extends BaseTask {
         this.#logger(LogLevel.Info, `Using ${model} as the selected EasyDiffusion model.`);
 
         const renderData = await this.#easyDiffusionReplyService.renderImage(request);
-        await this.#easyDiffusionReplyService.reply(this.#interaction, renderData);
+        const content = `${this.#interaction.member} re-rendered \`${request.prompt}\`.`.substring(0, DiscordConstants.ContentMaxLength);
+        await this.#easyDiffusionReplyService.reply(this.#interaction, renderData, content);
 
         this.taskStatus = TaskStatus.Successful;
     }

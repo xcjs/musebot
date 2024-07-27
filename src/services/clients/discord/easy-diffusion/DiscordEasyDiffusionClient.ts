@@ -21,7 +21,6 @@ import { RenderRequest } from '../../easy-diffusion/models/requests/RenderReques
 import { IRenderResponse } from '../../easy-diffusion/models/responses/IRenderResponse.js';
 import { IStreamResponse } from '../../easy-diffusion/models/responses/IStreamResponse.js';
 import { BotInteraction } from '../../../../enums/BotInteraction.js';
-import { StableDiffusionGuidanceScaleLimit } from '../../easy-diffusion/enums/StableDiffusionGuidanceScaleLimit.js';
 import { BaseDiscordClient } from '../BaseDiscordClient.js';
 import { DiscordConstants } from '../enums/DiscordConstants.js';
 import { MAX_TEXT_LINE_LENGTH } from '../../../../enums/FileConstants.js';
@@ -33,12 +32,12 @@ import { EasyDiffusionReplyService } from './EasyDiffusionReplyService.js';
 import { FeatureService } from '../../../features/FeatureService.js';
 import { RetryRenderTask } from '../../easy-diffusion/tasks/RetryRenderTask.js';
 import { ShowSourceTask } from '../../easy-diffusion/tasks/ShowSourceTask.js';
+import { DecreaseGuidanceScaleRenderTask } from '../../easy-diffusion/tasks/DecreaseGuidanceScaleRenderTask.js';
+import { IncreaseGuidanceScaleRenderTask } from '../../easy-diffusion/tasks/IncreaseGuidanceScaleRenderTask.js';
 
 export class DiscordEasyDiffusionClient extends BaseDiscordClient {
     #easyDiffusionClient: EasyDiffusionClient;
     #easyDiffusionReplyService: EasyDiffusionReplyService;
-
-    #guidanceScaleInterval = .5;
 
     constructor(
         environmentSettings: EnvironmentSettings,
@@ -112,26 +111,10 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
                 await this.#showSource(interaction);
                 break;
             case BotInteraction.GuidanceScaleMinus:
-                // if(!renderRequest) {
-                //     return;
-                // }
-
-                // renderRequest.guidance_scale = renderRequest.guidance_scale - this.#guidanceScaleInterval < StableDiffusionGuidanceScaleLimit.Min
-                //     ? renderRequest.guidance_scale
-                //     : renderRequest.guidance_scale - this.#guidanceScaleInterval
-
-                // await this.#retry(interaction, renderRequest);
+                await this.#decreaseGuidanceScale;
                 break;
             case BotInteraction.GuidanceScalePlus:
-                // if(!renderRequest) {
-                //     return;
-                // }
-
-                // renderRequest.guidance_scale = renderRequest.guidance_scale + this.#guidanceScaleInterval > StableDiffusionGuidanceScaleLimit.Max
-                //     ? renderRequest.guidance_scale
-                //     : renderRequest.guidance_scale + this.#guidanceScaleInterval;
-
-                // await this.#retry(interaction, renderRequest);
+                await this.#increaseGuidanceScale;
                 break;
             case BotInteraction.Randomize:
                 {
@@ -164,6 +147,22 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
             interaction));
     }
 
+    async #decreaseGuidanceScale(interaction: ButtonInteraction): Promise<void> {
+        await this.taskQueue.add(new DecreaseGuidanceScaleRenderTask(
+            this.environmentSettings,
+            this.#easyDiffusionClient,
+            this.#easyDiffusionReplyService,
+            interaction));
+    }
+
+    async #increaseGuidanceScale(interaction: ButtonInteraction): Promise<void> {
+        await this.taskQueue.add(new IncreaseGuidanceScaleRenderTask(
+            this.environmentSettings,
+            this.#easyDiffusionClient,
+            this.#easyDiffusionReplyService,
+            interaction));
+    }
+
     async #reply(interaction: Message | ButtonInteraction, renderData: IHttpExchangeWithAttachedResponse<RenderRequest, IRenderResponse, IStreamResponse> | null) {
         if(renderData?.exchange?.response === null
             && renderData?.response === null
@@ -191,25 +190,25 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
 
         this.logger(LogLevel.Info, `Attaching render for "${renderRequest.prompt}": ${jsonRequest}`);
 
-        const retryButton = new ButtonBuilder()
-            .setCustomId(BotInteraction.Retry)
-            .setLabel('🔄')
-            .setStyle(ButtonStyle.Secondary);
+        // const retryButton = new ButtonBuilder()
+        //     .setCustomId(BotInteraction.Retry)
+        //     .setLabel('🔄')
+        //     .setStyle(ButtonStyle.Secondary);
 
-        const showSourceButton = new ButtonBuilder()
-            .setCustomId(BotInteraction.ShowSource)
-            .setLabel('{ }')
-            .setStyle(ButtonStyle.Secondary);
+        // const showSourceButton = new ButtonBuilder()
+        //     .setCustomId(BotInteraction.ShowSource)
+        //     .setLabel('{ }')
+        //     .setStyle(ButtonStyle.Secondary);
 
-        const guidanceScaleMinus = new ButtonBuilder()
-            .setCustomId(BotInteraction.GuidanceScaleMinus)
-            .setLabel('➖')
-            .setStyle(ButtonStyle.Secondary);
+        // const guidanceScaleMinus = new ButtonBuilder()
+        //     .setCustomId(BotInteraction.GuidanceScaleMinus)
+        //     .setLabel('➖')
+        //     .setStyle(ButtonStyle.Secondary);
 
-        const guidanceScalePlusButton = new ButtonBuilder()
-            .setCustomId(BotInteraction.GuidanceScalePlus)
-            .setLabel('➕')
-            .setStyle(ButtonStyle.Secondary);
+        // const guidanceScalePlusButton = new ButtonBuilder()
+        //     .setCustomId(BotInteraction.GuidanceScalePlus)
+        //     .setLabel('➕')
+        //     .setStyle(ButtonStyle.Secondary);
 
         const randomizeButton = new ButtonBuilder()
             .setCustomId(BotInteraction.Randomize)
@@ -217,17 +216,9 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
             .setStyle(ButtonStyle.Danger);
 
         const buttonRow = new ActionRowBuilder<ButtonBuilder>()
-            .addComponents(retryButton, showSourceButton);
+            .addComponents();
 
         const nonDescriptionButtonRow = new ActionRowBuilder<ButtonBuilder>();
-
-        if(renderRequest.guidance_scale - this.#guidanceScaleInterval > StableDiffusionGuidanceScaleLimit.Min) {
-            buttonRow.addComponents(guidanceScaleMinus);
-        }
-
-        if(renderRequest.guidance_scale + this.#guidanceScaleInterval < StableDiffusionGuidanceScaleLimit.Max) {
-            buttonRow.addComponents(guidanceScalePlusButton);
-        }
 
         if(this.featureService.hasFeature(SupportedFeature.RandomImageGeneration)) {
             buttonRow.addComponents(randomizeButton);
@@ -248,14 +239,6 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
                 }
 
                 switch(interaction.customId) {
-                    case BotInteraction.GuidanceScaleMinus:
-                        reply.content = `${reply.content}\n`
-                            + `The guidance scale was decreased from ${renderRequest.guidance_scale + this.#guidanceScaleInterval} to ${renderRequest.guidance_scale}.`;
-                        break;
-                    case BotInteraction.GuidanceScalePlus:
-                        reply.content = `${reply.content}\n`
-                            + `The guidance scale was increased from ${renderRequest.guidance_scale - this.#guidanceScaleInterval} to ${renderRequest.guidance_scale}.`;
-                        break;
                     case BotInteraction.Randomize:
                         {
                             reply.content = `Two AIs whisper to each other over the the ancient \`TCP/IP\` protocol. They present ${interaction.member} with this.`;
