@@ -19,10 +19,12 @@ import { ShowSourceTask } from '../../easy-diffusion/tasks/ShowSourceTask.js';
 import { DecreaseGuidanceScaleRenderTask } from '../../easy-diffusion/tasks/DecreaseGuidanceScaleRenderTask.js';
 import { IncreaseGuidanceScaleRenderTask } from '../../easy-diffusion/tasks/IncreaseGuidanceScaleRenderTask.js';
 import { RandomRenderTask } from '../../easy-diffusion/tasks/RandomRenderTask.js';
+import { ReplyService } from '../ReplyService.js';
 
 export class DiscordEasyDiffusionClient extends BaseDiscordClient {
     #easyDiffusionClient: EasyDiffusionClient;
     #easyDiffusionReplyService: EasyDiffusionReplyService;
+    #replyService: ReplyService;
 
     constructor(
         environmentSettings: EnvironmentSettings,
@@ -33,6 +35,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
         this.environmentSettings = environmentSettings;
         this.#easyDiffusionClient = new EasyDiffusionClient(environmentSettings);
         this.#easyDiffusionReplyService = new EasyDiffusionReplyService(environmentSettings, this.#easyDiffusionClient, featureService);
+        this.#replyService = new ReplyService(environmentSettings, this.client);
 
         this.logger = new Logger(this.environmentSettings.isProduction, 'DiscordEasyDiffusionClient');
 
@@ -79,6 +82,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
             this.client,
             this.#easyDiffusionClient,
             this.#easyDiffusionReplyService,
+            this.#replyService,
             message,
             this.taskQueue));
     }
@@ -116,6 +120,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
             this.environmentSettings,
             this.#easyDiffusionClient,
             this.#easyDiffusionReplyService,
+            this.#replyService,
             interaction));
     }
 
@@ -123,6 +128,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
         await this.taskQueue.add(new ShowSourceTask(
             this.environmentSettings,
             this.#easyDiffusionReplyService,
+            this.#replyService,
             interaction));
     }
 
@@ -131,6 +137,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
             this.environmentSettings,
             this.#easyDiffusionClient,
             this.#easyDiffusionReplyService,
+            this.#replyService,
             interaction));
     }
 
@@ -139,6 +146,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
             this.environmentSettings,
             this.#easyDiffusionClient,
             this.#easyDiffusionReplyService,
+            this.#replyService,
             interaction));
     }
 
@@ -147,6 +155,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
             this.environmentSettings,
             this.#easyDiffusionClient,
             this.#easyDiffusionReplyService,
+            this.#replyService,
             interaction));
     }
 }
