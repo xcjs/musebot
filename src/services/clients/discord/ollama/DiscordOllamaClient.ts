@@ -106,7 +106,6 @@ export class DiscordOllamaClient extends BaseDiscordClient {
         const formattedMessage = `${message.author.displayName}: ${message.content.replaceAll(botMention, '')}`;
 
         const exchange = await ollamaClient.sendMessageAndGetStream(formattedMessage, context);
-        //const responses = splitText(exchange.response.response, DiscordConstants.ContentMaxLength);
 
         if(exchange === null) {
             await this.#replyWithError(message);
