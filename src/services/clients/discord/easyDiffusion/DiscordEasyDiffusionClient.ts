@@ -13,25 +13,25 @@ import {
 
 import {Logger, LogLevel } from 'meklog';
 
-import { EasyDiffusionClient } from '../easy-diffusion/EasyDiffusionClient.js';
-import { ContentType } from '../../../enums/ContentType.js';
-import { EnvironmentSettings } from '../../EnvironmentSettings.js';
-import { BufferEncoding } from '../../../enums/BufferEncoding.js';
-import { DiscordPresenceStatus } from './enums/DiscordPresenceStatus.js';
-import { IHttpExchangeWithAttachedResponse } from '../../../models/IHttpExchangeWithAttachedResponse.js';
-import { RenderRequest } from '../easy-diffusion/models/requests/RenderRequest.js';
-import { IRenderResponse } from '../easy-diffusion/models/responses/IRenderResponse.js';
-import { IStreamResponse } from '../easy-diffusion/models/responses/IStreamResponse.js';
-import { BotInteraction } from '../../../enums/BotInteraction.js';
-import { StableDiffusionGuidanceScaleLimit } from '../easy-diffusion/enums/StableDiffusionGuidanceScaleLimit.js';
-import { BaseDiscordClient } from './BaseDiscordClient.js';
-import { OllamaClient } from '../ollama/OllamaClient.js';
-import { DiscordConstants } from './enums/DiscordConstants.js';
-import { MAX_FILE_NAME_LENGTH, MAX_TEXT_LINE_LENGTH } from '../../../enums/FileConstants.js';
-import { wrapText } from '../../../utilities/string-utilities.js';
-import { SupportedFeature } from '../../features/enum/SupportedFeature.js';
-import { TaskQueue } from '../../tasks/services/TaskQueue.js';
-import { PromptRenderTask } from '../easy-diffusion/tasks/PromptRenderTask.js';
+import { EasyDiffusionClient } from '../../easy-diffusion/EasyDiffusionClient.js';
+import { ContentType } from '../../../../enums/ContentType.js';
+import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
+import { BufferEncoding } from '../../../../enums/BufferEncoding.js';
+import { DiscordPresenceStatus } from '../enums/DiscordPresenceStatus.js';
+import { IHttpExchangeWithAttachedResponse } from '../../../../models/IHttpExchangeWithAttachedResponse.js';
+import { RenderRequest } from '../../easy-diffusion/models/requests/RenderRequest.js';
+import { IRenderResponse } from '../../easy-diffusion/models/responses/IRenderResponse.js';
+import { IStreamResponse } from '../../easy-diffusion/models/responses/IStreamResponse.js';
+import { BotInteraction } from '../../../../enums/BotInteraction.js';
+import { StableDiffusionGuidanceScaleLimit } from '../../easy-diffusion/enums/StableDiffusionGuidanceScaleLimit.js';
+import { BaseDiscordClient } from '../BaseDiscordClient.js';
+import { OllamaClient } from '../../ollama/OllamaClient.js';
+import { DiscordConstants } from '../enums/DiscordConstants.js';
+import { MAX_FILE_NAME_LENGTH, MAX_TEXT_LINE_LENGTH } from '../../../../enums/FileConstants.js';
+import { wrapText } from '../../../../utilities/string-utilities.js';
+import { SupportedFeature } from '../../../features/enum/SupportedFeature.js';
+import { TaskQueue } from '../../../tasks/services/TaskQueue.js';
+import { PromptRenderTask } from '../../easy-diffusion/tasks/PromptRenderTask.js';
 
 export class DiscordEasyDiffusionClient extends BaseDiscordClient {
     easyDiffusionClients: Array<EasyDiffusionClient> = [];
