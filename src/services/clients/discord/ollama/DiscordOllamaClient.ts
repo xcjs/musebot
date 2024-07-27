@@ -13,6 +13,7 @@ import { RenderRequest } from '../../easy-diffusion/models/requests/RenderReques
 import { MAX_FILE_NAME_LENGTH } from '../../../../enums/FileConstants.js';
 import { SupportedFeature } from '../../../features/enum/SupportedFeature.js';
 import { TaskQueue } from '../../../tasks/services/TaskQueue.js';
+import { getRandomArrayEntry } from '../../../../utilities/random-utilities.js';
 
 export class DiscordOllamaClient extends BaseDiscordClient {
     ollamaClients: Array<OllamaClient> = [];
@@ -159,7 +160,11 @@ export class DiscordOllamaClient extends BaseDiscordClient {
 
         this.logger(LogLevel.Info, `Image render prompt: ${imagePrompt}`);
 
-        const renderExchange = await easyDiffusionClient.render(imagePrompt);
+        const model = this.easyDiffusionClients.length > 0 ?
+            getRandomArrayEntry(this.environmentSettings.easyDiffusionModels) :
+            getRandomArrayEntry(await easyDiffusionClient.getModels());
+
+        const renderExchange = await easyDiffusionClient.render(new RenderRequest(model, imagePrompt));
 
         if(renderExchange === null || renderExchange.response === null) {
             return;
