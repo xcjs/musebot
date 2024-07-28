@@ -6,7 +6,7 @@ import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { TaskStatus } from '../../../tasks/enums/TaskStatus.js';
 import { ReplyService } from '../../discord/ReplyService.js';
 
-export class PromptRenderTask extends BaseTask {
+export class PromptStreamingResponseTask extends BaseTask {
     #environmentSettings: EnvironmentSettings;
     #discordClient: DiscordClient;
     #replyService: ReplyService;
@@ -26,7 +26,7 @@ export class PromptRenderTask extends BaseTask {
         this.#replyService
         this.#message = message;
 
-        this.#logger = new Logger(environmentSettings.isProduction, 'PromptRenderTask');
+        this.#logger = new Logger(environmentSettings.isProduction, 'PromptStreamingResponseTask');
     }
 
     override async process(): Promise<void> {
