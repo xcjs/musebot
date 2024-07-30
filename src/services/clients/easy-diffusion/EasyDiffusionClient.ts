@@ -50,16 +50,12 @@ export class EasyDiffusionClient {
             };
         } catch(error) {
             this.#logger(LogLevel.Info, error);
-            return null;
+            throw error;
         }
     }
 
     async stream(renderExchange: IHttpExchange<RenderRequest, IRenderResponse>) : Promise<IStreamResponse | null> {
         const renderResponse = renderExchange?.response;
-
-        if(renderResponse === null) {
-            return null;
-        }
 
         const streamUrl = new URL(renderResponse.stream, this.#host);
 
@@ -97,7 +93,7 @@ export class EasyDiffusionClient {
             return null;
         } catch (error) {
             this.#logger(LogLevel.Error, `Checking the EasyDiffusion render stream failed: ${error}`);
-            return null;
+            throw error;
         }
     }
 
@@ -115,7 +111,7 @@ export class EasyDiffusionClient {
             return this.#mapModelsToArrayFromModelOptions(modelsResponse);
         } catch (error) {
             this.#logger(LogLevel.Error, `Loading EasyDiffusion options failed: ${error}`);
-            return [];
+            throw error;
         }
     }
 
