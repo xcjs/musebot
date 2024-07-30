@@ -12,7 +12,7 @@ import { OllamaClient } from '../../ollama/OllamaClient.js';
 import { wrapText } from '../../../../utilities/string-utilities.js';
 import { MAX_FILE_NAME_LENGTH, MAX_TEXT_LINE_LENGTH } from '../../../../enums/FileConstants.js';
 import { BufferEncoding } from '../../../../enums/BufferEncoding.js';
-import { ReplyService } from '../../discord/ReplyService.js';
+import { ReplyService } from '../../discord/services/ReplyService.js';
 
 export class RandomRenderTask extends BaseTask {
     #environmentSettings: EnvironmentSettings;

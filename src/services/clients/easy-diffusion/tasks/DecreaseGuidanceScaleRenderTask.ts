@@ -9,7 +9,7 @@ import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiffusionReplyService.js';
 import { EasyDiffusionClient } from '../EasyDiffusionClient.js';
 import { RenderRequest } from '../models/requests/RenderRequest.js';
-import { ReplyService } from '../../discord/ReplyService.js';
+import { ReplyService } from '../../discord/services/ReplyService.js';
 
 export class DecreaseGuidanceScaleRenderTask extends BaseTask {
     #environmentSettings: EnvironmentSettings;

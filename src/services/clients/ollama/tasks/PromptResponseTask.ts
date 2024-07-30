@@ -4,7 +4,7 @@ import { Logger } from 'meklog';
 import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { TaskStatus } from '../../../tasks/enums/TaskStatus.js';
-import { ReplyService } from '../../discord/ReplyService.js';
+import { ReplyService } from '../../discord/services/ReplyService.js';
 
 export class PromptResponseTask extends BaseTask {
     #environmentSettings: EnvironmentSettings;

@@ -6,7 +6,7 @@ import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { RenderRequest } from '../models/requests/RenderRequest.js';
 import { TaskStatus } from '../../../tasks/enums/TaskStatus.js';
 import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiffusionReplyService.js';
-import { ReplyService } from '../../discord/ReplyService.js';
+import { ReplyService } from '../../discord/services/ReplyService.js';
 
 export class JsonRenderTask extends BaseTask {
     #discordClient: DiscordClient;

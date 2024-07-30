@@ -19,7 +19,7 @@ import { ShowSourceTask } from '../../easy-diffusion/tasks/ShowSourceTask.js';
 import { DecreaseGuidanceScaleRenderTask } from '../../easy-diffusion/tasks/DecreaseGuidanceScaleRenderTask.js';
 import { IncreaseGuidanceScaleRenderTask } from '../../easy-diffusion/tasks/IncreaseGuidanceScaleRenderTask.js';
 import { RandomRenderTask } from '../../easy-diffusion/tasks/RandomRenderTask.js';
-import { ReplyService } from '../ReplyService.js';
+import { ReplyService } from '../services/ReplyService.js';
 
 export class DiscordEasyDiffusionClient extends BaseDiscordClient {
     #easyDiffusionClient: EasyDiffusionClient;

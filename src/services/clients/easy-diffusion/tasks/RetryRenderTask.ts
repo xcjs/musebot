@@ -10,7 +10,7 @@ import { RenderRequest } from '../models/requests/RenderRequest.js';
 import { getRandomArrayEntry } from '../../../../utilities/random-utilities.js';
 import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiffusionReplyService.js';
 import { DiscordConstants } from '../../discord/enums/DiscordConstants.js';
-import { ReplyService } from '../../discord/ReplyService.js';
+import { ReplyService } from '../../discord/services/ReplyService.js';
 
 export class RetryRenderTask extends BaseTask {
     #environmentSettings: EnvironmentSettings;

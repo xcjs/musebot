@@ -9,7 +9,7 @@ import { BufferEncoding } from '../../../../enums/BufferEncoding.js';
 import { ContentType } from '../../../../enums/ContentType.js';
 import { RenderRequest } from '../models/requests/RenderRequest.js';
 import { TaskType } from '../../../tasks/enums/TaskType.js';
-import { ReplyService } from '../../discord/ReplyService.js';
+import { ReplyService } from '../../discord/services/ReplyService.js';
 
 export class ShowSourceTask extends BaseTask {
     #easyDiffusionReplyService: EasyDiffusionReplyService;

@@ -6,7 +6,7 @@ import { TypingService } from './services/TypingService.js';
 import { DiscordConstants } from './enums/DiscordConstants.js';
 import { FeatureService } from '../../features/FeatureService.js';
 import { TaskQueue } from '../../tasks/services/TaskQueue.js';
-import { ReplyService } from './ReplyService.js';
+import { ReplyService } from './services/ReplyService.js';
 
 export class BaseDiscordClient {
     protected environmentSettings: EnvironmentSettings;

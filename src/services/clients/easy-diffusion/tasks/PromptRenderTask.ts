@@ -10,7 +10,7 @@ import { getRandomArrayEntry } from '../../../../utilities/random-utilities.js';
 import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiffusionReplyService.js';
 import { TaskQueue } from '../../../tasks/services/TaskQueue.js';
 import { JsonRenderTask } from './JsonRenderTask.js';
-import { ReplyService } from '../../discord/ReplyService.js';
+import { ReplyService } from '../../discord/services/ReplyService.js';
 
 export class PromptRenderTask extends BaseTask {
     #environmentSettings: EnvironmentSettings;
