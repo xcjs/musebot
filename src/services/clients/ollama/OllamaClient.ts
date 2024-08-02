@@ -56,7 +56,7 @@ export class OllamaClient {
             };
         } catch(error) {
             this.#logger(LogLevel.Info, error);
-            return null;
+            throw error;
         }
     }
 
@@ -83,7 +83,7 @@ export class OllamaClient {
             };
         } catch(error) {
             this.#logger(LogLevel.Info, error);
-            return null;
+            throw error;
         }
     }
 
