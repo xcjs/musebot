@@ -89,7 +89,7 @@ export class PromptResponseTask extends BaseTask {
 
         this.#ollamaReplyService.reply(this.#message, exchange);
 
-        if(!this.#featureService.hasFeature(SupportedFeature.ImagesAttachedToText)) {
+        if(this.#featureService.hasFeature(SupportedFeature.ImagesAttachedToText)) {
             const renderData = await this.#renderImage(exchange.response.response);
             await this.#ollamaReplyService.attachImage(renderData);
         }
@@ -135,7 +135,7 @@ export class PromptResponseTask extends BaseTask {
             }
         }
 
-        if(!this.#featureService.hasFeature(SupportedFeature.ImagesAttachedToText)) {
+        if(this.#featureService.hasFeature(SupportedFeature.ImagesAttachedToText)) {
             const renderData = await this.#renderImage(fullResponse);
             await this.#ollamaStreamingReplyService.attachImage(renderData);
         }
