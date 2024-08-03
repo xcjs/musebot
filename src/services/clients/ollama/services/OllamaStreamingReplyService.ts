@@ -1,15 +1,15 @@
 import { AttachmentBuilder, Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { EnvironmentSettings } from '../../../EnvironmentSettings';
-import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiffusionReplyService';
-import { DiscordConstants } from '../../discord/enums/DiscordConstants';
-import { splitText } from '../../../../utilities/string-utilities';
-import { IHttpExchangeWithAttachedResponse } from '../../../../models/IHttpExchangeWithAttachedResponse';
-import { BufferEncoding } from '../../../../enums/BufferEncoding';
-import { RenderRequest } from '../../easy-diffusion/models/requests/RenderRequest';
-import { IRenderResponse } from '../../easy-diffusion/models/responses/IRenderResponse';
-import { IStreamResponse } from '../../easy-diffusion/models/responses/IStreamResponse';
+import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
+import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiffusionReplyService.js';
+import { DiscordConstants } from '../../discord/enums/DiscordConstants.js';
+import { splitText } from '../../../../utilities/string-utilities.js';
+import { IHttpExchangeWithAttachedResponse } from '../../../../models/IHttpExchangeWithAttachedResponse.js';
+import { BufferEncoding } from '../../../../enums/BufferEncoding.js';
+import { RenderRequest } from '../../easy-diffusion/models/requests/RenderRequest.js';
+import { IRenderResponse } from '../../easy-diffusion/models/responses/IRenderResponse.js';
+import { IStreamResponse } from '../../easy-diffusion/models/responses/IStreamResponse.js';
 
 export class OllamaStreamingReplyService {
     #environmentSettings: EnvironmentSettings;
