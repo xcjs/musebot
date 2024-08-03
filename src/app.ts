@@ -17,7 +17,7 @@ switch(environmentSettings.botFunction) {
         client = new DiscordEasyDiffusionClient(environmentSettings, taskQueue, featureService);
         break;
     case BotFunction.Text:
-        client = new DiscordOllamaClient(environmentSettings, taskQueue);
+        client = new DiscordOllamaClient(environmentSettings, taskQueue, featureService);
         break;
 }
 
