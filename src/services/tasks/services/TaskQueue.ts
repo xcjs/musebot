@@ -51,7 +51,7 @@ export class TaskQueue {
                 await task.process();
                 await task.postProcess();
             } catch(error) {
-                this.#logger(LogLevel.Error, `An exception occurred while processing a ${typeof task} task: ${error}`);
+                this.#logger(LogLevel.Error, `An exception occurred while processing a task: ${error}`);
                 task.taskStatus = TaskStatus.Failed;
 
                 if(task.numAttempts === this.#environmentSettings.maxTaskAttempts) {
@@ -84,13 +84,13 @@ export class TaskQueue {
             if(task.taskStatus === TaskStatus.Idle
                 || task.taskStatus === TaskStatus.Busy
                 || (task.taskStatus === TaskStatus.Failed
-                    && task.numAttempts < this.#environmentSettings.maxTaskAttempts)) {
+                    && task.numAttempts <= this.#environmentSettings.maxTaskAttempts)) {
                         return task;
             }
         });
 
         const failedTasks = incompleteTasks.filter(
-            x => x.taskStatus === TaskStatus.Failed && x.numAttempts < this.#environmentSettings.maxTaskAttempts)
+            x => x.taskStatus === TaskStatus.Failed && x.numAttempts <= this.#environmentSettings.maxTaskAttempts)
             .sort(this.#compareByDate);
 
         const nonFailedTasks = incompleteTasks.filter(

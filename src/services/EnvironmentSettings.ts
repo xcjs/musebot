@@ -15,7 +15,7 @@ export class EnvironmentSettings {
 
     botFunction: BotFunction;
 
-    maxTaskAttempts: number;
+    maxTaskAttempts: number = 100;
 
     discordToken: string;
     discordChannels: Array<string> = [];
