@@ -88,7 +88,7 @@ export class EasyDiffusionReplyService {
 
         let files: Array<AttachmentBuilder> = [imageAttachment];
 
-        if(files) {
+        if(additionalAttachments) {
             files = files.concat(additionalAttachments);
         }
 
