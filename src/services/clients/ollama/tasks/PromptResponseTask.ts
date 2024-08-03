@@ -1,5 +1,5 @@
 import { Client as DiscordClient, Message } from 'discord.js';
-import { Logger } from 'meklog';
+import { Logger, LogLevel } from 'meklog';
 
 import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
@@ -8,33 +8,52 @@ import { ReplyService } from '../../discord/services/ReplyService.js';
 import { OllamaClient } from '../OllamaClient.js';
 import { OllamaReplyService } from '../services/OllamaReplyService.js';
 import { EasyDiffusionClient } from '../../easy-diffusion/EasyDiffusionClient.js';
+import { getRandomArrayEntry } from '../../../../utilities/random-utilities.js';
+import { RenderRequest } from '../../easy-diffusion/models/requests/RenderRequest.js';
+import { FeatureService } from '../../../features/FeatureService.js';
+import { SupportedFeature } from '../../../features/enum/SupportedFeature.js';
+import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiffusionReplyService.js';
 
 export class PromptResponseTask extends BaseTask {
     #environmentSettings: EnvironmentSettings;
+    #featureService: FeatureService;
     #ollamaReplyService: OllamaReplyService;
     #replyService: ReplyService;
+    #easyDiffusionClient: EasyDiffusionClient;
+    #easyDiffusionReplyService: EasyDiffusionReplyService;
 
     #discordClient: DiscordClient;
 
     #message: Message;
-    #context: Array<number>;
+    #context: Array<number> = [];
 
     #logger;
 
+    get context() {
+        return this.#context;
+    }
+
     constructor(
         environmentSettings: EnvironmentSettings,
+        featureService: FeatureService,
         ollamaReplyService: OllamaReplyService,
         replyService: ReplyService,
         discordClient: DiscordClient,
+        easyDiffusionClient: EasyDiffusionClient,
+        easyDiffusionReplyService: EasyDiffusionReplyService,
         message: Message,
         context: Array<number>) {
         super();
 
         this.#environmentSettings = environmentSettings;
+        this.#featureService = featureService;
         this.#ollamaReplyService = ollamaReplyService;
         this.#replyService = replyService;
-
         this.#discordClient = discordClient;
+
+        this.#easyDiffusionClient = easyDiffusionClient;
+        this.#easyDiffusionReplyService = easyDiffusionReplyService;
+
         this.#message = message;
         this.#context = context;
 
@@ -51,8 +70,7 @@ export class PromptResponseTask extends BaseTask {
         const formattedMessage = `${this.#message.author.displayName}: ${this.#message.content.replaceAll(botMention, '')}`;
 
         const exchange = await ollamaClient.sendMessage(formattedMessage, context);
-
-        await this.#ollamaReplyService.reply(this.#message, exchange);
+        await this.#renderImage(exchange.response.response);
 
         this.taskStatus = TaskStatus.Successful;
     }
@@ -64,27 +82,19 @@ export class PromptResponseTask extends BaseTask {
     }
 
     async #renderImage(imagePrompt: string): Promise<void> {
-        const easyDiffusionClient = new EasyDiffusionClient(this.#environmentSettings);
-        this.easyDiffusionClients.push(easyDiffusionClient);
-
-        this.logger(LogLevel.Info, `Image render prompt: ${imagePrompt}`);
-
-        const model = this.easyDiffusionClients.length > 0 ?
-            getRandomArrayEntry(this.environmentSettings.easyDiffusionModels) :
-            getRandomArrayEntry(await easyDiffusionClient.getModels());
-
-        const renderExchange = await easyDiffusionClient.render(new RenderRequest(model, imagePrompt));
-
-        if(renderExchange === null || renderExchange.response === null) {
-            return;
+        if(!this.#featureService.hasFeature(SupportedFeature.ImagesAttachedToText)) {
+            return Promise.resolve();
         }
 
-        const streamResponse = await easyDiffusionClient.stream(renderExchange);
+        this.#logger(LogLevel.Info, 'An image will be attached to the Ollama response.');
 
-        if(streamResponse === null) {
-            return;
-        }
+        const model = this.#environmentSettings.easyDiffusionModels.length > 0 ?
+            getRandomArrayEntry(this.#environmentSettings.easyDiffusionModels) :
+            getRandomArrayEntry(await this.#easyDiffusionClient.getModels());
 
-        const renderRequest = renderExchange.request;
+        const renderRequest = new RenderRequest(model, imagePrompt);
+        const renderData = await this.#easyDiffusionReplyService.renderImage(renderRequest);
+
+        await this.#ollamaReplyService.attachImage(renderData);
     }
 }
