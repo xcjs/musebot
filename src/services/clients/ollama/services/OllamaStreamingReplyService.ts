@@ -1,17 +1,18 @@
-import { Message } from 'discord.js';
+import { AttachmentBuilder, Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
-import { GenerateRequest, GenerateResponse } from 'ollama';
 
 import { EnvironmentSettings } from '../../../EnvironmentSettings';
-import { IHttpExchange } from '../../../../models/IHttpExchange';
 import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiffusionReplyService';
-import { FeatureService } from '../../../features/FeatureService';
 import { DiscordConstants } from '../../discord/enums/DiscordConstants';
 import { splitText } from '../../../../utilities/string-utilities';
+import { IHttpExchangeWithAttachedResponse } from '../../../../models/IHttpExchangeWithAttachedResponse';
+import { BufferEncoding } from '../../../../enums/BufferEncoding';
+import { RenderRequest } from '../../easy-diffusion/models/requests/RenderRequest';
+import { IRenderResponse } from '../../easy-diffusion/models/responses/IRenderResponse';
+import { IStreamResponse } from '../../easy-diffusion/models/responses/IStreamResponse';
 
 export class OllamaStreamingReplyService {
     #environmentSettings: EnvironmentSettings;
-    #featureService: FeatureService;
     #easyDiffusionReplyService: EasyDiffusionReplyService
 
     #logger;
@@ -20,54 +21,48 @@ export class OllamaStreamingReplyService {
 
     constructor(
         environmentSettings: EnvironmentSettings,
-        featureService: FeatureService,
         easyDiffusionReplyService: EasyDiffusionReplyService) {
         this.#environmentSettings = environmentSettings;
-        this.#featureService = featureService;
         this.#easyDiffusionReplyService = easyDiffusionReplyService;
 
         this.#logger = new Logger(this.#environmentSettings.isProduction, 'OllamaStreamingReplyService');
     }
 
-    async reply(message: Message, exchange: IHttpExchange<GenerateRequest, AsyncIterable<GenerateResponse>>): Promise<void> {
-        let reply: Message<boolean> | null = null;
-        let startTime = performance.now();
-        let fullResponse = '';
-        let responseBatch = '';
+    async reply(message: Message, responseBatch: string): Promise<void> {
+        let reply: Message;
 
-        for await (const response of exchange.response) {
-            console.log(`Appending "${response.response}"`);
-            responseBatch += response.response;
+        if(reply.content.length + responseBatch.length <= DiscordConstants.ContentMaxLength) {
+            reply = await message.reply(responseBatch);
+        } else if(responseBatch.length > DiscordConstants.ContentMaxLength) {
+            const responseBatches = splitText(responseBatch, DiscordConstants.ContentMaxLength);
 
-            if(performance.now() - startTime >= 1000 / DiscordConstants.MaxRequestsPerSecond || response.done) {
-                console.log('Flushing response batch.');
-
-                if(reply === null || reply.content.length + responseBatch.length > DiscordConstants.ContentMaxLength) {
-                    reply = await message.reply(responseBatch);
-                } else if(responseBatch.length > DiscordConstants.ContentMaxLength) {
-                    const responseBatches = splitText(responseBatch, DiscordConstants.ContentMaxLength);
-
-                    responseBatches.forEach(async (response) => {
-                        this.#replies.push(await message.reply(response));
-                    });
-                }
-                else {
-                    await reply.edit(`${reply.content}${responseBatch}`);
-                }
-
-                fullResponse += responseBatch;
-                responseBatch = '';
-
-                startTime = performance.now();
-            }
-
-            if(response.done) {
-                this.#context = response.context;
-            }
+            responseBatches.forEach(async (response) => {
+                this.#replies.push(await message.reply(response));
+            });
         }
-
-        if(this.#featureService.hasFeature(SupportedFeature.ImagesAttachedToText)) {
-            await this.#attachImage(reply, fullResponse);
+        else {
+            await reply.edit(`${reply.content}${responseBatch}`);
         }
+    }
+
+    async attachImage(renderData: IHttpExchangeWithAttachedResponse<RenderRequest, IRenderResponse, IStreamResponse>): Promise<void> {
+        this.#logger(LogLevel.Info, 'Attached render to last Discord Ollama reply.');
+
+        const streamResponse = renderData.response;
+        const renderRequest = renderData.exchange.request;
+        const imageBuffer = Buffer.from(streamResponse.output[0].data.split(",")[1], BufferEncoding.Base64);
+
+        const files: Array<AttachmentBuilder> = [];
+
+        const lastReply = this.#replies[this.#replies.length - 1];
+
+        files.push(new AttachmentBuilder(imageBuffer, {
+            name: `${this.#easyDiffusionReplyService.getFileNameFromPrompt(renderRequest)}.${renderRequest.output_format}`
+        }));
+
+        await lastReply.edit({
+            content: lastReply.content,
+            files: files
+        });
     }
 }

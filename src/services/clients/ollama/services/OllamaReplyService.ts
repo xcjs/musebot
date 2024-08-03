@@ -47,7 +47,7 @@ export class OllamaReplyService {
 
         const files: Array<AttachmentBuilder> = [];
 
-        const lastReply = this.#replies[this.#replies.length - 1]
+        const lastReply = this.#replies[this.#replies.length - 1];
 
         files.push(new AttachmentBuilder(imageBuffer, {
             name: `${this.#easyDiffusionReplyService.getFileNameFromPrompt(renderRequest)}.${renderRequest.output_format}`

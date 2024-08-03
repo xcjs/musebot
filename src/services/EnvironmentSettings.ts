@@ -28,6 +28,7 @@ export class EnvironmentSettings {
     ollamaModels: Array<string> = [];
     ollamaSystemPrompt: string;
     ollamaStreamsResponse: boolean = false;
+    ollamaStreamResponseInterval: number = 1000;
 
     easyDiffusionOllamaPrompts: Array<string> = ['Describe something or someone with extraordinary detail.'];
 

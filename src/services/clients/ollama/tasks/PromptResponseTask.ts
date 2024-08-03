@@ -13,11 +13,18 @@ import { RenderRequest } from '../../easy-diffusion/models/requests/RenderReques
 import { FeatureService } from '../../../features/FeatureService.js';
 import { SupportedFeature } from '../../../features/enum/SupportedFeature.js';
 import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiffusionReplyService.js';
+import { OllamaStreamingReplyService } from '../services/OllamaStreamingReplyService.js';
+import { DiscordConstants } from '../../discord/enums/DiscordConstants.js';
+import { IHttpExchangeWithAttachedResponse } from '../../../../models/IHttpExchangeWithAttachedResponse.js';
+import { IRenderResponse } from '../../easy-diffusion/models/responses/IRenderResponse.js';
+import { IStreamResponse } from '../../easy-diffusion/models/responses/IStreamResponse.js';
 
 export class PromptResponseTask extends BaseTask {
     #environmentSettings: EnvironmentSettings;
     #featureService: FeatureService;
+    #ollamaClient: OllamaClient;
     #ollamaReplyService: OllamaReplyService;
+    #ollamaStreamingReplyService: OllamaStreamingReplyService;
     #replyService: ReplyService;
     #easyDiffusionClient: EasyDiffusionClient;
     #easyDiffusionReplyService: EasyDiffusionReplyService;
@@ -29,14 +36,12 @@ export class PromptResponseTask extends BaseTask {
 
     #logger;
 
-    get context() {
-        return this.#context;
-    }
-
     constructor(
         environmentSettings: EnvironmentSettings,
         featureService: FeatureService,
+        ollamaClient: OllamaClient,
         ollamaReplyService: OllamaReplyService,
+        ollamaStreamingReplyService: OllamaStreamingReplyService,
         replyService: ReplyService,
         discordClient: DiscordClient,
         easyDiffusionClient: EasyDiffusionClient,
@@ -47,7 +52,9 @@ export class PromptResponseTask extends BaseTask {
 
         this.#environmentSettings = environmentSettings;
         this.#featureService = featureService;
+        this.#ollamaClient = ollamaClient;
         this.#ollamaReplyService = ollamaReplyService;
+        this.#ollamaStreamingReplyService  = ollamaStreamingReplyService;
         this.#replyService = replyService;
         this.#discordClient = discordClient;
 
@@ -63,14 +70,21 @@ export class PromptResponseTask extends BaseTask {
     override async process(): Promise<void> {
         this.taskStatus = TaskStatus.Busy;
 
-        const ollamaClient = new OllamaClient(this.#environmentSettings);
-        const context = this.#context;
-
         const botMention = this.#message.mentions.members.find(x => x.id === this.#discordClient.user?.id)?.toString() || '';
         const formattedMessage = `${this.#message.author.displayName}: ${this.#message.content.replaceAll(botMention, '')}`;
 
-        const exchange = await ollamaClient.sendMessage(formattedMessage, context);
-        await this.#renderImage(exchange.response.response);
+        if(this.#environmentSettings.ollamaStreamsResponse) {
+            await this.#processAsStream(formattedMessage, this.#context);
+            return;
+        }
+
+        const exchange = await this.#ollamaClient.sendMessage(formattedMessage, this.#context);
+        this.#context = exchange.response.context;
+
+        if(!this.#featureService.hasFeature(SupportedFeature.ImagesAttachedToText)) {
+            const renderData = await this.#renderImage(exchange.response.response);
+            await this.#ollamaReplyService.attachImage(renderData);
+        }
 
         this.taskStatus = TaskStatus.Successful;
     }
@@ -81,11 +95,40 @@ export class PromptResponseTask extends BaseTask {
         }
     }
 
-    async #renderImage(imagePrompt: string): Promise<void> {
-        if(!this.#featureService.hasFeature(SupportedFeature.ImagesAttachedToText)) {
-            return Promise.resolve();
+    async #processAsStream(formattedMessage: string, context: Array<number>): Promise<void> {
+        const exchange = await this.#ollamaClient.sendMessageAndGetStream(formattedMessage, context);
+
+        let startTime = performance.now();
+        let fullResponse = '';
+        let responseBatch = '';
+
+        for await (const response of exchange.response) {
+            console.log(`Appending "${response.response}"`);
+            responseBatch += response.response;
+
+            if(performance.now() - startTime >= this.#environmentSettings.ollamaStreamResponseInterval
+                / DiscordConstants.MaxRequestsPerSecond || response.done) {
+                console.log('Flushing response batch.');
+
+                await this.#ollamaStreamingReplyService.reply(this.#message, responseBatch);
+                startTime = performance.now();
+            }
+
+            fullResponse += responseBatch;
+            responseBatch = '';
+
+            if(response.done) {
+                this.#context = response.context;
+            }
         }
 
+        if(!this.#featureService.hasFeature(SupportedFeature.ImagesAttachedToText)) {
+            const renderData = await this.#renderImage(fullResponse);
+            await this.#ollamaStreamingReplyService.attachImage(renderData);
+        }
+    }
+
+    async #renderImage(imagePrompt: string): Promise<IHttpExchangeWithAttachedResponse<RenderRequest, IRenderResponse, IStreamResponse>> {
         this.#logger(LogLevel.Info, 'An image will be attached to the Ollama response.');
 
         const model = this.#environmentSettings.easyDiffusionModels.length > 0 ?
@@ -95,6 +138,6 @@ export class PromptResponseTask extends BaseTask {
         const renderRequest = new RenderRequest(model, imagePrompt);
         const renderData = await this.#easyDiffusionReplyService.renderImage(renderRequest);
 
-        await this.#ollamaReplyService.attachImage(renderData);
+        return renderData;
     }
 }
