@@ -14,11 +14,9 @@ export class RenderRequest {
     vram_usage_level = VRamUsageLevel.Balanced;
     sampler_name = 'euler_a';
     use_stable_diffusion_model: string;
-    use_upscale = 'RealESRGAN_x4plus';
     clip_skip = false;
     use_vae_model = '';
     stream_progress_updates = true;
-    upscale_amount = '4';
     stream_image_progress = false;
     show_only_filtered_image = true;
     block_nsfw = false;
