@@ -52,7 +52,7 @@ export class ShowSourceTask extends BaseTask {
             name: `${this.#easyDiffusionReplyService.getFileNameFromPrompt(renderRequest)}.json`
         });
 
-        const messageContent = `${this.#interaction.member} wanted to see the request message for \`${renderRequest.prompt}\`.`;
+        const messageContent = `${this.#interaction.member} wanted to see the request message for \`${renderRequest.prompt}\``;
         this.#logger(LogLevel.Info, messageContent);
 
         const reply = {
