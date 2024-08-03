@@ -77,7 +77,7 @@ export class PromptResponseTask extends BaseTask {
         this.taskStatus = TaskStatus.Busy;
 
         const botMention = this.#message.mentions.members.find(x => x.id === this.#discordClient.user?.id)?.toString() || '';
-        const formattedMessage = `${this.#message.author.displayName}: ${this.#message.content.replaceAll(botMention, '')}`;
+        const formattedMessage = `${this.#message.author.displayName}: ${this.#message.content.replaceAll(botMention, '').trim()}`;
 
         if(this.#environmentSettings.ollamaStreamsResponse) {
             await this.#processAsStream(formattedMessage, this.#context);
@@ -86,6 +86,8 @@ export class PromptResponseTask extends BaseTask {
 
         const exchange = await this.#ollamaClient.sendMessage(formattedMessage, this.#context);
         this.#context = exchange.response.context;
+
+        this.#ollamaReplyService.reply(this.#message, exchange);
 
         if(!this.#featureService.hasFeature(SupportedFeature.ImagesAttachedToText)) {
             const renderData = await this.#renderImage(exchange.response.response);
