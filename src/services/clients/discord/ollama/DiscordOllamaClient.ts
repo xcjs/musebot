@@ -73,6 +73,8 @@ export class DiscordOllamaClient extends BaseDiscordClient {
 
         this.logger(LogLevel.Info, 'Replying to message...');
 
+        await this.typingService.startTyping(message);
+
         const promptResponseTask = new PromptResponseTask(
             this.environmentSettings,
             this.featureService,
