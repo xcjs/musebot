@@ -20,6 +20,7 @@ import { DecreaseGuidanceScaleRenderTask } from '../../easy-diffusion/tasks/Decr
 import { IncreaseGuidanceScaleRenderTask } from '../../easy-diffusion/tasks/IncreaseGuidanceScaleRenderTask.js';
 import { RandomRenderTask } from '../../easy-diffusion/tasks/RandomRenderTask.js';
 import { ReplyService } from '../services/ReplyService.js';
+import { TypingService } from '../services/TypingService.js';
 
 export class DiscordEasyDiffusionClient extends BaseDiscordClient {
     #easyDiffusionClient: EasyDiffusionClient;
@@ -28,13 +29,13 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
 
     constructor(
         environmentSettings: EnvironmentSettings,
+        featureService: FeatureService,
         taskQueue: TaskQueue,
-        featureService: FeatureService) {
-        super(environmentSettings, taskQueue);
+        typingService: TypingService
+        ) {
+        super(environmentSettings, featureService, taskQueue, typingService);
 
-        this.environmentSettings = environmentSettings;
-        this.#easyDiffusionClient = new EasyDiffusionClient(environmentSettings);
-        this.#easyDiffusionReplyService = new EasyDiffusionReplyService(environmentSettings, this.#easyDiffusionClient, featureService);
+        this.#resetTransitiveServices();
         this.#replyService = new ReplyService(environmentSettings, this.client);
 
         this.logger = new Logger(this.environmentSettings.isProduction, 'DiscordEasyDiffusionClient');
@@ -45,6 +46,16 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
     login() {
         this.logger(LogLevel.Info, 'Performing client login...');
         this.client.login(this.environmentSettings.discordToken);
+    }
+
+    #resetTransitiveServices() {
+        this.logger(LogLevel.Info, 'Resetting transitive services...');
+
+        this.#easyDiffusionClient = new EasyDiffusionClient(this.environmentSettings);
+        this.#easyDiffusionReplyService = new EasyDiffusionReplyService(
+            this.environmentSettings,
+            this.featureService,
+            this.#easyDiffusionClient);
     }
 
     #registerEvents() {
@@ -73,8 +84,9 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
             return;
         }
 
-        this.logger(LogLevel.Info, 'Replying to message...');
+        this.#resetTransitiveServices();
 
+        this.logger(LogLevel.Info, 'Replying to message...');
         await this.typingService.startTyping(message);
 
         await this.taskQueue.add(new PromptRenderTask(
@@ -89,6 +101,8 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
 
     async #onInteraction(interaction: ButtonInteraction): Promise<void> {
         this.logger(LogLevel.Info, `Beginning interaction response to custom action ${interaction.customId}...`);
+
+        this.#resetTransitiveServices();
 
         await interaction.deferReply();
         await this.typingService.startTyping(interaction);

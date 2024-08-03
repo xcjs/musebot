@@ -18,11 +18,15 @@ export class BaseDiscordClient {
     protected client: DiscordClient;
     protected logger;
 
-    constructor(environmentSettings: EnvironmentSettings, taskQueue: TaskQueue) {
+    constructor(
+        environmentSettings: EnvironmentSettings,
+        featureService: FeatureService,
+        taskQueue: TaskQueue,
+        typingService: TypingService) {
         this.environmentSettings = environmentSettings;
+        this.featureService = featureService;
         this.taskQueue = taskQueue;
-        this.typingService = new TypingService(environmentSettings, taskQueue);
-        this.featureService = new FeatureService(environmentSettings);
+        this.typingService = typingService;
 
         this.client = new DiscordClient({
             intents: [

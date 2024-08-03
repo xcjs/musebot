@@ -22,10 +22,10 @@ export class EasyDiffusionReplyService {
 
     #logger;
 
-    constructor(environmentSettings: EnvironmentSettings, easyDiffusionClient: EasyDiffusionClient, featureService: FeatureService) {
+    constructor(environmentSettings: EnvironmentSettings, featureService: FeatureService, easyDiffusionClient: EasyDiffusionClient) {
         this.#environmentSettings = environmentSettings;
-        this.#easyDiffusionClient = easyDiffusionClient;
         this.#featureService = featureService;
+        this.#easyDiffusionClient = easyDiffusionClient;
 
         this.#logger = new Logger(environmentSettings.isProduction, 'EasyDiffusionReplyService');
     }

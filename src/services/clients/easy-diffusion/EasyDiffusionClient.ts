@@ -9,7 +9,7 @@ import { HttpStatusCode } from '../../../enums/HttpStatusCode.js';
 import { JavaScriptType } from '../../../enums/JavaScriptType.js';
 import { IHttpExchange } from '../../../models/IHttpExchange.js';
 import { RenderRequest } from './models/requests/RenderRequest.js';
-import { getRandomInt } from '../../../utilities/random-utilities.js';
+import { getRandomArrayEntry } from '../../../utilities/random-utilities.js';
 import { EnvironmentSettings } from '../../EnvironmentSettings.js';
 import { StreamStatus } from './enums/StreamStatus.js';
 import { IRenderResponse } from './models/responses/IRenderResponse.js';
@@ -29,10 +29,11 @@ export class EasyDiffusionClient {
         this.#environmentSettings = environmentSettings;
         this.#logger = Logger(this.#environmentSettings.isProduction, 'EasyDiffusionClient');
 
-        this.#host = this.#selectHost(this.#environmentSettings.easyDiffusionHosts);
+        this.#host = getRandomArrayEntry(this.#environmentSettings.easyDiffusionHosts);
+        this.#logger(LogLevel.Info, `Selected host: ${this.#host}`);
     }
 
-    async render(renderRequest: RenderRequest): Promise<IHttpExchange<RenderRequest, IRenderResponse> | null> {
+    async render(renderRequest: RenderRequest): Promise<IHttpExchange<RenderRequest, IRenderResponse>> {
         this.#logger(LogLevel.Info, 'Sending render request to EasyDiffusion...');
 
         try {
@@ -54,7 +55,7 @@ export class EasyDiffusionClient {
         }
     }
 
-    async stream(renderExchange: IHttpExchange<RenderRequest, IRenderResponse>) : Promise<IStreamResponse | null> {
+    async stream(renderExchange: IHttpExchange<RenderRequest, IRenderResponse>) : Promise<IStreamResponse> {
         const renderResponse = renderExchange?.response;
 
         const streamUrl = new URL(renderResponse.stream, this.#host);
@@ -83,14 +84,9 @@ export class EasyDiffusionClient {
                         // EasyDiffusion incorrectly uses the application/json response type for empty responses.
                         await this.#sleep(this.#retryDelayInMilliseconds);
                     }
-                } else {
-                    return null;
                 }
-
                 // Keep trying as long as the response status is OK or 425 - Too Early.
             } while (response.ok || response.status === HttpStatusCode.TooEarly);
-
-            return null;
         } catch (error) {
             this.#logger(LogLevel.Error, `Checking the EasyDiffusion render stream failed: ${error}`);
             throw error;
@@ -113,14 +109,6 @@ export class EasyDiffusionClient {
             this.#logger(LogLevel.Error, `Loading EasyDiffusion options failed: ${error}`);
             throw error;
         }
-    }
-
-    #selectHost(hosts: Array<URL>) {
-        const host = hosts[getRandomInt(0, hosts.length - 1)];
-
-        this.#logger(LogLevel.Info, `Selected host: ${host}`);
-
-        return host;
     }
 
     #mapModelsToArrayFromModelOptions(modelsResponse: IModelsResponse) {
@@ -162,7 +150,7 @@ export class EasyDiffusionClient {
         return isDirectoryModelArrayPair;
     }
 
-    async #sleep(milliseconds: number): Promise<null> {
+    async #sleep(milliseconds: number): Promise<void> {
         return await new Promise((resolve) => {
             setTimeout(resolve, milliseconds);
         });

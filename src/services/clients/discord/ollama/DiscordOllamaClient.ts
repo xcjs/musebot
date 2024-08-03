@@ -13,6 +13,7 @@ import { EasyDiffusionClient } from '../../easy-diffusion/EasyDiffusionClient.js
 import { FeatureService } from '../../../features/FeatureService.js';
 import { OllamaStreamingReplyService } from '../../ollama/services/OllamaStreamingReplyService.js';
 import { ReplyService } from '../services/ReplyService.js';
+import { TypingService } from '../services/TypingService.js';
 
 export class DiscordOllamaClient extends BaseDiscordClient {
     #featureService: FeatureService;
@@ -27,16 +28,13 @@ export class DiscordOllamaClient extends BaseDiscordClient {
 
     constructor(
         environmentSettings: EnvironmentSettings,
+        featureService: FeatureService,
         taskQueue: TaskQueue,
-        featureService: FeatureService) {
-        super(environmentSettings, taskQueue);
+        typingService: TypingService) {
+        super(environmentSettings, featureService, taskQueue, typingService);
 
-        this.environmentSettings = environmentSettings;
+        this.#resetTransitiveServices();
 
-        this.#featureService = featureService;
-        this.#ollamaClient = new OllamaClient(this.environmentSettings);
-        this.#easyDiffusionClient = new EasyDiffusionClient(this.environmentSettings);
-        this.#easyDiffusionReplyService = new EasyDiffusionReplyService(this.environmentSettings, this.#easyDiffusionClient, this.#featureService);
         this.#ollamaReplyService = new OllamaReplyService(this.environmentSettings, this.#easyDiffusionReplyService);
         this.#ollamaStreamingReplyService = new OllamaStreamingReplyService(this.environmentSettings, this.#easyDiffusionReplyService);
         this.#replyService = new ReplyService(environmentSettings, this.client);
@@ -44,6 +42,18 @@ export class DiscordOllamaClient extends BaseDiscordClient {
         this.logger = new Logger(this.environmentSettings.isProduction, 'DiscordOllamaClient');
 
         this.#registerEvents();
+    }
+
+    #resetTransitiveServices() {
+        this.logger(LogLevel.Info, 'Resetting transitive services...');
+
+        this.#ollamaClient = new OllamaClient(this.environmentSettings);
+
+        this.#easyDiffusionClient = new EasyDiffusionClient(this.environmentSettings);
+        this.#easyDiffusionReplyService = new EasyDiffusionReplyService(
+            this.environmentSettings,
+            this.featureService,
+            this.#easyDiffusionClient);
     }
 
     #registerEvents() {
@@ -70,6 +80,8 @@ export class DiscordOllamaClient extends BaseDiscordClient {
             this.logger(LogLevel.Info, 'Reply should not be created - skipping reply.');
             return;
         }
+
+        this.#resetTransitiveServices();
 
         this.logger(LogLevel.Info, 'Replying to message...');
 

@@ -2,7 +2,7 @@ import { Logger, LogLevel } from 'meklog';
 import { GenerateRequest, GenerateResponse, Ollama } from 'ollama';
 
 import { EnvironmentSettings } from '../../EnvironmentSettings.js';
-import { getRandomInt } from '../../../utilities/random-utilities.js';
+import { getRandomArrayEntry, getRandomInt } from '../../../utilities/random-utilities.js';
 import { IHttpExchange } from '../../../models/IHttpExchange.js';
 
 export class OllamaClient {
@@ -11,7 +11,6 @@ export class OllamaClient {
     #logger;
     #client: Ollama;
 
-    #host: URL;
     #model: string;
 
     constructor(environmentSettings: EnvironmentSettings) {
@@ -19,15 +18,11 @@ export class OllamaClient {
 
         this.#logger = Logger(this.#environmentSettings.isProduction, 'OllamaClient');
 
-        const host = this.#selectHost(this.#environmentSettings.ollamaHosts);
+        const host = getRandomArrayEntry(this.#environmentSettings.ollamaHosts).toString();
+        this.#logger(LogLevel.Info, `Selected host: ${host}`);
 
-        if(host === null) {
-            throw new Error('At least one Ollama host must be provided.');
-        }
-
-        this.#host = host;
         this.#client = new Ollama({
-            host: host.toString(),
+            host
         });
 
         this.#model = this.#selectModel(this.#environmentSettings.ollamaModels);
@@ -41,7 +36,7 @@ export class OllamaClient {
             system: this.#environmentSettings.ollamaSystemPrompt
         };
 
-        this.#logger(LogLevel.Info, `Calling Ollama API at ${this.#host} with the prompt: ${message}.`);
+        this.#logger(LogLevel.Info, `Calling Ollama API with the prompt: ${message}.`);
 
         if(context && context.length) {
             this.#logger(LogLevel.Info, `A context value of ${context.join(', ')} is provided.`);
@@ -68,7 +63,7 @@ export class OllamaClient {
             system: this.#environmentSettings.ollamaSystemPrompt
         };
 
-        this.#logger(LogLevel.Info, `Calling Ollama API at ${this.#host} with the prompt: ${message}.`);
+        this.#logger(LogLevel.Info, `Calling Ollama API at with the prompt: ${message}.`);
 
         if(context && context.length) {
             this.#logger(LogLevel.Info, `A context value of ${context.join(', ')} is provided.`);
@@ -89,14 +84,6 @@ export class OllamaClient {
 
     static calculateTokensPerSecond(response: GenerateResponse): number {
         return response.eval_count / response.eval_duration * (10 ** 9);
-    }
-
-    #selectHost(hosts: Array<URL>) {
-        const host = hosts[getRandomInt(0, hosts.length - 1)];
-
-        this.#logger(LogLevel.Info, `Selected host: ${host}`);
-
-        return host;
     }
 
     #selectModel(models: Array<string>): string | null {
