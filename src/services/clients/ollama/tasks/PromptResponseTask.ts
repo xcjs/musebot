@@ -36,6 +36,12 @@ export class PromptResponseTask extends BaseTask {
 
     #logger;
 
+    #onSuccess: (context: Array<number>) => void  = () => { };
+
+    set onSuccess(callback: (context: Array<number>) => void) {
+        this.#onSuccess = callback;
+    }
+
     constructor(
         environmentSettings: EnvironmentSettings,
         featureService: FeatureService,
@@ -90,8 +96,13 @@ export class PromptResponseTask extends BaseTask {
     }
 
     override async postProcess(): Promise<void> {
-        if(this.taskStatus === TaskStatus.Failed) {
-            await this.#replyService.replyWithError(this.#message);
+        switch(this.taskStatus) {
+            case TaskStatus.Failed:
+                await this.#replyService.replyWithError(this.#message);
+                break;
+            case TaskStatus.Successful:
+                this.#onSuccess(this.#context);
+                break;
         }
     }
 

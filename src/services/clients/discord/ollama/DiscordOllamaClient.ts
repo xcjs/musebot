@@ -86,6 +86,8 @@ export class DiscordOllamaClient extends BaseDiscordClient {
             message,
             this.#context);
 
+        promptResponseTask.onSuccess = (context: Array<number>) => { this.#context = context; };
+
         await this.taskQueue.add(promptResponseTask);
     }
 }
