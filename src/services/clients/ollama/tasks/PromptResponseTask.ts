@@ -119,26 +119,30 @@ export class PromptResponseTask extends BaseTask {
             console.log(`Appending "${response.response}"`);
             responseBatch += response.response;
 
-            if(performance.now() - startTime >= this.#environmentSettings.ollamaStreamResponseInterval
+            if(performance.now() - startTime >= 1000
                 / DiscordConstants.MaxRequestsPerSecond || response.done) {
                 console.log('Flushing response batch.');
 
                 await this.#ollamaStreamingReplyService.reply(this.#message, responseBatch);
                 startTime = performance.now();
-            }
 
-            fullResponse += responseBatch;
-            responseBatch = '';
+                fullResponse += responseBatch;
+                responseBatch = '';
+            }
 
             if(response.done) {
                 this.#context = response.context;
+
+                if(this.#featureService.hasFeature(SupportedFeature.ImagesAttachedToText)) {
+                    const renderData = await this.#renderImage(fullResponse);
+                    await this.#ollamaStreamingReplyService.attachImage(renderData);
+                }
+
+                this.#ollamaStreamingReplyService.clearState();
             }
         }
 
-        if(this.#featureService.hasFeature(SupportedFeature.ImagesAttachedToText)) {
-            const renderData = await this.#renderImage(fullResponse);
-            await this.#ollamaStreamingReplyService.attachImage(renderData);
-        }
+        this.taskStatus = TaskStatus.Successful;
     }
 
     async #renderImage(imagePrompt: string): Promise<IHttpExchangeWithAttachedResponse<RenderRequest, IRenderResponse, IStreamResponse>> {

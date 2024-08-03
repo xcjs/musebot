@@ -29,19 +29,17 @@ export class OllamaStreamingReplyService {
     }
 
     async reply(message: Message, responseBatch: string): Promise<void> {
-        let reply: Message;
-
-        if(reply.content.length + responseBatch.length <= DiscordConstants.ContentMaxLength) {
-            reply = await message.reply(responseBatch);
-        } else if(responseBatch.length > DiscordConstants.ContentMaxLength) {
+        if(this.#currentReply() == null && responseBatch.length <= DiscordConstants.ContentMaxLength) {
+            this.#replies.push(await message.reply(responseBatch));
+        } else if(this.#currentReply().content.length + responseBatch.length <= DiscordConstants.ContentMaxLength) {
+            await this.#currentReply().edit(`${this.#currentReply().content}${responseBatch}`);
+        }
+        else {
             const responseBatches = splitText(responseBatch, DiscordConstants.ContentMaxLength);
 
             responseBatches.forEach(async (response) => {
                 this.#replies.push(await message.reply(response));
             });
-        }
-        else {
-            await reply.edit(`${reply.content}${responseBatch}`);
         }
     }
 
@@ -64,5 +62,17 @@ export class OllamaStreamingReplyService {
             content: lastReply.content,
             files: files
         });
+    }
+
+    clearState() {
+        this.#replies = [];
+    }
+
+    #currentReply(): Message | null {
+        if(this.#replies.length === 0) {
+            return null;
+        }
+
+        return this.#replies[this.#replies.length - 1];
     }
 }
