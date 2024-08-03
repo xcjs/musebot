@@ -1,6 +1,6 @@
 # Musebot
 
-![Musebot Logo](logo.jpg);
+![Musebot Logo](logo.jpg)
 
 Musebot is a bot for Discord that bridges multiple generative AI systems into
 Discord.
