@@ -64,6 +64,7 @@ export class RetryRenderTask extends BaseTask {
             getRandomArrayEntry(await this.#easyDiffusionClient.getModels());
 
         this.#logger(LogLevel.Info, `Using ${model} as the selected EasyDiffusion model.`);
+        request.use_stable_diffusion_model = model;
 
         const renderData = await this.#easyDiffusionReplyService.renderImage(request);
         const content = `${this.#interaction.member} re-rendered \`${request.prompt}\``.substring(0, DiscordConstants.ContentMaxLength);
