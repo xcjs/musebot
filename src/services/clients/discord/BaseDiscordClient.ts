@@ -5,20 +5,28 @@ import { EnvironmentSettings } from '../../EnvironmentSettings.js';
 import { TypingService } from './services/TypingService.js';
 import { DiscordConstants } from './enums/DiscordConstants.js';
 import { FeatureService } from '../../features/FeatureService.js';
+import { TaskQueue } from '../../tasks/services/TaskQueue.js';
+import { ReplyService } from './services/ReplyService.js';
 
 export class BaseDiscordClient {
     protected environmentSettings: EnvironmentSettings;
+    protected taskQueue: TaskQueue;
+    protected replyService: ReplyService;
     protected typingService: TypingService;
     protected featureService: FeatureService;
 
     protected client: DiscordClient;
     protected logger;
 
-
-    constructor(environmentSettings: EnvironmentSettings, typingService: TypingService, featureService: FeatureService) {
+    constructor(
+        environmentSettings: EnvironmentSettings,
+        featureService: FeatureService,
+        taskQueue: TaskQueue,
+        typingService: TypingService) {
         this.environmentSettings = environmentSettings;
-        this.typingService = typingService;
         this.featureService = featureService;
+        this.taskQueue = taskQueue;
+        this.typingService = typingService;
 
         this.client = new DiscordClient({
             intents: [
@@ -34,6 +42,8 @@ export class BaseDiscordClient {
             ],
             shards: DiscordConstants.ShardCountAuto
         });
+
+        this.replyService = new ReplyService(environmentSettings, this.client);
 
         this.logger = new Logger(this.environmentSettings.isProduction, 'BaseDiscordClient');
     }

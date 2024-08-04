@@ -15,11 +15,14 @@ export class EnvironmentSettings {
 
     botFunction: BotFunction;
 
+    maxTaskAttempts: number = 100;
+
     discordToken: string;
     discordChannels: Array<string> = [];
 
     easyDiffusionHosts: Array<URL> = [];
     easyDiffusionModels: Array<string> = [];
+    easyDiffusionGuidanceScaleInterval: number = .5;
 
     ollamaHosts: Array<URL> = [];
     ollamaModels: Array<string> = [];
@@ -78,6 +81,7 @@ export class EnvironmentSettings {
         this.#logger(LogLevel.Info, `Package Name: ${this.packageName}`);
         this.#logger(LogLevel.Info, `Package Version: ${this.version}`);
         this.#logger(LogLevel.Info, `NODE_ENV: ${this.nodeEnvironment}`);
+        this.#logger(LogLevel.Info, `MUSEBOT_FUNCTION: ${this.botFunction}`);
         this.#logger(LogLevel.Info, `MUSEBOT_DISCORD_CHANNELS: ${this.discordChannels.join(', ')}`);
         this.#logger(LogLevel.Info, `MUSEBOT_REQUIRES_MENTION: ${this.botRequiresMention}`);
         this.#logger(LogLevel.Info, `MUSEBOT_EASY_DIFFUSION_HOSTS: ${this.easyDiffusionHosts.join(', ')}`);

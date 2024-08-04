@@ -13,12 +13,10 @@ export class RenderRequest {
     height = 1024;
     vram_usage_level = VRamUsageLevel.Balanced;
     sampler_name = 'euler_a';
-    use_stable_diffusion_model = '';
-    use_upscale = 'RealESRGAN_x4plus';
+    use_stable_diffusion_model: string;
     clip_skip = false;
     use_vae_model = '';
     stream_progress_updates = true;
-    upscale_amount = '4';
     stream_image_progress = false;
     show_only_filtered_image = true;
     block_nsfw = false;
@@ -26,7 +24,7 @@ export class RenderRequest {
     output_quality = 75;
     output_lossless = false;
     metadata_output_format = false;
-    original_prompt = '';
+    original_prompt: string;
     active_tags = [];
     inactive_tags = [];
     enable_vae_tiling = true;
@@ -42,6 +40,10 @@ export class RenderRequest {
 
     toString(): string {
         return JSON.stringify(this);
+    }
+
+    refreshSeed() {
+        this.seed = this.#getRandomSeed();
     }
 
     #getRandomSeed(): number {
