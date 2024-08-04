@@ -12,9 +12,12 @@ import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiff
 import { IHttpExchangeWithAttachedResponse } from '../../../../models/IHttpExchangeWithAttachedResponse.js';
 import { RenderRequest } from '../../easy-diffusion/models/requests/RenderRequest.js';
 import { IRenderResponse } from '../../easy-diffusion/models/responses/IRenderResponse.js';
+import { LargeLanguageModelRow } from '../../discord/components/buttonRows/LargeLanguageModelRow.js';
+import { FeatureService } from '../../../features/FeatureService.js';
 
 export class OllamaReplyService {
     #environmentSettings: EnvironmentSettings;
+    #featureService: FeatureService;
     #easyDiffusionReplyService: EasyDiffusionReplyService;
 
     #logger;
@@ -23,8 +26,10 @@ export class OllamaReplyService {
 
     constructor(
         environmentSettings: EnvironmentSettings,
+        featureService: FeatureService,
         easyDiffusionReplyService: EasyDiffusionReplyService) {
         this.#environmentSettings = environmentSettings;
+        this.#featureService = featureService;
         this.#easyDiffusionReplyService = easyDiffusionReplyService;
 
         this.#logger = new Logger(this.#environmentSettings.isProduction, 'OllamaReplyService');
@@ -33,8 +38,15 @@ export class OllamaReplyService {
     async reply(message: Message, exchange: IHttpExchange<GenerateRequest, GenerateResponse>): Promise<void> {
         const responses = splitText(exchange.response.response, DiscordConstants.ContentMaxLength);
 
-        responses.forEach(async (response) => {
-            this.#replies.push(await message.reply(response));
+        responses.forEach(async (response, i) => {
+            if(i === responses.length - 1) {
+                this.#replies.push(await message.reply({
+                    content: response,
+                    components: [new LargeLanguageModelRow(this.#featureService).build()]
+                }));
+            } else {
+                this.#replies.push(await message.reply(response));
+            }
         });
     }
 
@@ -47,7 +59,7 @@ export class OllamaReplyService {
 
         const files: Array<AttachmentBuilder> = [];
 
-        const lastReply = this.#replies[this.#replies.length - 1];
+        const lastReply = this.#lastReply();
 
         files.push(new AttachmentBuilder(imageBuffer, {
             name: `${this.#easyDiffusionReplyService.getFileNameFromPrompt(renderRequest)}.${renderRequest.output_format}`
@@ -55,7 +67,16 @@ export class OllamaReplyService {
 
         await lastReply.edit({
             content: lastReply.content,
-            files: files
+            files,
+            components: lastReply.components
         });
+    }
+
+    #lastReply(): Message | null {
+        if(this.#replies.length === 0) {
+            return null;
+        }
+
+        return this.#replies[this.#replies.length - 1];
     }
 }
