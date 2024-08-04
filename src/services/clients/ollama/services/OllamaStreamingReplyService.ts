@@ -10,9 +10,12 @@ import { BufferEncoding } from '../../../../enums/BufferEncoding.js';
 import { RenderRequest } from '../../easy-diffusion/models/requests/RenderRequest.js';
 import { IRenderResponse } from '../../easy-diffusion/models/responses/IRenderResponse.js';
 import { IStreamResponse } from '../../easy-diffusion/models/responses/IStreamResponse.js';
+import { LargeLanguageModelRow } from '../../discord/components/buttonRows/LargeLanguageModelRow.js';
+import { FeatureService } from '../../../features/FeatureService.js';
 
 export class OllamaStreamingReplyService {
     #environmentSettings: EnvironmentSettings;
+    #featureService: FeatureService;
     #easyDiffusionReplyService: EasyDiffusionReplyService
 
     #logger;
@@ -21,8 +24,10 @@ export class OllamaStreamingReplyService {
 
     constructor(
         environmentSettings: EnvironmentSettings,
+        featureService: FeatureService,
         easyDiffusionReplyService: EasyDiffusionReplyService) {
         this.#environmentSettings = environmentSettings;
+        this.#featureService = featureService;
         this.#easyDiffusionReplyService = easyDiffusionReplyService;
 
         this.#logger = new Logger(this.#environmentSettings.isProduction, 'OllamaStreamingReplyService');
@@ -43,6 +48,15 @@ export class OllamaStreamingReplyService {
         }
     }
 
+    async addComponents(): Promise<void> {
+        const lastReply = this.#currentReply();
+
+        await lastReply.edit({
+            content: lastReply.content,
+            components: [new LargeLanguageModelRow(this.#featureService).build()]
+        })
+    }
+
     async attachImage(renderData: IHttpExchangeWithAttachedResponse<RenderRequest, IRenderResponse, IStreamResponse>): Promise<void> {
         this.#logger(LogLevel.Info, 'Attached render to last Discord Ollama reply.');
 
@@ -60,7 +74,8 @@ export class OllamaStreamingReplyService {
 
         await lastReply.edit({
             content: lastReply.content,
-            files: files
+            files,
+            components: lastReply.components
         });
     }
 

@@ -4,5 +4,6 @@ export enum BotInteraction {
     GuidanceScaleMinus = 'guidanceScaleMinus',
     GuidanceScalePlus = 'guidanceScalePlus',
     Randomize = 'randomize',
-    Upscale = 'upscale'
+    Upscale = 'upscale',
+    ClearContext = 'clearContext'
 }

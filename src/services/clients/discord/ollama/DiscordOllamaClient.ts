@@ -1,4 +1,4 @@
-import { Events, Message } from 'discord.js';
+import { ButtonInteraction, Events, Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
 import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
@@ -14,9 +14,9 @@ import { FeatureService } from '../../../features/FeatureService.js';
 import { OllamaStreamingReplyService } from '../../ollama/services/OllamaStreamingReplyService.js';
 import { ReplyService } from '../services/ReplyService.js';
 import { TypingService } from '../services/TypingService.js';
+import { BotInteraction } from '../../../../enums/BotInteraction.js';
 
 export class DiscordOllamaClient extends BaseDiscordClient {
-    #featureService: FeatureService;
     #ollamaClient: OllamaClient;
     #easyDiffusionClient: EasyDiffusionClient;
     #easyDiffusionReplyService: EasyDiffusionReplyService;
@@ -35,8 +35,8 @@ export class DiscordOllamaClient extends BaseDiscordClient {
 
         this.#resetTransitiveServices();
 
-        this.#ollamaReplyService = new OllamaReplyService(this.environmentSettings, this.#easyDiffusionReplyService);
-        this.#ollamaStreamingReplyService = new OllamaStreamingReplyService(this.environmentSettings, this.#easyDiffusionReplyService);
+        this.#ollamaReplyService = new OllamaReplyService(this.environmentSettings, this.featureService, this.#easyDiffusionReplyService);
+        this.#ollamaStreamingReplyService = new OllamaStreamingReplyService(this.environmentSettings,this.featureService, this.#easyDiffusionReplyService);
         this.#replyService = new ReplyService(environmentSettings, this.client);
 
         this.logger = new Logger(this.environmentSettings.isProduction, 'DiscordOllamaClient');
@@ -62,6 +62,7 @@ export class DiscordOllamaClient extends BaseDiscordClient {
 
         this.client.once(Events.ClientReady, (event) => this.#onClientReady.call(self, event));
         this.client.on(Events.MessageCreate, async (message) => await this.#onMessageCreate.call(self, message));
+        this.client.on(Events.InteractionCreate, async (interaction) => await this.#onInteraction.call(self, interaction));
     }
 
     #onClientReady(): Promise<void> {
@@ -104,4 +105,33 @@ export class DiscordOllamaClient extends BaseDiscordClient {
 
         await this.taskQueue.add(promptResponseTask);
     }
+
+     async #onInteraction(interaction: ButtonInteraction): Promise<void> {
+        this.logger(LogLevel.Info, `Beginning interaction response to custom action ${interaction.customId}...`);
+
+        this.#resetTransitiveServices();
+
+        await interaction.deferReply();
+        await this.typingService.startTyping(interaction);
+
+        switch(interaction.customId) {
+            case BotInteraction.ClearContext:
+                await this.#clearContext(interaction);
+                break;
+            default:
+                this.logger(LogLevel.Warning, `An unknown interaction was passed: ${interaction.customId}.`);
+                break;
+        }
+     }
+
+     async #clearContext(interaction: ButtonInteraction): Promise<void> {
+        this.logger(LogLevel.Info, 'Clearing the large language model context...');
+        this.#context = [];
+
+        try{
+            await interaction.editReply(`The conversational context has been cleared - ${interaction.member} just gave an AI amnesia!`);
+        } catch {
+            this.logger(LogLevel.Error, 'An exception occurred while clearing the Ollama context.');
+        }
+     }
 }
