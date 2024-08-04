@@ -12,7 +12,7 @@ export class UpscaleButton extends BaseComponent<ButtonBuilder> {
     override build(): ButtonBuilder {
         return new ButtonBuilder()
             .setCustomId(BotInteraction.Upscale)
-            .setLabel('🔎')
+            .setLabel('🔍')
             .setStyle(ButtonStyle.Secondary);
     }
 }
