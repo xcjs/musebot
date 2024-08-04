@@ -1,4 +1,4 @@
-import { RenderRequest } from './RenderRequest';
+import { RenderRequest } from './RenderRequest.js';
 
 export class UpscaledRenderRequest extends RenderRequest {
     use_upscale = 'RealESRGAN_x4plus';

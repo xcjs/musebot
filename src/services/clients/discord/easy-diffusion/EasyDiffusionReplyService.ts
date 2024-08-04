@@ -8,12 +8,13 @@ import { IStreamResponse } from '../../easy-diffusion/models/responses/IStreamRe
 import { BufferEncoding } from '../../../../enums/BufferEncoding.js';
 import { DiscordConstants } from '../enums/DiscordConstants.js';
 import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
-import { StatefulImageGenerationActionRow } from '../components/buttonRows/StatefulImageGenerationActionRow.js';
+import { StatefulImageGenerationActionRows } from '../components/buttonRows/StatefulImageGenerationActionRows.js';
 import { StatelessImageGenerationActionRow } from '../components/buttonRows/StatelessImageGenerationActionRow.js';
 import { FeatureService } from '../../../features/FeatureService.js';
 import { MAX_FILE_NAME_LENGTH } from '../../../../enums/FileConstants.js';
 import { EasyDiffusionClient } from '../../easy-diffusion/EasyDiffusionClient.js';
 import { ContentType } from '../../../../enums/ContentType.js';
+import { UpscaledRenderRequest } from '../../easy-diffusion/models/requests/UpscaledRenderRequest.js';
 
 export class EasyDiffusionReplyService {
     #environmentSettings: EnvironmentSettings;
@@ -46,7 +47,7 @@ export class EasyDiffusionReplyService {
         return matchingAttachments;
     }
 
-    async renderImage(request: RenderRequest): Promise<IHttpExchangeWithAttachedResponse<RenderRequest, IRenderResponse, IStreamResponse>> {
+    async renderImage(request: RenderRequest | UpscaledRenderRequest): Promise<IHttpExchangeWithAttachedResponse<RenderRequest, IRenderResponse, IStreamResponse>> {
         this.#logger(LogLevel.Info, `Render prompt: ${request.prompt}`);
 
         const renderExchange = await this.#easyDiffusionClient.render(request);
@@ -97,9 +98,9 @@ export class EasyDiffusionReplyService {
         const reply: BaseMessageOptions = {
             content,
             files,
-            components: [isStatefulResponse ?
-                new StatefulImageGenerationActionRow(this.#environmentSettings, this.#featureService, renderRequest).build() :
-                new StatelessImageGenerationActionRow(this.#featureService).build()]
+            components: isStatefulResponse ?
+                new StatefulImageGenerationActionRows(this.#environmentSettings, this.#featureService, renderRequest).build() :
+                [new StatelessImageGenerationActionRow(this.#featureService).build()]
         };
 
         if(interaction instanceof Message) {

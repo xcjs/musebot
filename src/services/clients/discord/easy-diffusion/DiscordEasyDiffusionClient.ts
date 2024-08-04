@@ -21,6 +21,7 @@ import { IncreaseGuidanceScaleRenderTask } from '../../easy-diffusion/tasks/Incr
 import { RandomRenderTask } from '../../easy-diffusion/tasks/RandomRenderTask.js';
 import { ReplyService } from '../services/ReplyService.js';
 import { TypingService } from '../services/TypingService.js';
+import { UpscaleRenderTask } from '../../easy-diffusion/tasks/UpscaleRenderTask.js';
 
 export class DiscordEasyDiffusionClient extends BaseDiscordClient {
     #easyDiffusionClient: EasyDiffusionClient;
@@ -111,6 +112,9 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
             case BotInteraction.Retry:
                 await this.#retry(interaction);
                 break;
+            case BotInteraction.Upscale:
+                await this.#upscale(interaction);
+                break;
             case BotInteraction.ShowSource:
                 await this.#showSource(interaction);
                 break;
@@ -136,6 +140,15 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
             this.#easyDiffusionReplyService,
             this.#replyService,
             interaction));
+    }
+
+    async #upscale(interaction: ButtonInteraction) {
+        await this.taskQueue.add(new UpscaleRenderTask(
+            this.environmentSettings,
+            this.#easyDiffusionReplyService,
+            this.replyService,
+            interaction
+        ));
     }
 
     async #showSource(interaction: ButtonInteraction): Promise<void> {

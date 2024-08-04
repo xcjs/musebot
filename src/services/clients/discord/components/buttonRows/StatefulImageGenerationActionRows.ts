@@ -11,8 +11,9 @@ import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js'
 import { EnvironmentSettings } from '../../../../EnvironmentSettings.js';
 import { RenderRequest } from '../../../easy-diffusion/models/requests/RenderRequest.js';
 import { StableDiffusionGuidanceScaleLimit } from '../../../easy-diffusion/enums/StableDiffusionGuidanceScaleLimit.js';
+import { UpscaleButton } from '../buttons/UpscaleButton.js';
 
-export class StatefulImageGenerationActionRow extends BaseComponent<ActionRowBuilder<ButtonBuilder>> {
+export class StatefulImageGenerationActionRows extends BaseComponent<Array<ActionRowBuilder<ButtonBuilder>>> {
     #environmentSettings: EnvironmentSettings;
     #renderRequest: RenderRequest;
 
@@ -22,28 +23,36 @@ export class StatefulImageGenerationActionRow extends BaseComponent<ActionRowBui
         this.#renderRequest = renderRequest;
     }
 
-    override build(): ActionRowBuilder<ButtonBuilder> {
+    override build(): Array<ActionRowBuilder<ButtonBuilder>> {
+        const actionRows: Array<ActionRowBuilder<ButtonBuilder>> = [];
+
         const retryButton = new RetryButton(this.featureService).build();
         const showSourceButton = new ShowSourceButton(this.featureService).build();
+        const upscaleButton = new UpscaleButton(this.featureService).build();
 
-        const actionRowBuilder = new ActionRowBuilder<ButtonBuilder>()
-            .addComponents(retryButton, showSourceButton);
+        const mainActionRowBuilder = new ActionRowBuilder<ButtonBuilder>()
+            .addComponents(retryButton, upscaleButton, showSourceButton);
 
         if(this.#renderRequest.guidance_scale - this.#environmentSettings.easyDiffusionGuidanceScaleInterval > StableDiffusionGuidanceScaleLimit.Min) {
             const guidanceScaleMinusButton = new GuidanceScaleMinusButton(this.featureService).build();
-            actionRowBuilder.addComponents(guidanceScaleMinusButton);
+            mainActionRowBuilder.addComponents(guidanceScaleMinusButton);
         }
 
         if(this.#renderRequest.guidance_scale + this.#environmentSettings.easyDiffusionGuidanceScaleInterval <= StableDiffusionGuidanceScaleLimit.Max) {
             const guidanceScalePlusButton = new GuidanceScalePlusButton(this.featureService).build();
-            actionRowBuilder.addComponents(guidanceScalePlusButton);
+            mainActionRowBuilder.addComponents(guidanceScalePlusButton);
         }
+
+        actionRows.push(mainActionRowBuilder);
 
         if(this.featureService.hasFeature(SupportedFeature.RandomImageGeneration)) {
             const randomizeButton = new RandomizeButton(this.featureService).build();
-            actionRowBuilder.addComponents(randomizeButton);
+            const secondaryActionRowBuilder = new ActionRowBuilder<ButtonBuilder>()
+                .addComponents(randomizeButton);
+
+            actionRows.push(secondaryActionRowBuilder);
         }
 
-        return actionRowBuilder;
+        return actionRows;
     }
 }
