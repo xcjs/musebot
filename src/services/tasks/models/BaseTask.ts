@@ -31,7 +31,7 @@ export abstract class BaseTask {
         return this.#numAttempts;
     }
 
-    get createdTime() {
+    get createdTime(): Date {
         return this.#createdTime;
     }
 
