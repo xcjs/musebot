@@ -26,14 +26,16 @@ export class TaskQueue {
     async add(task: BaseTask): Promise<void> {
         this.#logger(LogLevel.Info, `Adding a task to the ${task.taskChannel} queue.`);
 
+        let taskChannel: TaskChannel;
+
         if(this.#channels.filter(x => x.name === task.taskChannel).length === 0) {
-            const newChannel = new TaskChannel(this.#environmentSettings, task.taskChannel);
-            newChannel.queue.push(task);
-            this.#channels.push(newChannel);
+            taskChannel = new TaskChannel(this.#environmentSettings, task.taskChannel);
+            this.#channels.push(taskChannel);
         } else {
-            const taskChannel = this.#channels.find(x => x.name === task.taskChannel);
-            taskChannel.queue.push(task);
+            taskChannel = this.#channels.find(x => x.name === task.taskChannel);
         }
+
+        taskChannel.queue.push(task);
 
         await this.#processQueue();
     }
