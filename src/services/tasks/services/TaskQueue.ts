@@ -3,12 +3,13 @@ import { Logger, LogLevel } from 'meklog';
 import { EnvironmentSettings } from '../../EnvironmentSettings.js';
 import { TaskStatus } from '../enums/TaskStatus.js';
 import { BaseTask } from '../models/BaseTask.js';
-import { TaskType } from '../enums/TaskType.js';
+import { TaskChannel } from '../models/TaskChannel.js';
+import { PromisedSettledResultStatus } from '../../../enums/PromisedSettledResultStatus.js';
 
 export class TaskQueue {
     #environmentSettings: EnvironmentSettings;
 
-    #queue: Array<BaseTask> = [];
+    #channels: Array<TaskChannel> = [];
     #isActive = false;
 
     #logger;
@@ -23,13 +24,15 @@ export class TaskQueue {
     }
 
     async add(task: BaseTask): Promise<void> {
-        this.#logger(LogLevel.Info, 'Adding a task to the task queue.');
+        this.#logger(LogLevel.Info, `Adding a task to the ${task.taskChannel} queue.`);
 
-        if(task.taskType === TaskType.Instant) {
-            this.#logger(LogLevel.Info, 'The task type is instant and will process immediately.');
-            await task.process();
+        if(this.#channels.filter(x => x.name === task.taskChannel).length === 0) {
+            const newChannel = new TaskChannel(this.#environmentSettings, task.taskChannel);
+            newChannel.queue.push(task);
+            this.#channels.push(newChannel);
         } else {
-            this.#queue.push(task);
+            const taskChannel = this.#channels.find(x => x.name === task.taskChannel);
+            taskChannel.queue.push(task);
         }
 
         await this.#processQueue();
@@ -40,71 +43,64 @@ export class TaskQueue {
             return;
         }
 
-        let task: BaseTask = this.#getNextTask();
+        let tasks = this.#getNextTasks();
 
-        while(task !== null) {
+        while(tasks.length > 0) {
             this.#isActive = true;
-
-            this.#logger(LogLevel.Info, `Processing the task queue. This task has been attempted ${task.numAttempts} time(s).`);
+            this.#logger(LogLevel.Info, `Processing the task queue with ${this.#channels.length} channels and
+                ${this.#channels.map((channel, i, channels) => channels.length)
+                    .reduce((previousValue, currentValue) => previousValue + currentValue)}
+                tasks.`);
 
             try {
-                await task.process();
-                await task.postProcess();
+                const processPromises = tasks.map(x => x.process());
+                const processPromisesResults = await Promise.allSettled(processPromises);
+
+                const postProcessingPromises = processPromisesResults.map((promise, i) => {
+                    const task = tasks[i];
+
+                    if(promise.status === PromisedSettledResultStatus.Fulfilled) {
+                        return task.postProcess();
+                    }
+
+                    if(promise.status === PromisedSettledResultStatus.Rejected) {
+                        this.#logger(LogLevel.Error, `A task was rejected ${task.numAttempts} time(s): ${promise.reason}`);
+                        task.taskStatus = TaskStatus.Failed;
+
+                        if(task.numAttempts === this.#environmentSettings.maxTaskAttempts) {
+                            return task.postProcess();
+                        }
+                    }
+                });
+
+                await Promise.allSettled(postProcessingPromises);
             } catch(error) {
                 this.#logger(LogLevel.Error, `An exception occurred while processing a task: ${error}`);
-                task.taskStatus = TaskStatus.Failed;
-
-                if(task.numAttempts === this.#environmentSettings.maxTaskAttempts) {
-                    await task.postProcess();
-                }
             }
 
-            task = this.#getNextTask();
+            tasks = this.#getNextTasks();
         }
 
         this.#isActive = false;
     }
 
-    #getNextTask(): BaseTask | null {
+    #getNextTasks(): Array<BaseTask> {
         this.#logger(LogLevel.Info, 'Retrieving the next task...');
 
-        this.#cleanQueue();
+        this.#cleanChannels();
 
-        if(this.#queue.length === 0) {
-            return null;
-        }
-
-        return this.#queue[0];
-    }
-
-    #cleanQueue(): void {
-        this.#logger(LogLevel.Info, 'Removing completed or failed entries from the queue...');
-
-        const incompleteTasks = this.#queue.filter(task => {
-            if(task.taskStatus === TaskStatus.Idle
-                || task.taskStatus === TaskStatus.Busy
-                || (task.taskStatus === TaskStatus.Failed
-                    && task.numAttempts <= this.#environmentSettings.maxTaskAttempts)) {
-                        return task;
+        const tasks = this.#channels.map(channel => {
+            if(channel.queue.length > 0) {
+                return channel.queue[0];
             }
         });
 
-        const failedTasks = incompleteTasks.filter(
-            x => x.taskStatus === TaskStatus.Failed && x.numAttempts <= this.#environmentSettings.maxTaskAttempts)
-            .sort(this.#compareByDate);
-
-        const nonFailedTasks = incompleteTasks.filter(
-            x => x.taskStatus !== TaskStatus.Failed && x.taskStatus !== TaskStatus.Complete)
-            .sort(this.#compareByDate);
-
-        this.#queue = nonFailedTasks.concat(failedTasks);
+        return tasks;
     }
 
-    #compareByDate(a: BaseTask, b: BaseTask): number {
-        if(a.createdTime < b.createdTime) {
-            return -1;
-        } else {
-            return 1;
-        }
+    #cleanChannels() {
+        this.#channels.forEach(channel => {
+            channel.cleanQueue();
+        });
     }
 }
