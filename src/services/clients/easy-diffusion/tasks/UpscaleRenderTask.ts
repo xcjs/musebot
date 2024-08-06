@@ -19,6 +19,10 @@ export class UpscaleRenderTask extends BaseTask {
 
     #logger;
 
+    override get taskChannel(): string {
+        return `EasyDiffusion_${this.#easyDiffusionReplyService.easyDiffusionHost}`;
+    }
+
     constructor(
         environmentSettings: EnvironmentSettings,
         easyDiffusionReplyService: EasyDiffusionReplyService,

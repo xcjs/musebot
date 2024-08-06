@@ -38,6 +38,10 @@ export class PromptResponseTask extends BaseTask {
 
     #onSuccess: (context: Array<number>) => void  = () => { };
 
+    override get taskChannel(): string {
+        return `Ollama_${this.#ollamaClient.host}`;
+    }
+
     set onSuccess(callback: (context: Array<number>) => void) {
         this.#onSuccess = callback;
     }

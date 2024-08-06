@@ -1,18 +1,12 @@
 import { TaskStatus } from '../enums/TaskStatus.js';
-import { TaskType } from '../enums/TaskType.js';
 
 export abstract class BaseTask {
-    protected _taskType: TaskType = TaskType.Delayed;
     #taskStatus: TaskStatus = TaskStatus.Idle;
     #numAttempts = 0;
     #createdTime: Date;
 
     constructor() {
         this.#createdTime = new Date();
-    }
-
-    get taskType(): TaskType {
-        return this._taskType;
     }
 
     get taskStatus(): TaskStatus {
@@ -27,11 +21,15 @@ export abstract class BaseTask {
         this.#taskStatus = taskStatus;
     }
 
+    get taskChannel(): string {
+        throw new Error('The base getTaskChannel() method must be overridden.');
+    }
+
     get numAttempts(): number {
         return this.#numAttempts;
     }
 
-    get createdTime() {
+    get createdTime(): Date {
         return this.#createdTime;
     }
 

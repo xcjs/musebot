@@ -8,21 +8,27 @@ import { IHttpExchange } from '../../../models/IHttpExchange.js';
 export class OllamaClient {
     #environmentSettings: EnvironmentSettings;
 
-    #logger;
+    #host: URL;
     #client: Ollama;
-
     #model: string;
+
+    #logger;
+
+    get host(): URL {
+        return this.#host;
+    }
 
     constructor(environmentSettings: EnvironmentSettings) {
         this.#environmentSettings = environmentSettings;
 
         this.#logger = Logger(this.#environmentSettings.isProduction, 'OllamaClient');
 
-        const host = getRandomArrayEntry(this.#environmentSettings.ollamaHosts).toString();
+        const host = getRandomArrayEntry(this.#environmentSettings.ollamaHosts);
+        this.#host = host;
         this.#logger(LogLevel.Info, `Selected host: ${host}`);
 
         this.#client = new Ollama({
-            host
+            host: host.toString()
         });
 
         this.#model = this.#selectModel(this.#environmentSettings.ollamaModels);
@@ -36,7 +42,7 @@ export class OllamaClient {
             system: this.#environmentSettings.ollamaSystemPrompt
         };
 
-        this.#logger(LogLevel.Info, `Calling Ollama API with the prompt: ${message}.`);
+        this.#logger(LogLevel.Info, `Calling Ollama API with the prompt: ${message}`);
 
         if(context && context.length) {
             this.#logger(LogLevel.Info, `A context value of ${context.join(', ')} is provided.`);

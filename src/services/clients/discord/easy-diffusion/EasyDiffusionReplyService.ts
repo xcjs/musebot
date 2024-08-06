@@ -23,6 +23,10 @@ export class EasyDiffusionReplyService {
 
     #logger;
 
+    get easyDiffusionHost() {
+        return this.#easyDiffusionClient.host;
+    }
+
     constructor(environmentSettings: EnvironmentSettings, featureService: FeatureService, easyDiffusionClient: EasyDiffusionClient) {
         this.#environmentSettings = environmentSettings;
         this.#featureService = featureService;

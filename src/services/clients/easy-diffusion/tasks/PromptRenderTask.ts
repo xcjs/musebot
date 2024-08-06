@@ -24,6 +24,10 @@ export class PromptRenderTask extends BaseTask {
 
     #logger;
 
+    override get taskChannel(): string {
+        return `EasyDiffusion_${this.#easyDiffusionClient.host}`;
+    }
+
     constructor(
         environmentSettings: EnvironmentSettings,
         discordClient: DiscordClient,

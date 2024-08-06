@@ -8,7 +8,6 @@ import { TaskStatus } from '../../../tasks/enums/TaskStatus.js';
 import { BufferEncoding } from '../../../../enums/BufferEncoding.js';
 import { ContentType } from '../../../../enums/ContentType.js';
 import { RenderRequest } from '../models/requests/RenderRequest.js';
-import { TaskType } from '../../../tasks/enums/TaskType.js';
 import { ReplyService } from '../../discord/services/ReplyService.js';
 
 export class ShowSourceTask extends BaseTask {
@@ -18,6 +17,10 @@ export class ShowSourceTask extends BaseTask {
     #interaction: ButtonInteraction;
 
     #logger;
+
+    override get taskChannel(): string {
+        return 'Discord_API';
+    }
 
     constructor(environmentSettings: EnvironmentSettings,
         easyDiffusionReplyService: EasyDiffusionReplyService,
@@ -30,8 +33,6 @@ export class ShowSourceTask extends BaseTask {
         this.#interaction = interaction;
 
         this.#logger = new Logger(environmentSettings.isProduction, 'ShowSourceTask');
-
-        this._taskType = TaskType.Instant;
     }
 
     override async process(): Promise<void> {

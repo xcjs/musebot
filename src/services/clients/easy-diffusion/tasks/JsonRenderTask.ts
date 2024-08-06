@@ -17,6 +17,10 @@ export class JsonRenderTask extends BaseTask {
 
     #logger;
 
+    override get taskChannel(): string {
+        return `EasyDiffusion_${this.#easyDiffusionReplyService.easyDiffusionHost}`;
+    }
+
     constructor(
         environmentSettings: EnvironmentSettings,
         discordClient: DiscordClient,
@@ -27,6 +31,7 @@ export class JsonRenderTask extends BaseTask {
 
         this.#discordClient = discordClient;
         this.#easyDiffusionReplyService = easyDiffusionReplyService;
+        this.#replyService = replyService;
         this.#message = message;
 
         this.#logger = new Logger(environmentSettings.isProduction, 'JsonRenderTask');
