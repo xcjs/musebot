@@ -25,6 +25,10 @@ export class EasyDiffusionClient {
 
     #retryDelayInMilliseconds = 1000;
 
+    get host(): URL {
+        return this.#host;
+    }
+
     constructor(environmentSettings: EnvironmentSettings) {
         this.#environmentSettings = environmentSettings;
         this.#logger = Logger(this.#environmentSettings.isProduction, 'EasyDiffusionClient');

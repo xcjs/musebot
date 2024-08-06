@@ -47,10 +47,10 @@ export class TaskQueue {
 
         while(tasks.length > 0) {
             this.#isActive = true;
-            this.#logger(LogLevel.Info, `Processing the task queue with ${this.#channels.length} channels and
-                ${this.#channels.map((channel, i, channels) => channels.length)
-                    .reduce((previousValue, currentValue) => previousValue + currentValue)}
-                tasks.`);
+            this.#logger(LogLevel.Info, `Processing the task queue with ${this.#channels.length} channels and`
+                + `${this.#channels.map((channel, i, channels) => channels.length)
+                    .reduce((previousValue, currentValue) => previousValue + currentValue)}`
+                + `tasks.`);
 
             try {
                 const processPromises = tasks.map(x => x.process());
@@ -89,11 +89,8 @@ export class TaskQueue {
 
         this.#cleanChannels();
 
-        const tasks = this.#channels.map(channel => {
-            if(channel.queue.length > 0) {
-                return channel.queue[0];
-            }
-        });
+        const tasks = this.#channels.filter(channel => channel.queue.length > 0)
+            .map(channel => channel.queue[0]);
 
         return tasks;
     }
