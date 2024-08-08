@@ -37,14 +37,10 @@ export class TaskQueue {
 
         taskChannel.queue.push(task);
 
-        await this.#processQueue();
+        this.#processQueue();
     }
 
     async #processQueue(): Promise<void> {
-        if(this.#isActive) {
-            return;
-        }
-
         let tasks = this.#getNextTasks();
 
         while(tasks.length > 0) {
@@ -82,8 +78,6 @@ export class TaskQueue {
 
             tasks = this.#getNextTasks();
         }
-
-        this.#isActive = false;
     }
 
     #getNextTasks(): Array<BaseTask> {
@@ -91,8 +85,15 @@ export class TaskQueue {
 
         this.#cleanChannels();
 
-        const tasks = this.#channels.filter(channel => channel.queue.length > 0)
-            .map(channel => channel.queue[0]);
+        const tasks = this.#channels
+            .filter(channel => channel.queue.length > 0)
+            .map(channel => channel.queue.find(task => task.taskStatus !== TaskStatus.Busy))
+            .filter(task => task !== undefined);
+
+        if(this.#channels.filter(channel => channel.isActive).length === 0
+            && tasks.length === 0) {
+            this.#isActive = false;
+        }
 
         return tasks;
     }

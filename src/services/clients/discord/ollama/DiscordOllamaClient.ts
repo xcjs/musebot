@@ -86,8 +86,6 @@ export class DiscordOllamaClient extends BaseDiscordClient {
 
         this.logger(LogLevel.Info, 'Replying to message...');
 
-        await this.typingService.startTyping(message);
-
         const promptResponseTask = new PromptResponseTask(
             this.environmentSettings,
             this.featureService,
@@ -102,9 +100,11 @@ export class DiscordOllamaClient extends BaseDiscordClient {
             message,
             this.#context);
 
-        promptResponseTask.onSuccess = (context: Array<number>) => { this.#context = context; };
+            promptResponseTask.onSuccess = (context: Array<number>) => { this.#context = context; };
 
-        await this.taskQueue.add(promptResponseTask);
+        this.taskQueue.add(promptResponseTask);
+
+        await this.typingService.startTyping(message);
     }
 
      async #onInteraction(interaction: ButtonInteraction): Promise<void> {
