@@ -35,8 +35,8 @@ export class DiscordOllamaClient extends BaseDiscordClient {
 
         this.#resetTransitiveServices();
 
-        this.#ollamaReplyService = new OllamaReplyService(this.environmentSettings, this.featureService, this.#easyDiffusionReplyService);
-        this.#ollamaStreamingReplyService = new OllamaStreamingReplyService(this.environmentSettings,this.featureService, this.#easyDiffusionReplyService);
+        this.#ollamaReplyService = new OllamaReplyService(this.environmentSettings, this.featureService);
+        this.#ollamaStreamingReplyService = new OllamaStreamingReplyService(this.environmentSettings,this.featureService);
         this.#replyService = new ReplyService(environmentSettings, this.client);
 
         this.logger = new Logger(this.environmentSettings.isProduction, 'DiscordOllamaClient');
@@ -98,6 +98,7 @@ export class DiscordOllamaClient extends BaseDiscordClient {
             this.client,
             this.#easyDiffusionClient,
             this.#easyDiffusionReplyService,
+            this.taskQueue,
             message,
             this.#context);
 
