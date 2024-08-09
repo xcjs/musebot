@@ -10,12 +10,11 @@ export class TaskQueue {
     #environmentSettings: EnvironmentSettings;
 
     #channels: Array<TaskChannel> = [];
-    #isActive = false;
 
     #logger;
 
     get isActive() {
-        return this.#isActive;
+        return this.#channels.filter(channel => channel.isActive).length === 0;
     }
 
     constructor(environmentSettings: EnvironmentSettings) {
@@ -44,7 +43,6 @@ export class TaskQueue {
         let tasks = this.#getNextTasks();
 
         while(tasks.length > 0) {
-            this.#isActive = true;
             this.#logger(LogLevel.Info, `Processing the task queue with ${this.#channels.length} channels and`
                 + ` ${this.#channels.map((channel, i, channels) => channels.length)
                     .reduce((previousValue, currentValue) => previousValue + currentValue)}`
@@ -92,11 +90,6 @@ export class TaskQueue {
         const tasks = this.#channels
             .filter(channel => channel.queue.length > 0 && !channel.isActive)
             .map(channel => channel.queue[0]);
-
-        if(this.#channels.filter(channel => channel.isActive).length === 0
-            && tasks.length === 0) {
-            this.#isActive = false;
-        }
 
         return tasks;
     }
