@@ -51,7 +51,7 @@ export class TaskChannel {
             .sort(this.#compareByDate);
 
         const nonFailedTasks = incompleteTasks.filter(
-            x => x.taskStatus !== TaskStatus.Failed && x.taskStatus !== TaskStatus.Complete)
+            x => x.taskStatus !== TaskStatus.Failed)
             .sort(this.#compareByDate);
 
         this.#queue = nonFailedTasks.concat(failedTasks);
