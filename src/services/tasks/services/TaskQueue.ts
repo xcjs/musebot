@@ -51,13 +51,17 @@ export class TaskQueue {
                 + ` tasks.`);
 
             try {
-                const processPromises = tasks.map(x => x.process());
+                const processPromises = tasks.map((x) => {
+                    x.taskStatus = TaskStatus.Busy;
+                    return x.process()
+                });
                 const processPromisesResults = await Promise.allSettled(processPromises);
 
                 const postProcessingPromises = processPromisesResults.map((promise, i) => {
                     const task = tasks[i];
 
                     if(promise.status === PromisedSettledResultStatus.Fulfilled) {
+                        task.taskStatus = TaskStatus.Successful;
                         return task.postProcess();
                     }
 

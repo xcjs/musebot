@@ -43,8 +43,6 @@ export class IncreaseGuidanceScaleRenderTask extends BaseTask {
     }
 
     override async process(): Promise<void> {
-        this.taskStatus = TaskStatus.Busy;
-
         this.#logger(LogLevel.Info, 'Processing a IncreaseGuidanceScaleRenderTask.');
 
         const imageTypes = [
@@ -73,8 +71,6 @@ export class IncreaseGuidanceScaleRenderTask extends BaseTask {
             - this.#environmentSettings.easyDiffusionGuidanceScaleInterval} to ${request.guidance_scale} by ${this.#interaction.member}.`;
 
         await this.#easyDiffusionReplyService.reply(this.#interaction, renderData, content, null);
-
-        this.taskStatus = TaskStatus.Successful;
     }
 
     override async postProcess(): Promise<void> {

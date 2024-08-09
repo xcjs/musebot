@@ -36,8 +36,6 @@ export class ShowSourceTask extends BaseTask {
     }
 
     override async process(): Promise<void> {
-        this.taskStatus = TaskStatus.Busy;
-
         const imageTypes = [
             ContentType.Jpeg,
             ContentType.Jpg,
@@ -62,8 +60,6 @@ export class ShowSourceTask extends BaseTask {
         };
 
         await this.#interaction.editReply(reply);
-
-        this.taskStatus = TaskStatus.Successful;
     }
 
     override async postProcess(): Promise<void> {

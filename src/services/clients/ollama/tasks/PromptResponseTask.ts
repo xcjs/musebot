@@ -146,8 +146,6 @@ export class PromptResponseTask extends BaseTask {
                 }
             }
         }
-
-        this.taskStatus = TaskStatus.Successful;
     }
 
     #attachImage(prompt: string, replies: Array<Message>): void {

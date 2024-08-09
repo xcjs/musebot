@@ -45,8 +45,6 @@ export class AttachRenderTask extends BaseTask {
     }
 
     override async process(): Promise<void> {
-        this.taskStatus = TaskStatus.Busy;
-
         const model = this.#environmentSettings.easyDiffusionModels.length > 0 ?
             getRandomArrayEntry(this.#environmentSettings.easyDiffusionModels) :
             getRandomArrayEntry(await this.#easyDiffusionClient.getModels());
@@ -57,8 +55,6 @@ export class AttachRenderTask extends BaseTask {
 
         const renderData = await this.#easyDiffusionReplyService.renderImage(request);
         await this.#easyDiffusionReplyService.reply(this.#message, renderData, null, null, true);
-
-        this.taskStatus = TaskStatus.Successful;
     }
 
     override async postProcess(): Promise<void> {

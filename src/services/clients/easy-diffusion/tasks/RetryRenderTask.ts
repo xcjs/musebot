@@ -44,8 +44,6 @@ export class RetryRenderTask extends BaseTask {
     }
 
     override async process(): Promise<void> {
-        this.taskStatus = TaskStatus.Busy;
-
         this.#logger(LogLevel.Info, 'Processing a RetryRenderTask.');
 
         const imageTypes = [
@@ -73,8 +71,6 @@ export class RetryRenderTask extends BaseTask {
         const renderData = await this.#easyDiffusionReplyService.renderImage(request);
         const content = `${this.#interaction.member} re-rendered \`${request.prompt}\``.substring(0, DiscordConstants.ContentMaxLength);
         await this.#easyDiffusionReplyService.reply(this.#interaction, renderData, content, null);
-
-        this.taskStatus = TaskStatus.Successful;
     }
 
     override async postProcess(): Promise<void> {
