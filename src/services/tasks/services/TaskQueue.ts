@@ -90,9 +90,8 @@ export class TaskQueue {
         this.#cleanChannels();
 
         const tasks = this.#channels
-            .filter(channel => channel.queue.length > 0)
-            .map(channel => channel.queue.find(task => task.taskStatus !== TaskStatus.Busy))
-            .filter(task => task !== undefined);
+            .filter(channel => channel.queue.length > 0 && !channel.isActive)
+            .map(channel => channel.queue[0]);
 
         if(this.#channels.filter(channel => channel.isActive).length === 0
             && tasks.length === 0) {
