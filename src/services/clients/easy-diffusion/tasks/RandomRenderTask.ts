@@ -34,7 +34,7 @@ export class RandomRenderTask extends BaseTask {
         easyDiffusionReplyService: EasyDiffusionReplyService,
         replyService: ReplyService,
         interaction: ButtonInteraction) {
-        super();
+        super(environmentSettings.maxTaskAttempts);
 
         this.#environmentSettings = environmentSettings;
         this.#easyDiffusionClient = easyDiffusionClient;
@@ -46,8 +46,6 @@ export class RandomRenderTask extends BaseTask {
     }
 
     override async process(): Promise<void> {
-        this.taskStatus = TaskStatus.Busy;
-
         this.#logger(LogLevel.Info, 'Processing a RandomRenderTask.');
 
         const model = this.#environmentSettings.easyDiffusionModels.length > 0 ?
@@ -73,8 +71,6 @@ export class RandomRenderTask extends BaseTask {
         });
 
         await this.#easyDiffusionReplyService.reply(this.#interaction, renderData, content, [promptAttachment]);
-
-        this.taskStatus = TaskStatus.Successful;
     }
 
     override async postProcess(): Promise<void> {

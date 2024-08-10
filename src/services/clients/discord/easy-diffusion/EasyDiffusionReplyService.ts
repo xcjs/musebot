@@ -76,7 +76,8 @@ export class EasyDiffusionReplyService {
         interaction: Message | ButtonInteraction,
         renderData: IHttpExchangeWithAttachedResponse<RenderRequest, IRenderResponse, IStreamResponse>,
         content: string | null,
-        additionalAttachments: Array<AttachmentBuilder> | null): Promise<void> {
+        additionalAttachments: Array<AttachmentBuilder> | null,
+        isEdit: boolean = false): Promise<void> {
         const renderRequest = renderData.exchange.request;
         const streamResponse = renderData.response;
 
@@ -108,7 +109,13 @@ export class EasyDiffusionReplyService {
         };
 
         if(interaction instanceof Message) {
-            await interaction.reply(reply);
+            if(isEdit) {
+                reply.content = interaction.content;
+                reply.components = interaction.components;
+                await interaction.edit(reply);
+            } else {
+                await interaction.reply(reply);
+            }
         } else if(interaction instanceof ButtonInteraction) {
             await interaction.editReply(reply);
         }

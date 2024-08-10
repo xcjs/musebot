@@ -28,7 +28,7 @@ export class UpscaleRenderTask extends BaseTask {
         easyDiffusionReplyService: EasyDiffusionReplyService,
         replyService: ReplyService,
         interaction: ButtonInteraction) {
-        super();
+        super(environmentSettings.maxTaskAttempts);
 
         this.#easyDiffusionReplyService = easyDiffusionReplyService;
         this.#replyService = replyService;
@@ -38,8 +38,6 @@ export class UpscaleRenderTask extends BaseTask {
     }
 
     override async process(): Promise<void> {
-        this.taskStatus = TaskStatus.Busy;
-
         this.#logger(LogLevel.Info, 'Processing an UpscaleRenderTask.');
 
         const imageTypes = [
@@ -59,8 +57,6 @@ export class UpscaleRenderTask extends BaseTask {
         const renderData = await this.#easyDiffusionReplyService.renderImage(request);
         const content = `${this.#interaction.member} upscaled \`${request.prompt}\``.substring(0, DiscordConstants.ContentMaxLength);
         await this.#easyDiffusionReplyService.reply(this.#interaction, renderData, content, null);
-
-        this.taskStatus = TaskStatus.Successful;
     }
 
     override async postProcess(): Promise<void> {

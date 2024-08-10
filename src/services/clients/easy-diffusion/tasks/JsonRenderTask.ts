@@ -27,7 +27,7 @@ export class JsonRenderTask extends BaseTask {
         easyDiffusionReplyService: EasyDiffusionReplyService,
         replyService: ReplyService,
         message: Message) {
-        super();
+        super(environmentSettings.maxTaskAttempts);
 
         this.#discordClient = discordClient;
         this.#easyDiffusionReplyService = easyDiffusionReplyService;
@@ -38,8 +38,6 @@ export class JsonRenderTask extends BaseTask {
     }
 
     override async process(): Promise<void> {
-        this.taskStatus = TaskStatus.Busy;
-
         this.#logger(LogLevel.Info, 'Processing a JsonRenderTask.');
 
         const botMention = this.#message.mentions.members.find(x => x.id === this.#discordClient.user?.id)?.toString() || '';
@@ -52,14 +50,11 @@ export class JsonRenderTask extends BaseTask {
             request.num_outputs = 1;
         } catch {
            await this.#message.reply('You call that JSON? My grandmother could knit better JSON.');
-           this.taskStatus = TaskStatus.Complete;
            return;
         }
 
         const renderData = await this.#easyDiffusionReplyService.renderImage(request);
         await this.#easyDiffusionReplyService.reply(this.#message, renderData, null, null);
-
-        this.taskStatus = TaskStatus.Successful;
     }
 
     override async postProcess(): Promise<void> {

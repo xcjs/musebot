@@ -35,8 +35,8 @@ export class DiscordOllamaClient extends BaseDiscordClient {
 
         this.#resetTransitiveServices();
 
-        this.#ollamaReplyService = new OllamaReplyService(this.environmentSettings, this.featureService, this.#easyDiffusionReplyService);
-        this.#ollamaStreamingReplyService = new OllamaStreamingReplyService(this.environmentSettings,this.featureService, this.#easyDiffusionReplyService);
+        this.#ollamaReplyService = new OllamaReplyService(this.environmentSettings, this.featureService);
+        this.#ollamaStreamingReplyService = new OllamaStreamingReplyService(this.environmentSettings,this.featureService);
         this.#replyService = new ReplyService(environmentSettings, this.client);
 
         this.logger = new Logger(this.environmentSettings.isProduction, 'DiscordOllamaClient');
@@ -86,8 +86,6 @@ export class DiscordOllamaClient extends BaseDiscordClient {
 
         this.logger(LogLevel.Info, 'Replying to message...');
 
-        await this.typingService.startTyping(message);
-
         const promptResponseTask = new PromptResponseTask(
             this.environmentSettings,
             this.featureService,
@@ -98,12 +96,15 @@ export class DiscordOllamaClient extends BaseDiscordClient {
             this.client,
             this.#easyDiffusionClient,
             this.#easyDiffusionReplyService,
+            this.taskQueue,
             message,
             this.#context);
 
-        promptResponseTask.onSuccess = (context: Array<number>) => { this.#context = context; };
+            promptResponseTask.onSuccess = (context: Array<number>) => { this.#context = context; };
 
-        await this.taskQueue.add(promptResponseTask);
+        this.taskQueue.add(promptResponseTask);
+
+        await this.typingService.startTyping(message);
     }
 
      async #onInteraction(interaction: ButtonInteraction): Promise<void> {

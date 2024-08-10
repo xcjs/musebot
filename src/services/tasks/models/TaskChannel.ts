@@ -21,15 +21,18 @@ export class TaskChannel {
     }
 
     get isActive(): boolean {
-        const isActive = this.#queue.filter(x => x.taskStatus === TaskStatus.Busy).length > 0;
-        return isActive;
+        return this.#queue.filter(x => x.taskStatus === TaskStatus.Busy).length > 0;
+    }
+
+    get hasTasks(): boolean {
+        return this.#queue.length > 0;
     }
 
     constructor(environmentSettings: EnvironmentSettings, name: string) {
         this.#environmentSettings = environmentSettings;
         this.#name = name;
 
-        this.#logger = new Logger(environmentSettings.isProduction, 'TaskChannel');
+        this.#logger = new Logger(this.#environmentSettings.isProduction, 'TaskChannel');
 
         this.#logger(LogLevel.Info, `Created a new task channel called ${name}.`);
     }
@@ -40,18 +43,17 @@ export class TaskChannel {
         const incompleteTasks = this.#queue.filter(task => {
             if(task.taskStatus === TaskStatus.Idle
                 || task.taskStatus === TaskStatus.Busy
-                || (task.taskStatus === TaskStatus.Failed
-                    && task.numAttempts <= this.#environmentSettings.maxTaskAttempts)) {
-                        return task;
+                || task.taskStatus === TaskStatus.Failed) {
+                    return task;
             }
         });
 
         const failedTasks = incompleteTasks.filter(
-            x => x.taskStatus === TaskStatus.Failed && x.numAttempts <= this.#environmentSettings.maxTaskAttempts)
+            x => x.taskStatus === TaskStatus.Failed)
             .sort(this.#compareByDate);
 
         const nonFailedTasks = incompleteTasks.filter(
-            x => x.taskStatus !== TaskStatus.Failed && x.taskStatus !== TaskStatus.Complete)
+            x => x.taskStatus !== TaskStatus.Failed)
             .sort(this.#compareByDate);
 
         this.#queue = nonFailedTasks.concat(failedTasks);

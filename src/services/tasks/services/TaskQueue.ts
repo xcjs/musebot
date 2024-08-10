@@ -10,9 +10,10 @@ export class TaskQueue {
     #environmentSettings: EnvironmentSettings;
 
     #channels: Array<TaskChannel> = [];
-    #isActive = false;
 
     #logger;
+
+    #isActive: boolean = false;
 
     get isActive() {
         return this.#isActive;
@@ -37,31 +38,31 @@ export class TaskQueue {
 
         taskChannel.queue.push(task);
 
-        await this.#processQueue();
+        this.#processQueue();
     }
 
     async #processQueue(): Promise<void> {
-        if(this.#isActive) {
-            return;
-        }
-
         let tasks = this.#getNextTasks();
 
         while(tasks.length > 0) {
-            this.#isActive = true;
             this.#logger(LogLevel.Info, `Processing the task queue with ${this.#channels.length} channels and`
-                + `${this.#channels.map((channel, i, channels) => channels.length)
+                + ` ${this.#channels.map((channel, i, channels) => channels.length)
                     .reduce((previousValue, currentValue) => previousValue + currentValue)}`
-                + `tasks.`);
+                + ` tasks.`);
 
             try {
-                const processPromises = tasks.map(x => x.process());
+                const processPromises = tasks.map((x) => {
+                    x.taskStatus = TaskStatus.Busy;
+                    return x.process()
+                });
+
                 const processPromisesResults = await Promise.allSettled(processPromises);
 
                 const postProcessingPromises = processPromisesResults.map((promise, i) => {
                     const task = tasks[i];
 
                     if(promise.status === PromisedSettledResultStatus.Fulfilled) {
+                        task.taskStatus = TaskStatus.Successful;
                         return task.postProcess();
                     }
 
@@ -82,8 +83,6 @@ export class TaskQueue {
 
             tasks = this.#getNextTasks();
         }
-
-        this.#isActive = false;
     }
 
     #getNextTasks(): Array<BaseTask> {
@@ -91,8 +90,11 @@ export class TaskQueue {
 
         this.#cleanChannels();
 
-        const tasks = this.#channels.filter(channel => channel.queue.length > 0)
+        const tasks = this.#channels
+            .filter(channel => channel.queue.length > 0 && !channel.isActive)
             .map(channel => channel.queue[0]);
+
+        this.#isActive = this.#channels.filter(channel => channel.hasTasks).length > 0;
 
         return tasks;
     }

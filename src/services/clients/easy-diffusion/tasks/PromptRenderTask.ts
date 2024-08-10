@@ -36,7 +36,7 @@ export class PromptRenderTask extends BaseTask {
         replyService: ReplyService,
         message: Message,
         taskQueue: TaskQueue) {
-        super();
+        super(environmentSettings.maxTaskAttempts);
 
         this.#environmentSettings = environmentSettings;
         this.#discordClient = discordClient;
@@ -50,8 +50,6 @@ export class PromptRenderTask extends BaseTask {
     }
 
     override async process(): Promise<void> {
-        this.taskStatus = TaskStatus.Busy;
-
         const botMention = this.#message.mentions.members.find(x => x.id === this.#discordClient.user?.id)?.toString() || '';
         const prompt = this.#message.content.replaceAll(botMention, '').trim();
 
@@ -62,8 +60,6 @@ export class PromptRenderTask extends BaseTask {
                 this.#easyDiffusionReplyService,
                 this.#replyService,
                 this.#message));
-
-            this.taskStatus = TaskStatus.Complete;
             return;
         }
 
@@ -77,8 +73,6 @@ export class PromptRenderTask extends BaseTask {
 
         const renderData = await this.#easyDiffusionReplyService.renderImage(request);
         await this.#easyDiffusionReplyService.reply(this.#message, renderData, null, null);
-
-        this.taskStatus = TaskStatus.Successful;
     }
 
     override async postProcess(): Promise<void> {

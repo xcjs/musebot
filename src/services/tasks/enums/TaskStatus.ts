@@ -1,6 +1,6 @@
 export enum TaskStatus {
     Busy = 'busy',
-    Complete = 'complete',
+    Dead = 'dead',
     Failed = 'failed',
     Idle = 'idle',
     Successful = 'successful'
