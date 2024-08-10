@@ -27,7 +27,7 @@ export class JsonRenderTask extends BaseTask {
         easyDiffusionReplyService: EasyDiffusionReplyService,
         replyService: ReplyService,
         message: Message) {
-        super();
+        super(environmentSettings.maxTaskAttempts);
 
         this.#discordClient = discordClient;
         this.#easyDiffusionReplyService = easyDiffusionReplyService;

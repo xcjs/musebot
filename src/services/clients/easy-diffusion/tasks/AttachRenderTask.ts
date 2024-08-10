@@ -32,7 +32,7 @@ export class AttachRenderTask extends BaseTask {
         replyService: ReplyService,
         message: Message,
         prompt: string) {
-        super();
+        super(environmentSettings.maxTaskAttempts);
 
         this.#environmentSettings = environmentSettings;
         this.#easyDiffusionClient = easyDiffusionClient;

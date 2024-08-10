@@ -26,7 +26,7 @@ export class ShowSourceTask extends BaseTask {
         easyDiffusionReplyService: EasyDiffusionReplyService,
         replyService: ReplyService,
         interaction: ButtonInteraction) {
-        super();
+        super(environmentSettings.maxTaskAttempts);
 
         this.#easyDiffusionReplyService = easyDiffusionReplyService;
         this.#replyService = replyService;

@@ -34,7 +34,7 @@ export class RandomRenderTask extends BaseTask {
         easyDiffusionReplyService: EasyDiffusionReplyService,
         replyService: ReplyService,
         interaction: ButtonInteraction) {
-        super();
+        super(environmentSettings.maxTaskAttempts);
 
         this.#environmentSettings = environmentSettings;
         this.#easyDiffusionClient = easyDiffusionClient;

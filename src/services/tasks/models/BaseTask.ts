@@ -3,9 +3,11 @@ import { TaskStatus } from '../enums/TaskStatus.js';
 export abstract class BaseTask {
     #taskStatus: TaskStatus = TaskStatus.Idle;
     #numAttempts = 0;
+    #maxAttempts = 0;
     #createdTime: Date;
 
-    constructor() {
+    constructor(maxAttempts: number) {
+        this.#maxAttempts = maxAttempts;
         this.#createdTime = new Date();
     }
 
@@ -18,7 +20,11 @@ export abstract class BaseTask {
             this.#numAttempts++;
         }
 
-        this.#taskStatus = taskStatus;
+        if(this.#numAttempts >= this.#maxAttempts) {
+            this.#taskStatus = TaskStatus.Dead;
+        } else {
+            this.#taskStatus = taskStatus;
+        }
     }
 
     get taskChannel(): string {

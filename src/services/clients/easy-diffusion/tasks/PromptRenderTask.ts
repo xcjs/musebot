@@ -36,7 +36,7 @@ export class PromptRenderTask extends BaseTask {
         replyService: ReplyService,
         message: Message,
         taskQueue: TaskQueue) {
-        super();
+        super(environmentSettings.maxTaskAttempts);
 
         this.#environmentSettings = environmentSettings;
         this.#discordClient = discordClient;

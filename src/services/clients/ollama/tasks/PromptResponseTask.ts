@@ -57,7 +57,7 @@ export class PromptResponseTask extends BaseTask {
         taskQueue: TaskQueue,
         message: Message,
         context: Array<number>) {
-        super();
+        super(environmentSettings.maxTaskAttempts);
 
         this.#environmentSettings = environmentSettings;
         this.#featureService = featureService;
@@ -77,8 +77,6 @@ export class PromptResponseTask extends BaseTask {
     }
 
     override async process(): Promise<void> {
-        this.taskStatus = TaskStatus.Busy;
-
         const botMention = this.#message.mentions.members.find(x => x.id === this.#discordClient.user?.id)?.toString() || '';
         const formattedMessage = `${this.#message.author.displayName}: ${this.#message.content.replaceAll(botMention, '').trim()}`;
 
@@ -96,8 +94,6 @@ export class PromptResponseTask extends BaseTask {
             && replies.length > 0) {
             this.#attachImage(exchange.response.response, replies);
         }
-
-        this.taskStatus = TaskStatus.Successful;
     }
 
     override async postProcess(): Promise<void> {
