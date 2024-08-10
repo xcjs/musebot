@@ -28,7 +28,7 @@ export class TaskChannel {
         this.#environmentSettings = environmentSettings;
         this.#name = name;
 
-        this.#logger = new Logger(environmentSettings.isProduction, 'TaskChannel');
+        this.#logger = new Logger(this.#environmentSettings.isProduction, 'TaskChannel');
 
         this.#logger(LogLevel.Info, `Created a new task channel called ${name}.`);
     }
