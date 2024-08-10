@@ -39,15 +39,13 @@ export class TypingService {
     }
 
     #stopTyping(): void {
-        if(this.#taskQueue.isActive) {
+        if(this.#taskQueue.isActive || this.#typingInterval === null) {
             return;
         }
 
-        if(this.#typingInterval !== null) {
-            this.#logger(LogLevel.Info, `Stopped typing and clearing interval #${this.#typingInterval}.`);
-            clearInterval(this.#typingInterval);
-            this.#typingInterval = null;
-        }
+        this.#logger(LogLevel.Info, `Stopped typing and clearing interval #${this.#typingInterval}.`);
+        clearInterval(this.#typingInterval);
+        this.#typingInterval = null;
     }
 
     async #onTypingInterval(message: Message | ButtonInteraction): Promise<void> {
