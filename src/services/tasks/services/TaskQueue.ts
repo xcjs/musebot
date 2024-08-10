@@ -94,7 +94,7 @@ export class TaskQueue {
             .filter(channel => channel.queue.length > 0 && !channel.isActive)
             .map(channel => channel.queue[0]);
 
-        this.#isActive = this.#channels.filter(channel => channel.isActive).length === 0;
+        this.#isActive = this.#channels.filter(channel => channel.hasTasks).length > 0;
 
         return tasks;
     }

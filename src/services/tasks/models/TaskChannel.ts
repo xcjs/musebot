@@ -24,6 +24,10 @@ export class TaskChannel {
         return this.#queue.filter(x => x.taskStatus === TaskStatus.Busy).length > 0;
     }
 
+    get hasTasks(): boolean {
+        return this.#queue.length > 0;
+    }
+
     constructor(environmentSettings: EnvironmentSettings, name: string) {
         this.#environmentSettings = environmentSettings;
         this.#name = name;
