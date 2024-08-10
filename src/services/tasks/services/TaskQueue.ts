@@ -55,6 +55,7 @@ export class TaskQueue {
                     x.taskStatus = TaskStatus.Busy;
                     return x.process()
                 });
+
                 const processPromisesResults = await Promise.allSettled(processPromises);
 
                 const postProcessingPromises = processPromisesResults.map((promise, i) => {
