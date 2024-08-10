@@ -13,8 +13,10 @@ export class TaskQueue {
 
     #logger;
 
+    #isActive: boolean = false;
+
     get isActive() {
-        return this.#channels.filter(channel => channel.isActive).length === 0;
+        return this.#isActive;
     }
 
     constructor(environmentSettings: EnvironmentSettings) {
@@ -90,6 +92,8 @@ export class TaskQueue {
         const tasks = this.#channels
             .filter(channel => channel.queue.length > 0 && !channel.isActive)
             .map(channel => channel.queue[0]);
+
+        this.#isActive = this.#channels.filter(channel => channel.isActive).length === 0;
 
         return tasks;
     }
