@@ -22,6 +22,7 @@ import { RandomRenderTask } from '../../easy-diffusion/tasks/RandomRenderTask.js
 import { ReplyService } from '../services/ReplyService.js';
 import { TypingService } from '../services/TypingService.js';
 import { UpscaleRenderTask } from '../../easy-diffusion/tasks/UpscaleRenderTask.js';
+import { ExpandPromptTask } from '../../easy-diffusion/tasks/ExpandPromptTask.js';
 
 export class DiscordEasyDiffusionClient extends BaseDiscordClient {
     #easyDiffusionClient: EasyDiffusionClient;
@@ -124,6 +125,9 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
             case BotInteraction.GuidanceScalePlus:
                 this.#increaseGuidanceScale(interaction);
                 break;
+            case BotInteraction.ExpandPrompt:
+                this.#expandPrompt(interaction);
+                break;
             case BotInteraction.Randomize:
                 this.#randomize(interaction);
                 break;
@@ -172,6 +176,15 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
 
     #increaseGuidanceScale(interaction: ButtonInteraction): void {
         this.taskQueue.add(new IncreaseGuidanceScaleRenderTask(
+            this.environmentSettings,
+            this.#easyDiffusionClient,
+            this.#easyDiffusionReplyService,
+            this.#replyService,
+            interaction));
+    }
+
+    #expandPrompt(interaction: ButtonInteraction): void {
+        this.taskQueue.add(new ExpandPromptTask(
             this.environmentSettings,
             this.#easyDiffusionClient,
             this.#easyDiffusionReplyService,

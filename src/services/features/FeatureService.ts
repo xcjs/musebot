@@ -31,14 +31,8 @@ export class FeatureService {
         }
 
         if(this.supportedFeatures.includes(SupportedFeature.ImageGeneration)
-            && this.supportedFeatures.includes(SupportedFeature.TextGeneration)
-            && this.#environmentSettings.easyDiffusionOllamaPrompts.length > 0) {
-            this.#supportedFeatures.push(SupportedFeature.RandomImageGeneration);
-        }
-
-        if(this.supportedFeatures.includes(SupportedFeature.ImageGeneration)
             && this.supportedFeatures.includes(SupportedFeature.TextGeneration)) {
-            this.supportedFeatures.push(SupportedFeature.ImagesAttachedToText);
+            this.supportedFeatures.push(SupportedFeature.ImagesAndText);
         }
     }
 }

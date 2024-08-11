@@ -12,6 +12,7 @@ import { EnvironmentSettings } from '../../../../EnvironmentSettings.js';
 import { RenderRequest } from '../../../easy-diffusion/models/requests/RenderRequest.js';
 import { StableDiffusionGuidanceScaleLimit } from '../../../easy-diffusion/enums/StableDiffusionGuidanceScaleLimit.js';
 import { UpscaleButton } from '../buttons/UpscaleButton.js';
+import { ExpandPromptButton } from '../buttons/ExpandPromptButton.js';
 
 export class StatefulImageGenerationActionRows extends BaseComponent<Array<ActionRowBuilder<ButtonBuilder>>> {
     #environmentSettings: EnvironmentSettings;
@@ -45,10 +46,12 @@ export class StatefulImageGenerationActionRows extends BaseComponent<Array<Actio
 
         actionRows.push(mainActionRowBuilder);
 
-        if(this.featureService.hasFeature(SupportedFeature.RandomImageGeneration)) {
+        if(this.featureService.hasFeature(SupportedFeature.ImagesAndText)) {
+            const expandPromptButton = new ExpandPromptButton(this.featureService).build();
             const randomizeButton = new RandomizeButton(this.featureService).build();
+
             const secondaryActionRowBuilder = new ActionRowBuilder<ButtonBuilder>()
-                .addComponents(randomizeButton);
+                .addComponents(expandPromptButton, randomizeButton);
 
             actionRows.push(secondaryActionRowBuilder);
         }

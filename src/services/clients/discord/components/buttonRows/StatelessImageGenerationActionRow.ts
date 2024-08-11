@@ -13,7 +13,7 @@ export class StatelessImageGenerationActionRow extends BaseComponent<ActionRowBu
     override build(): ActionRowBuilder<ButtonBuilder> {
         const actionRowBuilder = new ActionRowBuilder<ButtonBuilder>();
 
-        if(this.featureService.hasFeature(SupportedFeature.RandomImageGeneration)) {
+        if(this.featureService.hasFeature(SupportedFeature.ImagesAndText)) {
             const randomizeButton = new RandomizeButton(this.featureService).build();
             actionRowBuilder.addComponents(randomizeButton);
         }

@@ -90,7 +90,7 @@ export class PromptResponseTask extends BaseTask {
 
         const replies = await this.#ollamaReplyService.reply(this.#message, exchange);
 
-        if(this.#featureService.hasFeature(SupportedFeature.ImagesAttachedToText)
+        if(this.#featureService.hasFeature(SupportedFeature.ImagesAndText)
             && replies.length > 0) {
             this.#attachImage(exchange.response.response, replies);
         }
@@ -136,7 +136,7 @@ export class PromptResponseTask extends BaseTask {
             if(response.done) {
                 this.#context = response.context;
 
-                if(this.#featureService.hasFeature(SupportedFeature.ImagesAttachedToText)
+                if(this.#featureService.hasFeature(SupportedFeature.ImagesAndText)
                     && replies.length > 0) {
                     this.#attachImage(fullResponse, replies);
                 }
