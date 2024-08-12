@@ -154,7 +154,9 @@ export class PromptResponseTask extends BaseTask {
             this.#easyDiffusionReplyService,
             this.#replyService,
             lastReply,
-            prompt);
+            prompt,
+            lastReply.content,
+            true);
 
         this.#taskQueue.add(renderTask);
     }

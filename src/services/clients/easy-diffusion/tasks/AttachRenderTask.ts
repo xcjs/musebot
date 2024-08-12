@@ -17,6 +17,7 @@ export class AttachRenderTask extends BaseTask {
     #replyService: ReplyService;
     #prompt: string;
     #content: string | null;
+    #isEdit: boolean;
 
     #interaction: Message | ButtonInteraction;
 
@@ -33,7 +34,8 @@ export class AttachRenderTask extends BaseTask {
         replyService: ReplyService,
         interaction: Message | ButtonInteraction,
         prompt: string,
-        content: string | null = null) {
+        content: string | null = null,
+        isEdit: boolean = false) {
         super(environmentSettings.maxTaskAttempts);
 
         this.#environmentSettings = environmentSettings;
@@ -43,6 +45,7 @@ export class AttachRenderTask extends BaseTask {
         this.#interaction = interaction;
         this.#prompt = prompt;
         this.#content = content;
+        this.#isEdit = isEdit;
 
         this.#logger = new Logger(environmentSettings.isProduction, 'AttachRenderTask');
     }
@@ -58,8 +61,8 @@ export class AttachRenderTask extends BaseTask {
 
         const renderData = await this.#easyDiffusionReplyService.renderImage(request);
 
-        if(this.#interaction instanceof ButtonInteraction) {
-            await this.#easyDiffusionReplyService.reply(this.#interaction, renderData, null, null, true);
+        if(this.#interaction instanceof ButtonInteraction || this.#isEdit) {
+            await this.#easyDiffusionReplyService.reply(this.#interaction, renderData, this.#content, null, true);
         } else {
             await this.#easyDiffusionReplyService.reply(this.#interaction, renderData, this.#content);
         }
