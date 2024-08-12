@@ -1,4 +1,4 @@
-import { Message } from 'discord.js';
+import { ButtonInteraction, Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
 import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
@@ -16,8 +16,9 @@ export class AttachRenderTask extends BaseTask {
     #easyDiffusionClient: EasyDiffusionClient;
     #replyService: ReplyService;
     #prompt: string;
+    #content: string | null;
 
-    #message: Message;
+    #interaction: Message | ButtonInteraction;
 
     #logger;
 
@@ -30,16 +31,18 @@ export class AttachRenderTask extends BaseTask {
         easyDiffusionClient: EasyDiffusionClient,
         easyDiffusionReplyService: EasyDiffusionReplyService,
         replyService: ReplyService,
-        message: Message,
-        prompt: string) {
+        interaction: Message | ButtonInteraction,
+        prompt: string,
+        content: string | null = null) {
         super(environmentSettings.maxTaskAttempts);
 
         this.#environmentSettings = environmentSettings;
         this.#easyDiffusionClient = easyDiffusionClient;
         this.#easyDiffusionReplyService = easyDiffusionReplyService;
         this.#replyService = replyService;
-        this.#message = message;
+        this.#interaction = interaction;
         this.#prompt = prompt;
+        this.#content = content;
 
         this.#logger = new Logger(environmentSettings.isProduction, 'AttachRenderTask');
     }
@@ -54,12 +57,12 @@ export class AttachRenderTask extends BaseTask {
         const request = new RenderRequest(model, this.#prompt);
 
         const renderData = await this.#easyDiffusionReplyService.renderImage(request);
-        await this.#easyDiffusionReplyService.reply(this.#message, renderData, null, null, true);
+        await this.#easyDiffusionReplyService.reply(this.#interaction, renderData, this.#content);
     }
 
     override async postProcess(): Promise<void> {
         if(this.taskStatus === TaskStatus.Failed) {
-            await this.#replyService.replyWithError(this.#message);
+            await this.#replyService.replyWithError(this.#interaction);
         }
     }
 }

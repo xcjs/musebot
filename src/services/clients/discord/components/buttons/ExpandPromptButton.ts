@@ -12,7 +12,7 @@ export class ExpandPromptButton extends BaseComponent<ButtonBuilder> {
     override build(): ButtonBuilder {
         return new ButtonBuilder()
             .setCustomId(BotInteraction.ExpandPrompt)
-            .setLabel('↕️')
+            .setLabel('📃')
             .setStyle(ButtonStyle.Secondary);
     }
 }

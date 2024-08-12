@@ -23,9 +23,11 @@ import { ReplyService } from '../services/ReplyService.js';
 import { TypingService } from '../services/TypingService.js';
 import { UpscaleRenderTask } from '../../easy-diffusion/tasks/UpscaleRenderTask.js';
 import { ExpandPromptTask } from '../../easy-diffusion/tasks/ExpandPromptTask.js';
+import { OllamaClient } from '../../ollama/OllamaClient.js';
 
 export class DiscordEasyDiffusionClient extends BaseDiscordClient {
     #easyDiffusionClient: EasyDiffusionClient;
+    #ollamaClient: OllamaClient;
     #easyDiffusionReplyService: EasyDiffusionReplyService;
     #replyService: ReplyService;
 
@@ -54,6 +56,8 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
         this.logger(LogLevel.Info, 'Resetting transitive services...');
 
         this.#easyDiffusionClient = new EasyDiffusionClient(this.environmentSettings);
+        this.#ollamaClient = new OllamaClient(this.environmentSettings);
+
         this.#easyDiffusionReplyService = new EasyDiffusionReplyService(
             this.environmentSettings,
             this.featureService,
@@ -186,9 +190,11 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
     #expandPrompt(interaction: ButtonInteraction): void {
         this.taskQueue.add(new ExpandPromptTask(
             this.environmentSettings,
+            this.#ollamaClient,
             this.#easyDiffusionClient,
             this.#easyDiffusionReplyService,
             this.#replyService,
+            this.taskQueue,
             interaction));
     }
 

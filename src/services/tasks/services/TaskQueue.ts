@@ -45,10 +45,10 @@ export class TaskQueue {
         let tasks = this.#getNextTasks();
 
         while(tasks.length > 0) {
-            this.#logger(LogLevel.Info, `Processing the task queue with ${this.#channels.length} channels and`
+            this.#logger(LogLevel.Info, `Processing the task queue with ${this.#channels.length} channel(s) and`
                 + ` ${this.#channels.map((channel, i, channels) => channels.length)
                     .reduce((previousValue, currentValue) => previousValue + currentValue)}`
-                + ` tasks.`);
+                + ` task(s).`);
 
             try {
                 const processPromises = tasks.map((x) => {

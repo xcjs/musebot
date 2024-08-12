@@ -19,7 +19,7 @@ export class ShowSourceTask extends BaseTask {
     #logger;
 
     override get taskChannel(): string {
-        return 'Discord_API';
+        return 'Discord';
     }
 
     constructor(environmentSettings: EnvironmentSettings,

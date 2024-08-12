@@ -110,7 +110,6 @@ export class EasyDiffusionReplyService {
 
         if(interaction instanceof Message) {
             if(isEdit) {
-                reply.content = interaction.content;
                 reply.components = interaction.components;
                 await interaction.edit(reply);
             } else {
