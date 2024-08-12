@@ -6,7 +6,7 @@ import { IHttpExchange } from '../../../../models/IHttpExchange.js';
 import { splitText } from '../../../../utilities/string-utilities.js';
 import { DiscordConstants } from '../../discord/enums/DiscordConstants.js';
 import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
-import { LargeLanguageModelRow } from '../../discord/components/buttonRows/LargeLanguageModelRow.js';
+import { LargeLanguageModelActionRow } from '../../discord/components/buttonRows/LargeLanguageModelActionRow.js';
 import { FeatureService } from '../../../features/FeatureService.js';
 
 export class OllamaReplyService {
@@ -36,7 +36,7 @@ export class OllamaReplyService {
             if(i === responses.length - 1) {
                 replies.push(await message.reply({
                     content: response,
-                    components: [new LargeLanguageModelRow(this.#featureService).build()]
+                    components: [new LargeLanguageModelActionRow(this.#featureService).build()]
                 }));
             } else {
                 replies.push(await message.reply(response));

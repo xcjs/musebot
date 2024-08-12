@@ -4,6 +4,5 @@ export enum SupportedFeature {
     TextGeneration = "textGeneration",
 
     // Hybrid Features
-    ImagesAttachedToText = "imagesAttachedToText",
-    RandomImageGeneration = "randomImageGeneration"
+    ImagesAndText = "imagesAndText"
 }
