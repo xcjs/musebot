@@ -57,7 +57,12 @@ export class AttachRenderTask extends BaseTask {
         const request = new RenderRequest(model, this.#prompt);
 
         const renderData = await this.#easyDiffusionReplyService.renderImage(request);
-        await this.#easyDiffusionReplyService.reply(this.#interaction, renderData, this.#content);
+
+        if(this.#interaction instanceof ButtonInteraction) {
+            await this.#easyDiffusionReplyService.reply(this.#interaction, renderData, null, null, true);
+        } else {
+            await this.#easyDiffusionReplyService.reply(this.#interaction, renderData, this.#content);
+        }
     }
 
     override async postProcess(): Promise<void> {
