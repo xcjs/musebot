@@ -63,8 +63,8 @@ export class PromptRenderTask extends BaseTask {
             return;
         }
 
-        const model = this.#environmentSettings.easyDiffusionModels.length > 0 ?
-            getRandomArrayEntry(this.#environmentSettings.easyDiffusionModels) :
+        const model = this.#environmentSettings.stableDiffusionModels.length > 0 ?
+            getRandomArrayEntry(this.#environmentSettings.stableDiffusionModels) :
             getRandomArrayEntry(await this.#easyDiffusionClient.getModels());
 
         this.#logger(LogLevel.Info, `Using ${model} as the selected EasyDiffusion model.`);

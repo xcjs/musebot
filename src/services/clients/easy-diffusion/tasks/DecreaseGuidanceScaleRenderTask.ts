@@ -57,18 +57,18 @@ export class DecreaseGuidanceScaleRenderTask extends BaseTask {
 
         if(imageAttachment?.description) {
             request = RenderRequest.FromJson(imageAttachment.description);
-            request.guidance_scale -= this.#environmentSettings.easyDiffusionGuidanceScaleInterval;
+            request.guidance_scale -= this.#environmentSettings.stableDiffusionGuidanceScaleInterval;
         }
 
-        const model = this.#environmentSettings.easyDiffusionModels.length > 0 ?
-            getRandomArrayEntry(this.#environmentSettings.easyDiffusionModels) :
+        const model = this.#environmentSettings.stableDiffusionModels.length > 0 ?
+            getRandomArrayEntry(this.#environmentSettings.stableDiffusionModels) :
             getRandomArrayEntry(await this.#easyDiffusionClient.getModels());
 
         this.#logger(LogLevel.Info, `Using ${model} as the selected EasyDiffusion model.`);
 
         const renderData = await this.#easyDiffusionReplyService.renderImage(request);
         const content = `The guidance scale was decreased from ${request.guidance_scale
-            + this.#environmentSettings.easyDiffusionGuidanceScaleInterval} to ${request.guidance_scale} by ${this.#interaction.member}.`;
+            + this.#environmentSettings.stableDiffusionGuidanceScaleInterval} to ${request.guidance_scale} by ${this.#interaction.member}.`;
 
         await this.#easyDiffusionReplyService.reply(this.#interaction, renderData, content, null);
     }

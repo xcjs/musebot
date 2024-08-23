@@ -34,12 +34,12 @@ export class StatefulImageGenerationActionRows extends BaseComponent<Array<Actio
         const mainActionRowBuilder = new ActionRowBuilder<ButtonBuilder>()
             .addComponents(retryButton, upscaleButton, showSourceButton);
 
-        if(this.#renderRequest.guidance_scale - this.#environmentSettings.easyDiffusionGuidanceScaleInterval > StableDiffusionGuidanceScaleLimit.Min) {
+        if(this.#renderRequest.guidance_scale - this.#environmentSettings.stableDiffusionGuidanceScaleInterval > StableDiffusionGuidanceScaleLimit.Min) {
             const guidanceScaleMinusButton = new GuidanceScaleMinusButton(this.featureService).build();
             mainActionRowBuilder.addComponents(guidanceScaleMinusButton);
         }
 
-        if(this.#renderRequest.guidance_scale + this.#environmentSettings.easyDiffusionGuidanceScaleInterval <= StableDiffusionGuidanceScaleLimit.Max) {
+        if(this.#renderRequest.guidance_scale + this.#environmentSettings.stableDiffusionGuidanceScaleInterval <= StableDiffusionGuidanceScaleLimit.Max) {
             const guidanceScalePlusButton = new GuidanceScalePlusButton(this.featureService).build();
             mainActionRowBuilder.addComponents(guidanceScalePlusButton);
         }

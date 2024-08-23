@@ -6,6 +6,7 @@ import { Logger, LogLevel } from 'meklog';
 import nodePackage from '../../package.json' with { type: 'json' };
 import { NodeEnvironment } from '../enums/NodeEnvironment.js';
 import { BotFunction } from '../enums/BotFunction.js';
+import { StableDiffusionApiType } from './clients/stable-diffusion/enums/StableDiffusionApiType';
 
 export class EnvironmentSettings {
     packageName: string;
@@ -20,16 +21,17 @@ export class EnvironmentSettings {
     discordToken: string;
     discordChannels: Array<string> = [];
 
-    easyDiffusionHosts: Array<URL> = [];
-    easyDiffusionModels: Array<string> = [];
-    easyDiffusionGuidanceScaleInterval: number = .5;
+    stableDiffusionApiType: StableDiffusionApiType;
+    stableDiffusionHosts: Array<URL> = [];
+    stableDiffusionModels: Array<string> = [];
+    stableDiffusionGuidanceScaleInterval: number = .5;
 
     ollamaHosts: Array<URL> = [];
     ollamaModels: Array<string> = [];
     ollamaSystemPrompt: string;
     ollamaStreamsResponse: boolean = false;
 
-    easyDiffusionOllamaPrompts: Array<string> = ['Describe something or someone with extraordinary detail.'];
+    stableDiffusionOllamaPrompts: Array<string> = ['Describe something or someone with extraordinary detail.'];
 
     botRequiresMention: boolean = true;
     errorMessage: string = 'An error occurred while generating a response. Please try again later.';
@@ -46,25 +48,26 @@ export class EnvironmentSettings {
         this.packageName = nodePackage.name;
         this.version = nodePackage.version;
 
-        this.nodeEnvironment = process.env.NODE_ENV as NodeEnvironment;
+        this.nodeEnvironment = process.env.NODE_ENV.trim() as NodeEnvironment;
 
-        this.botFunction = process.env.MUSEBOT_FUNCTION as BotFunction;
+        this.botFunction = process.env.MUSEBOT_FUNCTION.trim() as BotFunction;
 
         this.discordToken = process.env.MUSEBOT_DISCORD_TOKEN?.trim() || '';
         this.discordChannels = process.env.MUSEBOT_DISCORD_CHANNELS?.trim().split(',') || [];
 
         this.botRequiresMention = (process.env.MUSEBOT_REQUIRES_MENTION?.trim().toLowerCase() === true.toString());
-        this.errorMessage = process.env.MUSEBOT_ERROR_MESSAGE || this.errorMessage;
+        this.errorMessage = process.env.MUSEBOT_ERROR_MESSAGE?.trim() || this.errorMessage;
 
-        this.easyDiffusionHosts = process.env.MUSEBOT_EASY_DIFFUSION_HOSTS?.trim().split(',').map(url => new URL(url)) || [];
-        this.easyDiffusionModels = process.env.MUSEBOT_EASY_DIFFUSION_MODELS?.trim().split(',').filter(x => x.length > 0) || [];
+        this.stableDiffusionApiType = process.env.MUSEBOT_STABLE_DIFFUSION_API_TYPE?.trim() as StableDiffusionApiType;
+        this.stableDiffusionHosts = process.env.MUSEBOT_STABLE_DIFFUSION_HOSTS?.trim().split(',').map(url => new URL(url)) || [];
+        this.stableDiffusionModels = process.env.MUSEBOT_STABLE_DIFFUSION_MODELS?.trim().split(',').filter(x => x.length > 0) || [];
 
         this.ollamaHosts = process.env.MUSEBOT_OLLAMA_HOSTS?.trim().split(',').map(url => new URL(url)) || [];
         this.ollamaModels = process.env.MUSEBOT_OLLAMA_MODELS?.trim().split(',').filter(x => x.length > 0) || [];
-        this.ollamaSystemPrompt = process.env.MUSEBOT_OLLAMA_SYSTEM_PROMPT || '';
+        this.ollamaSystemPrompt = process.env.MUSEBOT_OLLAMA_SYSTEM_PROMPT?.trim() || '';
         this.ollamaStreamsResponse = (process.env.MUSEBOT_OLLAMA_STREAMS_RESPONSE?.trim().toLowerCase() === true.toString());
 
-        this.easyDiffusionOllamaPrompts = process.env.MUSEBOT_EASY_DIFFUSION_OLLAMA_PROMPTS?.split('|') || this.easyDiffusionOllamaPrompts;
+        this.stableDiffusionOllamaPrompts = process.env.MUSEBOT_EASY_DIFFUSION_OLLAMA_PROMPTS?.split('|') || this.stableDiffusionOllamaPrompts;
 
         this.#logger = new Logger(this.isProduction, 'EnvironmentSettings');
 
@@ -84,12 +87,13 @@ export class EnvironmentSettings {
         this.#logger(LogLevel.Info, `MUSEBOT_FUNCTION: ${this.botFunction}`);
         this.#logger(LogLevel.Info, `MUSEBOT_DISCORD_CHANNELS: ${this.discordChannels.join(', ')}`);
         this.#logger(LogLevel.Info, `MUSEBOT_REQUIRES_MENTION: ${this.botRequiresMention}`);
-        this.#logger(LogLevel.Info, `MUSEBOT_EASY_DIFFUSION_HOSTS: ${this.easyDiffusionHosts.join(', ')}`);
-        this.#logger(LogLevel.Info, `MUSEBOT_EASY_DIFFUSION_MODELS: ${this.easyDiffusionModels.join(', ')}`);
+        this.#logger(LogLevel.Info, `MUSEBOT_STABLE_DIFFUSION_API_TYPE: ${this.stableDiffusionApiType}`);
+        this.#logger(LogLevel.Info, `MUSEBOT_STABLE_DIFFUSION_HOSTS: ${this.stableDiffusionHosts.join(', ')}`);
+        this.#logger(LogLevel.Info, `MUSEBOT_STABLE_DIFFUSION_MODELS: ${this.stableDiffusionModels.join(', ')}`);
         this.#logger(LogLevel.Info, `MUSEBOT_OLLAMA_HOSTS: ${this.ollamaHosts.join(', ')}`);
         this.#logger(LogLevel.Info, `MUSEBOT_OLLAMA_MODELS: ${this.ollamaModels.join(', ')}`);
         this.#logger(LogLevel.Info, `MUSEBOT_OLLAMA_SYSTEM_PROMPT: ${this.ollamaSystemPrompt}`);
-        this.#logger(LogLevel.Info, `MUSEBOT_EASY_DIFFUSION_OLLAMA_PROMPTS: ${this.easyDiffusionOllamaPrompts.join(' | ')}`);
+        this.#logger(LogLevel.Info, `MUSEBOT_EASY_DIFFUSION_OLLAMA_PROMPTS: ${this.stableDiffusionOllamaPrompts.join(' | ')}`);
     }
 
     #validate(shouldLogEnvironmentSettings: boolean): void {
@@ -101,11 +105,11 @@ export class EnvironmentSettings {
             throw new Error(`EASY_DIFFUSION_DISCORD_BOT_TOKEN requires a value.`);
         }
 
-        if(this.easyDiffusionHosts.length === 0) {
+        if(this.stableDiffusionHosts.length === 0) {
             throw new Error(`MUSEBOT_EASY_DIFFUSION_HOSTS requires at least one value.`);
         }
 
-        if(this.easyDiffusionModels.length === 0) {
+        if(this.stableDiffusionModels.length === 0) {
             this.#logger(LogLevel.Info, 'MUSEBOT_EASY_DIFFUSION_MODELS had no value - a random model will be selected per render.');
         }
 

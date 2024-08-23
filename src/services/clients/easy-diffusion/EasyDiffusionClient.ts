@@ -33,7 +33,7 @@ export class EasyDiffusionClient {
         this.#environmentSettings = environmentSettings;
         this.#logger = Logger(this.#environmentSettings.isProduction, 'EasyDiffusionClient');
 
-        this.#host = getRandomArrayEntry(this.#environmentSettings.easyDiffusionHosts);
+        this.#host = getRandomArrayEntry(this.#environmentSettings.stableDiffusionHosts);
         this.#logger(LogLevel.Info, `Selected host: ${this.#host}`);
     }
 

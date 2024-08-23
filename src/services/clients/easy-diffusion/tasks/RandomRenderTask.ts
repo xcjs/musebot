@@ -48,14 +48,14 @@ export class RandomRenderTask extends BaseTask {
     override async process(): Promise<void> {
         this.#logger(LogLevel.Info, 'Processing a RandomRenderTask.');
 
-        const model = this.#environmentSettings.easyDiffusionModels.length > 0 ?
-            getRandomArrayEntry(this.#environmentSettings.easyDiffusionModels) :
+        const model = this.#environmentSettings.stableDiffusionModels.length > 0 ?
+            getRandomArrayEntry(this.#environmentSettings.stableDiffusionModels) :
             getRandomArrayEntry(await this.#easyDiffusionClient.getModels());
 
         this.#logger(LogLevel.Info, `Using ${model} as the selected EasyDiffusion model.`);
 
         const ollamaClient = new OllamaClient(this.#environmentSettings);
-        const prompt = getRandomArrayEntry(this.#environmentSettings.easyDiffusionOllamaPrompts);
+        const prompt = getRandomArrayEntry(this.#environmentSettings.stableDiffusionOllamaPrompts);
         const exchange = await ollamaClient.sendMessage(prompt, null);
 
         const request = new RenderRequest(model, exchange.response.response);
