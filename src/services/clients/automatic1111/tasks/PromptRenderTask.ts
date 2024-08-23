@@ -56,7 +56,7 @@ export class PromptRenderTask extends BaseTask {
             getRandomArrayEntry(this.#environmentSettings.stableDiffusionModels) :
             getRandomArrayEntry(await this.#automatic1111Client.getModels()).model_name;
 
-        this.#logger(LogLevel.Info, `Using ${model} as the selected EasyDiffusion model.`);
+        this.#logger(LogLevel.Info, `Using ${model} as the selected Automatic1111 model.`);
 
         const request: Txt2ImgOptions = {
             prompt
