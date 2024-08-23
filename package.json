@@ -25,6 +25,7 @@
     "meklog": "^1.0.2",
     "ollama": "^0.5.2",
     "parcel": "^2.12.0",
+    "stable-diffusion-api": "^0.0.7",
     "typescript": "^5.5.2"
   },
   "devDependencies": {
