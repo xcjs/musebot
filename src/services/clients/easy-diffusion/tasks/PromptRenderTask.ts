@@ -15,8 +15,8 @@ import { ReplyService } from '../../discord/services/ReplyService.js';
 export class PromptRenderTask extends BaseTask {
     #environmentSettings: EnvironmentSettings;
     #discordClient: DiscordClient;
-    #easyDiffusionReplyService: EasyDiffusionReplyService;
     #easyDiffusionClient: EasyDiffusionClient;
+    #easyDiffusionReplyService: EasyDiffusionReplyService;
     #replyService: ReplyService;
     #taskQueue: TaskQueue;
 

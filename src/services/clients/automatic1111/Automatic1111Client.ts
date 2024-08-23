@@ -29,7 +29,7 @@ export class Automatic1111Client {
         });
     }
 
-    async render(model: string, renderRequest: Txt2ImgOptions)
+    async render(renderRequest: Txt2ImgOptions, model: string)
     : Promise<IHttpExchangeWithAttachedData<Txt2ImgOptions, StableDiffusionResult, string>> {
         this.#logger(LogLevel.Info, 'Sending txt2img request to Automatic1111...');
 
