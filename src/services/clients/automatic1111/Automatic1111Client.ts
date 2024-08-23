@@ -1,4 +1,4 @@
-import StableDiffusionApi, { StableDiffusionModel, Txt2ImgOptions } from 'stable-diffusion-api';
+import { StableDiffusionApi, StableDiffusionModel, Txt2ImgOptions } from 'stable-diffusion-api';
 import StableDiffusionResult from 'stable-diffusion-api/dist/lib/StableDiffusionResult.js';
 import {Logger, LogLevel } from 'meklog'
 
