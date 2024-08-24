@@ -1,8 +1,12 @@
 {
     "cSpell.words": [
+        "alwayson",
         "codeformer",
         "controlnet",
+        "denoising",
         "ESRGAN",
+        "firstpass",
+        "firstphase",
         "hypernetwork",
         "lancercomet",
         "meklog",
@@ -11,7 +15,11 @@
         "ollama",
         "preparcel",
         "prestart",
+        "subseed",
+        "tmax",
+        "tmin",
         "tseslint",
+        "uncond",
         "Upscaled",
         "upscaler"
     ]

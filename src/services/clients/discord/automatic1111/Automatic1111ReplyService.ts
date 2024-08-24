@@ -44,6 +44,7 @@ export class Automatic1111ReplyService {
         const isStatefulResponse = jsonRequest.length <= DiscordConstants.ImageDescriptionMaxLength;
 
         const imageBuffer = await renderResponse.image.png().toBuffer();
+        await renderResponse.image.png().toFile('test.png');
 
         this.#logger(LogLevel.Info, `Attaching render for "${renderRequest.prompt}": ${jsonRequest}`);
 
