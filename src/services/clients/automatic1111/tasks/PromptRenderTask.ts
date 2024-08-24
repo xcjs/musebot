@@ -1,5 +1,6 @@
 import { Client as DiscordClient, Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
+import { Txt2ImgOptions } from '@lancercomet/sd-api';
 
 import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
@@ -9,7 +10,6 @@ import { TaskQueue } from '../../../tasks/services/TaskQueue.js';
 import { ReplyService } from '../../discord/services/ReplyService.js';
 import { Automatic1111Client } from '../Automatic1111Client.js';
 import { Automatic1111ReplyService } from '../../discord/automatic1111/Automatic1111ReplyService.js';
-import { Txt2ImgOptions } from 'stable-diffusion-api';
 
 export class PromptRenderTask extends BaseTask {
     #environmentSettings: EnvironmentSettings;

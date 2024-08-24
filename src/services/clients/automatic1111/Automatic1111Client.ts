@@ -1,6 +1,6 @@
-import { StableDiffusionApi, StableDiffusionModel, Txt2ImgOptions } from 'stable-diffusion-api';
-import StableDiffusionResult from 'stable-diffusion-api/dist/lib/StableDiffusionResult.js';
+import { StableDiffusionApi, StableDiffusionModel, Txt2ImgOptions } from '@lancercomet/sd-api';
 import {Logger, LogLevel } from 'meklog'
+import StableDiffusionResult from '@lancercomet/sd-api/dist/lib/StableDiffusionResult.js';
 
 import { getRandomArrayEntry } from '../../../utilities/random-utilities.js';
 import { EnvironmentSettings } from '../../EnvironmentSettings.js';

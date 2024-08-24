@@ -6,10 +6,10 @@ import { FeatureService } from '../../../features/FeatureService.js';
 import { MAX_FILE_NAME_LENGTH } from '../../../../enums/FileConstants.js';
 import { Automatic1111Client } from '../../automatic1111/Automatic1111Client.js';
 import { IHttpExchangeWithAttachedData } from '../../../../models/IHttpExchangeWithAttachedData.js';
-import { Txt2ImgOptions } from 'stable-diffusion-api';
-import StableDiffusionResult from 'stable-diffusion-api/dist/lib/StableDiffusionResult.js';
+import { Txt2ImgOptions } from '@lancercomet/sd-api';
 import { ContentType } from '../../../../enums/ContentType.js';
 import { DiscordConstants } from '../enums/DiscordConstants.js';
+import StableDiffusionResult from '@lancercomet/sd-api/dist/lib/StableDiffusionResult.js';
 
 export class Automatic1111ReplyService {
     #environmentSettings: EnvironmentSettings;

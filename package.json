@@ -20,12 +20,12 @@
     "clean": "mkdir -p .parcel-cache/ bin/ build/ dist/ && rm -r .parcel-cache/ bin/ build/ dist/"
   },
   "dependencies": {
+    "@lancercomet/sd-api": "^0.0.6",
     "discord.js": "14.14.1",
     "dotenv": "^16.3.1",
     "meklog": "^1.0.2",
     "ollama": "^0.5.2",
     "parcel": "^2.12.0",
-    "stable-diffusion-api": "^0.0.7",
     "typescript": "^5.5.2"
   },
   "devDependencies": {
