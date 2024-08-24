@@ -7,9 +7,9 @@ import { MAX_FILE_NAME_LENGTH } from '../../../../enums/FileConstants.js';
 import { Automatic1111Client } from '../../automatic1111/Automatic1111Client.js';
 import { IHttpExchangeWithAttachedData } from '../../../../models/IHttpExchangeWithAttachedData.js';
 import { Txt2ImgOptions } from '@lancercomet/sd-api';
-import { ContentType } from '../../../../enums/ContentType.js';
 import { DiscordConstants } from '../enums/DiscordConstants.js';
 import StableDiffusionResult from '@lancercomet/sd-api/dist/lib/StableDiffusionResult.js';
+import { ISerializableRenderRequest } from '../../automatic1111/models/ISerializableRenderRequest.js';
 
 export class Automatic1111ReplyService {
     #environmentSettings: EnvironmentSettings;
@@ -36,7 +36,11 @@ export class Automatic1111ReplyService {
 
         const fileName = this.getFileNameFromPrompt(renderRequest);
 
-        const jsonRequest = JSON.stringify(renderData);
+        const jsonRequest = JSON.stringify({
+            request: renderData.exchange.request,
+            modelName: renderData.data
+        } as ISerializableRenderRequest);
+
         const isStatefulResponse = jsonRequest.length <= DiscordConstants.ImageDescriptionMaxLength;
 
         const imageBuffer = await renderResponse.image.png().toBuffer();
@@ -44,7 +48,7 @@ export class Automatic1111ReplyService {
         this.#logger(LogLevel.Info, `Attaching render for "${renderRequest.prompt}": ${jsonRequest}`);
 
         const imageAttachment = new AttachmentBuilder(imageBuffer, {
-            name: `${fileName}.${ContentType.Png}`,
+            name: `${fileName}.png`,
             description: isStatefulResponse ? jsonRequest : null
         });
 
@@ -56,6 +60,6 @@ export class Automatic1111ReplyService {
     }
 
     getFileNameFromPrompt(renderRequest: Txt2ImgOptions): string {
-        return `${renderRequest.seed}_${renderRequest.prompt}`.substring(0, MAX_FILE_NAME_LENGTH);
+        return `${renderRequest.prompt}`.substring(0, MAX_FILE_NAME_LENGTH);
     }
 }
