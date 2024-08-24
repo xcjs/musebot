@@ -25,7 +25,8 @@ export class Automatic1111Client {
         this.#logger(LogLevel.Info, `Selected host: ${this.#host}`);
 
         this.#client = new StableDiffusionApi({
-            baseUrl: this.#host.toString()
+            baseUrl: this.#host.toString(),
+            timeout: 1000 * 60 * 60 // 1 hour
         });
     }
 
