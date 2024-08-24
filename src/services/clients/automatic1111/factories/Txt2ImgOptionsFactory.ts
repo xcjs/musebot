@@ -52,7 +52,7 @@ export class Txt2ImgOptionsFactory {
             // hr_prompt: null = '',
             // hr_negative_prompt: null = '',
             // force_task_id: null,
-            // sampler_index: null = 'Euler',
+            // sampler_index: 'Euler',
             script_name: null,
             // script_args = null,
             send_images: true,
