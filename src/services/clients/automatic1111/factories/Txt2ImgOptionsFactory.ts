@@ -1,6 +1,6 @@
-import { SamplingMethod } from '../enums/SamplingMethod';
-import { ScheduleType } from '../enums/ScheduleType';
-import { Txt2ImgOptionsUpdated } from '../models/Txt2ImgOptionsUpdated';
+import { SamplingMethod } from '../enums/SamplingMethod.js';
+import { ScheduleType } from '../enums/ScheduleType.js';
+import { Txt2ImgOptionsUpdated } from '../models/Txt2ImgOptionsUpdated.js';
 
 export class Txt2ImgOptionsFactory {
     static getStableDiffusionXlSettings(prompt: string): Txt2ImgOptionsUpdated {

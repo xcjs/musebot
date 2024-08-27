@@ -5,6 +5,7 @@ import StableDiffusionResult from '@lancercomet/sd-api/dist/lib/StableDiffusionR
 import { getRandomArrayEntry } from '../../../utilities/random-utilities.js';
 import { EnvironmentSettings } from '../../EnvironmentSettings.js';
 import { IHttpExchangeWithAttachedData } from '../../../models/IHttpExchangeWithAttachedData.js';
+import { Txt2ImgOptionsUpdated } from './models/Txt2ImgOptionsUpdated.js';
 
 export class Automatic1111Client {
     #environmentSettings: EnvironmentSettings;
@@ -30,7 +31,7 @@ export class Automatic1111Client {
         });
     }
 
-    async render(renderRequest: Txt2ImgOptions, model: string)
+    async render(renderRequest: Txt2ImgOptionsUpdated, model: string)
     : Promise<IHttpExchangeWithAttachedData<Txt2ImgOptions, StableDiffusionResult, string>> {
         this.#logger(LogLevel.Info, 'Sending txt2img request to Automatic1111...');
 
