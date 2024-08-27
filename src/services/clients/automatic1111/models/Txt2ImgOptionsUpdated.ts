@@ -17,7 +17,7 @@ export type Txt2ImgOptionsUpdated = {
     hr_negative_prompt: string | null,
     force_task_id: string | null,
     sampler_index: string,
-    script_args: string | null,
+    script_args: Array<string>,
     alwayson_scripts: object,
     infotext: string | null
 } & Txt2ImgOptions;

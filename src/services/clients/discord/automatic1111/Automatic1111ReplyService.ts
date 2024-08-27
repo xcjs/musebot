@@ -8,8 +8,8 @@ import { Automatic1111Client } from '../../automatic1111/Automatic1111Client.js'
 import { IHttpExchangeWithAttachedData } from '../../../../models/IHttpExchangeWithAttachedData.js';
 import { Txt2ImgOptions } from '@lancercomet/sd-api';
 import { DiscordConstants } from '../enums/DiscordConstants.js';
-import StableDiffusionResult from '@lancercomet/sd-api/dist/lib/StableDiffusionResult.js';
 import { SerializableRenderRequest } from '../../automatic1111/models/SerializableRenderRequest.js';
+import { BufferEncoding } from '../../../../enums/BufferEncoding.js';
 
 export class Automatic1111ReplyService {
     #environmentSettings: EnvironmentSettings;
@@ -30,7 +30,8 @@ export class Automatic1111ReplyService {
         this.#logger = new Logger(environmentSettings.isProduction, 'Automatic1111ReplyService');
     }
 
-    async reply(message: Message, renderData: IHttpExchangeWithAttachedData<Txt2ImgOptions, StableDiffusionResult, string>): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async reply(message: Message, renderData: IHttpExchangeWithAttachedData<Txt2ImgOptions, any, string>): Promise<void> {
         const renderRequest = renderData.exchange.request;
         const renderResponse = renderData.exchange.response;
 
@@ -43,7 +44,7 @@ export class Automatic1111ReplyService {
 
         const isStatefulResponse = jsonRequest.length <= DiscordConstants.ImageDescriptionMaxLength;
 
-        const imageBuffer = await renderResponse.image.png().toBuffer();
+        const imageBuffer = Buffer.from(renderResponse.images[0], BufferEncoding.Base64)
 
         this.#logger(LogLevel.Info, `Attaching render for "${renderRequest.prompt}": ${jsonRequest}`);
 
