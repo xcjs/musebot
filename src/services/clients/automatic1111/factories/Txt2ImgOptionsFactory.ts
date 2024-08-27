@@ -8,6 +8,7 @@ export class Txt2ImgOptionsFactory {
 
         options.sampler_index = SamplingMethod.DPMPlusPlus2MSDE;
         options.scheduler = ScheduleType.Karras;
+        options.steps = 35;
         options.height = 1024;
         options.width = 1024;
 
@@ -19,6 +20,7 @@ export class Txt2ImgOptionsFactory {
 
         options.sampler_index = SamplingMethod.Euler;
         options.scheduler = ScheduleType.Simple;
+        options.steps = 20;
         options.height = 1024;
         options.width = 1024;
 
