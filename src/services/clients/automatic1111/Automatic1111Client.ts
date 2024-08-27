@@ -6,6 +6,9 @@ import { getRandomArrayEntry } from '../../../utilities/random-utilities.js';
 import { EnvironmentSettings } from '../../EnvironmentSettings.js';
 import { IHttpExchangeWithAttachedData } from '../../../models/IHttpExchangeWithAttachedData.js';
 import { Txt2ImgOptionsUpdated } from './models/Txt2ImgOptionsUpdated.js';
+import { HttpMethod } from '../../../enums/HttpMethod.js';
+import { HttpHeader } from '../../../enums/HttpHeader.js';
+import { ContentType } from '../../../enums/ContentType.js';
 
 export class Automatic1111Client {
     #environmentSettings: EnvironmentSettings;
@@ -38,10 +41,18 @@ export class Automatic1111Client {
         try {
             await this.#client.setModel(model);
 
+            const response = await fetch(new URL('/sdapi/v1/txt2img', this.#host), {
+                method: HttpMethod.Post,
+                headers: {
+                    [HttpHeader.ContentType]: ContentType.Json
+                },
+                body: JSON.stringify(renderRequest)
+            });
+
             return {
                 exchange: {
                     request: renderRequest,
-                    response: await this.#client.txt2img(renderRequest),
+                    response: await response.json() as StableDiffusionResult,
                 },
                 data: model
             };
