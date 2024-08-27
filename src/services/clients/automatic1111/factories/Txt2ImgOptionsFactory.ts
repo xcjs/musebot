@@ -1,7 +1,31 @@
+import { SamplingMethod } from '../enums/SamplingMethod';
+import { ScheduleType } from '../enums/ScheduleType';
 import { Txt2ImgOptionsUpdated } from '../models/Txt2ImgOptionsUpdated';
 
 export class Txt2ImgOptionsFactory {
-    static getBaseSettings(prompt: string): Txt2ImgOptionsUpdated {
+    static getStableDiffusionXlSettings(prompt: string): Txt2ImgOptionsUpdated {
+        const options = Txt2ImgOptionsFactory.getBaseSettings(prompt);
+
+        options.sampler_index = SamplingMethod.DPMPlusPlus2MSDE;
+        options.scheduler = ScheduleType.Karras;
+        options.height = 1024;
+        options.width = 1024;
+
+        return options;
+    }
+
+    static getFluxSettings(prompt: string): Txt2ImgOptionsUpdated {
+        const options = Txt2ImgOptionsFactory.getBaseSettings(prompt);
+
+        options.sampler_index = SamplingMethod.Euler;
+        options.scheduler = ScheduleType.Simple;
+        options.height = 1024;
+        options.width = 1024;
+
+        return options;
+    }
+
+    private static getBaseSettings(prompt: string): Txt2ImgOptionsUpdated {
         return {
             prompt,
             negative_prompt: '',
@@ -12,7 +36,7 @@ export class Txt2ImgOptionsFactory {
             seed_resize_from_h: -1,
             seed_resize_from_w: -1,
             sampler_name: null,
-            scheduler: '',
+            scheduler: null,
             batch_size: 1,
             n_iter: 1,
             steps: 50,
@@ -52,7 +76,7 @@ export class Txt2ImgOptionsFactory {
             hr_prompt: '',
             hr_negative_prompt: '',
             force_task_id: null,
-            sampler_index: 'Euler',
+            sampler_index: null,
             script_name: null,
             script_args: null,
             send_images: true,
@@ -60,23 +84,5 @@ export class Txt2ImgOptionsFactory {
             alwayson_scripts: {},
             infotext: null,
         };
-    }
-
-    static getStableDiffusionXlSettings(prompt: string) {
-        const options = Txt2ImgOptionsFactory.getBaseSettings(prompt);
-
-        options.height = 1024;
-        options.width = 1024;
-
-        return options;
-    }
-
-    static getFluxSettings(prompt: string): Txt2ImgOptionsUpdated {
-        const options = Txt2ImgOptionsFactory.getBaseSettings(prompt);
-
-        options.height = 1024;
-        options.width = 1024;
-
-        return options;
     }
 }
