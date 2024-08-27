@@ -1,6 +1,5 @@
 import { Txt2ImgOptions } from '@lancercomet/sd-api';
 import { ScheduleType } from '../enums/ScheduleType';
-import { SamplingMethod } from '../enums/SamplingMethod';
 
 export type Txt2ImgOptionsUpdated = {
     scheduler: ScheduleType | null,
@@ -17,7 +16,7 @@ export type Txt2ImgOptionsUpdated = {
     hr_prompt: string | null,
     hr_negative_prompt: string | null,
     force_task_id: string | null,
-    sampler_index: SamplingMethod | null,
+    sampler_index: string,
     script_args: string | null,
     alwayson_scripts: object,
     infotext: string | null
