@@ -9,7 +9,7 @@ import { IHttpExchangeWithAttachedData } from '../../../../models/IHttpExchangeW
 import { Txt2ImgOptions } from '@lancercomet/sd-api';
 import { DiscordConstants } from '../enums/DiscordConstants.js';
 import StableDiffusionResult from '@lancercomet/sd-api/dist/lib/StableDiffusionResult.js';
-import { ISerializableRenderRequest } from '../../automatic1111/models/ISerializableRenderRequest.js';
+import { SerializableRenderRequest } from '../../automatic1111/models/SerializableRenderRequest.js';
 
 export class Automatic1111ReplyService {
     #environmentSettings: EnvironmentSettings;
@@ -39,7 +39,7 @@ export class Automatic1111ReplyService {
         const jsonRequest = JSON.stringify({
             request: renderData.exchange.request,
             modelName: renderData.data
-        } as ISerializableRenderRequest);
+        } as SerializableRenderRequest);
 
         const isStatefulResponse = jsonRequest.length <= DiscordConstants.ImageDescriptionMaxLength;
 

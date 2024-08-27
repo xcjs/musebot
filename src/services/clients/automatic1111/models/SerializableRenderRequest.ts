@@ -1,6 +1,6 @@
 import { Txt2ImgOptions } from '@lancercomet/sd-api';
 
-export interface ISerializableRenderRequest {
+export type SerializableRenderRequest = {
     request: Txt2ImgOptions,
     modelName: string
 }
