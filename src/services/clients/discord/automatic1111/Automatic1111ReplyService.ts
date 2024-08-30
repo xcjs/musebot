@@ -1,5 +1,5 @@
 import { Txt2ImgOptions } from '@lancercomet/sd-api';
-import { AttachmentBuilder, BaseMessageOptions, Message } from 'discord.js';
+import { AttachmentBuilder, BaseMessageOptions, ButtonInteraction, Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
 import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
@@ -10,6 +10,8 @@ import { IHttpExchangeWithAttachedData } from '../../../../models/IHttpExchangeW
 import { DiscordConstants } from '../enums/DiscordConstants.js';
 import { SerializableRenderRequest } from '../../automatic1111/models/SerializableRenderRequest.js';
 import { BufferEncoding } from '../../../../enums/BufferEncoding.js';
+import { StatefulImageGenerationActionRows } from '../components/buttonRows/StatefulImageGenerationActionRows.js';
+import { StatelessImageGenerationActionRow } from '../components/buttonRows/StatelessImageGenerationActionRow.js';
 
 export class Automatic1111ReplyService {
     #environmentSettings: EnvironmentSettings;
@@ -30,17 +32,19 @@ export class Automatic1111ReplyService {
         this.#logger = new Logger(this.#environmentSettings.isProduction, 'Automatic1111ReplyService');
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async reply(message: Message, renderData: IHttpExchangeWithAttachedData<Txt2ImgOptions, any, string>): Promise<void> {
+    async reply(interaction: Message | ButtonInteraction,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        renderData: IHttpExchangeWithAttachedData<Txt2ImgOptions, any, string>,
+        model: string,
+        content: string | null = null,
+        additionalAttachments: Array<AttachmentBuilder> | null = null,
+        isEdit: boolean = false): Promise<void> {
         const renderRequest = renderData.exchange.request;
         const renderResponse = renderData.exchange.response;
 
         const fileName = this.getFileNameFromPrompt(renderRequest);
 
-        const jsonRequest = JSON.stringify({
-            request: renderData.exchange.request,
-            modelName: renderData.data
-        } as SerializableRenderRequest);
+        const jsonRequest = SerializableRenderRequest.fromTxt2ImgOptionsUpdated(renderRequest, model).toString();
 
         const isStatefulResponse = jsonRequest.length <= DiscordConstants.ImageDescriptionMaxLength;
 
@@ -53,11 +57,32 @@ export class Automatic1111ReplyService {
             description: isStatefulResponse ? jsonRequest : null
         });
 
+        let files: Array<AttachmentBuilder> = [imageAttachment];
+
+        if(additionalAttachments) {
+            files = files.concat(additionalAttachments);
+        }
+
         const reply: BaseMessageOptions = {
-            files: [imageAttachment]
+            content,
+            files,
+            components: isStatefulResponse ?
+                new StatefulImageGenerationActionRows(this.#environmentSettings, this.#featureService, renderRequest).build() :
+                [new StatelessImageGenerationActionRow(this.#featureService).build()]
         };
 
-        await message.reply(reply);
+        if(interaction instanceof Message) {
+            if(isEdit) {
+                reply.components = interaction.components;
+                await interaction.edit(reply);
+            } else {
+                await interaction.reply(reply);
+            }
+        } else if(interaction instanceof ButtonInteraction) {
+            await interaction.editReply(reply);
+        }
+
+        await interaction.reply(reply);
     }
 
     getFileNameFromPrompt(renderRequest: Txt2ImgOptions): string {
