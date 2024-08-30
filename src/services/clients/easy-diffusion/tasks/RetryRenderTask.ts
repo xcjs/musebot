@@ -40,6 +40,7 @@ export class RetryRenderTask extends BaseTask {
         this.#environmentSettings = environmentSettings;
         this.#easyDiffusionClient = easyDiffusionClient;
         this.#easyDiffusionReplyService = easyDiffusionReplyService;
+        this.#messageService = messageService;
         this.#replyService = replyService;
         this.#interaction = interaction;
 
