@@ -86,8 +86,7 @@ export class DiscordAutomatic1111Client extends BaseDiscordClient {
             this.#automatic1111Client,
             this.#automatic1111ReplyService,
             this.#replyService,
-            message,
-            this.taskQueue));
+            message));
 
         await this.typingService.startTyping(message);
     }
