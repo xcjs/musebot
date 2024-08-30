@@ -17,7 +17,6 @@ export class PromptRenderTask extends BaseTask {
     #automatic1111Client: Automatic1111Client;
     #automatic1111ReplyService: Automatic1111ReplyService;
     #replyService: ReplyService;
-    #taskQueue: TaskQueue;
 
     #message: Message;
 
@@ -33,8 +32,7 @@ export class PromptRenderTask extends BaseTask {
         automatic1111Client: Automatic1111Client,
         automatic1111ReplyService: Automatic1111ReplyService,
         replyService: ReplyService,
-        message: Message,
-        taskQueue: TaskQueue) {
+        message: Message) {
         super(environmentSettings.maxTaskAttempts);
 
         this.#environmentSettings = environmentSettings;
@@ -43,7 +41,6 @@ export class PromptRenderTask extends BaseTask {
         this.#automatic1111ReplyService = automatic1111ReplyService;
         this.#replyService = replyService;
         this.#message = message;
-        this.#taskQueue = taskQueue;
 
         this.#logger = new Logger(environmentSettings.isProduction, 'PromptRenderTask');
     }
