@@ -18,6 +18,7 @@ import { PromptRenderTask } from '../../automatic1111/tasks/PromptRenderTask.js'
 import { MessageService } from '../services/MessageService.js';
 import { RetryRenderTask } from '../../automatic1111/tasks/RetryRenderTask.js';
 import { BotInteraction } from '../../../../enums/BotInteraction.js';
+import { ShowSourceTask } from '../../automatic1111/tasks/ShowSourceTask.js';
 
 export class DiscordAutomatic1111Client extends BaseDiscordClient {
     #automatic1111Client: Automatic1111Client;
@@ -147,7 +148,13 @@ export class DiscordAutomatic1111Client extends BaseDiscordClient {
     }
 
     #showSource(interaction: ButtonInteraction): void {
-        console.log(interaction);
+        this.taskQueue.add(new ShowSourceTask(
+            this.environmentSettings,
+            this.#automatic1111ReplyService,
+            this.#messageService,
+            this.#replyService,
+            interaction
+        ));
     }
 
     #decreaseGuidanceScale(interaction: ButtonInteraction): void {
