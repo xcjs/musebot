@@ -1,3 +1,4 @@
+import { Txt2ImgOptions } from '@lancercomet/sd-api';
 import { AttachmentBuilder, BaseMessageOptions, Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
@@ -6,7 +7,6 @@ import { FeatureService } from '../../../features/FeatureService.js';
 import { MAX_FILE_NAME_LENGTH } from '../../../../enums/FileConstants.js';
 import { Automatic1111Client } from '../../automatic1111/Automatic1111Client.js';
 import { IHttpExchangeWithAttachedData } from '../../../../models/IHttpExchangeWithAttachedData.js';
-import { Txt2ImgOptions } from '@lancercomet/sd-api';
 import { DiscordConstants } from '../enums/DiscordConstants.js';
 import { SerializableRenderRequest } from '../../automatic1111/models/SerializableRenderRequest.js';
 import { BufferEncoding } from '../../../../enums/BufferEncoding.js';
