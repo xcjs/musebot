@@ -61,7 +61,7 @@ export class RetryRenderTask extends BaseTask {
         let request: RenderRequest = null;
 
         if(imageAttachment?.description) {
-            request = RenderRequest.FromJson(imageAttachment.description);
+            request = RenderRequest.fromJson(imageAttachment.description);
             request.refreshSeed();
         }
 

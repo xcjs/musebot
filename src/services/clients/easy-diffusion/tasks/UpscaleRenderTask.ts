@@ -55,7 +55,7 @@ export class UpscaleRenderTask extends BaseTask {
         let request: RenderRequest = null;
 
         if(imageAttachment?.description) {
-            request = UpscaledRenderRequest.FromRenderRequest(RenderRequest.FromJson(imageAttachment.description));
+            request = UpscaledRenderRequest.FromRenderRequest(RenderRequest.fromJson(imageAttachment.description));
         }
 
         const renderData = await this.#easyDiffusionReplyService.renderImage(request);

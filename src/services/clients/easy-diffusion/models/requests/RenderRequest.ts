@@ -50,7 +50,7 @@ export class RenderRequest {
         return getRandomInt(0, 4294967295);
     }
 
-    static FromJson(renderRequestJson: string): RenderRequest {
+    static fromJson(renderRequestJson: string): RenderRequest {
         const requestObj = JSON.parse(renderRequestJson) as RenderRequest;
         const request = new RenderRequest(requestObj.use_stable_diffusion_model, requestObj.prompt);
 

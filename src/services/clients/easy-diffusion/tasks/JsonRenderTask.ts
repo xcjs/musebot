@@ -46,7 +46,7 @@ export class JsonRenderTask extends BaseTask {
         let request: RenderRequest;
 
         try {
-            request = RenderRequest.FromJson(prompt);
+            request = RenderRequest.fromJson(prompt);
             request.num_outputs = 1;
         } catch {
            await this.#message.reply('You call that JSON? My grandmother could knit better JSON.');

@@ -65,7 +65,7 @@ export class ExpandPromptTask extends BaseTask {
         ];
 
         const imageAttachment = this.#messageService.getAttachmentsByType(this.#interaction, imageTypes)[0];
-        const originalRequest = RenderRequest.FromJson(imageAttachment.description);
+        const originalRequest = RenderRequest.fromJson(imageAttachment.description);
 
         const prompt = `The following is a prompt used to generate an image - expand it with meticulous detail so it can be rendered better: ${originalRequest.prompt}`;
         this.#logger(LogLevel.Info, `Calling Ollama with "${prompt}" to get an expanded prompt.`);

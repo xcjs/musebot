@@ -60,7 +60,7 @@ export class DecreaseGuidanceScaleRenderTask extends BaseTask {
         let request: RenderRequest = null;
 
         if(imageAttachment?.description) {
-            request = RenderRequest.FromJson(imageAttachment.description);
+            request = RenderRequest.fromJson(imageAttachment.description);
             request.guidance_scale -= this.#environmentSettings.stableDiffusionGuidanceScaleInterval;
         }
 

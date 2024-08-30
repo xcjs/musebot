@@ -48,7 +48,7 @@ export class ShowSourceTask extends BaseTask {
 
         const imageAttachment = this.#messageService.getAttachmentsByType(this.#interaction, imageTypes)[0];
         const jsonRequest = imageAttachment.description;
-        const renderRequest = RenderRequest.FromJson(jsonRequest);
+        const renderRequest = RenderRequest.fromJson(jsonRequest);
 
         const jsonBuffer = Buffer.from(jsonRequest, BufferEncoding.UTF8);
         const jsonAttachment = new AttachmentBuilder(jsonBuffer, {
