@@ -81,8 +81,6 @@ export class Automatic1111ReplyService {
         } else if(interaction instanceof ButtonInteraction) {
             await interaction.editReply(reply);
         }
-
-        await interaction.reply(reply);
     }
 
     getFileNameFromPrompt(renderRequest: Txt2ImgOptions): string {
