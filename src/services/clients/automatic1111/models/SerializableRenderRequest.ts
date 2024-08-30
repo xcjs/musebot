@@ -64,12 +64,12 @@ export class SerializableRenderRequest {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    static fromTxt2ImgOptionsUpdated(options: any, model: string): SerializableRenderRequest {
+    static fromTxt2ImgOptionsUpdated(options: any, model: string, seed: number): SerializableRenderRequest {
         const request = new SerializableRenderRequest();
 
         request.prompt = options.prompt;
         request.model = model;
-        request.seed = options.seed;
+        request.seed = seed;
         request.width = options.width;
         request.height = options.height;
         request.sampler = options.sampler_name;

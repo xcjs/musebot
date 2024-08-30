@@ -63,6 +63,7 @@ export class RetryRenderTask extends BaseTask {
 
         if(imageAttachment?.description) {
             request = SerializableRenderRequest.fromJson(imageAttachment.description).toTxt2ImgOptionsUpdated();
+            request.seed = -1;
         }
 
         const model = this.#environmentSettings.stableDiffusionModels.length > 0 ?

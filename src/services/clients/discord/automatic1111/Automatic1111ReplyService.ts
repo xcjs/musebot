@@ -44,7 +44,7 @@ export class Automatic1111ReplyService {
 
         const fileName = this.getFileNameFromPrompt(renderRequest);
 
-        const jsonRequest = SerializableRenderRequest.fromTxt2ImgOptionsUpdated(renderRequest, model).toString();
+        const jsonRequest = SerializableRenderRequest.fromTxt2ImgOptionsUpdated(renderRequest, model, JSON.parse(renderResponse.info).seed).toString();
 
         const isStatefulResponse = jsonRequest.length <= DiscordConstants.ImageDescriptionMaxLength;
 
