@@ -27,7 +27,7 @@ export class Automatic1111ReplyService {
         this.#featureService = featureService;
         this.#automatic1111Client = automatic1111Client;
 
-        this.#logger = new Logger(environmentSettings.isProduction, 'Automatic1111ReplyService');
+        this.#logger = new Logger(this.#environmentSettings.isProduction, 'Automatic1111ReplyService');
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
