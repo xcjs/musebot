@@ -10,11 +10,13 @@ import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiff
 import { EasyDiffusionClient } from '../EasyDiffusionClient.js';
 import { RenderRequest } from '../models/requests/RenderRequest.js';
 import { ReplyService } from '../../discord/services/ReplyService.js';
+import { MessageService } from '../../discord/services/MessageService.js';
 
 export class DecreaseGuidanceScaleRenderTask extends BaseTask {
     #environmentSettings: EnvironmentSettings;
     #easyDiffusionClient: EasyDiffusionClient;
     #easyDiffusionReplyService: EasyDiffusionReplyService;
+    #messageService: MessageService;
     #replyService: ReplyService;
 
     #interaction: ButtonInteraction;
@@ -29,6 +31,7 @@ export class DecreaseGuidanceScaleRenderTask extends BaseTask {
         environmentSettings: EnvironmentSettings,
         easyDiffusionClient: EasyDiffusionClient,
         easyDiffusionReplyService: EasyDiffusionReplyService,
+        messageService: MessageService,
         replyService: ReplyService,
         interaction: ButtonInteraction) {
         super(environmentSettings.maxTaskAttempts);
@@ -36,6 +39,7 @@ export class DecreaseGuidanceScaleRenderTask extends BaseTask {
         this.#environmentSettings = environmentSettings;
         this.#easyDiffusionClient = easyDiffusionClient;
         this.#easyDiffusionReplyService = easyDiffusionReplyService;
+        this.#messageService = messageService;
         this.#replyService = replyService;
         this.#interaction = interaction;
 
@@ -51,7 +55,7 @@ export class DecreaseGuidanceScaleRenderTask extends BaseTask {
             ContentType.Png
         ];
 
-        const imageAttachment = this.#easyDiffusionReplyService.getAttachmentsByType(this.#interaction, imageTypes)[0];
+        const imageAttachment = this.#messageService.getAttachmentsByType(this.#interaction, imageTypes)[0];
 
         let request: RenderRequest = null;
 

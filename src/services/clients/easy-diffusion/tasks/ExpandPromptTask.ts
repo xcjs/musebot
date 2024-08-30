@@ -12,6 +12,7 @@ import { ReplyService } from '../../discord/services/ReplyService.js';
 import { ContentType } from '../../../../enums/ContentType.js';
 import { AttachRenderTask } from './AttachRenderTask.js';
 import { TaskQueue } from '../../../tasks/services/TaskQueue.js';
+import { MessageService } from '../../discord/services/MessageService.js';
 
 export class ExpandPromptTask extends BaseTask {
     #environmentSettings: EnvironmentSettings;
@@ -19,8 +20,9 @@ export class ExpandPromptTask extends BaseTask {
     #ollamaClient: OllamaClient;
     #easyDiffusionClient: EasyDiffusionClient;
     #easyDiffusionReplyService: EasyDiffusionReplyService;
-    #taskQueue: TaskQueue;
+    #messageService: MessageService;
     #replyService: ReplyService;
+    #taskQueue: TaskQueue;
 
     #interaction: ButtonInteraction;
 
@@ -35,6 +37,7 @@ export class ExpandPromptTask extends BaseTask {
         ollamaClient: OllamaClient,
         easyDiffusionClient: EasyDiffusionClient,
         easyDiffusionReplyService: EasyDiffusionReplyService,
+        messageService: MessageService,
         replyService: ReplyService,
         taskQueue: TaskQueue,
         interaction: ButtonInteraction) {
@@ -44,6 +47,7 @@ export class ExpandPromptTask extends BaseTask {
         this.#ollamaClient = ollamaClient;
         this.#easyDiffusionClient = easyDiffusionClient;
         this.#easyDiffusionReplyService = easyDiffusionReplyService;
+        this.#messageService = messageService;
         this.#replyService = replyService;
         this.#taskQueue = taskQueue;
         this.#interaction = interaction;
@@ -60,7 +64,7 @@ export class ExpandPromptTask extends BaseTask {
             ContentType.Png
         ];
 
-        const imageAttachment = this.#easyDiffusionReplyService.getAttachmentsByType(this.#interaction, imageTypes)[0];
+        const imageAttachment = this.#messageService.getAttachmentsByType(this.#interaction, imageTypes)[0];
         const originalRequest = RenderRequest.FromJson(imageAttachment.description);
 
         const prompt = `The following is a prompt used to generate an image - expand it with meticulous detail so it can be rendered better: ${originalRequest.prompt}`;

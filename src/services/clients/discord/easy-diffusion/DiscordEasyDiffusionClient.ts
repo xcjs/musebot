@@ -24,20 +24,25 @@ import { TypingService } from '../services/TypingService.js';
 import { UpscaleRenderTask } from '../../easy-diffusion/tasks/UpscaleRenderTask.js';
 import { ExpandPromptTask } from '../../easy-diffusion/tasks/ExpandPromptTask.js';
 import { OllamaClient } from '../../ollama/OllamaClient.js';
+import { MessageService } from '../services/MessageService.js';
 
 export class DiscordEasyDiffusionClient extends BaseDiscordClient {
     #easyDiffusionClient: EasyDiffusionClient;
     #ollamaClient: OllamaClient;
     #easyDiffusionReplyService: EasyDiffusionReplyService;
+    #messageService: MessageService;
     #replyService: ReplyService;
 
     constructor(
         environmentSettings: EnvironmentSettings,
         featureService: FeatureService,
+        messageService: MessageService,
         taskQueue: TaskQueue,
         typingService: TypingService
         ) {
         super(environmentSettings, featureService, taskQueue, typingService);
+
+        this.#messageService = messageService;
 
         this.#resetTransitiveServices();
         this.#replyService = new ReplyService(environmentSettings, this.client);
@@ -45,11 +50,6 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
         this.logger = new Logger(this.environmentSettings.isProduction, 'DiscordEasyDiffusionClient');
 
         this.#registerEvents();
-    }
-
-    login() {
-        this.logger(LogLevel.Info, 'Performing client login...');
-        this.client.login(this.environmentSettings.discordToken);
     }
 
     #resetTransitiveServices() {
@@ -148,6 +148,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
             this.environmentSettings,
             this.#easyDiffusionClient,
             this.#easyDiffusionReplyService,
+            this.#messageService,
             this.#replyService,
             interaction));
     }
@@ -156,6 +157,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
         this.taskQueue.add(new UpscaleRenderTask(
             this.environmentSettings,
             this.#easyDiffusionReplyService,
+            this.#messageService,
             this.replyService,
             interaction
         ));
@@ -165,6 +167,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
         this.taskQueue.add(new ShowSourceTask(
             this.environmentSettings,
             this.#easyDiffusionReplyService,
+            this.#messageService,
             this.#replyService,
             interaction));
     }
@@ -174,6 +177,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
             this.environmentSettings,
             this.#easyDiffusionClient,
             this.#easyDiffusionReplyService,
+            this.#messageService,
             this.#replyService,
             interaction));
     }
@@ -183,6 +187,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
             this.environmentSettings,
             this.#easyDiffusionClient,
             this.#easyDiffusionReplyService,
+            this.#messageService,
             this.#replyService,
             interaction));
     }
@@ -193,6 +198,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
             this.#ollamaClient,
             this.#easyDiffusionClient,
             this.#easyDiffusionReplyService,
+            this.#messageService,
             this.#replyService,
             this.taskQueue,
             interaction));

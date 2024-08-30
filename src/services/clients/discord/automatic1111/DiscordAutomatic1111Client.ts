@@ -14,19 +14,24 @@ import { TypingService } from '../services/TypingService.js';
 import { Automatic1111Client } from '../../automatic1111/Automatic1111Client.js';
 import { Automatic1111ReplyService } from './Automatic1111ReplyService.js';
 import { PromptRenderTask } from '../../automatic1111/tasks/PromptRenderTask.js';
+import { MessageService } from '../services/MessageService.js';
 
 export class DiscordAutomatic1111Client extends BaseDiscordClient {
     #automatic1111Client: Automatic1111Client;
     #automatic1111ReplyService: Automatic1111ReplyService;
+    #messageService: MessageService;
     #replyService: ReplyService;
 
     constructor(
         environmentSettings: EnvironmentSettings,
         featureService: FeatureService,
+        messageService: MessageService,
         taskQueue: TaskQueue,
         typingService: TypingService
         ) {
         super(environmentSettings, featureService, taskQueue, typingService);
+
+        this.#messageService = messageService;
 
         this.#resetTransitiveServices();
         this.#replyService = new ReplyService(environmentSettings, this.client);
@@ -34,11 +39,6 @@ export class DiscordAutomatic1111Client extends BaseDiscordClient {
         this.logger = new Logger(this.environmentSettings.isProduction, 'DiscordAutomatic1111Client');
 
         this.#registerEvents();
-    }
-
-    login() {
-        this.logger(LogLevel.Info, 'Performing client login...');
-        this.client.login(this.environmentSettings.discordToken);
     }
 
     #resetTransitiveServices() {

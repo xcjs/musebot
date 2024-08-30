@@ -10,9 +10,11 @@ import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiff
 import { DiscordConstants } from '../../discord/enums/DiscordConstants.js';
 import { ReplyService } from '../../discord/services/ReplyService.js';
 import { UpscaledRenderRequest } from '../models/requests/UpscaledRenderRequest.js';
+import { MessageService } from '../../discord/services/MessageService.js';
 
 export class UpscaleRenderTask extends BaseTask {
     #easyDiffusionReplyService: EasyDiffusionReplyService;
+    #messageService: MessageService;
     #replyService: ReplyService;
 
     #interaction: ButtonInteraction;
@@ -26,11 +28,13 @@ export class UpscaleRenderTask extends BaseTask {
     constructor(
         environmentSettings: EnvironmentSettings,
         easyDiffusionReplyService: EasyDiffusionReplyService,
+        messageService: MessageService,
         replyService: ReplyService,
         interaction: ButtonInteraction) {
         super(environmentSettings.maxTaskAttempts);
 
         this.#easyDiffusionReplyService = easyDiffusionReplyService;
+        this.#messageService = messageService;
         this.#replyService = replyService;
         this.#interaction = interaction;
 
@@ -46,7 +50,7 @@ export class UpscaleRenderTask extends BaseTask {
             ContentType.Png
         ];
 
-        const imageAttachment = this.#easyDiffusionReplyService.getAttachmentsByType(this.#interaction, imageTypes)[0];
+        const imageAttachment = this.#messageService.getAttachmentsByType(this.#interaction, imageTypes)[0];
 
         let request: RenderRequest = null;
 

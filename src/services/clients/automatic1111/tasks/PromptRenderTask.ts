@@ -5,7 +5,6 @@ import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { TaskStatus } from '../../../tasks/enums/TaskStatus.js';
 import { getRandomArrayEntry } from '../../../../utilities/random-utilities.js';
-import { TaskQueue } from '../../../tasks/services/TaskQueue.js';
 import { ReplyService } from '../../discord/services/ReplyService.js';
 import { Automatic1111Client } from '../Automatic1111Client.js';
 import { Automatic1111ReplyService } from '../../discord/automatic1111/Automatic1111ReplyService.js';
