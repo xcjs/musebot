@@ -74,7 +74,7 @@ export class IncreaseGuidanceScaleRenderTask extends BaseTask {
         const content = `The guidance scale was increased from ${request.guidance_scale
             - this.#environmentSettings.stableDiffusionGuidanceScaleInterval} to ${request.guidance_scale} by ${this.#interaction.member}.`;
 
-        await this.#easyDiffusionReplyService.reply(this.#interaction, renderData, content, null);
+        await this.#easyDiffusionReplyService.reply(this.#interaction, renderData, content);
     }
 
     override async postProcess(): Promise<void> {

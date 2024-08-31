@@ -60,7 +60,7 @@ export class UpscaleRenderTask extends BaseTask {
 
         const renderData = await this.#easyDiffusionReplyService.renderImage(request);
         const content = `${this.#interaction.member} upscaled \`${request.prompt}\``.substring(0, DiscordConstants.ContentMaxLength);
-        await this.#easyDiffusionReplyService.reply(this.#interaction, renderData, content, null);
+        await this.#easyDiffusionReplyService.reply(this.#interaction, renderData, content);
     }
 
     override async postProcess(): Promise<void> {

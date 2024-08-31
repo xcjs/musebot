@@ -54,7 +54,7 @@ export class JsonRenderTask extends BaseTask {
         }
 
         const renderData = await this.#easyDiffusionReplyService.renderImage(request);
-        await this.#easyDiffusionReplyService.reply(this.#message, renderData, null, null);
+        await this.#easyDiffusionReplyService.reply(this.#message, renderData);
     }
 
     override async postProcess(): Promise<void> {
