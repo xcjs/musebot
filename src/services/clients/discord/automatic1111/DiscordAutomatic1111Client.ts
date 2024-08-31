@@ -19,6 +19,8 @@ import { MessageService } from '../services/MessageService.js';
 import { RetryRenderTask } from '../../automatic1111/tasks/RetryRenderTask.js';
 import { BotInteraction } from '../../../../enums/BotInteraction.js';
 import { ShowSourceTask } from '../../automatic1111/tasks/ShowSourceTask.js';
+import { DecreaseGuidanceScaleRenderTask } from '../../automatic1111/tasks/DecreaseGuidanceScaleRenderTask.js';
+import { IncreaseGuidanceScaleRenderTask } from '../../automatic1111/tasks/IncreaseGuidanceScaleRenderTask.js';
 
 export class DiscordAutomatic1111Client extends BaseDiscordClient {
     #automatic1111Client: Automatic1111Client;
@@ -158,11 +160,25 @@ export class DiscordAutomatic1111Client extends BaseDiscordClient {
     }
 
     #decreaseGuidanceScale(interaction: ButtonInteraction): void {
-        console.log(interaction);
+       this.taskQueue.add(new DecreaseGuidanceScaleRenderTask(
+        this.environmentSettings,
+        this.#automatic1111Client,
+        this.#automatic1111ReplyService,
+        this.#messageService,
+        this.#replyService,
+        interaction
+       ));
     }
 
     #increaseGuidanceScale(interaction: ButtonInteraction): void {
-        console.log(interaction);
+        this.taskQueue.add(new IncreaseGuidanceScaleRenderTask(
+        this.environmentSettings,
+        this.#automatic1111Client,
+        this.#automatic1111ReplyService,
+        this.#messageService,
+        this.#replyService,
+        interaction
+       ));
     }
 
     #expandPrompt(interaction: ButtonInteraction): void {
