@@ -58,7 +58,7 @@ export class EasyDiffusionReplyService {
     async reply(
         interaction: Message | ButtonInteraction,
         renderData: IHttpExchangeWithAttachedResponse<RenderRequest, IRenderResponse, IStreamResponse>,
-        content: string | null,
+        content: string | null = null,
         additionalAttachments: Array<AttachmentBuilder> | null = null,
         isEdit: boolean = false): Promise<void> {
         const renderRequest = renderData.exchange.request;
