@@ -12,7 +12,7 @@ import { ReplyService } from '../../discord/services/ReplyService.js';
 import { Automatic1111ReplyService } from '../../discord/automatic1111/Automatic1111ReplyService.js';
 import { MessageService } from '../../discord/services/MessageService.js';
 import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
-import { Txt2ImgOptionsUpdated } from '../models/Txt2ImgOptionsUpdated.js';
+import { Txt2ImgOptionsRequest } from '../models/requests/Txt2ImgOptionsRequest.js';
 
 export class RetryRenderTask extends BaseTask {
     #environmentSettings: EnvironmentSettings;
@@ -59,10 +59,10 @@ export class RetryRenderTask extends BaseTask {
 
         const imageAttachment = this.#messageService.getAttachmentsByType(this.#interaction, imageTypes)[0];
 
-        let request: Txt2ImgOptionsUpdated = null;
+        let request: Txt2ImgOptionsRequest = null;
 
         if(imageAttachment?.description) {
-            request = SerializableRenderRequest.fromJson(imageAttachment.description).toTxt2ImgOptionsUpdated();
+            request = SerializableRenderRequest.fromJson(imageAttachment.description).toTxt2ImgOptionsRequest();
             request.seed = -1;
         }
 

@@ -35,5 +35,6 @@
         "uncond",
         "Upscaled",
         "upscaler"
-    ]
+    ],
+    "cmake.ignoreCMakeListsMissing": true
 }

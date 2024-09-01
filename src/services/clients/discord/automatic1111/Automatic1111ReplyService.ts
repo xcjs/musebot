@@ -1,4 +1,3 @@
-import { Txt2ImgOptions } from '@lancercomet/sd-api';
 import { AttachmentBuilder, BaseMessageOptions, ButtonInteraction, Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
@@ -12,6 +11,8 @@ import { SerializableRenderRequest } from '../../automatic1111/models/Serializab
 import { BufferEncoding } from '../../../../enums/BufferEncoding.js';
 import { StatefulImageGenerationActionRows } from '../components/buttonRows/StatefulImageGenerationActionRows.js';
 import { StatelessImageGenerationActionRow } from '../components/buttonRows/StatelessImageGenerationActionRow.js';
+import { Txt2ImgOptionsRequest } from '../../automatic1111/models/requests/Txt2ImgOptionsRequest.js';
+import { Txt2ImgOptionsResponse } from '../../automatic1111/models/responses/Txt2ImgOptionsResponse.js';
 
 export class Automatic1111ReplyService {
     #environmentSettings: EnvironmentSettings;
@@ -33,8 +34,7 @@ export class Automatic1111ReplyService {
     }
 
     async reply(interaction: Message | ButtonInteraction,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        renderData: IHttpExchangeWithAttachedData<Txt2ImgOptions, any, string>,
+        renderData: IHttpExchangeWithAttachedData<Txt2ImgOptionsRequest, Txt2ImgOptionsResponse, string>,
         model: string,
         content: string | null = null,
         additionalAttachments: Array<AttachmentBuilder> | null = null,
@@ -83,7 +83,7 @@ export class Automatic1111ReplyService {
         }
     }
 
-    getFileNameFromPrompt(renderRequest: Txt2ImgOptions): string {
+    getFileNameFromPrompt(renderRequest: Txt2ImgOptionsRequest | SerializableRenderRequest): string {
         return `${renderRequest.prompt}`.substring(0, MAX_FILE_NAME_LENGTH);
     }
 }

@@ -1,21 +1,21 @@
-import { StableDiffusionApi, StableDiffusionModel, Txt2ImgOptions } from '@lancercomet/sd-api';
 import {Logger, LogLevel } from 'meklog'
-import StableDiffusionResult from '@lancercomet/sd-api/dist/lib/StableDiffusionResult.js';
 
 import { getRandomArrayEntry } from '../../../utilities/random-utilities.js';
 import { EnvironmentSettings } from '../../EnvironmentSettings.js';
 import { IHttpExchangeWithAttachedData } from '../../../models/IHttpExchangeWithAttachedData.js';
-import { Txt2ImgOptionsUpdated } from './models/Txt2ImgOptionsUpdated.js';
 import { HttpMethod } from '../../../enums/HttpMethod.js';
 import { HttpHeader } from '../../../enums/HttpHeader.js';
 import { ContentType } from '../../../enums/ContentType.js';
+import { Txt2ImgOptionsRequest } from './models/requests/Txt2ImgOptionsRequest.js';
+import { StableDiffusionModel } from './models/requests/StableDiffusionModel.js';
+import { StableDiffusionOptions } from './models/requests/StableDiffusionOptions.js';
+import { Txt2ImgOptionsResponse } from './models/responses/Txt2ImgOptionsResponse.js';
 
 export class Automatic1111Client {
     #environmentSettings: EnvironmentSettings;
     #logger;
 
     #host: URL;
-    #client: StableDiffusionApi;
 
     get host(): URL {
         return this.#host;
@@ -27,19 +27,14 @@ export class Automatic1111Client {
 
         this.#host = getRandomArrayEntry(this.#environmentSettings.stableDiffusionHosts);
         this.#logger(LogLevel.Info, `Selected host: ${this.#host}`);
-
-        this.#client = new StableDiffusionApi({
-            baseUrl: this.#host.toString(),
-            timeout: 1000 * 60 * 60 // 1 hour
-        });
     }
 
-    async render(renderRequest: Txt2ImgOptionsUpdated, model: string)
-    : Promise<IHttpExchangeWithAttachedData<Txt2ImgOptions, StableDiffusionResult, string>> {
+    async render(renderRequest: Txt2ImgOptionsRequest, model: string)
+    : Promise<IHttpExchangeWithAttachedData<Txt2ImgOptionsRequest, Txt2ImgOptionsResponse, string>> {
         this.#logger(LogLevel.Info, 'Sending txt2img request to Automatic1111...');
 
         try {
-            await this.#client.setModel(model);
+            await this.#setModel(model);
 
             const response = await fetch(new URL('/sdapi/v1/txt2img', this.#host), {
                 method: HttpMethod.Post,
@@ -52,7 +47,7 @@ export class Automatic1111Client {
             return {
                 exchange: {
                     request: renderRequest,
-                    response: await response.json() as StableDiffusionResult,
+                    response: await response.json() as Txt2ImgOptionsResponse,
                 },
                 data: model
             };
@@ -66,9 +61,36 @@ export class Automatic1111Client {
         try {
             this.#logger(LogLevel.Info, `Loading Automatic1111 models...`);
 
-            return await this.#client.getSdModels();
+            const response = await fetch(new URL('/sdapi/v1/sd-models', this.#host), {
+                headers: {
+                    [HttpHeader.ContentType]: ContentType.Json
+                }
+            });
+
+            return await response.json() as Array<StableDiffusionModel>;
         } catch (error) {
             this.#logger(LogLevel.Error, `Loading Automatic1111 models failed: ${error}`);
+            throw error;
+        }
+    }
+
+    async #setModel(model: string): Promise<void> {
+        try {
+            this.#logger(LogLevel.Info, `Setting the active image generation model...`);
+
+            const options: StableDiffusionOptions = {
+                sd_model_checkpoint: model
+            };
+
+            await fetch(new URL('/sdapi/v1/options', this.#host), {
+                method: HttpMethod.Post,
+                headers: {
+                    [HttpHeader.ContentType]: ContentType.Json
+                },
+                body: JSON.stringify(options)
+            });
+        } catch(error) {
+            this.#logger(LogLevel.Info, error);
             throw error;
         }
     }

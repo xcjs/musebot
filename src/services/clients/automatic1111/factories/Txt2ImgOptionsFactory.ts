@@ -1,9 +1,23 @@
 import { SamplingMethod } from '../enums/SamplingMethod.js';
 import { ScheduleType } from '../enums/ScheduleType.js';
-import { Txt2ImgOptionsUpdated } from '../models/Txt2ImgOptionsUpdated.js';
+import { Txt2ImgOptionsRequest } from '../models/requests/Txt2ImgOptionsRequest.js';
 
 export class Txt2ImgOptionsFactory {
-    static getBaseSettings(prompt: string): Txt2ImgOptionsUpdated {
+    static getCurrentModelSettings(model: string, prompt: string): Txt2ImgOptionsRequest {
+        const pathNodes = model.split('/');
+        const rootPath = pathNodes.length > 0 ? pathNodes[0] : model;
+
+        switch(rootPath.toLocaleLowerCase()) {
+            case 'flux':
+                return Txt2ImgOptionsFactory.getFluxSettings(prompt);
+            case 'xl':
+                return Txt2ImgOptionsFactory.getStableDiffusionXlSettings(prompt);
+            default:
+                return Txt2ImgOptionsFactory.getBaseSettings(prompt);
+        }
+    }
+
+    static getBaseSettings(prompt: string): Txt2ImgOptionsRequest {
         return {
             prompt,
             negative_prompt: '',
@@ -17,7 +31,7 @@ export class Txt2ImgOptionsFactory {
             scheduler: null,
             batch_size: 1,
             n_iter: 1,
-            steps: 50,
+            steps: 25,
             cfg_scale:  1,
             distilled_cfg_scale: 3.5,
             width: 512,
@@ -43,7 +57,7 @@ export class Txt2ImgOptionsFactory {
             enable_hr: false,
             firstphase_width: 0,
             firstphase_height: 0,
-            hr_scale: 2,
+            hr_scale: 1,
             hr_upscaler: null,
             hr_second_pass_steps: 0,
             hr_resize_x: 0,
@@ -61,11 +75,12 @@ export class Txt2ImgOptionsFactory {
             save_images: false,
             alwayson_scripts: {},
             infotext: null,
-            use_deprecated_controlnet: false
+            use_deprecated_controlnet: false,
+            controlnet_units: []
         };
     }
 
-    static getStableDiffusionXlSettings(prompt: string): Txt2ImgOptionsUpdated {
+    static getStableDiffusionXlSettings(prompt: string): Txt2ImgOptionsRequest {
         const options = Txt2ImgOptionsFactory.getBaseSettings(prompt);
 
         options.sampler_name = SamplingMethod.DPMPlusPlus2MSDE;
@@ -78,7 +93,7 @@ export class Txt2ImgOptionsFactory {
         return options;
     }
 
-    static getFluxSettings(prompt: string): Txt2ImgOptionsUpdated {
+    static getFluxSettings(prompt: string): Txt2ImgOptionsRequest {
         const options = Txt2ImgOptionsFactory.getBaseSettings(prompt);
 
         options.sampler_name = SamplingMethod.Euler;

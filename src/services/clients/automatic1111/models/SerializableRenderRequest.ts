@@ -1,7 +1,7 @@
-import { Txt2ImgOptionsUpdated } from './Txt2ImgOptionsUpdated.js';
 import { SamplingMethod } from '../enums/SamplingMethod.js';
 import { ScheduleType } from '../enums/ScheduleType.js';
 import { Txt2ImgOptionsFactory } from '../factories/Txt2ImgOptionsFactory.js';
+import { Txt2ImgOptionsRequest } from './requests/Txt2ImgOptionsRequest.js';
 
 export class SerializableRenderRequest {
     prompt: string;
@@ -23,7 +23,7 @@ export class SerializableRenderRequest {
         return JSON.stringify(this);
     }
 
-    toTxt2ImgOptionsUpdated(): Txt2ImgOptionsUpdated {
+    toTxt2ImgOptionsRequest(): Txt2ImgOptionsRequest {
         const options = Txt2ImgOptionsFactory.getBaseSettings(this.prompt);
 
         options.seed = this.seed;
@@ -63,8 +63,7 @@ export class SerializableRenderRequest {
         return instancedRequest;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    static fromTxt2ImgOptionsUpdated(options: any, model: string, seed: number): SerializableRenderRequest {
+    static fromTxt2ImgOptionsUpdated(options: Txt2ImgOptionsRequest, model: string, seed: number): SerializableRenderRequest {
         const request = new SerializableRenderRequest();
 
         request.prompt = options.prompt;
