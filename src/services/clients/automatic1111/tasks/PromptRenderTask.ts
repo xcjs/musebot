@@ -54,7 +54,7 @@ export class PromptRenderTask extends BaseTask {
 
         this.#logger(LogLevel.Info, `Using ${model} as the selected Automatic1111 model.`);
 
-        const request = Txt2ImgOptionsFactory.getFluxSettings(prompt);
+        const request = Txt2ImgOptionsFactory.getCurrentModelSettings(model, prompt);
 
         const renderData = await this.#automatic1111Client.render(request, model);
         await this.#automatic1111ReplyService.reply(this.#message, renderData, model);
