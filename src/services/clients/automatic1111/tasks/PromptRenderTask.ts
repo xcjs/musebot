@@ -34,8 +34,8 @@ export class PromptRenderTask extends BaseTask {
         automatic1111Client: Automatic1111Client,
         automatic1111ReplyService: Automatic1111ReplyService,
         replyService: ReplyService,
-        message: Message,
-        taskQueue: TaskQueue) {
+        taskQueue: TaskQueue,
+        message: Message) {
         super(environmentSettings.maxTaskAttempts);
 
         this.#environmentSettings = environmentSettings;
