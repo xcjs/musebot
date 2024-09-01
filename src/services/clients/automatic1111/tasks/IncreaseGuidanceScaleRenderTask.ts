@@ -75,7 +75,7 @@ export class IncreaseGuidanceScaleRenderTask extends BaseTask {
         const content = `The guidance scale was increased from ${request.distilled_cfg_scale
             - this.#environmentSettings.stableDiffusionGuidanceScaleInterval} to ${request.distilled_cfg_scale} by ${this.#interaction.member}.`;
 
-        await this.#automatic1111ReplyService.reply(this.#interaction, renderData, model, content);
+        await this.#automatic1111ReplyService.reply(this.#interaction, renderData, content);
     }
 
     override async postProcess(): Promise<void> {

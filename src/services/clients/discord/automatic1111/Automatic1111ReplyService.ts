@@ -13,6 +13,7 @@ import { StatefulImageGenerationActionRows } from '../components/buttonRows/Stat
 import { StatelessImageGenerationActionRow } from '../components/buttonRows/StatelessImageGenerationActionRow.js';
 import { Txt2ImgOptionsRequest } from '../../automatic1111/models/requests/Txt2ImgOptionsRequest.js';
 import { Txt2ImgOptionsResponse } from '../../automatic1111/models/responses/Txt2ImgOptionsResponse.js';
+import { getRandomArrayEntry } from '../../../../utilities/random-utilities.js';
 
 export class Automatic1111ReplyService {
     #environmentSettings: EnvironmentSettings;
@@ -33,9 +34,21 @@ export class Automatic1111ReplyService {
         this.#logger = new Logger(this.#environmentSettings.isProduction, 'Automatic1111ReplyService');
     }
 
+    async renderImage(request: SerializableRenderRequest): Promise<IHttpExchangeWithAttachedData<Txt2ImgOptionsRequest, Txt2ImgOptionsResponse, string>> {
+        this.#logger(LogLevel.Info, `Render prompt: ${request.prompt}`);
+
+        const model = this.#environmentSettings.stableDiffusionModels.length > 0 ?
+            getRandomArrayEntry(this.#environmentSettings.stableDiffusionModels) :
+            getRandomArrayEntry(await this.#automatic1111Client.getModels()).model_name;
+
+        const mappedRequest = request.toTxt2ImgOptionsRequest();
+        const renderExchange = await this.#automatic1111Client.render(mappedRequest, model);
+
+        return renderExchange;
+    }
+
     async reply(interaction: Message | ButtonInteraction,
         renderData: IHttpExchangeWithAttachedData<Txt2ImgOptionsRequest, Txt2ImgOptionsResponse, string>,
-        model: string,
         content: string | null = null,
         additionalAttachments: Array<AttachmentBuilder> | null = null,
         isEdit: boolean = false): Promise<void> {
@@ -44,7 +57,7 @@ export class Automatic1111ReplyService {
 
         const fileName = this.getFileNameFromPrompt(renderRequest);
 
-        const jsonRequest = SerializableRenderRequest.fromTxt2ImgOptionsUpdated(renderRequest, model, JSON.parse(renderResponse.info).seed).toString();
+        const jsonRequest = SerializableRenderRequest.fromTxt2ImgOptionsRequest(renderRequest, renderData.data, JSON.parse(renderResponse.info).seed).toString();
 
         const isStatefulResponse = jsonRequest.length <= DiscordConstants.ImageDescriptionMaxLength;
 

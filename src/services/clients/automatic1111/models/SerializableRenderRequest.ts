@@ -24,7 +24,7 @@ export class SerializableRenderRequest {
     }
 
     toTxt2ImgOptionsRequest(): Txt2ImgOptionsRequest {
-        const options = Txt2ImgOptionsFactory.getBaseSettings(this.prompt);
+        const options = Txt2ImgOptionsFactory.getCurrentModelSettings(this.model, this.prompt);
 
         options.seed = this.seed;
         options.width = this.width;
@@ -63,7 +63,7 @@ export class SerializableRenderRequest {
         return instancedRequest;
     }
 
-    static fromTxt2ImgOptionsUpdated(options: Txt2ImgOptionsRequest, model: string, seed: number): SerializableRenderRequest {
+    static fromTxt2ImgOptionsRequest(options: Txt2ImgOptionsRequest, model: string, seed: number): SerializableRenderRequest {
         const request = new SerializableRenderRequest();
 
         request.prompt = options.prompt;

@@ -4,16 +4,12 @@ import { Logger, LogLevel } from 'meklog';
 import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { TaskStatus } from '../../../tasks/enums/TaskStatus.js';
-import { getRandomArrayEntry } from '../../../../utilities/random-utilities.js';
 import { ReplyService } from '../../discord/services/ReplyService.js';
-import { Automatic1111Client } from '../Automatic1111Client.js';
+import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
 import { Automatic1111ReplyService } from '../../discord/automatic1111/Automatic1111ReplyService.js';
-import { Txt2ImgOptionsFactory } from '../factories/Txt2ImgOptionsFactory.js';
 
-export class PromptRenderTask extends BaseTask {
-    #environmentSettings: EnvironmentSettings;
+export class JsonRenderTask extends BaseTask {
     #discordClient: DiscordClient;
-    #automatic1111Client: Automatic1111Client;
     #automatic1111ReplyService: Automatic1111ReplyService;
     #replyService: ReplyService;
 
@@ -22,41 +18,41 @@ export class PromptRenderTask extends BaseTask {
     #logger;
 
     override get taskChannel(): string {
-        return `Automatic1111_${this.#automatic1111Client.host}`;
+        return `Automatic1111_${this.#automatic1111ReplyService.easyDiffusionHost}`;
     }
 
     constructor(
         environmentSettings: EnvironmentSettings,
         discordClient: DiscordClient,
-        automatic1111Client: Automatic1111Client,
         automatic1111ReplyService: Automatic1111ReplyService,
         replyService: ReplyService,
         message: Message) {
         super(environmentSettings.maxTaskAttempts);
 
-        this.#environmentSettings = environmentSettings;
         this.#discordClient = discordClient;
-        this.#automatic1111Client = automatic1111Client;
         this.#automatic1111ReplyService = automatic1111ReplyService;
         this.#replyService = replyService;
         this.#message = message;
 
-        this.#logger = new Logger(environmentSettings.isProduction, 'PromptRenderTask');
+        this.#logger = new Logger(environmentSettings.isProduction, 'JsonRenderTask');
     }
 
     override async process(): Promise<void> {
+        this.#logger(LogLevel.Info, 'Processing a JsonRenderTask.');
+
         const botMention = this.#message.mentions.members.find(x => x.id === this.#discordClient.user?.id)?.toString() || '';
         const prompt = this.#message.content.replaceAll(botMention, '').trim();
 
-        const model = this.#environmentSettings.stableDiffusionModels.length > 0 ?
-            getRandomArrayEntry(this.#environmentSettings.stableDiffusionModels) :
-            getRandomArrayEntry(await this.#automatic1111Client.getModels()).model_name;
+        let request: SerializableRenderRequest;
 
-        this.#logger(LogLevel.Info, `Using ${model} as the selected Automatic1111 model.`);
+        try {
+            request = SerializableRenderRequest.fromJson(prompt);
+        } catch {
+           await this.#message.reply('You call that JSON? My grandmother could knit better JSON.');
+           return;
+        }
 
-        const request = Txt2ImgOptionsFactory.getCurrentModelSettings(model, prompt);
-
-        const renderData = await this.#automatic1111Client.render(request, model);
+        const renderData = await this.#automatic1111ReplyService.renderImage(request);
         await this.#automatic1111ReplyService.reply(this.#message, renderData);
     }
 

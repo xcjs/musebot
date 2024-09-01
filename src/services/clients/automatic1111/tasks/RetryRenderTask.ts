@@ -75,7 +75,7 @@ export class RetryRenderTask extends BaseTask {
         const renderData = await this.#automatic1111Client.render(request, model);
         const content = `${this.#interaction.member} re-rendered \`${request.prompt}\``.substring(0, DiscordConstants.ContentMaxLength);
 
-        await this.#automatic1111ReplyService.reply(this.#interaction, renderData, model, content);
+        await this.#automatic1111ReplyService.reply(this.#interaction, renderData, content);
     }
 
     override async postProcess(): Promise<void> {
