@@ -43,8 +43,8 @@ export class PromptRenderTask extends BaseTask {
         this.#automatic1111Client = automatic1111Client;
         this.#automatic1111ReplyService = automatic1111ReplyService;
         this.#replyService = replyService;
-        this.#message = message;
         this.#taskQueue = taskQueue;
+        this.#message = message;
 
         this.#logger = new Logger(environmentSettings.isProduction, 'PromptRenderTask');
     }
