@@ -9,6 +9,8 @@ import { ReplyService } from '../../discord/services/ReplyService.js';
 import { Automatic1111Client } from '../Automatic1111Client.js';
 import { Automatic1111ReplyService } from '../../discord/automatic1111/Automatic1111ReplyService.js';
 import { Txt2ImgOptionsFactory } from '../factories/Txt2ImgOptionsFactory.js';
+import { TaskQueue } from '../../../tasks/services/TaskQueue.js';
+import { JsonRenderTask } from './JsonRenderTask.js';
 
 export class PromptRenderTask extends BaseTask {
     #environmentSettings: EnvironmentSettings;
@@ -16,6 +18,7 @@ export class PromptRenderTask extends BaseTask {
     #automatic1111Client: Automatic1111Client;
     #automatic1111ReplyService: Automatic1111ReplyService;
     #replyService: ReplyService;
+    #taskQueue: TaskQueue;
 
     #message: Message;
 
@@ -31,6 +34,7 @@ export class PromptRenderTask extends BaseTask {
         automatic1111Client: Automatic1111Client,
         automatic1111ReplyService: Automatic1111ReplyService,
         replyService: ReplyService,
+        taskQueue: TaskQueue,
         message: Message) {
         super(environmentSettings.maxTaskAttempts);
 
@@ -39,6 +43,7 @@ export class PromptRenderTask extends BaseTask {
         this.#automatic1111Client = automatic1111Client;
         this.#automatic1111ReplyService = automatic1111ReplyService;
         this.#replyService = replyService;
+        this.#taskQueue = taskQueue;
         this.#message = message;
 
         this.#logger = new Logger(environmentSettings.isProduction, 'PromptRenderTask');
@@ -48,16 +53,26 @@ export class PromptRenderTask extends BaseTask {
         const botMention = this.#message.mentions.members.find(x => x.id === this.#discordClient.user?.id)?.toString() || '';
         const prompt = this.#message.content.replaceAll(botMention, '').trim();
 
+        if(prompt.charAt(0) === '{') {
+            this.#taskQueue.add(new JsonRenderTask(
+                this.#environmentSettings,
+                this.#discordClient,
+                this.#automatic1111ReplyService,
+                this.#replyService,
+                this.#message));
+            return;
+        }
+
         const model = this.#environmentSettings.stableDiffusionModels.length > 0 ?
             getRandomArrayEntry(this.#environmentSettings.stableDiffusionModels) :
             getRandomArrayEntry(await this.#automatic1111Client.getModels()).model_name;
 
         this.#logger(LogLevel.Info, `Using ${model} as the selected Automatic1111 model.`);
 
-        const request = Txt2ImgOptionsFactory.getFluxSettings(prompt);
+        const request = Txt2ImgOptionsFactory.getCurrentModelSettings(model, prompt);
 
         const renderData = await this.#automatic1111Client.render(request, model);
-        await this.#automatic1111ReplyService.reply(this.#message, renderData, model);
+        await this.#automatic1111ReplyService.reply(this.#message, renderData);
     }
 
     override async postProcess(): Promise<void> {

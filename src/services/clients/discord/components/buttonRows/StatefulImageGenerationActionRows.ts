@@ -1,5 +1,4 @@
 import { ActionRowBuilder, ButtonBuilder } from 'discord.js';
-import { Txt2ImgOptions } from '@lancercomet/sd-api';
 
 import { BaseComponent } from '../BaseComponent.js';
 import { RandomizeButton } from '../buttons/RandomizeButton.js';
@@ -15,12 +14,13 @@ import { EasyDiffusionGuidanceScaleLimit } from '../../../easy-diffusion/enums/E
 import { UpscaleButton } from '../buttons/UpscaleButton.js';
 import { ExpandPromptButton } from '../buttons/ExpandPromptButton.js';
 import { StableDiffusionGuidanceScaleLimit } from '../../../automatic1111/enums/StableDiffusionGuidanceScaleLimit.js';
+import { Txt2ImgOptionsRequest } from '../../../automatic1111/models/requests/Txt2ImgOptionsRequest.js';
 
 export class StatefulImageGenerationActionRows extends BaseComponent<Array<ActionRowBuilder<ButtonBuilder>>> {
     #environmentSettings: EnvironmentSettings;
-    #renderRequest: RenderRequest | Txt2ImgOptions;
+    #renderRequest: RenderRequest | Txt2ImgOptionsRequest;
 
-    constructor(environmentSettings: EnvironmentSettings, featureService: FeatureService, renderRequest: RenderRequest | Txt2ImgOptions) {
+    constructor(environmentSettings: EnvironmentSettings, featureService: FeatureService, renderRequest: RenderRequest | Txt2ImgOptionsRequest) {
         super(featureService);
         this.#environmentSettings = environmentSettings;
         this.#renderRequest = renderRequest;

@@ -7,7 +7,7 @@ export class RenderRequest {
     used_random_seed = true;
     negative_prompt = '';
     num_outputs = 1;
-    num_inference_steps = 35;
+    num_inference_steps = 25;
     guidance_scale = 7.5;
     width = 1024; // Discord image previews are 676x676.
     height = 1024;

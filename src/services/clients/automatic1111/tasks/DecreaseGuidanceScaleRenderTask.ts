@@ -11,7 +11,7 @@ import { MessageService } from '../../discord/services/MessageService.js';
 import { Automatic1111Client } from '../Automatic1111Client.js';
 import { Automatic1111ReplyService } from '../../discord/automatic1111/Automatic1111ReplyService.js';
 import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
-import { Txt2ImgOptionsUpdated } from '../models/Txt2ImgOptionsUpdated.js';
+import { Txt2ImgOptionsRequest } from '../models/requests/Txt2ImgOptionsRequest.js';
 
 export class DecreaseGuidanceScaleRenderTask extends BaseTask {
     #environmentSettings: EnvironmentSettings;
@@ -58,10 +58,10 @@ export class DecreaseGuidanceScaleRenderTask extends BaseTask {
 
         const imageAttachment = this.#messageService.getAttachmentsByType(this.#interaction, imageTypes)[0];
 
-        let request: Txt2ImgOptionsUpdated = null;
+        let request: Txt2ImgOptionsRequest = null;
 
         if(imageAttachment?.description) {
-            request = SerializableRenderRequest.fromJson(imageAttachment.description).toTxt2ImgOptionsUpdated();
+            request = SerializableRenderRequest.fromJson(imageAttachment.description).toTxt2ImgOptionsRequest();
             request.distilled_cfg_scale -= this.#environmentSettings.stableDiffusionGuidanceScaleInterval;
         }
 
@@ -69,13 +69,13 @@ export class DecreaseGuidanceScaleRenderTask extends BaseTask {
             getRandomArrayEntry(this.#environmentSettings.stableDiffusionModels) :
             getRandomArrayEntry(await this.#automatic1111Client.getModels()).model_name;
 
-        this.#logger(LogLevel.Info, `Using ${model} as the selected EasyDiffusion model.`);
+        this.#logger(LogLevel.Info, `Using ${model} as the selected image generation model.`);
 
         const renderData = await this.#automatic1111Client.render(request, model);
         const content = `The guidance scale was decreased from ${request.distilled_cfg_scale
             + this.#environmentSettings.stableDiffusionGuidanceScaleInterval} to ${request.distilled_cfg_scale} by ${this.#interaction.member}.`;
 
-        await this.#automatic1111ReplyService.reply(this.#interaction, renderData, model, content);
+        await this.#automatic1111ReplyService.reply(this.#interaction, renderData, content);
     }
 
     override async postProcess(): Promise<void> {
