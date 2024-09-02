@@ -67,8 +67,8 @@ export class TaskQueue {
                     }
 
                     if(promise.status === PromisedSettledResultStatus.Rejected) {
-                        this.#logger(LogLevel.Error, `A task was rejected ${task.numAttempts} time(s): ${promise.reason}`);
                         task.taskStatus = TaskStatus.Failed;
+                        this.#logger(LogLevel.Error, `A task was rejected ${task.numAttempts} time(s): ${promise.reason}`);
 
                         if(task.numAttempts === this.#environmentSettings.maxTaskAttempts) {
                             return task.postProcess();

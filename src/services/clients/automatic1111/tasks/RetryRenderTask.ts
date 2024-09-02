@@ -3,20 +3,21 @@ import { Logger, LogLevel } from 'meklog';
 
 import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
-import { EasyDiffusionClient } from '../EasyDiffusionClient.js';
+import { Automatic1111Client } from '../Automatic1111Client.js';
 import { TaskStatus } from '../../../tasks/enums/TaskStatus.js';
 import { ContentType } from '../../../../enums/ContentType.js';
-import { RenderRequest } from '../models/requests/RenderRequest.js';
 import { getRandomArrayEntry } from '../../../../utilities/random-utilities.js';
-import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiffusionReplyService.js';
 import { DiscordConstants } from '../../discord/enums/DiscordConstants.js';
 import { ReplyService } from '../../discord/services/ReplyService.js';
+import { Automatic1111ReplyService } from '../../discord/automatic1111/Automatic1111ReplyService.js';
 import { MessageService } from '../../discord/services/MessageService.js';
+import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
+import { Txt2ImgOptionsRequest } from '../models/requests/Txt2ImgOptionsRequest.js';
 
 export class RetryRenderTask extends BaseTask {
     #environmentSettings: EnvironmentSettings;
-    #easyDiffusionClient: EasyDiffusionClient;
-    #easyDiffusionReplyService: EasyDiffusionReplyService;
+    #automatic1111Client: Automatic1111Client;
+    #automatic1111ReplyService: Automatic1111ReplyService;
     #messageService: MessageService;
     #replyService: ReplyService;
 
@@ -25,21 +26,21 @@ export class RetryRenderTask extends BaseTask {
     #logger;
 
     override get taskChannel(): string {
-        return `EasyDiffusion_${this.#easyDiffusionClient.host}`;
+        return `Automatic1111_${this.#automatic1111Client.host}`;
     }
 
     constructor(
         environmentSettings: EnvironmentSettings,
-        easyDiffusionClient: EasyDiffusionClient,
-        easyDiffusionReplyService: EasyDiffusionReplyService,
+        automatic1111Client: Automatic1111Client,
+        automatic1111ReplyService: Automatic1111ReplyService,
         messageService: MessageService,
         replyService: ReplyService,
         interaction: ButtonInteraction) {
         super(environmentSettings.maxTaskAttempts);
 
         this.#environmentSettings = environmentSettings;
-        this.#easyDiffusionClient = easyDiffusionClient;
-        this.#easyDiffusionReplyService = easyDiffusionReplyService;
+        this.#automatic1111Client = automatic1111Client;
+        this.#automatic1111ReplyService = automatic1111ReplyService;
         this.#messageService = messageService;
         this.#replyService = replyService;
         this.#interaction = interaction;
@@ -58,23 +59,23 @@ export class RetryRenderTask extends BaseTask {
 
         const imageAttachment = this.#messageService.getAttachmentsByType(this.#interaction, imageTypes)[0];
 
-        let request: RenderRequest = null;
+        let request: Txt2ImgOptionsRequest = null;
 
         if(imageAttachment?.description) {
-            request = RenderRequest.fromJson(imageAttachment.description);
-            request.refreshSeed();
+            request = SerializableRenderRequest.fromJson(imageAttachment.description).toTxt2ImgOptionsRequest();
+            request.seed = -1;
         }
 
         const model = this.#environmentSettings.stableDiffusionModels.length > 0 ?
             getRandomArrayEntry(this.#environmentSettings.stableDiffusionModels) :
-            getRandomArrayEntry(await this.#easyDiffusionClient.getModels());
+            getRandomArrayEntry(await this.#automatic1111Client.getModels()).model_name;
 
-        this.#logger(LogLevel.Info, `Using ${model} as the selected EasyDiffusion model.`);
-        request.use_stable_diffusion_model = model;
+        this.#logger(LogLevel.Info, `Using ${model} as the selected image generation model.`);
 
-        const renderData = await this.#easyDiffusionReplyService.renderImage(request);
+        const renderData = await this.#automatic1111Client.render(request, model);
         const content = `${this.#interaction.member} re-rendered \`${request.prompt}\``.substring(0, DiscordConstants.ContentMaxLength);
-        await this.#easyDiffusionReplyService.reply(this.#interaction, renderData, content);
+
+        await this.#automatic1111ReplyService.reply(this.#interaction, renderData, content);
     }
 
     override async postProcess(): Promise<void> {

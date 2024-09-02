@@ -7,7 +7,7 @@ export class RenderRequest {
     used_random_seed = true;
     negative_prompt = '';
     num_outputs = 1;
-    num_inference_steps = 35;
+    num_inference_steps = 25;
     guidance_scale = 7.5;
     width = 1024; // Discord image previews are 676x676.
     height = 1024;
@@ -50,7 +50,7 @@ export class RenderRequest {
         return getRandomInt(0, 4294967295);
     }
 
-    static FromJson(renderRequestJson: string): RenderRequest {
+    static fromJson(renderRequestJson: string): RenderRequest {
         const requestObj = JSON.parse(renderRequestJson) as RenderRequest;
         const request = new RenderRequest(requestObj.use_stable_diffusion_model, requestObj.prompt);
 

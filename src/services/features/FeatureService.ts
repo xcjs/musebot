@@ -21,7 +21,7 @@ export class FeatureService {
     }
 
     #determineSupportedFeatures() {
-        if (this.#environmentSettings.easyDiffusionHosts.length) {
+        if (this.#environmentSettings.stableDiffusionHosts.length) {
             this.#supportedFeatures.push(SupportedFeature.ImageGeneration);
         }
 

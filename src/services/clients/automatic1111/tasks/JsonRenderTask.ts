@@ -3,14 +3,14 @@ import { Logger, LogLevel } from 'meklog';
 
 import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
-import { RenderRequest } from '../models/requests/RenderRequest.js';
 import { TaskStatus } from '../../../tasks/enums/TaskStatus.js';
-import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiffusionReplyService.js';
 import { ReplyService } from '../../discord/services/ReplyService.js';
+import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
+import { Automatic1111ReplyService } from '../../discord/automatic1111/Automatic1111ReplyService.js';
 
 export class JsonRenderTask extends BaseTask {
     #discordClient: DiscordClient;
-    #easyDiffusionReplyService: EasyDiffusionReplyService;
+    #automatic1111ReplyService: Automatic1111ReplyService;
     #replyService: ReplyService;
 
     #message: Message;
@@ -18,19 +18,19 @@ export class JsonRenderTask extends BaseTask {
     #logger;
 
     override get taskChannel(): string {
-        return `EasyDiffusion_${this.#easyDiffusionReplyService.host}`;
+        return `Automatic1111_${this.#automatic1111ReplyService.host}`;
     }
 
     constructor(
         environmentSettings: EnvironmentSettings,
         discordClient: DiscordClient,
-        easyDiffusionReplyService: EasyDiffusionReplyService,
+        automatic1111ReplyService: Automatic1111ReplyService,
         replyService: ReplyService,
         message: Message) {
         super(environmentSettings.maxTaskAttempts);
 
         this.#discordClient = discordClient;
-        this.#easyDiffusionReplyService = easyDiffusionReplyService;
+        this.#automatic1111ReplyService = automatic1111ReplyService;
         this.#replyService = replyService;
         this.#message = message;
 
@@ -43,18 +43,17 @@ export class JsonRenderTask extends BaseTask {
         const botMention = this.#message.mentions.members.find(x => x.id === this.#discordClient.user?.id)?.toString() || '';
         const prompt = this.#message.content.replaceAll(botMention, '').trim();
 
-        let request: RenderRequest;
+        let request: SerializableRenderRequest;
 
         try {
-            request = RenderRequest.fromJson(prompt);
-            request.num_outputs = 1;
+            request = SerializableRenderRequest.fromJson(prompt);
         } catch {
            await this.#message.reply('You call that JSON? My grandmother could knit better JSON.');
            return;
         }
 
-        const renderData = await this.#easyDiffusionReplyService.renderImage(request);
-        await this.#easyDiffusionReplyService.reply(this.#message, renderData);
+        const renderData = await this.#automatic1111ReplyService.renderImage(request.toTxt2ImgOptionsRequest(), request.model);
+        await this.#automatic1111ReplyService.reply(this.#message, renderData);
     }
 
     override async postProcess(): Promise<void> {

@@ -5,15 +5,15 @@ import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { TaskStatus } from '../../../tasks/enums/TaskStatus.js';
 import { ContentType } from '../../../../enums/ContentType.js';
-import { RenderRequest } from '../models/requests/RenderRequest.js';
-import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiffusionReplyService.js';
 import { DiscordConstants } from '../../discord/enums/DiscordConstants.js';
 import { ReplyService } from '../../discord/services/ReplyService.js';
-import { UpscaledRenderRequest } from '../models/requests/UpscaledRenderRequest.js';
 import { MessageService } from '../../discord/services/MessageService.js';
+import { Automatic1111ReplyService } from '../../discord/automatic1111/Automatic1111ReplyService.js';
+import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
+import { Txt2ImgOptionsRequest } from '../models/requests/Txt2ImgOptionsRequest.js';
 
 export class UpscaleRenderTask extends BaseTask {
-    #easyDiffusionReplyService: EasyDiffusionReplyService;
+    #automatic1111ReplyService: Automatic1111ReplyService;
     #messageService: MessageService;
     #replyService: ReplyService;
 
@@ -22,18 +22,18 @@ export class UpscaleRenderTask extends BaseTask {
     #logger;
 
     override get taskChannel(): string {
-        return `EasyDiffusion_${this.#easyDiffusionReplyService.host}`;
+        return `Automatic1111_${this.#automatic1111ReplyService.host}`;
     }
 
     constructor(
         environmentSettings: EnvironmentSettings,
-        easyDiffusionReplyService: EasyDiffusionReplyService,
+        automatic1111ReplyService: Automatic1111ReplyService,
         messageService: MessageService,
         replyService: ReplyService,
         interaction: ButtonInteraction) {
         super(environmentSettings.maxTaskAttempts);
 
-        this.#easyDiffusionReplyService = easyDiffusionReplyService;
+        this.#automatic1111ReplyService = automatic1111ReplyService;
         this.#messageService = messageService;
         this.#replyService = replyService;
         this.#interaction = interaction;
@@ -52,15 +52,12 @@ export class UpscaleRenderTask extends BaseTask {
 
         const imageAttachment = this.#messageService.getAttachmentsByType(this.#interaction, imageTypes)[0];
 
-        let request: RenderRequest = null;
+        const descriptionRequest = SerializableRenderRequest.fromJson(imageAttachment.description);
+        const request: Txt2ImgOptionsRequest = descriptionRequest.toTxt2ImgOptionsRequest();
 
-        if(imageAttachment?.description) {
-            request = UpscaledRenderRequest.FromRenderRequest(RenderRequest.fromJson(imageAttachment.description));
-        }
-
-        const renderData = await this.#easyDiffusionReplyService.renderImage(request);
+        const renderData = await this.#automatic1111ReplyService.renderImage(request, descriptionRequest.model);
         const content = `${this.#interaction.member} upscaled \`${request.prompt}\``.substring(0, DiscordConstants.ContentMaxLength);
-        await this.#easyDiffusionReplyService.reply(this.#interaction, renderData, content);
+        await this.#automatic1111ReplyService.reply(this.#interaction, renderData, content);
     }
 
     override async postProcess(): Promise<void> {

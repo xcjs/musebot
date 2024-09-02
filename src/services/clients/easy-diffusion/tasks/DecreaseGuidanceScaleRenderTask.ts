@@ -10,11 +10,13 @@ import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiff
 import { EasyDiffusionClient } from '../EasyDiffusionClient.js';
 import { RenderRequest } from '../models/requests/RenderRequest.js';
 import { ReplyService } from '../../discord/services/ReplyService.js';
+import { MessageService } from '../../discord/services/MessageService.js';
 
 export class DecreaseGuidanceScaleRenderTask extends BaseTask {
     #environmentSettings: EnvironmentSettings;
     #easyDiffusionClient: EasyDiffusionClient;
     #easyDiffusionReplyService: EasyDiffusionReplyService;
+    #messageService: MessageService;
     #replyService: ReplyService;
 
     #interaction: ButtonInteraction;
@@ -29,6 +31,7 @@ export class DecreaseGuidanceScaleRenderTask extends BaseTask {
         environmentSettings: EnvironmentSettings,
         easyDiffusionClient: EasyDiffusionClient,
         easyDiffusionReplyService: EasyDiffusionReplyService,
+        messageService: MessageService,
         replyService: ReplyService,
         interaction: ButtonInteraction) {
         super(environmentSettings.maxTaskAttempts);
@@ -36,6 +39,7 @@ export class DecreaseGuidanceScaleRenderTask extends BaseTask {
         this.#environmentSettings = environmentSettings;
         this.#easyDiffusionClient = easyDiffusionClient;
         this.#easyDiffusionReplyService = easyDiffusionReplyService;
+        this.#messageService = messageService;
         this.#replyService = replyService;
         this.#interaction = interaction;
 
@@ -51,26 +55,26 @@ export class DecreaseGuidanceScaleRenderTask extends BaseTask {
             ContentType.Png
         ];
 
-        const imageAttachment = this.#easyDiffusionReplyService.getAttachmentsByType(this.#interaction, imageTypes)[0];
+        const imageAttachment = this.#messageService.getAttachmentsByType(this.#interaction, imageTypes)[0];
 
         let request: RenderRequest = null;
 
         if(imageAttachment?.description) {
-            request = RenderRequest.FromJson(imageAttachment.description);
-            request.guidance_scale -= this.#environmentSettings.easyDiffusionGuidanceScaleInterval;
+            request = RenderRequest.fromJson(imageAttachment.description);
+            request.guidance_scale -= this.#environmentSettings.stableDiffusionGuidanceScaleInterval;
         }
 
-        const model = this.#environmentSettings.easyDiffusionModels.length > 0 ?
-            getRandomArrayEntry(this.#environmentSettings.easyDiffusionModels) :
+        const model = this.#environmentSettings.stableDiffusionModels.length > 0 ?
+            getRandomArrayEntry(this.#environmentSettings.stableDiffusionModels) :
             getRandomArrayEntry(await this.#easyDiffusionClient.getModels());
 
         this.#logger(LogLevel.Info, `Using ${model} as the selected EasyDiffusion model.`);
 
         const renderData = await this.#easyDiffusionReplyService.renderImage(request);
         const content = `The guidance scale was decreased from ${request.guidance_scale
-            + this.#environmentSettings.easyDiffusionGuidanceScaleInterval} to ${request.guidance_scale} by ${this.#interaction.member}.`;
+            + this.#environmentSettings.stableDiffusionGuidanceScaleInterval} to ${request.guidance_scale} by ${this.#interaction.member}.`;
 
-        await this.#easyDiffusionReplyService.reply(this.#interaction, renderData, content, null);
+        await this.#easyDiffusionReplyService.reply(this.#interaction, renderData, content);
     }
 
     override async postProcess(): Promise<void> {

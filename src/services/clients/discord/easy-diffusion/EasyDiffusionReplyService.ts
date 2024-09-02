@@ -1,4 +1,4 @@
-import { Attachment, AttachmentBuilder, BaseMessageOptions, ButtonInteraction, Message } from 'discord.js';
+import { AttachmentBuilder, BaseMessageOptions, ButtonInteraction, Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
 import { IHttpExchangeWithAttachedResponse } from '../../../../models/IHttpExchangeWithAttachedResponse.js';
@@ -13,7 +13,6 @@ import { StatelessImageGenerationActionRow } from '../components/buttonRows/Stat
 import { FeatureService } from '../../../features/FeatureService.js';
 import { MAX_FILE_NAME_LENGTH } from '../../../../enums/FileConstants.js';
 import { EasyDiffusionClient } from '../../easy-diffusion/EasyDiffusionClient.js';
-import { ContentType } from '../../../../enums/ContentType.js';
 import { UpscaledRenderRequest } from '../../easy-diffusion/models/requests/UpscaledRenderRequest.js';
 
 export class EasyDiffusionReplyService {
@@ -23,7 +22,7 @@ export class EasyDiffusionReplyService {
 
     #logger;
 
-    get easyDiffusionHost() {
+    get host() {
         return this.#easyDiffusionClient.host;
     }
 
@@ -33,22 +32,6 @@ export class EasyDiffusionReplyService {
         this.#easyDiffusionClient = easyDiffusionClient;
 
         this.#logger = new Logger(environmentSettings.isProduction, 'EasyDiffusionReplyService');
-    }
-
-    getAttachmentsByType(interaction: Message | ButtonInteraction, contentTypes: Array<ContentType>): Array<Attachment> {
-        let attachments: Array<Attachment>;
-
-        if(interaction instanceof Message) {
-            attachments = Array.from(interaction.attachments, ([name, value]) => ({ name, value })).map(x => x.value);
-        } else if(interaction instanceof ButtonInteraction) {
-            attachments = Array.from(interaction.message.attachments, ([name, value]) => ({ name, value })).map(x => x.value);
-        }
-
-        const matchingAttachments = attachments.filter(attachment =>
-            contentTypes.includes(Object.values(ContentType)
-                .find(contentTypeValue => contentTypeValue === attachment.contentType)));
-
-        return matchingAttachments;
     }
 
     async renderImage(request: RenderRequest | UpscaledRenderRequest): Promise<IHttpExchangeWithAttachedResponse<RenderRequest, IRenderResponse, IStreamResponse>> {
@@ -75,7 +58,7 @@ export class EasyDiffusionReplyService {
     async reply(
         interaction: Message | ButtonInteraction,
         renderData: IHttpExchangeWithAttachedResponse<RenderRequest, IRenderResponse, IStreamResponse>,
-        content: string | null,
+        content: string | null = null,
         additionalAttachments: Array<AttachmentBuilder> | null = null,
         isEdit: boolean = false): Promise<void> {
         const renderRequest = renderData.exchange.request;

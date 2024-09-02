@@ -1,4 +1,4 @@
 export enum StableDiffusionGuidanceScaleLimit {
-    Min = 1.1,
-    Max = 50
+    Min = 0,
+    Max = 30
 }

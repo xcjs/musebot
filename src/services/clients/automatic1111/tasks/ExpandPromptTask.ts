@@ -3,23 +3,23 @@ import { Logger, LogLevel } from 'meklog';
 
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
-import { EasyDiffusionClient } from '../EasyDiffusionClient.js';
-import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiffusionReplyService.js';
 import { TaskStatus } from '../../../tasks/enums/TaskStatus.js';
-import { RenderRequest } from '../models/requests/RenderRequest.js';
 import { OllamaClient } from '../../ollama/OllamaClient.js';
 import { ReplyService } from '../../discord/services/ReplyService.js';
 import { ContentType } from '../../../../enums/ContentType.js';
-import { AttachRenderTask } from './AttachRenderTask.js';
 import { TaskQueue } from '../../../tasks/services/TaskQueue.js';
 import { MessageService } from '../../discord/services/MessageService.js';
+import { Automatic1111Client } from '../Automatic1111Client.js';
+import { Automatic1111ReplyService } from '../../discord/automatic1111/Automatic1111ReplyService.js';
+import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
+import { AttachRenderTask } from './AttachRenderTask.js';
 
 export class ExpandPromptTask extends BaseTask {
     #environmentSettings: EnvironmentSettings;
 
     #ollamaClient: OllamaClient;
-    #easyDiffusionClient: EasyDiffusionClient;
-    #easyDiffusionReplyService: EasyDiffusionReplyService;
+    #automatic1111Client: Automatic1111Client;
+    #automatic1111ReplyService: Automatic1111ReplyService;
     #messageService: MessageService;
     #replyService: ReplyService;
     #taskQueue: TaskQueue;
@@ -35,8 +35,8 @@ export class ExpandPromptTask extends BaseTask {
     constructor(
         environmentSettings: EnvironmentSettings,
         ollamaClient: OllamaClient,
-        easyDiffusionClient: EasyDiffusionClient,
-        easyDiffusionReplyService: EasyDiffusionReplyService,
+        automatic1111Client: Automatic1111Client,
+        automatic1111ReplyService: Automatic1111ReplyService,
         messageService: MessageService,
         replyService: ReplyService,
         taskQueue: TaskQueue,
@@ -45,8 +45,8 @@ export class ExpandPromptTask extends BaseTask {
 
         this.#environmentSettings = environmentSettings;
         this.#ollamaClient = ollamaClient;
-        this.#easyDiffusionClient = easyDiffusionClient;
-        this.#easyDiffusionReplyService = easyDiffusionReplyService;
+        this.#automatic1111Client = automatic1111Client;
+        this.#automatic1111ReplyService = automatic1111ReplyService;
         this.#messageService = messageService;
         this.#replyService = replyService;
         this.#taskQueue = taskQueue;
@@ -65,7 +65,7 @@ export class ExpandPromptTask extends BaseTask {
         ];
 
         const imageAttachment = this.#messageService.getAttachmentsByType(this.#interaction, imageTypes)[0];
-        const originalRequest = RenderRequest.fromJson(imageAttachment.description);
+        const originalRequest = SerializableRenderRequest.fromJson(imageAttachment.description);
 
         const prompt = `The following is a prompt used to generate an image - expand it with meticulous detail so it can be rendered better: ${originalRequest.prompt}`;
         this.#logger(LogLevel.Info, `Calling Ollama with "${prompt}" to get an expanded prompt.`);
@@ -76,8 +76,8 @@ export class ExpandPromptTask extends BaseTask {
 
         this.#taskQueue.add(new AttachRenderTask(
             this.#environmentSettings,
-            this.#easyDiffusionClient,
-            this.#easyDiffusionReplyService,
+            this.#automatic1111Client,
+            this.#automatic1111ReplyService,
             this.#replyService,
             this.#interaction,
             exchange.response.response,

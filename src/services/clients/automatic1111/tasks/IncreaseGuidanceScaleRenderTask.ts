@@ -6,16 +6,17 @@ import { getRandomArrayEntry } from '../../../../utilities/random-utilities.js';
 import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
 import { TaskStatus } from '../../../tasks/enums/TaskStatus.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
-import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiffusionReplyService.js';
-import { EasyDiffusionClient } from '../EasyDiffusionClient.js';
-import { RenderRequest } from '../models/requests/RenderRequest.js';
 import { ReplyService } from '../../discord/services/ReplyService.js';
 import { MessageService } from '../../discord/services/MessageService.js';
+import { Automatic1111Client } from '../Automatic1111Client.js';
+import { Automatic1111ReplyService } from '../../discord/automatic1111/Automatic1111ReplyService.js';
+import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
+import { Txt2ImgOptionsRequest } from '../models/requests/Txt2ImgOptionsRequest.js';
 
 export class IncreaseGuidanceScaleRenderTask extends BaseTask {
     #environmentSettings: EnvironmentSettings;
-    #easyDiffusionClient: EasyDiffusionClient;
-    #easyDiffusionReplyService: EasyDiffusionReplyService;
+    #automatic1111Client: Automatic1111Client;
+    #automatic1111ReplyService: Automatic1111ReplyService;
     #messageService: MessageService;
     #replyService: ReplyService;
 
@@ -24,30 +25,30 @@ export class IncreaseGuidanceScaleRenderTask extends BaseTask {
     #logger;
 
     override get taskChannel(): string {
-        return `EasyDiffusion_${this.#easyDiffusionClient.host}`;
+        return `Automatic1111_${this.#automatic1111Client.host}`;
     }
 
     constructor(
         environmentSettings: EnvironmentSettings,
-        easyDiffusionClient: EasyDiffusionClient,
-        easyDiffusionReplyService: EasyDiffusionReplyService,
+        automatic1111Client: Automatic1111Client,
+        automatic1111ReplyService: Automatic1111ReplyService,
         messageService: MessageService,
         replyService: ReplyService,
         interaction: ButtonInteraction) {
         super(environmentSettings.maxTaskAttempts);
 
         this.#environmentSettings = environmentSettings;
-        this.#easyDiffusionClient = easyDiffusionClient;
-        this.#easyDiffusionReplyService = easyDiffusionReplyService;
+        this.#automatic1111Client = automatic1111Client;
+        this.#automatic1111ReplyService = automatic1111ReplyService;
         this.#messageService = messageService;
         this.#replyService = replyService;
         this.#interaction = interaction;
 
-        this.#logger = new Logger(environmentSettings.isProduction, 'IncreaseGuidanceScaleRenderTask');
+        this.#logger = new Logger(environmentSettings.isProduction, 'DecreaseGuidanceScaleRenderTask');
     }
 
     override async process(): Promise<void> {
-        this.#logger(LogLevel.Info, 'Processing a IncreaseGuidanceScaleRenderTask.');
+        this.#logger(LogLevel.Info, 'Processing a DecreaseGuidanceScaleRenderTask.');
 
         const imageTypes = [
             ContentType.Jpeg,
@@ -57,24 +58,24 @@ export class IncreaseGuidanceScaleRenderTask extends BaseTask {
 
         const imageAttachment = this.#messageService.getAttachmentsByType(this.#interaction, imageTypes)[0];
 
-        let request: RenderRequest = null;
+        let request: Txt2ImgOptionsRequest = null;
 
         if(imageAttachment?.description) {
-            request = RenderRequest.fromJson(imageAttachment.description);
-            request.guidance_scale += this.#environmentSettings.stableDiffusionGuidanceScaleInterval;
+            request = SerializableRenderRequest.fromJson(imageAttachment.description).toTxt2ImgOptionsRequest();
+            request.distilled_cfg_scale += this.#environmentSettings.stableDiffusionGuidanceScaleInterval;
         }
 
         const model = this.#environmentSettings.stableDiffusionModels.length > 0 ?
             getRandomArrayEntry(this.#environmentSettings.stableDiffusionModels) :
-            getRandomArrayEntry(await this.#easyDiffusionClient.getModels());
+            getRandomArrayEntry(await this.#automatic1111Client.getModels()).model_name;
 
         this.#logger(LogLevel.Info, `Using ${model} as the selected EasyDiffusion model.`);
 
-        const renderData = await this.#easyDiffusionReplyService.renderImage(request);
-        const content = `The guidance scale was increased from ${request.guidance_scale
-            - this.#environmentSettings.stableDiffusionGuidanceScaleInterval} to ${request.guidance_scale} by ${this.#interaction.member}.`;
+        const renderData = await this.#automatic1111Client.render(request, model);
+        const content = `The guidance scale was increased from ${request.distilled_cfg_scale
+            - this.#environmentSettings.stableDiffusionGuidanceScaleInterval} to ${request.distilled_cfg_scale} by ${this.#interaction.member}.`;
 
-        await this.#easyDiffusionReplyService.reply(this.#interaction, renderData, content);
+        await this.#automatic1111ReplyService.reply(this.#interaction, renderData, content);
     }
 
     override async postProcess(): Promise<void> {
