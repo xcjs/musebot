@@ -91,6 +91,6 @@ export class Automatic1111ReplyService {
     }
 
     getFileNameFromPrompt(renderRequest: Txt2ImgOptionsRequest | SerializableRenderRequest): string {
-        return `${renderRequest.prompt}`.substring(0, MAX_FILE_NAME_LENGTH);
+        return `${renderRequest.seed}_${renderRequest.prompt}`.substring(0, MAX_FILE_NAME_LENGTH);
     }
 }
