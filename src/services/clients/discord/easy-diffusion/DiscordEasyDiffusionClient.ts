@@ -19,7 +19,6 @@ import { ShowSourceTask } from '../../easy-diffusion/tasks/ShowSourceTask.js';
 import { DecreaseGuidanceScaleRenderTask } from '../../easy-diffusion/tasks/DecreaseGuidanceScaleRenderTask.js';
 import { IncreaseGuidanceScaleRenderTask } from '../../easy-diffusion/tasks/IncreaseGuidanceScaleRenderTask.js';
 import { RandomRenderTask } from '../../easy-diffusion/tasks/RandomRenderTask.js';
-import { ReplyService } from '../services/ReplyService.js';
 import { TypingService } from '../services/TypingService.js';
 import { UpscaleRenderTask } from '../../easy-diffusion/tasks/UpscaleRenderTask.js';
 import { ExpandPromptTask } from '../../easy-diffusion/tasks/ExpandPromptTask.js';
@@ -31,7 +30,6 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
     #ollamaClient: OllamaClient;
     #easyDiffusionReplyService: EasyDiffusionReplyService;
     #messageService: MessageService;
-    #replyService: ReplyService;
 
     constructor(
         environmentSettings: EnvironmentSettings,
@@ -45,7 +43,6 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
         this.#messageService = messageService;
 
         this.#resetTransitiveServices();
-        this.#replyService = new ReplyService(environmentSettings, this.client);
 
         this.logger = new Logger(this.environmentSettings.isProduction, 'DiscordEasyDiffusionClient');
 
@@ -99,7 +96,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
             this.client,
             this.#easyDiffusionClient,
             this.#easyDiffusionReplyService,
-            this.#replyService,
+            this.replyService,
             message,
             this.taskQueue));
 
@@ -149,7 +146,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
             this.#easyDiffusionClient,
             this.#easyDiffusionReplyService,
             this.#messageService,
-            this.#replyService,
+            this.replyService,
             interaction));
     }
 
@@ -168,7 +165,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
             this.environmentSettings,
             this.#easyDiffusionReplyService,
             this.#messageService,
-            this.#replyService,
+            this.replyService,
             interaction));
     }
 
@@ -178,7 +175,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
             this.#easyDiffusionClient,
             this.#easyDiffusionReplyService,
             this.#messageService,
-            this.#replyService,
+            this.replyService,
             interaction));
     }
 
@@ -188,7 +185,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
             this.#easyDiffusionClient,
             this.#easyDiffusionReplyService,
             this.#messageService,
-            this.#replyService,
+            this.replyService,
             interaction));
     }
 
@@ -199,7 +196,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
             this.#easyDiffusionClient,
             this.#easyDiffusionReplyService,
             this.#messageService,
-            this.#replyService,
+            this.replyService,
             this.taskQueue,
             interaction));
     }
@@ -209,7 +206,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
             this.environmentSettings,
             this.#easyDiffusionClient,
             this.#easyDiffusionReplyService,
-            this.#replyService,
+            this.replyService,
             interaction));
     }
 }

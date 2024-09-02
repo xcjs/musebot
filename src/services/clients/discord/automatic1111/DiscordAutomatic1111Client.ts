@@ -10,7 +10,6 @@ import { DiscordPresenceStatus } from '../enums/DiscordPresenceStatus.js';
 import { BaseDiscordClient } from '../BaseDiscordClient.js';
 import { TaskQueue } from '../../../tasks/services/TaskQueue.js';
 import { FeatureService } from '../../../features/FeatureService.js';
-import { ReplyService } from '../services/ReplyService.js';
 import { TypingService } from '../services/TypingService.js';
 import { Automatic1111Client } from '../../automatic1111/Automatic1111Client.js';
 import { Automatic1111ReplyService } from './Automatic1111ReplyService.js';
@@ -24,13 +23,13 @@ import { IncreaseGuidanceScaleRenderTask } from '../../automatic1111/tasks/Incre
 import { ExpandPromptTask } from '../../automatic1111/tasks/ExpandPromptTask.js';
 import { OllamaClient } from '../../ollama/OllamaClient.js';
 import { UpscaleRenderTask } from '../../automatic1111/tasks/UpscaleRenderTask.js';
+import { RandomRenderTask } from '../../automatic1111/tasks/RandomRenderTask.js';
 
 export class DiscordAutomatic1111Client extends BaseDiscordClient {
     #automatic1111Client: Automatic1111Client;
     #ollamaClient: OllamaClient;
     #automatic1111ReplyService: Automatic1111ReplyService;
     #messageService: MessageService;
-    #replyService: ReplyService;
 
     constructor(
         environmentSettings: EnvironmentSettings,
@@ -44,7 +43,6 @@ export class DiscordAutomatic1111Client extends BaseDiscordClient {
         this.#messageService = messageService;
 
         this.#resetTransitiveServices();
-        this.#replyService = new ReplyService(environmentSettings, this.client);
 
         this.logger = new Logger(this.environmentSettings.isProduction, 'DiscordAutomatic1111Client');
 
@@ -98,7 +96,7 @@ export class DiscordAutomatic1111Client extends BaseDiscordClient {
             this.client,
             this.#automatic1111Client,
             this.#automatic1111ReplyService,
-            this.#replyService,
+            this.replyService,
             this.taskQueue,
             message));
 
@@ -148,7 +146,7 @@ export class DiscordAutomatic1111Client extends BaseDiscordClient {
             this.#automatic1111Client,
             this.#automatic1111ReplyService,
             this.#messageService,
-            this.#replyService,
+            this.replyService,
             interaction));
     }
 
@@ -157,7 +155,7 @@ export class DiscordAutomatic1111Client extends BaseDiscordClient {
             this.environmentSettings,
             this.#automatic1111ReplyService,
             this.#messageService,
-            this.#replyService,
+            this.replyService,
             interaction
         ));
     }
@@ -167,7 +165,7 @@ export class DiscordAutomatic1111Client extends BaseDiscordClient {
             this.environmentSettings,
             this.#automatic1111ReplyService,
             this.#messageService,
-            this.#replyService,
+            this.replyService,
             interaction
         ));
     }
@@ -178,7 +176,7 @@ export class DiscordAutomatic1111Client extends BaseDiscordClient {
             this.#automatic1111Client,
             this.#automatic1111ReplyService,
             this.#messageService,
-            this.#replyService,
+            this.replyService,
             interaction
        ));
     }
@@ -189,7 +187,7 @@ export class DiscordAutomatic1111Client extends BaseDiscordClient {
             this.#automatic1111Client,
             this.#automatic1111ReplyService,
             this.#messageService,
-            this.#replyService,
+            this.replyService,
             interaction
        ));
     }
@@ -208,6 +206,12 @@ export class DiscordAutomatic1111Client extends BaseDiscordClient {
     }
 
     #randomize(interaction: ButtonInteraction) {
-        console.log(interaction);
+        this.taskQueue.add(new RandomRenderTask(
+            this.environmentSettings,
+            this.#automatic1111Client,
+            this.#automatic1111ReplyService,
+            this.replyService,
+            interaction
+        ));
     }
 }
