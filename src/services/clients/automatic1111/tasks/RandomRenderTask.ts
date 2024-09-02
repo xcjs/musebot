@@ -52,7 +52,7 @@ export class RandomRenderTask extends BaseTask {
             getRandomArrayEntry(this.#environmentSettings.stableDiffusionModels) :
             getRandomArrayEntry(await this.#automatic1111Client.getModels()).model_name;
 
-        this.#logger(LogLevel.Info, `Using ${model} as the selected EasyDiffusion model.`);
+        this.#logger(LogLevel.Info, `Using ${model} as the selected image generation model.`);
 
         const ollamaClient = new OllamaClient(this.#environmentSettings);
         const prompt = getRandomArrayEntry(this.#environmentSettings.stableDiffusionOllamaPrompts);

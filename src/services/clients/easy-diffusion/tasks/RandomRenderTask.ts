@@ -63,7 +63,7 @@ export class RandomRenderTask extends BaseTask {
 
         const content = `Two AIs whisper to each other over the the ancient \`TCP/IP\` protocol. They present ${this.#interaction.member} with this.`;
 
-        const promptBuffer = Buffer.from(wrapText(request.prompt, MAX_TEXT_LINE_LENGTH),
+        const promptBuffer = Buffer.from(wrapText(request.prompt, MAX_TEXT_LINE_LENGTH).trim(),
             BufferEncoding.UTF8);
 
         const promptAttachment = new AttachmentBuilder(promptBuffer, {
