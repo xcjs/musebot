@@ -162,20 +162,20 @@ export class PromptResponseTask extends BaseTask {
         let renderTask: BaseTask;
 
         if(this.#environmentSettings.stableDiffusionApiType === StableDiffusionApiType.EasyDiffusion) {
-            renderTask = new A1AttachRenderTask(
+            renderTask = new EdAttachRenderTask(
                 this.#environmentSettings,
-                this.#automatic1111Client,
-                this.#automatic1111ReplyService,
+                this.#easyDiffusionClient,
+                this.#easyDiffusionReplyService,
                 this.#replyService,
                 lastReply,
                 prompt,
                 lastReply.content,
                 true);
         } else {
-            renderTask = new EdAttachRenderTask(
+            renderTask = new A1AttachRenderTask(
                 this.#environmentSettings,
-                this.#easyDiffusionClient,
-                this.#easyDiffusionReplyService,
+                this.#automatic1111Client,
+                this.#automatic1111ReplyService,
                 this.#replyService,
                 lastReply,
                 prompt,
