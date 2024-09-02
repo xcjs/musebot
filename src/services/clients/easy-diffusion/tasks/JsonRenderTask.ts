@@ -18,7 +18,7 @@ export class JsonRenderTask extends BaseTask {
     #logger;
 
     override get taskChannel(): string {
-        return `EasyDiffusion_${this.#easyDiffusionReplyService.easyDiffusionHost}`;
+        return `EasyDiffusion_${this.#easyDiffusionReplyService.host}`;
     }
 
     constructor(

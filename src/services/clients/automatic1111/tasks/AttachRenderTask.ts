@@ -58,7 +58,7 @@ export class AttachRenderTask extends BaseTask {
         this.#logger(LogLevel.Info, `Using ${model} as the selected EasyDiffusion model.`);
 
         const request = Txt2ImgOptionsFactory.getCurrentModelSettings(model, this.#prompt)
-        const renderData = await this.#automatic1111ReplyService.renderImage(request);
+        const renderData = await this.#automatic1111ReplyService.renderImage(request, model);
 
         if(this.#interaction instanceof ButtonInteraction || this.#isEdit) {
             await this.#automatic1111ReplyService.reply(this.#interaction, renderData, this.#content, null, true);

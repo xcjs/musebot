@@ -23,6 +23,7 @@ import { DecreaseGuidanceScaleRenderTask } from '../../automatic1111/tasks/Decre
 import { IncreaseGuidanceScaleRenderTask } from '../../automatic1111/tasks/IncreaseGuidanceScaleRenderTask.js';
 import { ExpandPromptTask } from '../../automatic1111/tasks/ExpandPromptTask.js';
 import { OllamaClient } from '../../ollama/OllamaClient.js';
+import { UpscaleRenderTask } from '../../automatic1111/tasks/UpscaleRenderTask.js';
 
 export class DiscordAutomatic1111Client extends BaseDiscordClient {
     #automatic1111Client: Automatic1111Client;
@@ -152,7 +153,13 @@ export class DiscordAutomatic1111Client extends BaseDiscordClient {
     }
 
     #upscale(interaction: ButtonInteraction) {
-        console.log(interaction);
+        this.taskQueue.add(new UpscaleRenderTask(
+            this.environmentSettings,
+            this.#automatic1111ReplyService,
+            this.#messageService,
+            this.#replyService,
+            interaction
+        ));
     }
 
     #showSource(interaction: ButtonInteraction): void {

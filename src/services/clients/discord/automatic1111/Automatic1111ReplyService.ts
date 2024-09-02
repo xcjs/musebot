@@ -13,7 +13,6 @@ import { StatefulImageGenerationActionRows } from '../components/buttonRows/Stat
 import { StatelessImageGenerationActionRow } from '../components/buttonRows/StatelessImageGenerationActionRow.js';
 import { Txt2ImgOptionsRequest } from '../../automatic1111/models/requests/Txt2ImgOptionsRequest.js';
 import { Txt2ImgOptionsResponse } from '../../automatic1111/models/responses/Txt2ImgOptionsResponse.js';
-import { getRandomArrayEntry } from '../../../../utilities/random-utilities.js';
 
 export class Automatic1111ReplyService {
     #environmentSettings: EnvironmentSettings;
@@ -22,7 +21,7 @@ export class Automatic1111ReplyService {
 
     #logger;
 
-    get easyDiffusionHost() {
+    get host() {
         return this.#automatic1111Client.host;
     }
 
@@ -34,12 +33,8 @@ export class Automatic1111ReplyService {
         this.#logger = new Logger(this.#environmentSettings.isProduction, 'Automatic1111ReplyService');
     }
 
-    async renderImage(request: Txt2ImgOptionsRequest): Promise<IHttpExchangeWithAttachedData<Txt2ImgOptionsRequest, Txt2ImgOptionsResponse, string>> {
+    async renderImage(request: Txt2ImgOptionsRequest, model: string): Promise<IHttpExchangeWithAttachedData<Txt2ImgOptionsRequest, Txt2ImgOptionsResponse, string>> {
         this.#logger(LogLevel.Info, `Render prompt: ${request.prompt}`);
-
-        const model = this.#environmentSettings.stableDiffusionModels.length > 0 ?
-            getRandomArrayEntry(this.#environmentSettings.stableDiffusionModels) :
-            getRandomArrayEntry(await this.#automatic1111Client.getModels()).model_name;
 
         const renderExchange = await this.#automatic1111Client.render(request, model);
 

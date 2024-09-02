@@ -18,7 +18,7 @@ export class JsonRenderTask extends BaseTask {
     #logger;
 
     override get taskChannel(): string {
-        return `Automatic1111_${this.#automatic1111ReplyService.easyDiffusionHost}`;
+        return `Automatic1111_${this.#automatic1111ReplyService.host}`;
     }
 
     constructor(
@@ -52,7 +52,7 @@ export class JsonRenderTask extends BaseTask {
            return;
         }
 
-        const renderData = await this.#automatic1111ReplyService.renderImage(request.toTxt2ImgOptionsRequest());
+        const renderData = await this.#automatic1111ReplyService.renderImage(request.toTxt2ImgOptionsRequest(), request.model);
         await this.#automatic1111ReplyService.reply(this.#message, renderData);
     }
 
