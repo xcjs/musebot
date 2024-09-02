@@ -49,8 +49,6 @@ export class TypingService {
     }
 
     async #onTypingInterval(message: Message | ButtonInteraction): Promise<void> {
-        console.log('Typing interval called.');
-
         if(this.#taskQueue.isActive) {
             await message.channel.sendTyping();
         } else {
