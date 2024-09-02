@@ -50,7 +50,7 @@ export class RandomRenderTask extends BaseTask {
 
         const model = this.#environmentSettings.stableDiffusionModels.length > 0 ?
             getRandomArrayEntry(this.#environmentSettings.stableDiffusionModels) :
-            getRandomArrayEntry(await this.#automatic1111Client.getModels()).model_name;
+            getRandomArrayEntry(await this.#automatic1111Client.getModels()).title;
 
         this.#logger(LogLevel.Info, `Using ${model} as the selected image generation model.`);
 
