@@ -55,7 +55,7 @@ export class AttachRenderTask extends BaseTask {
             getRandomArrayEntry(this.#environmentSettings.stableDiffusionModels) :
             getRandomArrayEntry(await this.#automatic1111Client.getModels()).title.split(' ')[0];
 
-        this.#logger(LogLevel.Info, `Using ${model} as the selected EasyDiffusion model.`);
+        this.#logger(LogLevel.Info, `Using ${model} as the selected image generation model.`);
 
         const request = Txt2ImgOptionsFactory.getCurrentModelSettings(model, this.#prompt)
         const renderData = await this.#automatic1111ReplyService.renderImage(request, model);

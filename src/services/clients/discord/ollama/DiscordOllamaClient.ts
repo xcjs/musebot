@@ -15,9 +15,13 @@ import { OllamaStreamingReplyService } from '../../ollama/services/OllamaStreami
 import { ReplyService } from '../services/ReplyService.js';
 import { TypingService } from '../services/TypingService.js';
 import { BotInteraction } from '../../../../enums/BotInteraction.js';
+import { Automatic1111Client } from '../../automatic1111/Automatic1111Client.js';
+import { Automatic1111ReplyService } from '../automatic1111/Automatic1111ReplyService.js';
 
 export class DiscordOllamaClient extends BaseDiscordClient {
     #ollamaClient: OllamaClient;
+    #automatic1111Client: Automatic1111Client;
+    #automatic1111ReplyService: Automatic1111ReplyService;
     #easyDiffusionClient: EasyDiffusionClient;
     #easyDiffusionReplyService: EasyDiffusionReplyService;
     #ollamaReplyService: OllamaReplyService;
@@ -48,6 +52,12 @@ export class DiscordOllamaClient extends BaseDiscordClient {
         this.logger(LogLevel.Info, 'Resetting transitive services...');
 
         this.#ollamaClient = new OllamaClient(this.environmentSettings);
+
+        this.#automatic1111Client = new Automatic1111Client(this.environmentSettings);
+        this.#automatic1111ReplyService = new Automatic1111ReplyService(
+            this.environmentSettings,
+            this.featureService,
+            this.#automatic1111Client);
 
         this.#easyDiffusionClient = new EasyDiffusionClient(this.environmentSettings);
         this.#easyDiffusionReplyService = new EasyDiffusionReplyService(
@@ -94,6 +104,8 @@ export class DiscordOllamaClient extends BaseDiscordClient {
             this.#ollamaStreamingReplyService,
             this.#replyService,
             this.client,
+            this.#automatic1111Client,
+            this.#automatic1111ReplyService,
             this.#easyDiffusionClient,
             this.#easyDiffusionReplyService,
             this.taskQueue,

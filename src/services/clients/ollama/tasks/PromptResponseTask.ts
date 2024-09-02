@@ -14,7 +14,11 @@ import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiff
 import { OllamaStreamingReplyService } from '../services/OllamaStreamingReplyService.js';
 import { DiscordConstants } from '../../discord/enums/DiscordConstants.js';
 import { TaskQueue } from '../../../tasks/services/TaskQueue.js';
-import { AttachRenderTask } from '../../easy-diffusion/tasks/AttachRenderTask.js';
+import { AttachRenderTask as EdAttachRenderTask } from '../../easy-diffusion/tasks/AttachRenderTask.js';
+import { AttachRenderTask as A1AttachRenderTask } from '../../automatic1111/tasks/AttachRenderTask.js';
+import { StableDiffusionApiType } from '../../stable-diffusion/enums/StableDiffusionApiType.js';
+import { Automatic1111Client } from '../../automatic1111/Automatic1111Client.js';
+import { Automatic1111ReplyService } from '../../discord/automatic1111/Automatic1111ReplyService.js';
 
 export class PromptResponseTask extends BaseTask {
     #environmentSettings: EnvironmentSettings;
@@ -23,6 +27,8 @@ export class PromptResponseTask extends BaseTask {
     #ollamaReplyService: OllamaReplyService;
     #ollamaStreamingReplyService: OllamaStreamingReplyService;
     #replyService: ReplyService;
+    #automatic1111Client: Automatic1111Client;
+    #automatic1111ReplyService: Automatic1111ReplyService;
     #easyDiffusionClient: EasyDiffusionClient;
     #easyDiffusionReplyService: EasyDiffusionReplyService;
     #taskQueue: TaskQueue;
@@ -52,6 +58,8 @@ export class PromptResponseTask extends BaseTask {
         ollamaStreamingReplyService: OllamaStreamingReplyService,
         replyService: ReplyService,
         discordClient: DiscordClient,
+        automatic1111Client: Automatic1111Client,
+        automatic1111ReplyService: Automatic1111ReplyService,
         easyDiffusionClient: EasyDiffusionClient,
         easyDiffusionReplyService: EasyDiffusionReplyService,
         taskQueue: TaskQueue,
@@ -66,6 +74,8 @@ export class PromptResponseTask extends BaseTask {
         this.#ollamaStreamingReplyService  = ollamaStreamingReplyService;
         this.#replyService = replyService;
         this.#discordClient = discordClient;
+        this.#automatic1111Client = automatic1111Client;
+        this.#automatic1111ReplyService = automatic1111ReplyService;
         this.#easyDiffusionClient = easyDiffusionClient;
         this.#easyDiffusionReplyService = easyDiffusionReplyService;
         this.#taskQueue = taskQueue;
@@ -148,15 +158,30 @@ export class PromptResponseTask extends BaseTask {
         this.#logger(LogLevel.Info, 'An image will be attached to the Ollama response.');
 
         const lastReply = replies[replies.length - 1];
-        const renderTask = new AttachRenderTask(
-            this.#environmentSettings,
-            this.#easyDiffusionClient,
-            this.#easyDiffusionReplyService,
-            this.#replyService,
-            lastReply,
-            prompt,
-            lastReply.content,
-            true);
+
+        let renderTask: BaseTask;
+
+        if(this.#environmentSettings.stableDiffusionApiType === StableDiffusionApiType.EasyDiffusion) {
+            renderTask = new A1AttachRenderTask(
+                this.#environmentSettings,
+                this.#automatic1111Client,
+                this.#automatic1111ReplyService,
+                this.#replyService,
+                lastReply,
+                prompt,
+                lastReply.content,
+                true);
+        } else {
+            renderTask = new EdAttachRenderTask(
+                this.#environmentSettings,
+                this.#easyDiffusionClient,
+                this.#easyDiffusionReplyService,
+                this.#replyService,
+                lastReply,
+                prompt,
+                lastReply.content,
+                true);
+        }
 
         this.#taskQueue.add(renderTask);
     }
