@@ -3,17 +3,17 @@ import { Logger, LogLevel } from 'meklog';
 
 import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
-import { EasyDiffusionClient } from '../EasyDiffusionClient.js';
-import { RenderRequest } from '../models/requests/RenderRequest.js';
 import { TaskStatus } from '../../../tasks/enums/TaskStatus.js';
 import { getRandomArrayEntry } from '../../../../utilities/random-utilities.js';
-import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiffusionReplyService.js';
 import { ReplyService } from '../../discord/services/ReplyService.js';
+import { Automatic1111ReplyService } from '../../discord/automatic1111/Automatic1111ReplyService.js';
+import { Automatic1111Client } from '../Automatic1111Client.js';
+import { Txt2ImgOptionsFactory } from '../factories/Txt2ImgOptionsFactory.js';
 
 export class AttachRenderTask extends BaseTask {
     #environmentSettings: EnvironmentSettings;
-    #easyDiffusionClient: EasyDiffusionClient;
-    #easyDiffusionReplyService: EasyDiffusionReplyService;
+    #automatic1111Client: Automatic1111Client;
+    #automatic1111ReplyService: Automatic1111ReplyService;
     #replyService: ReplyService;
     #prompt: string;
     #content: string | null;
@@ -24,13 +24,13 @@ export class AttachRenderTask extends BaseTask {
     #logger;
 
     override get taskChannel(): string {
-        return `EasyDiffusion_${this.#easyDiffusionClient.host}`;
+        return `Automatic1111_${this.#automatic1111Client.host}`;
     }
 
     constructor(
         environmentSettings: EnvironmentSettings,
-        easyDiffusionClient: EasyDiffusionClient,
-        easyDiffusionReplyService: EasyDiffusionReplyService,
+        automatic1111Client: Automatic1111Client,
+        automatic1111ReplyService: Automatic1111ReplyService,
         replyService: ReplyService,
         interaction: Message | ButtonInteraction,
         prompt: string,
@@ -39,8 +39,8 @@ export class AttachRenderTask extends BaseTask {
         super(environmentSettings.maxTaskAttempts);
 
         this.#environmentSettings = environmentSettings;
-        this.#easyDiffusionClient = easyDiffusionClient;
-        this.#easyDiffusionReplyService = easyDiffusionReplyService;
+        this.#automatic1111Client = automatic1111Client;
+        this.#automatic1111ReplyService = automatic1111ReplyService;
         this.#replyService = replyService;
         this.#interaction = interaction;
         this.#prompt = prompt;
@@ -53,18 +53,17 @@ export class AttachRenderTask extends BaseTask {
     override async process(): Promise<void> {
         const model = this.#environmentSettings.stableDiffusionModels.length > 0 ?
             getRandomArrayEntry(this.#environmentSettings.stableDiffusionModels) :
-            getRandomArrayEntry(await this.#easyDiffusionClient.getModels());
+            getRandomArrayEntry(await this.#automatic1111Client.getModels()).model_name;
 
         this.#logger(LogLevel.Info, `Using ${model} as the selected EasyDiffusion model.`);
 
-        const request = new RenderRequest(model, this.#prompt);
-
-        const renderData = await this.#easyDiffusionReplyService.renderImage(request);
+        const request = Txt2ImgOptionsFactory.getCurrentModelSettings(model, this.#prompt)
+        const renderData = await this.#automatic1111ReplyService.renderImage(request);
 
         if(this.#interaction instanceof ButtonInteraction || this.#isEdit) {
-            await this.#easyDiffusionReplyService.reply(this.#interaction, renderData, this.#content, null, true);
+            await this.#automatic1111ReplyService.reply(this.#interaction, renderData, this.#content, null, true);
         } else {
-            await this.#easyDiffusionReplyService.reply(this.#interaction, renderData, this.#content);
+            await this.#automatic1111ReplyService.reply(this.#interaction, renderData, this.#content);
         }
     }
 

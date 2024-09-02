@@ -52,7 +52,7 @@ export class JsonRenderTask extends BaseTask {
            return;
         }
 
-        const renderData = await this.#automatic1111ReplyService.renderImage(request);
+        const renderData = await this.#automatic1111ReplyService.renderImage(request.toTxt2ImgOptionsRequest());
         await this.#automatic1111ReplyService.reply(this.#message, renderData);
     }
 

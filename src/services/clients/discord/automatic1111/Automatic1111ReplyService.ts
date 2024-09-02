@@ -34,15 +34,14 @@ export class Automatic1111ReplyService {
         this.#logger = new Logger(this.#environmentSettings.isProduction, 'Automatic1111ReplyService');
     }
 
-    async renderImage(request: SerializableRenderRequest): Promise<IHttpExchangeWithAttachedData<Txt2ImgOptionsRequest, Txt2ImgOptionsResponse, string>> {
+    async renderImage(request: Txt2ImgOptionsRequest): Promise<IHttpExchangeWithAttachedData<Txt2ImgOptionsRequest, Txt2ImgOptionsResponse, string>> {
         this.#logger(LogLevel.Info, `Render prompt: ${request.prompt}`);
 
         const model = this.#environmentSettings.stableDiffusionModels.length > 0 ?
             getRandomArrayEntry(this.#environmentSettings.stableDiffusionModels) :
             getRandomArrayEntry(await this.#automatic1111Client.getModels()).model_name;
 
-        const mappedRequest = request.toTxt2ImgOptionsRequest();
-        const renderExchange = await this.#automatic1111Client.render(mappedRequest, model);
+        const renderExchange = await this.#automatic1111Client.render(request, model);
 
         return renderExchange;
     }
