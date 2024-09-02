@@ -65,7 +65,7 @@ export class PromptRenderTask extends BaseTask {
 
         const model = this.#environmentSettings.stableDiffusionModels.length > 0 ?
             getRandomArrayEntry(this.#environmentSettings.stableDiffusionModels) :
-            getRandomArrayEntry(await this.#automatic1111Client.getModels()).title;
+            getRandomArrayEntry(await this.#automatic1111Client.getModels()).title.split(' ')[0];
 
         this.#logger(LogLevel.Info, `Using ${model} as the selected Automatic1111 model.`);
 
