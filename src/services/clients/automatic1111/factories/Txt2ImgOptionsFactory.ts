@@ -10,6 +10,7 @@ export class Txt2ImgOptionsFactory {
         switch(rootPath.toLocaleLowerCase()) {
             case 'flux':
                 return Txt2ImgOptionsFactory.getFluxSettings(prompt);
+            case 'pony':
             case 'xl':
                 return Txt2ImgOptionsFactory.getStableDiffusionXlSettings(prompt);
             default:
