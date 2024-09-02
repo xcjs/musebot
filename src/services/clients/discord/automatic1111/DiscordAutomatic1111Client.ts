@@ -21,9 +21,12 @@ import { BotInteraction } from '../../../../enums/BotInteraction.js';
 import { ShowSourceTask } from '../../automatic1111/tasks/ShowSourceTask.js';
 import { DecreaseGuidanceScaleRenderTask } from '../../automatic1111/tasks/DecreaseGuidanceScaleRenderTask.js';
 import { IncreaseGuidanceScaleRenderTask } from '../../automatic1111/tasks/IncreaseGuidanceScaleRenderTask.js';
+import { ExpandPromptTask } from '../../automatic1111/tasks/ExpandPromptTask.js';
+import { OllamaClient } from '../../ollama/OllamaClient.js';
 
 export class DiscordAutomatic1111Client extends BaseDiscordClient {
     #automatic1111Client: Automatic1111Client;
+    #ollamaClient: OllamaClient;
     #automatic1111ReplyService: Automatic1111ReplyService;
     #messageService: MessageService;
     #replyService: ReplyService;
@@ -51,6 +54,8 @@ export class DiscordAutomatic1111Client extends BaseDiscordClient {
         this.logger(LogLevel.Info, 'Resetting transitive services...');
 
         this.#automatic1111Client = new Automatic1111Client(this.environmentSettings);
+        this.#ollamaClient = new OllamaClient(this.environmentSettings);
+
         this.#automatic1111ReplyService = new Automatic1111ReplyService(
             this.environmentSettings,
             this.featureService,
@@ -162,28 +167,37 @@ export class DiscordAutomatic1111Client extends BaseDiscordClient {
 
     #decreaseGuidanceScale(interaction: ButtonInteraction): void {
        this.taskQueue.add(new DecreaseGuidanceScaleRenderTask(
-        this.environmentSettings,
-        this.#automatic1111Client,
-        this.#automatic1111ReplyService,
-        this.#messageService,
-        this.#replyService,
-        interaction
+            this.environmentSettings,
+            this.#automatic1111Client,
+            this.#automatic1111ReplyService,
+            this.#messageService,
+            this.#replyService,
+            interaction
        ));
     }
 
     #increaseGuidanceScale(interaction: ButtonInteraction): void {
         this.taskQueue.add(new IncreaseGuidanceScaleRenderTask(
-        this.environmentSettings,
-        this.#automatic1111Client,
-        this.#automatic1111ReplyService,
-        this.#messageService,
-        this.#replyService,
-        interaction
+            this.environmentSettings,
+            this.#automatic1111Client,
+            this.#automatic1111ReplyService,
+            this.#messageService,
+            this.#replyService,
+            interaction
        ));
     }
 
     #expandPrompt(interaction: ButtonInteraction): void {
-        console.log(interaction);
+        this.taskQueue.add(new ExpandPromptTask(
+            this.environmentSettings,
+            this.#ollamaClient,
+            this.#automatic1111Client,
+            this.#automatic1111ReplyService,
+            this.#messageService,
+            this.replyService,
+            this.taskQueue,
+            interaction
+        ));
     }
 
     #randomize(interaction: ButtonInteraction) {
