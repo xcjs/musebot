@@ -11,6 +11,7 @@ import { MessageService } from '../../discord/services/MessageService.js';
 import { Automatic1111ReplyService } from '../../discord/automatic1111/Automatic1111ReplyService.js';
 import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
 import { Txt2ImgOptionsRequest } from '../models/requests/Txt2ImgOptionsRequest.js';
+import { Txt2ImgOptionsFactory } from '../factories/Txt2ImgOptionsFactory.js';
 
 export class UpscaleRenderTask extends BaseTask {
     #automatic1111ReplyService: Automatic1111ReplyService;
@@ -53,7 +54,7 @@ export class UpscaleRenderTask extends BaseTask {
         const imageAttachment = this.#messageService.getAttachmentsByType(this.#interaction, imageTypes)[0];
 
         const descriptionRequest = SerializableRenderRequest.fromJson(imageAttachment.description);
-        const request: Txt2ImgOptionsRequest = descriptionRequest.toTxt2ImgOptionsRequest();
+        const request: Txt2ImgOptionsRequest = Txt2ImgOptionsFactory.getUpscaledSettings(descriptionRequest.toTxt2ImgOptionsRequest(), 4);
 
         const renderData = await this.#automatic1111ReplyService.renderImage(request, descriptionRequest.model);
         const content = `${this.#interaction.member} upscaled \`${request.prompt}\``.substring(0, DiscordConstants.ContentMaxLength);
