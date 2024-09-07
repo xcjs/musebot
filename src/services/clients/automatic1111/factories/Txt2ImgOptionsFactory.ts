@@ -111,6 +111,7 @@ export class Txt2ImgOptionsFactory {
     }
 
     static getUpscaledSettings(request: Txt2ImgOptionsRequest, scaleAmount: number) {
+        request.enable_hr = true;
         request.hr_upscaler = Upscaler.R_ESRGAN4xPlus;
         request.hr_scale = scaleAmount;
 
