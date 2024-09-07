@@ -41,7 +41,8 @@ export class Automatic1111Client {
                 headers: {
                     [HttpHeader.ContentType]: ContentType.Json
                 },
-                body: JSON.stringify(renderRequest)
+                body: JSON.stringify(renderRequest),
+                signal: AbortSignal.timeout(1000 * 60 * 20)
             });
 
             return {
