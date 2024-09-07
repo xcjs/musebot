@@ -1,4 +1,4 @@
-import { ButtonInteraction, Message } from 'discord.js';
+import { BaseGuildTextChannel, ButtonInteraction, Message } from 'discord.js';
 import {Logger, LogLevel } from 'meklog';
 import { EnvironmentSettings } from '../../../EnvironmentSettings';
 import { TaskQueue } from '../../../tasks/services/TaskQueue';
@@ -49,7 +49,7 @@ export class TypingService {
     }
 
     async #onTypingInterval(message: Message | ButtonInteraction): Promise<void> {
-        if(this.#taskQueue.isActive) {
+        if(this.#taskQueue.isActive && message.channel instanceof BaseGuildTextChannel) {
             await message.channel.sendTyping();
         } else {
             this.#stopTyping();
