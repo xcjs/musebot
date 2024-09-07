@@ -49,9 +49,12 @@ export class Automatic1111ReplyService {
         const renderRequest = renderData.exchange.request;
         const renderResponse = renderData.exchange.response;
 
-        const fileName = this.getFileNameFromPrompt(renderRequest);
+        const actualSeed = (JSON.parse(renderResponse.info) as Txt2ImgOptionsRequest).seed;
+        renderResponse.parameters.seed = actualSeed;
 
-        const jsonRequest = SerializableRenderRequest.fromTxt2ImgOptionsRequest(renderRequest, renderData.data, JSON.parse(renderResponse.info).seed).toString();
+        const fileName = this.getFileNameFromPrompt(renderResponse.parameters);
+
+        const jsonRequest = SerializableRenderRequest.fromTxt2ImgOptionsRequest(renderRequest, renderData.data, actualSeed).toString();
 
         const isStatefulResponse = jsonRequest.length <= DiscordConstants.ImageDescriptionMaxLength;
 
