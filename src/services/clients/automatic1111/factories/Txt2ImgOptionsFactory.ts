@@ -12,6 +12,8 @@ export class Txt2ImgOptionsFactory {
                 return Txt2ImgOptionsFactory.getFluxSettings(prompt);
             case 'pony':
             case 'xl':
+            case 'xl-hyper':
+            case 'xl-turbo':
                 return Txt2ImgOptionsFactory.getStableDiffusionXlSettings(prompt);
             default:
                 return Txt2ImgOptionsFactory.getBaseSettings(prompt);
