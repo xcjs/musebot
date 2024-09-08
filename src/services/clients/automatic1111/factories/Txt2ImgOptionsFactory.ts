@@ -86,8 +86,8 @@ export class Txt2ImgOptionsFactory {
     static getStableDiffusionXlSettings(prompt: string): Txt2ImgOptionsRequest {
         const options = Txt2ImgOptionsFactory.getBaseSettings(prompt);
 
-        options.sampler_name = SamplingMethod.DPMPlusPlus2MSDE;
-        options.sampler_index = SamplingMethod.DPMPlusPlus2MSDE;
+        options.sampler_name = SamplingMethod.Euler_a;
+        options.sampler_index = SamplingMethod.Euler_a;
         options.scheduler = ScheduleType.Karras;
         options.steps = 25;
         options.height = 1024;
