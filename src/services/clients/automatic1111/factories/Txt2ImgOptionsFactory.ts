@@ -114,7 +114,7 @@ export class Txt2ImgOptionsFactory {
         request.enable_hr = true;
         request.hr_upscaler = Upscaler.R_ESRGAN4xPlus;
         request.hr_scale = scaleAmount;
-        request.denoising_strength = .2;
+        request.denoising_strength = .02;
 
         return request;
     }
