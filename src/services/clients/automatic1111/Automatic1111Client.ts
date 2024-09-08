@@ -1,4 +1,5 @@
-import {Logger, LogLevel } from 'meklog'
+import { Logger, LogLevel } from 'meklog'
+import fetch from 'node-fetch'; // Needed as Node doesn't support custom timeouts for its native fetch.
 
 import { getRandomArrayEntry } from '../../../utilities/random-utilities.js';
 import { EnvironmentSettings } from '../../EnvironmentSettings.js';
@@ -41,7 +42,8 @@ export class Automatic1111Client {
                 headers: {
                     [HttpHeader.ContentType]: ContentType.Json
                 },
-                body: JSON.stringify(renderRequest)
+                body: JSON.stringify(renderRequest),
+                signal: AbortSignal.timeout(1000 * 60 * 20)
             });
 
             return {
