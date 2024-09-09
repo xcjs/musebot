@@ -24,5 +24,7 @@ export enum SamplingMethod {
     HeunPP2 = 'HeunPP2',
     IPNDM = 'IPNDM',
     IPNDM_V = 'IPNDM_V',
-    DEIS = 'DEIS'
+    DEIS = 'DEIS',
+    FluxRealistic = '[Forge] Flux Realistic',
+    FluxRealisticSlow = '[Forge] Flux Realistic (Slow)'
 }
