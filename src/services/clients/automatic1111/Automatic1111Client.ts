@@ -8,7 +8,7 @@ import { HttpHeader } from '../../../enums/HttpHeader.js';
 import { ContentType } from '../../../enums/ContentType.js';
 import { Txt2ImgOptionsRequest } from './models/requests/Txt2ImgOptionsRequest.js';
 import { StableDiffusionModel } from './models/requests/StableDiffusionModel.js';
-import { StableDiffusionOptions } from './models/requests/StableDiffusionOptions.js';
+import { StableDiffusionOptions } from './models/requests/models/StableDiffusionOptions.js';
 import { Txt2ImgOptionsResponse } from './models/responses/Txt2ImgOptionsResponse.js';
 
 export class Automatic1111Client {
