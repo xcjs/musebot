@@ -27,8 +27,8 @@ export class UpscalerRequestFactory {
         settings.show_extras_results = false;
         settings.upscaling_resize = 4;
         settings.upscaler_1 = Upscaler.R_ESRGAN4xPlus;
-        settings.upscaler_2 = Upscaler.Lanczos;
-        settings.extras_upscaler_2_visibility = .5;
+        settings.upscaler_2 = Upscaler.ESRGAN_4x;
+        settings.extras_upscaler_2_visibility = .7;
 
         return settings;
     }
