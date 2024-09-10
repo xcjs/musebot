@@ -2,7 +2,7 @@ import { Upscaler } from '../enums/Upscaler.js'
 import { ExtraSingleImageRequest } from '../models/requests/ExtraSingleImageRequest.js';
 
 export class UpscalerRequestFactory {
-    static getBaseSettings(image: Buffer): ExtraSingleImageRequest {
+    static getBaseSettings(image: string): ExtraSingleImageRequest {
         return {
             resize_mode: 0,
             show_extras_results: true,
@@ -21,7 +21,7 @@ export class UpscalerRequestFactory {
         }
     }
 
-    static getFourTimesUpscaleSettings(image: Buffer): ExtraSingleImageRequest {
+    static getFourTimesUpscaleSettings(image: string): ExtraSingleImageRequest {
         const settings = UpscalerRequestFactory.getBaseSettings(image);
 
         settings.show_extras_results = false;

@@ -13,6 +13,8 @@ import { StatefulImageGenerationActionRows } from '../components/buttonRows/Stat
 import { StatelessImageGenerationActionRow } from '../components/buttonRows/StatelessImageGenerationActionRow.js';
 import { Txt2ImgOptionsRequest } from '../../automatic1111/models/requests/Txt2ImgOptionsRequest.js';
 import { Txt2ImgOptionsResponse } from '../../automatic1111/models/responses/Txt2ImgOptionsResponse.js';
+import { UpscalerRequestFactory } from '../../automatic1111/factories/UpscalerRequestFactory.js';
+import { ExtraSingleImageResponse } from '../../automatic1111/models/responses/ExtraSingleImageResponse.js';
 
 export class Automatic1111ReplyService {
     #environmentSettings: EnvironmentSettings;
@@ -25,7 +27,10 @@ export class Automatic1111ReplyService {
         return this.#automatic1111Client.host;
     }
 
-    constructor(environmentSettings: EnvironmentSettings, featureService: FeatureService, automatic1111Client: Automatic1111Client) {
+    constructor(
+        environmentSettings: EnvironmentSettings,
+        featureService: FeatureService,
+        automatic1111Client: Automatic1111Client) {
         this.#environmentSettings = environmentSettings;
         this.#featureService = featureService;
         this.#automatic1111Client = automatic1111Client;
@@ -39,6 +44,13 @@ export class Automatic1111ReplyService {
         const renderExchange = await this.#automatic1111Client.render(request, model);
 
         return renderExchange;
+    }
+
+    async upscaleImage(image: string): Promise<ExtraSingleImageResponse> {
+        this.#logger(LogLevel.Info, 'Upscaling an image...');
+
+        const request = UpscalerRequestFactory.getFourTimesUpscaleSettings(image);
+        return await this.#automatic1111Client.upscaleImage(request);
     }
 
     async reply(interaction: Message | ButtonInteraction,

@@ -14,5 +14,5 @@ export interface ExtraSingleImageRequest {
     upscaler_2: Upscaler;
     extras_upscaler_2_visibility: number;
     upscale_first: boolean;
-    image: Buffer;
+    image: string;
 }
