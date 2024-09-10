@@ -11,6 +11,7 @@
         "ESRGAN",
         "firstpass",
         "firstphase",
+        "gfpgan",
         "Heun",
         "hypernetwork",
         "IPNDM",
@@ -35,7 +36,8 @@
         "tseslint",
         "uncond",
         "Upscaled",
-        "upscaler"
+        "upscaler",
+        "upscaling"
     ],
     "cmake.ignoreCMakeListsMissing": true
 }

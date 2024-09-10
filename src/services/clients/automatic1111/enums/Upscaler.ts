@@ -1,3 +1,4 @@
+// /sdapi/v1/upscalers
 export enum Upscaler {
     None = 'None',
     Lanczos = 'Lanczos',
