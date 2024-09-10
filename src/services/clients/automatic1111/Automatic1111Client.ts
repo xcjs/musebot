@@ -8,8 +8,10 @@ import { HttpHeader } from '../../../enums/HttpHeader.js';
 import { ContentType } from '../../../enums/ContentType.js';
 import { Txt2ImgOptionsRequest } from './models/requests/Txt2ImgOptionsRequest.js';
 import { StableDiffusionModel } from './models/requests/StableDiffusionModel.js';
-import { StableDiffusionOptions } from './models/requests/StableDiffusionOptions.js';
+import { StableDiffusionOptions } from './models/requests/models/StableDiffusionOptions.js';
 import { Txt2ImgOptionsResponse } from './models/responses/Txt2ImgOptionsResponse.js';
+import { ExtraSingleImageRequest } from './models/requests/ExtraSingleImageRequest.js';
+import { ExtraSingleImageResponse } from './models/responses/ExtraSingleImageResponse.js';
 
 export class Automatic1111Client {
     #environmentSettings: EnvironmentSettings;
@@ -71,6 +73,25 @@ export class Automatic1111Client {
             return await response.json() as Array<StableDiffusionModel>;
         } catch (error) {
             this.#logger(LogLevel.Error, `Loading Automatic1111 models failed: ${error}`);
+            throw error;
+        }
+    }
+
+    async upscaleImage(request: ExtraSingleImageRequest): Promise<ExtraSingleImageResponse> {
+        try {
+            this.#logger(LogLevel.Info, `Upscaling an image...`);
+
+            const response = await fetch(new URL('/sdapi/v1/extra-single-image', this.#host), {
+                headers: {
+                    [HttpHeader.ContentType]: ContentType.Json
+                },
+                body: JSON.stringify(request),
+                method: HttpMethod.Post
+            });
+
+            return (await response.json()) as ExtraSingleImageResponse;
+        } catch (error) {
+            this.#logger(LogLevel.Error, `Upscaling an image failed: ${error}`);
             throw error;
         }
     }

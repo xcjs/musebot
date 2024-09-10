@@ -1,4 +1,4 @@
-import { ControlNetUnit } from './ControlNetUnit';
+import { ControlNetUnit } from './models/ControlNetUnit';
 import { SamplingMethod } from '../../enums/SamplingMethod';
 import { ScheduleType } from '../../enums/ScheduleType';
 import { Upscaler } from '../../enums/Upscaler';

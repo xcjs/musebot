@@ -1,6 +1,5 @@
 import { SamplingMethod } from '../enums/SamplingMethod.js';
 import { ScheduleType } from '../enums/ScheduleType.js';
-import { Upscaler } from '../enums/Upscaler.js';
 import { Txt2ImgOptionsRequest } from '../models/requests/Txt2ImgOptionsRequest.js';
 
 export class Txt2ImgOptionsFactory {
@@ -108,14 +107,5 @@ export class Txt2ImgOptionsFactory {
         options.width = 1024;
 
         return options;
-    }
-
-    static getUpscaledSettings(request: Txt2ImgOptionsRequest, scaleAmount: number) {
-        request.enable_hr = true;
-        request.hr_upscaler = Upscaler.R_ESRGAN4xPlus;
-        request.hr_scale = scaleAmount;
-        request.denoising_strength = .02;
-
-        return request;
     }
 }
