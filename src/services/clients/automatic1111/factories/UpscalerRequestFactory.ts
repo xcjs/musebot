@@ -25,8 +25,6 @@ export class UpscalerRequestFactory {
         const settings = UpscalerRequestFactory.getBaseSettings(image);
 
         settings.show_extras_results = false;
-        settings.upscaling_resize_w = 0;
-        settings.upscaling_resize_h = 0;
         settings.upscaling_resize = 4;
         settings.upscaler_1 = Upscaler.R_ESRGAN4xPlus;
         settings.upscaler_2 = Upscaler.Lanczos;
