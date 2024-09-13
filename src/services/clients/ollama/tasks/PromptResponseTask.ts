@@ -108,7 +108,7 @@ export class PromptResponseTask extends BaseTask {
 
     override async postProcess(): Promise<void> {
         switch(this.taskStatus) {
-            case TaskStatus.Failed:
+            case TaskStatus.Dead:
                 await this.#replyService.replyWithError(this.#message);
                 break;
             case TaskStatus.Successful:
