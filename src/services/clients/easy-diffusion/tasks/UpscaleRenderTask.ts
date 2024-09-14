@@ -64,7 +64,7 @@ export class UpscaleRenderTask extends BaseTask {
     }
 
     override async postProcess(): Promise<void> {
-        if(this.taskStatus === TaskStatus.Failed) {
+        if(this.taskStatus === TaskStatus.Dead) {
             await this.#replyService.replyWithError(this.#interaction);
         }
     }
