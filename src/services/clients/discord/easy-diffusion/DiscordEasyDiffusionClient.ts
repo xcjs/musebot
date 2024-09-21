@@ -5,78 +5,47 @@ import {
 } from 'discord.js';
 import {Logger, LogLevel } from 'meklog';
 
-import { EasyDiffusionClient } from '../../easy-diffusion/EasyDiffusionClient.js';
-import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
 import { DiscordPresenceStatus } from '../enums/DiscordPresenceStatus.js';
 import { BotInteraction } from '../../../../enums/BotInteraction.js';
 import { BaseDiscordClient } from '../BaseDiscordClient.js';
-import { TaskQueue } from '../../../tasks/services/TaskQueue.js';
 import { PromptRenderTask } from '../../easy-diffusion/tasks/PromptRenderTask.js';
-import { EasyDiffusionReplyService } from './EasyDiffusionReplyService.js';
-import { FeatureService } from '../../../features/FeatureService.js';
 import { RetryRenderTask } from '../../easy-diffusion/tasks/RetryRenderTask.js';
 import { ShowSourceTask } from '../../easy-diffusion/tasks/ShowSourceTask.js';
 import { DecreaseGuidanceScaleRenderTask } from '../../easy-diffusion/tasks/DecreaseGuidanceScaleRenderTask.js';
 import { IncreaseGuidanceScaleRenderTask } from '../../easy-diffusion/tasks/IncreaseGuidanceScaleRenderTask.js';
 import { RandomRenderTask } from '../../easy-diffusion/tasks/RandomRenderTask.js';
-import { TypingService } from '../services/TypingService.js';
 import { UpscaleRenderTask } from '../../easy-diffusion/tasks/UpscaleRenderTask.js';
 import { ExpandPromptTask } from '../../easy-diffusion/tasks/ExpandPromptTask.js';
-import { OllamaClient } from '../../ollama/OllamaClient.js';
-import { MessageService } from '../services/MessageService.js';
+import { IServiceContainer } from '../../../IServiceContainer.js';
 
 export class DiscordEasyDiffusionClient extends BaseDiscordClient {
-    #easyDiffusionClient: EasyDiffusionClient;
-    #ollamaClient: OllamaClient;
-    #easyDiffusionReplyService: EasyDiffusionReplyService;
-    #messageService: MessageService;
+    #services: IServiceContainer;
 
-    constructor(
-        environmentSettings: EnvironmentSettings,
-        featureService: FeatureService,
-        messageService: MessageService,
-        taskQueue: TaskQueue,
-        typingService: TypingService
-        ) {
-        super(environmentSettings, featureService, taskQueue, typingService);
+    constructor(services: IServiceContainer) {
+        super(services);
+        this.#services = services;
 
-        this.#messageService = messageService;
-
-        this.#resetTransitiveServices();
-
-        this.logger = new Logger(this.environmentSettings.isProduction, 'DiscordEasyDiffusionClient');
+        this.logger = new Logger(this.#services.environmentSettings.isProduction, 'DiscordEasyDiffusionClient');
 
         this.#registerEvents();
-    }
-
-    #resetTransitiveServices() {
-        this.logger(LogLevel.Info, 'Resetting transitive services...');
-
-        this.#easyDiffusionClient = new EasyDiffusionClient(this.environmentSettings);
-        this.#ollamaClient = new OllamaClient(this.environmentSettings);
-
-        this.#easyDiffusionReplyService = new EasyDiffusionReplyService(
-            this.environmentSettings,
-            this.featureService,
-            this.#easyDiffusionClient);
     }
 
     #registerEvents() {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this;
 
-        this.client.once(Events.ClientReady, (event) => this.#onClientReady.call(self, event));
-        this.client.on(Events.MessageCreate, async (message) => await this.#onMessageCreate.call(self, message));
-        this.client.on(Events.InteractionCreate, async (interaction) => await this.#onInteraction.call(self, interaction));
+        this.#services.discordClient.once(Events.ClientReady, (event) => this.#onClientReady.call(self, event));
+        this.#services.discordClient.on(Events.MessageCreate, async (message) => await this.#onMessageCreate.call(self, message));
+        this.#services.discordClient.on(Events.InteractionCreate, async (interaction) => await this.#onInteraction.call(self, interaction));
     }
 
     #onClientReady(): Promise<void> {
-        if(this.client.user === null) {
+        if (this.#services.discordClient.user === null) {
             return;
         }
 
         this.logger(LogLevel.Info, 'Client is ready.');
-        this.client.user.setPresence({ activities: [], status: DiscordPresenceStatus.Online });
+        this.#services.discordClient.user.setPresence({ activities: [], status: DiscordPresenceStatus.Online });
     }
 
     async #onMessageCreate(message: Message): Promise<void> {
@@ -86,8 +55,6 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
             this.logger(LogLevel.Info, 'Reply should not be created - skipping reply.');
             return;
         }
-
-        this.#resetTransitiveServices();
 
         this.logger(LogLevel.Info, 'Replying to message...');
 
@@ -105,8 +72,6 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
 
     async #onInteraction(interaction: ButtonInteraction): Promise<void> {
         this.logger(LogLevel.Info, `Beginning interaction response to custom action ${interaction.customId}...`);
-
-        this.#resetTransitiveServices();
 
         await interaction.deferReply();
 
@@ -137,7 +102,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
                 break;
         }
 
-        await this.typingService.startTyping(interaction);
+        await this.#services.typingService.startTyping(interaction);
     }
 
     #retry(interaction: ButtonInteraction): void {

@@ -1,87 +1,41 @@
 import { ButtonInteraction, Events, Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
 import { BaseDiscordClient } from '../BaseDiscordClient.js';
 import { DiscordPresenceStatus } from '../enums/DiscordPresenceStatus.js';
-import { OllamaClient } from '../../ollama/OllamaClient.js';
-import { TaskQueue } from '../../../tasks/services/TaskQueue.js';
 import { PromptResponseTask } from '../../ollama/tasks/PromptResponseTask.js';
-import { OllamaReplyService } from '../../ollama/services/OllamaReplyService.js';
-import { EasyDiffusionReplyService } from '../easy-diffusion/EasyDiffusionReplyService.js';
-import { EasyDiffusionClient } from '../../easy-diffusion/EasyDiffusionClient.js';
-import { FeatureService } from '../../../features/FeatureService.js';
-import { OllamaStreamingReplyService } from '../../ollama/services/OllamaStreamingReplyService.js';
-import { ReplyService } from '../services/ReplyService.js';
-import { TypingService } from '../services/TypingService.js';
 import { BotInteraction } from '../../../../enums/BotInteraction.js';
-import { Automatic1111Client } from '../../automatic1111/Automatic1111Client.js';
-import { Automatic1111ReplyService } from '../automatic1111/Automatic1111ReplyService.js';
+import { IServiceContainer } from '../../../IServiceContainer.js';
 
 export class DiscordOllamaClient extends BaseDiscordClient {
-    #ollamaClient: OllamaClient;
-    #automatic1111Client: Automatic1111Client;
-    #automatic1111ReplyService: Automatic1111ReplyService;
-    #easyDiffusionClient: EasyDiffusionClient;
-    #easyDiffusionReplyService: EasyDiffusionReplyService;
-    #ollamaReplyService: OllamaReplyService;
-    #ollamaStreamingReplyService: OllamaStreamingReplyService;
-    #replyService: ReplyService;
+    #services: IServiceContainer;
 
     #context: Array<number> = [];
 
-    constructor(
-        environmentSettings: EnvironmentSettings,
-        featureService: FeatureService,
-        taskQueue: TaskQueue,
-        typingService: TypingService) {
-        super(environmentSettings, featureService, taskQueue, typingService);
+    constructor(services: IServiceContainer) {
+        super(services);
 
-        this.#resetTransitiveServices();
-
-        this.#ollamaReplyService = new OllamaReplyService(this.environmentSettings, this.featureService);
-        this.#ollamaStreamingReplyService = new OllamaStreamingReplyService(this.environmentSettings,this.featureService);
-        this.#replyService = new ReplyService(environmentSettings, this.client);
-
-        this.logger = new Logger(this.environmentSettings.isProduction, 'DiscordOllamaClient');
+        this.logger = new Logger(this.#services.environmentSettings.isProduction, 'DiscordOllamaClient');
 
         this.#registerEvents();
-    }
-
-    #resetTransitiveServices() {
-        this.logger(LogLevel.Info, 'Resetting transitive services...');
-
-        this.#ollamaClient = new OllamaClient(this.environmentSettings);
-
-        this.#automatic1111Client = new Automatic1111Client(this.environmentSettings);
-        this.#automatic1111ReplyService = new Automatic1111ReplyService(
-            this.environmentSettings,
-            this.featureService,
-            this.#automatic1111Client);
-
-        this.#easyDiffusionClient = new EasyDiffusionClient(this.environmentSettings);
-        this.#easyDiffusionReplyService = new EasyDiffusionReplyService(
-            this.environmentSettings,
-            this.featureService,
-            this.#easyDiffusionClient);
     }
 
     #registerEvents() {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this;
 
-        this.client.once(Events.ClientReady, (event) => this.#onClientReady.call(self, event));
-        this.client.on(Events.MessageCreate, async (message) => await this.#onMessageCreate.call(self, message));
-        this.client.on(Events.InteractionCreate, async (interaction) => await this.#onInteraction.call(self, interaction));
+        this.#services.discordClient.once(Events.ClientReady, (event) => this.#onClientReady.call(self, event));
+        this.#services.discordClient.on(Events.MessageCreate, async (message) => await this.#onMessageCreate.call(self, message));
+        this.#services.discordClient.on(Events.InteractionCreate, async (interaction) => await this.#onInteraction.call(self, interaction));
     }
 
     #onClientReady(): Promise<void> {
-        if(this.client.user === null) {
+        if (this.#services.discordClient.user === null) {
             return;
         }
 
         this.logger(LogLevel.Info, 'Client is ready.');
-        this.client.user.setPresence({ activities: [], status: DiscordPresenceStatus.Online });
+        this.#services.discordClient.user.setPresence({ activities: [], status: DiscordPresenceStatus.Online });
     }
 
     async #onMessageCreate(message: Message): Promise<void> {
@@ -91,8 +45,6 @@ export class DiscordOllamaClient extends BaseDiscordClient {
             this.logger(LogLevel.Info, 'Reply should not be created - skipping reply.');
             return;
         }
-
-        this.#resetTransitiveServices();
 
         this.logger(LogLevel.Info, 'Replying to message...');
 
@@ -114,18 +66,16 @@ export class DiscordOllamaClient extends BaseDiscordClient {
 
             promptResponseTask.onSuccess = (context: Array<number>) => { this.#context = context; };
 
-        this.taskQueue.add(promptResponseTask);
+        this.#services.taskQueue.add(promptResponseTask);
 
-        await this.typingService.startTyping(message);
+        await this.#services.typingService.startTyping(message);
     }
 
      async #onInteraction(interaction: ButtonInteraction): Promise<void> {
         this.logger(LogLevel.Info, `Beginning interaction response to custom action ${interaction.customId}...`);
 
-        this.#resetTransitiveServices();
-
         await interaction.deferReply();
-        await this.typingService.startTyping(interaction);
+        await this.#services.typingService.startTyping(interaction);
 
         switch(interaction.customId) {
             case BotInteraction.ClearContext:

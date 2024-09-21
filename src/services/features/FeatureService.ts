@@ -1,4 +1,5 @@
 import { EnvironmentSettings } from '../EnvironmentSettings.js';
+import { IServiceContainer } from '../IServiceContainer.js';
 import { SupportedFeature } from './enum/SupportedFeature.js';
 
 export class FeatureService {
@@ -10,8 +11,8 @@ export class FeatureService {
         return this.#supportedFeatures;
     }
 
-    constructor(environmentSettings: EnvironmentSettings) {
-        this.#environmentSettings = environmentSettings;
+    constructor(services: IServiceContainer) {
+        this.#environmentSettings = services.environmentSettings;
 
         this.#determineSupportedFeatures();
     }

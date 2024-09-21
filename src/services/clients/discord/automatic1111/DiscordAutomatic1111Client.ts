@@ -24,6 +24,7 @@ import { ExpandPromptTask } from '../../automatic1111/tasks/ExpandPromptTask.js'
 import { OllamaClient } from '../../ollama/OllamaClient.js';
 import { UpscaleRenderTask } from '../../automatic1111/tasks/UpscaleRenderTask.js';
 import { RandomRenderTask } from '../../automatic1111/tasks/RandomRenderTask.js';
+import { IServiceContainer } from '../../../IServiceContainer.js';
 
 export class DiscordAutomatic1111Client extends BaseDiscordClient {
     #automatic1111Client: Automatic1111Client;
@@ -31,16 +32,10 @@ export class DiscordAutomatic1111Client extends BaseDiscordClient {
     #automatic1111ReplyService: Automatic1111ReplyService;
     #messageService: MessageService;
 
-    constructor(
-        environmentSettings: EnvironmentSettings,
-        featureService: FeatureService,
-        messageService: MessageService,
-        taskQueue: TaskQueue,
-        typingService: TypingService
-        ) {
-        super(environmentSettings, featureService, taskQueue, typingService);
+    constructor(services: IServiceContainer) {
+        super(services);
 
-        this.#messageService = messageService;
+        this.#messageService = services.messageService;
 
         this.#resetTransitiveServices();
 

@@ -10,15 +10,16 @@ import { JavaScriptType } from '../../../enums/JavaScriptType.js';
 import { IHttpExchange } from '../../../models/IHttpExchange.js';
 import { RenderRequest } from './models/requests/RenderRequest.js';
 import { getRandomArrayEntry } from '../../../utilities/random-utilities.js';
-import { EnvironmentSettings } from '../../EnvironmentSettings.js';
 import { StreamStatus } from './enums/StreamStatus.js';
 import { IRenderResponse } from './models/responses/IRenderResponse.js';
 import { IStreamResponse } from './models/responses/IStreamResponse.js';
 import { IModelsResponse } from './models/responses/IModelsResponse.js';
 import { JaggedRecursiveStringArray } from './types/JaggedRecursiveStringArray.js';
+import { IServiceContainer } from '../../IServiceContainer.js';
 
 export class EasyDiffusionClient {
-    #environmentSettings: EnvironmentSettings;
+    #services: IServiceContainer;
+
     #logger;
 
     #host: URL;
@@ -29,11 +30,12 @@ export class EasyDiffusionClient {
         return this.#host;
     }
 
-    constructor(environmentSettings: EnvironmentSettings) {
-        this.#environmentSettings = environmentSettings;
-        this.#logger = Logger(this.#environmentSettings.isProduction, 'EasyDiffusionClient');
+    constructor(services: IServiceContainer) {
+        this.#services = services;
 
-        this.#host = getRandomArrayEntry(this.#environmentSettings.stableDiffusionHosts);
+        this.#logger = Logger(this.#services.environmentSettings.isProduction, 'EasyDiffusionClient');
+
+        this.#host = getRandomArrayEntry(this.#services.environmentSettings.stableDiffusionHosts);
         this.#logger(LogLevel.Info, `Selected host: ${this.#host}`);
     }
 
