@@ -19,6 +19,7 @@ import { AttachRenderTask as A1AttachRenderTask } from '../../automatic1111/task
 import { StableDiffusionApiType } from '../../stable-diffusion/enums/StableDiffusionApiType.js';
 import { Automatic1111Client } from '../../automatic1111/Automatic1111Client.js';
 import { Automatic1111ReplyService } from '../../discord/automatic1111/Automatic1111ReplyService.js';
+import { IServiceContainer } from '../../../IServiceContainer.js';
 
 export class PromptResponseTask extends BaseTask {
     #environmentSettings: EnvironmentSettings;
@@ -26,14 +27,13 @@ export class PromptResponseTask extends BaseTask {
     #ollamaClient: OllamaClient;
     #ollamaReplyService: OllamaReplyService;
     #ollamaStreamingReplyService: OllamaStreamingReplyService;
+    #discordClient: DiscordClient;
     #replyService: ReplyService;
-    #automatic1111Client: Automatic1111Client;
-    #automatic1111ReplyService: Automatic1111ReplyService;
     #easyDiffusionClient: EasyDiffusionClient;
     #easyDiffusionReplyService: EasyDiffusionReplyService;
+    #automatic1111Client: Automatic1111Client;
+    #automatic1111ReplyService: Automatic1111ReplyService;
     #taskQueue: TaskQueue;
-
-    #discordClient: DiscordClient;
 
     #message: Message;
     #context: Array<number> = [];
@@ -51,39 +51,26 @@ export class PromptResponseTask extends BaseTask {
     }
 
     constructor(
-        environmentSettings: EnvironmentSettings,
-        featureService: FeatureService,
-        ollamaClient: OllamaClient,
-        ollamaReplyService: OllamaReplyService,
-        ollamaStreamingReplyService: OllamaStreamingReplyService,
-        replyService: ReplyService,
-        discordClient: DiscordClient,
-        automatic1111Client: Automatic1111Client,
-        automatic1111ReplyService: Automatic1111ReplyService,
-        easyDiffusionClient: EasyDiffusionClient,
-        easyDiffusionReplyService: EasyDiffusionReplyService,
-        taskQueue: TaskQueue,
+        services: IServiceContainer,
         message: Message,
         context: Array<number>) {
-        super(environmentSettings.maxTaskAttempts);
-
-        this.#environmentSettings = environmentSettings;
-        this.#featureService = featureService;
-        this.#ollamaClient = ollamaClient;
-        this.#ollamaReplyService = ollamaReplyService;
-        this.#ollamaStreamingReplyService  = ollamaStreamingReplyService;
-        this.#replyService = replyService;
-        this.#discordClient = discordClient;
-        this.#automatic1111Client = automatic1111Client;
-        this.#automatic1111ReplyService = automatic1111ReplyService;
-        this.#easyDiffusionClient = easyDiffusionClient;
-        this.#easyDiffusionReplyService = easyDiffusionReplyService;
-        this.#taskQueue = taskQueue;
+        super(services);
+        this.#environmentSettings = services.environmentSettings;
+        this.#featureService = services.featureService;
+        this.#ollamaClient = services.ollamaClient;
+        this.#ollamaReplyService = services.ollamaReplyService;
+        this.#ollamaStreamingReplyService = services.ollamaStreamingReplyService;
+        this.#discordClient = services.discordClient;
+        this.#replyService = services.replyService;
+        this.#easyDiffusionClient = services.easyDiffusionClient;
+        this.#easyDiffusionReplyService = services.easyDiffusionReplyService;
+        this.#automatic1111Client = services.automatic1111Client;
+        this.#automatic1111ReplyService = services.automatic1111ReplyService;
 
         this.#message = message;
         this.#context = context;
 
-        this.#logger = new Logger(environmentSettings.isProduction, 'PromptResponseTask');
+        this.#logger = new Logger(this.#environmentSettings.isProduction, 'PromptResponseTask');
     }
 
     override async process(): Promise<void> {

@@ -13,10 +13,12 @@ import { Automatic1111Client } from '../Automatic1111Client.js';
 import { Automatic1111ReplyService } from '../../discord/automatic1111/Automatic1111ReplyService.js';
 import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
 import { AttachRenderTask } from './AttachRenderTask.js';
+import { IServiceContainer } from '../../../IServiceContainer.js';
 
 export class ExpandPromptTask extends BaseTask {
-    #environmentSettings: EnvironmentSettings;
+    #services: IServiceContainer;
 
+    #environmentSettings: EnvironmentSettings;
     #ollamaClient: OllamaClient;
     #automatic1111Client: Automatic1111Client;
     #automatic1111ReplyService: Automatic1111ReplyService;
@@ -33,26 +35,23 @@ export class ExpandPromptTask extends BaseTask {
     }
 
     constructor(
-        environmentSettings: EnvironmentSettings,
-        ollamaClient: OllamaClient,
-        automatic1111Client: Automatic1111Client,
-        automatic1111ReplyService: Automatic1111ReplyService,
-        messageService: MessageService,
-        replyService: ReplyService,
-        taskQueue: TaskQueue,
+        services: IServiceContainer,
         interaction: ButtonInteraction) {
-        super(environmentSettings.maxTaskAttempts);
+        super(services);
 
-        this.#environmentSettings = environmentSettings;
-        this.#ollamaClient = ollamaClient;
-        this.#automatic1111Client = automatic1111Client;
-        this.#automatic1111ReplyService = automatic1111ReplyService;
-        this.#messageService = messageService;
-        this.#replyService = replyService;
-        this.#taskQueue = taskQueue;
+        this.#services = services;
+
+        this.#environmentSettings = services.environmentSettings;
+        this.#ollamaClient = services.ollamaClient;
+        this.#automatic1111Client = services.automatic1111Client;
+        this.#automatic1111ReplyService = services.automatic1111ReplyService;
+        this.#messageService = services.messageService;
+        this.#replyService = services.replyService;
+        this.#taskQueue = services.taskQueue;
+
         this.#interaction = interaction;
 
-        this.#logger = new Logger(environmentSettings.isProduction, 'ExpandPromptTask');
+        this.#logger = new Logger(services.environmentSettings.isProduction, 'ExpandPromptTask');
     }
 
     override async process(): Promise<void> {
@@ -75,11 +74,7 @@ export class ExpandPromptTask extends BaseTask {
         const content = `${this.#interaction.member} expanded the detail in the prompt: \`${originalRequest.prompt}\``;
 
         this.#taskQueue.add(new AttachRenderTask(
-            this.#environmentSettings,
-            this.#automatic1111Client,
-            this.#automatic1111ReplyService,
-            this.#replyService,
-            this.#interaction,
+            this.#services,
             exchange.response.response,
             content
         ));

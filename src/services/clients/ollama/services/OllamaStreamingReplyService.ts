@@ -6,6 +6,7 @@ import { DiscordConstants } from '../../discord/enums/DiscordConstants.js';
 import { splitText } from '../../../../utilities/string-utilities.js';
 import { LargeLanguageModelActionRow } from '../../discord/components/buttonRows/LargeLanguageModelActionRow.js';
 import { FeatureService } from '../../../features/FeatureService.js';
+import { IServiceContainer } from '../../../IServiceContainer.js';
 
 export class OllamaStreamingReplyService {
     #environmentSettings: EnvironmentSettings;
@@ -15,11 +16,9 @@ export class OllamaStreamingReplyService {
 
     #replies: Array<Message> = [];
 
-    constructor(
-        environmentSettings: EnvironmentSettings,
-        featureService: FeatureService) {
-        this.#environmentSettings = environmentSettings;
-        this.#featureService = featureService;
+    constructor(services: IServiceContainer) {
+        this.#environmentSettings = services.environmentSettings;
+        this.#featureService = services.featureService;
 
         this.#logger = new Logger(this.#environmentSettings.isProduction, 'OllamaStreamingReplyService');
     }

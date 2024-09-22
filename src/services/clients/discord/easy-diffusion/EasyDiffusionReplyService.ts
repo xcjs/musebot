@@ -7,43 +7,37 @@ import { IRenderResponse } from '../../easy-diffusion/models/responses/IRenderRe
 import { IStreamResponse } from '../../easy-diffusion/models/responses/IStreamResponse.js';
 import { BufferEncoding } from '../../../../enums/BufferEncoding.js';
 import { DiscordConstants } from '../enums/DiscordConstants.js';
-import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
 import { StatefulImageGenerationActionRows } from '../components/buttonRows/StatefulImageGenerationActionRows.js';
 import { StatelessImageGenerationActionRow } from '../components/buttonRows/StatelessImageGenerationActionRow.js';
-import { FeatureService } from '../../../features/FeatureService.js';
 import { MAX_FILE_NAME_LENGTH } from '../../../../enums/FileConstants.js';
-import { EasyDiffusionClient } from '../../easy-diffusion/EasyDiffusionClient.js';
 import { UpscaledRenderRequest } from '../../easy-diffusion/models/requests/UpscaledRenderRequest.js';
+import { IServiceContainer } from '../../../IServiceContainer.js';
 
 export class EasyDiffusionReplyService {
-    #environmentSettings: EnvironmentSettings;
-    #easyDiffusionClient: EasyDiffusionClient;
-    #featureService: FeatureService;
+    #services: IServiceContainer;
 
     #logger;
 
     get host() {
-        return this.#easyDiffusionClient.host;
+        return this.#services.easyDiffusionClient.host;
     }
 
-    constructor(environmentSettings: EnvironmentSettings, featureService: FeatureService, easyDiffusionClient: EasyDiffusionClient) {
-        this.#environmentSettings = environmentSettings;
-        this.#featureService = featureService;
-        this.#easyDiffusionClient = easyDiffusionClient;
+    constructor(services: IServiceContainer) {
+        this.#services = services;
 
-        this.#logger = new Logger(environmentSettings.isProduction, 'EasyDiffusionReplyService');
+        this.#logger = new Logger(this.#services.environmentSettings.isProduction, 'EasyDiffusionReplyService');
     }
 
     async renderImage(request: RenderRequest | UpscaledRenderRequest): Promise<IHttpExchangeWithAttachedResponse<RenderRequest, IRenderResponse, IStreamResponse>> {
         this.#logger(LogLevel.Info, `Render prompt: ${request.prompt}`);
 
-        const renderExchange = await this.#easyDiffusionClient.render(request);
+        const renderExchange = await this.#services.easyDiffusionClient.render(request);
 
         if(renderExchange === null || renderExchange.response === null) {
             return Promise.reject('The render request failed.');
         }
 
-        const streamResponse = await this.#easyDiffusionClient.stream(renderExchange);
+        const streamResponse = await this.#services.easyDiffusionClient.stream(renderExchange);
 
         if(streamResponse === null) {
             return Promise.reject('The stream request failed.');
@@ -87,8 +81,8 @@ export class EasyDiffusionReplyService {
             content,
             files,
             components: isStatefulResponse ?
-                new StatefulImageGenerationActionRows(this.#environmentSettings, this.#featureService, renderRequest).build() :
-                [new StatelessImageGenerationActionRow(this.#featureService).build()]
+                new StatefulImageGenerationActionRows(this.#services.environmentSettings, this.#services.featureService, renderRequest).build() :
+                [new StatelessImageGenerationActionRow(this.#services.featureService).build()]
         };
 
         if(interaction instanceof Message) {

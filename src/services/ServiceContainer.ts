@@ -11,9 +11,12 @@ import { DiscordConstants } from './clients/discord/enums/DiscordConstants';
 import { EasyDiffusionClient } from './clients/easy-diffusion/EasyDiffusionClient';
 import { DiscordEasyDiffusionClient } from './clients/discord/easy-diffusion/DiscordEasyDiffusionClient';
 import { OllamaClient } from './clients/ollama/OllamaClient';
-import { DiscordOllamaClient } from './clients/discord/ollama/DiscordOllamaClient';
+import { DiscordOllamaClient } from './clients/discord/automatic1111/DiscordOllamaClient';
 import { ReplyService } from './clients/discord/services/ReplyService';
 import { Automatic1111ReplyService } from './clients/discord/automatic1111/Automatic1111ReplyService';
+import { OllamaReplyService } from './clients/ollama/services/OllamaReplyService';
+import { EasyDiffusionReplyService } from './clients/discord/easy-diffusion/EasyDiffusionReplyService';
+import { OllamaStreamingReplyService } from './clients/ollama/services/OllamaStreamingReplyService';
 
 export class ServiceContainer implements IServiceContainer {
     // Singletons -------------------------------------------------------------/
@@ -58,7 +61,7 @@ export class ServiceContainer implements IServiceContainer {
     }
 
     get automatic1111ReplyService(): Automatic1111ReplyService {
-        return new this.automatic1111ReplyService(this);
+        return new Automatic1111ReplyService(this);
     }
 
     get discordAutomatic1111Client(): DiscordAutomatic1111Client {
@@ -69,12 +72,24 @@ export class ServiceContainer implements IServiceContainer {
         return new EasyDiffusionClient(this);
     }
 
+    get easyDiffusionReplyService(): EasyDiffusionReplyService {
+        return new EasyDiffusionReplyService(this);
+    }
+
     get discordEasyDiffusionClient(): DiscordEasyDiffusionClient {
         return new DiscordEasyDiffusionClient(this);
     }
 
     get ollamaClient(): OllamaClient {
         return new OllamaClient(this);
+    }
+
+    get ollamaReplyService(): OllamaReplyService {
+        return new OllamaReplyService(this);
+    }
+
+    get ollamaStreamingReplyService(): OllamaStreamingReplyService {
+        return new OllamaStreamingReplyService(this);
     }
 
     get discordOllamaClient(): DiscordOllamaClient {

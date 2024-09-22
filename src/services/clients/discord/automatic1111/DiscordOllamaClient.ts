@@ -41,7 +41,7 @@ export class DiscordOllamaClient extends BaseDiscordClient {
     async #onMessageCreate(message: Message): Promise<void> {
         this.logger(LogLevel.Info, `Discord message created. ${message.author.displayName} (${message.author.username}): "${message}"`);
 
-        if(!this.replyService.shouldReply(message)) {
+        if(!this.#services.replyService.shouldReply(message)) {
             this.logger(LogLevel.Info, 'Reply should not be created - skipping reply.');
             return;
         }
@@ -49,18 +49,7 @@ export class DiscordOllamaClient extends BaseDiscordClient {
         this.logger(LogLevel.Info, 'Replying to message...');
 
         const promptResponseTask = new PromptResponseTask(
-            this.environmentSettings,
-            this.featureService,
-            this.#ollamaClient,
-            this.#ollamaReplyService,
-            this.#ollamaStreamingReplyService,
-            this.#replyService,
-            this.client,
-            this.#automatic1111Client,
-            this.#automatic1111ReplyService,
-            this.#easyDiffusionClient,
-            this.#easyDiffusionReplyService,
-            this.taskQueue,
+            this.#services,
             message,
             this.#context);
 

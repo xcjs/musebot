@@ -9,9 +9,12 @@ import { DiscordAutomatic1111Client } from './clients/discord/automatic1111/Disc
 import { EasyDiffusionClient } from './clients/easy-diffusion/EasyDiffusionClient';
 import { DiscordEasyDiffusionClient } from './clients/discord/easy-diffusion/DiscordEasyDiffusionClient';
 import { OllamaClient } from './clients/ollama/OllamaClient';
-import { DiscordOllamaClient } from './clients/discord/ollama/DiscordOllamaClient';
+import { DiscordOllamaClient } from './clients/discord/automatic1111/DiscordOllamaClient';
 import { ReplyService } from './clients/discord/services/ReplyService';
 import { Automatic1111ReplyService } from './clients/discord/automatic1111/Automatic1111ReplyService';
+import { EasyDiffusionReplyService } from './clients/discord/easy-diffusion/EasyDiffusionReplyService';
+import { OllamaReplyService } from './clients/ollama/services/OllamaReplyService';
+import { OllamaStreamingReplyService } from './clients/ollama/services/OllamaStreamingReplyService';
 
 export interface IServiceContainer {
     // Singletons -------------------------------------------------------------/
@@ -30,7 +33,10 @@ export interface IServiceContainer {
     automatic1111ReplyService: Automatic1111ReplyService;
     discordAutomatic1111Client: DiscordAutomatic1111Client;
     easyDiffusionClient: EasyDiffusionClient;
+    easyDiffusionReplyService: EasyDiffusionReplyService;
     discordEasyDiffusionClient: DiscordEasyDiffusionClient;
     ollamaClient: OllamaClient;
+    ollamaReplyService: OllamaReplyService;
+    ollamaStreamingReplyService: OllamaStreamingReplyService;
     discordOllamaClient: DiscordOllamaClient;
 }
