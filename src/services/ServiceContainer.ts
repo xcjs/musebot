@@ -12,6 +12,8 @@ import { EasyDiffusionClient } from './clients/easy-diffusion/EasyDiffusionClien
 import { DiscordEasyDiffusionClient } from './clients/discord/easy-diffusion/DiscordEasyDiffusionClient';
 import { OllamaClient } from './clients/ollama/OllamaClient';
 import { DiscordOllamaClient } from './clients/discord/ollama/DiscordOllamaClient';
+import { ReplyService } from './clients/discord/services/ReplyService';
+import { Automatic1111ReplyService } from './clients/discord/automatic1111/Automatic1111ReplyService';
 
 export class ServiceContainer implements IServiceContainer {
     // Singletons -------------------------------------------------------------/
@@ -47,8 +49,16 @@ export class ServiceContainer implements IServiceContainer {
         return new MessageService();
     }
 
+    get replyService(): ReplyService {
+        return new ReplyService(this);
+    }
+
     get automatic1111Client(): Automatic1111Client {
         return new Automatic1111Client(this);
+    }
+
+    get automatic1111ReplyService(): Automatic1111ReplyService {
+        return new this.automatic1111ReplyService(this);
     }
 
     get discordAutomatic1111Client(): DiscordAutomatic1111Client {

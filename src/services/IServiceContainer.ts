@@ -10,6 +10,8 @@ import { EasyDiffusionClient } from './clients/easy-diffusion/EasyDiffusionClien
 import { DiscordEasyDiffusionClient } from './clients/discord/easy-diffusion/DiscordEasyDiffusionClient';
 import { OllamaClient } from './clients/ollama/OllamaClient';
 import { DiscordOllamaClient } from './clients/discord/ollama/DiscordOllamaClient';
+import { ReplyService } from './clients/discord/services/ReplyService';
+import { Automatic1111ReplyService } from './clients/discord/automatic1111/Automatic1111ReplyService';
 
 export interface IServiceContainer {
     // Singletons -------------------------------------------------------------/
@@ -23,7 +25,9 @@ export interface IServiceContainer {
     // Transitives ------------------------------------------------------------/
 
     messageService: MessageService;
+    replyService: ReplyService;
     automatic1111Client: Automatic1111Client;
+    automatic1111ReplyService: Automatic1111ReplyService;
     discordAutomatic1111Client: DiscordAutomatic1111Client;
     easyDiffusionClient: EasyDiffusionClient;
     discordEasyDiffusionClient: DiscordEasyDiffusionClient;
