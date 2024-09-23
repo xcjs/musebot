@@ -1,5 +1,6 @@
 import {
     ButtonInteraction,
+    Client as DiscordClient,
     Events,
     Message
 } from 'discord.js';
@@ -17,15 +18,30 @@ import { RandomRenderTask } from '../../easy-diffusion/tasks/RandomRenderTask.js
 import { UpscaleRenderTask } from '../../easy-diffusion/tasks/UpscaleRenderTask.js';
 import { ExpandPromptTask } from '../../easy-diffusion/tasks/ExpandPromptTask.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
+import { ReplyService } from '../services/ReplyService.js';
+import { TaskQueue } from '../../../tasks/services/TaskQueue.js';
+import { TypingService } from '../services/TypingService.js';
+import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
 
 export class DiscordEasyDiffusionClient extends BaseDiscordClient {
     #services: IServiceContainer;
+
+    #environmentSettings: EnvironmentSettings;
+    #discordClient: DiscordClient;
+    #replyService: ReplyService;
+    #typingService: TypingService;
+    #taskQueue: TaskQueue;
 
     constructor(services: IServiceContainer) {
         super(services);
         this.#services = services;
 
-        this.logger = new Logger(this.#services.environmentSettings.isProduction, 'DiscordEasyDiffusionClient');
+        this.#discordClient = services.discordClient;
+        this.#replyService = services.replyService;
+        this.#typingService = services.typingService;
+        this.#taskQueue = services.taskQueue;
+
+        this.logger = new Logger(this.#environmentSettings.isProduction, 'DiscordEasyDiffusionClient');
 
         this.#registerEvents();
     }
@@ -34,40 +50,36 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this;
 
-        this.#services.discordClient.once(Events.ClientReady, (event) => this.#onClientReady.call(self, event));
-        this.#services.discordClient.on(Events.MessageCreate, async (message) => await this.#onMessageCreate.call(self, message));
-        this.#services.discordClient.on(Events.InteractionCreate, async (interaction) => await this.#onInteraction.call(self, interaction));
+        this.#discordClient.once(Events.ClientReady, (event) => this.#onClientReady.call(self, event));
+        this.#discordClient.on(Events.MessageCreate, async (message) => await this.#onMessageCreate.call(self, message));
+        this.#discordClient.on(Events.InteractionCreate, async (interaction) => await this.#onInteraction.call(self, interaction));
     }
 
     #onClientReady(): Promise<void> {
-        if (this.#services.discordClient.user === null) {
+        if (this.#discordClient.user === null) {
             return;
         }
 
         this.logger(LogLevel.Info, 'Client is ready.');
-        this.#services.discordClient.user.setPresence({ activities: [], status: DiscordPresenceStatus.Online });
+        this.#discordClient.user.setPresence({ activities: [], status: DiscordPresenceStatus.Online });
     }
 
     async #onMessageCreate(message: Message): Promise<void> {
         this.logger(LogLevel.Info, `Discord message created. ${message.author.displayName} (${message.author.username}): "${message}"`);
 
-        if(!this.replyService.shouldReply(message)) {
+        if(!this.#replyService.shouldReply(message)) {
             this.logger(LogLevel.Info, 'Reply should not be created - skipping reply.');
             return;
         }
 
         this.logger(LogLevel.Info, 'Replying to message...');
 
-        this.taskQueue.add(new PromptRenderTask(
-            this.environmentSettings,
-            this.client,
-            this.#easyDiffusionClient,
-            this.#easyDiffusionReplyService,
-            this.replyService,
+        this.#taskQueue.add(new PromptRenderTask(
+            this.#services,
             message,
-            this.taskQueue));
+            this.#taskQueue));
 
-        await this.typingService.startTyping(message);
+        await this.#typingService.startTyping(message);
     }
 
     async #onInteraction(interaction: ButtonInteraction): Promise<void> {
@@ -102,76 +114,48 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
                 break;
         }
 
-        await this.#services.typingService.startTyping(interaction);
+        await this.#typingService.startTyping(interaction);
     }
 
     #retry(interaction: ButtonInteraction): void {
-        this.taskQueue.add(new RetryRenderTask(
-            this.environmentSettings,
-            this.#easyDiffusionClient,
-            this.#easyDiffusionReplyService,
-            this.#messageService,
-            this.replyService,
+        this.#taskQueue.add(new RetryRenderTask(
+            this.#services,
             interaction));
     }
 
     #upscale(interaction: ButtonInteraction) {
-        this.taskQueue.add(new UpscaleRenderTask(
-            this.environmentSettings,
-            this.#easyDiffusionReplyService,
-            this.#messageService,
-            this.replyService,
-            interaction
-        ));
+        this.#taskQueue.add(new UpscaleRenderTask(
+            this.#services,
+            interaction));
     }
 
     #showSource(interaction: ButtonInteraction): void {
-        this.taskQueue.add(new ShowSourceTask(
-            this.environmentSettings,
-            this.#easyDiffusionReplyService,
-            this.#messageService,
-            this.replyService,
+        this.#taskQueue.add(new ShowSourceTask(
+            this.#services,
             interaction));
     }
 
     #decreaseGuidanceScale(interaction: ButtonInteraction): void {
-        this.taskQueue.add(new DecreaseGuidanceScaleRenderTask(
-            this.environmentSettings,
-            this.#easyDiffusionClient,
-            this.#easyDiffusionReplyService,
-            this.#messageService,
-            this.replyService,
+        this.#taskQueue.add(new DecreaseGuidanceScaleRenderTask(
+            this.#services,
             interaction));
     }
 
     #increaseGuidanceScale(interaction: ButtonInteraction): void {
-        this.taskQueue.add(new IncreaseGuidanceScaleRenderTask(
-            this.environmentSettings,
-            this.#easyDiffusionClient,
-            this.#easyDiffusionReplyService,
-            this.#messageService,
-            this.replyService,
+        this.#taskQueue.add(new IncreaseGuidanceScaleRenderTask(
+            this.#services,
             interaction));
     }
 
     #expandPrompt(interaction: ButtonInteraction): void {
-        this.taskQueue.add(new ExpandPromptTask(
-            this.environmentSettings,
-            this.#ollamaClient,
-            this.#easyDiffusionClient,
-            this.#easyDiffusionReplyService,
-            this.#messageService,
-            this.replyService,
-            this.taskQueue,
+        this.#taskQueue.add(new ExpandPromptTask(
+            this.#services,
             interaction));
     }
 
     #randomize(interaction: ButtonInteraction) {
-        this.taskQueue.add(new RandomRenderTask(
-            this.environmentSettings,
-            this.#easyDiffusionClient,
-            this.#easyDiffusionReplyService,
-            this.replyService,
+        this.#taskQueue.add(new RandomRenderTask(
+            this.#services,
             interaction));
     }
 }

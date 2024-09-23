@@ -7,16 +7,21 @@ import { splitText } from '../../../../utilities/string-utilities.js';
 import { DiscordConstants } from '../../discord/enums/DiscordConstants.js';
 import { LargeLanguageModelActionRow } from '../../discord/components/buttonRows/LargeLanguageModelActionRow.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
+import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
 
 export class OllamaReplyService {
     #services: IServiceContainer;
+
+    #environmentSettings: EnvironmentSettings;
 
     #logger;
 
     constructor(services: IServiceContainer) {
         this.#services = services;
 
-        this.#logger = new Logger(this.#services.environmentSettings.isProduction, 'OllamaReplyService');
+        this.#environmentSettings = services.environmentSettings;
+
+        this.#logger = new Logger(this.#environmentSettings.isProduction, 'OllamaReplyService');
     }
 
     async reply(message: Message, exchange: IHttpExchange<GenerateRequest, GenerateResponse>): Promise<Array<Message>> {
@@ -31,7 +36,7 @@ export class OllamaReplyService {
             if(i === responses.length - 1) {
                 replies.push(await message.reply({
                     content: response,
-                    components: [new LargeLanguageModelActionRow(this.#services.featureService).build()]
+                    components: [new LargeLanguageModelActionRow(this.#services).build()]
                 }));
             } else {
                 replies.push(await message.reply(response));

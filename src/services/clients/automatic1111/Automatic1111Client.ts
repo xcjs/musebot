@@ -12,9 +12,10 @@ import { Txt2ImgOptionsResponse } from './models/responses/Txt2ImgOptionsRespons
 import { ExtraSingleImageRequest } from './models/requests/ExtraSingleImageRequest.js';
 import { ExtraSingleImageResponse } from './models/responses/ExtraSingleImageResponse.js';
 import { IServiceContainer } from '../../IServiceContainer.js';
+import { EnvironmentSettings } from '../../EnvironmentSettings.js';
 
 export class Automatic1111Client {
-    #services: IServiceContainer;
+    #environmentSettings: EnvironmentSettings;
 
     #logger;
 
@@ -25,11 +26,11 @@ export class Automatic1111Client {
     }
 
     constructor(services: IServiceContainer) {
-        this.#services = services;
+        this.#environmentSettings = services.environmentSettings;
 
-        this.#logger = Logger(services.environmentSettings.isProduction, 'Automatic1111Client');
+        this.#logger = Logger(this.#environmentSettings.isProduction, 'Automatic1111Client');
 
-        this.#host = getRandomArrayEntry(this.#services.environmentSettings.stableDiffusionHosts);
+        this.#host = getRandomArrayEntry(this.#environmentSettings.stableDiffusionHosts);
         this.#logger(LogLevel.Info, `Selected host: ${this.#host}`);
     }
 

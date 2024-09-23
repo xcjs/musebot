@@ -75,6 +75,7 @@ export class ExpandPromptTask extends BaseTask {
 
         this.#taskQueue.add(new AttachRenderTask(
             this.#services,
+            this.#interaction,
             exchange.response.response,
             content
         ));

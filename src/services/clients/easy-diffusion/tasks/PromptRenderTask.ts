@@ -11,6 +11,7 @@ import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiff
 import { TaskQueue } from '../../../tasks/services/TaskQueue.js';
 import { JsonRenderTask } from './JsonRenderTask.js';
 import { ReplyService } from '../../discord/services/ReplyService.js';
+import { IServiceContainer } from '../../../IServiceContainer.js';
 
 export class PromptRenderTask extends BaseTask {
     #environmentSettings: EnvironmentSettings;
@@ -29,24 +30,21 @@ export class PromptRenderTask extends BaseTask {
     }
 
     constructor(
-        environmentSettings: EnvironmentSettings,
-        discordClient: DiscordClient,
-        easyDiffusionClient: EasyDiffusionClient,
-        easyDiffusionReplyService: EasyDiffusionReplyService,
-        replyService: ReplyService,
+        services: IServiceContainer,
         message: Message,
         taskQueue: TaskQueue) {
-        super(environmentSettings.maxTaskAttempts);
+        super(services);
 
-        this.#environmentSettings = environmentSettings;
-        this.#discordClient = discordClient;
-        this.#easyDiffusionClient = easyDiffusionClient;
-        this.#easyDiffusionReplyService = easyDiffusionReplyService;
-        this.#replyService = replyService;
+        this.#environmentSettings = services.environmentSettings;
+        this.#discordClient = services.discordClient;
+        this.#easyDiffusionClient = services.easyDiffusionClient;
+        this.#easyDiffusionReplyService = services.easyDiffusionReplyService;
+        this.#replyService = services.replyService;
+
         this.#message = message;
         this.#taskQueue = taskQueue;
 
-        this.#logger = new Logger(environmentSettings.isProduction, 'PromptRenderTask');
+        this.#logger = new Logger(this.#environmentSettings.isProduction, 'PromptRenderTask');
     }
 
     override async process(): Promise<void> {

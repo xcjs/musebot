@@ -10,8 +10,10 @@ import { ContentType } from '../../../../enums/ContentType.js';
 import { RenderRequest } from '../models/requests/RenderRequest.js';
 import { ReplyService } from '../../discord/services/ReplyService.js';
 import { MessageService } from '../../discord/services/MessageService.js';
+import { IServiceContainer } from '../../../IServiceContainer.js';
 
 export class ShowSourceTask extends BaseTask {
+    #environmentSettings: EnvironmentSettings;
     #easyDiffusionReplyService: EasyDiffusionReplyService;
     #messageService: MessageService;
     #replyService: ReplyService;
@@ -24,19 +26,16 @@ export class ShowSourceTask extends BaseTask {
         return 'Discord';
     }
 
-    constructor(environmentSettings: EnvironmentSettings,
-        easyDiffusionReplyService: EasyDiffusionReplyService,
-        messageService: MessageService,
-        replyService: ReplyService,
-        interaction: ButtonInteraction) {
-        super(environmentSettings.maxTaskAttempts);
+    constructor(services: IServiceContainer, interaction: ButtonInteraction) {
+        super(services);
 
-        this.#easyDiffusionReplyService = easyDiffusionReplyService;
-        this.#messageService = messageService;
-        this.#replyService = replyService;
+        this.#easyDiffusionReplyService = services.easyDiffusionReplyService;
+        this.#messageService = services.messageService;
+        this.#replyService = services.replyService;
+
         this.#interaction = interaction;
 
-        this.#logger = new Logger(environmentSettings.isProduction, 'ShowSourceTask');
+        this.#logger = new Logger(this.#environmentSettings.isProduction, 'ShowSourceTask');
     }
 
     override async process(): Promise<void> {

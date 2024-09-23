@@ -1,5 +1,6 @@
 import {
     ButtonInteraction,
+    Client as DiscordClient,
     Events,
     Message
 } from 'discord.js';
@@ -25,83 +26,69 @@ import { OllamaClient } from '../../ollama/OllamaClient.js';
 import { UpscaleRenderTask } from '../../automatic1111/tasks/UpscaleRenderTask.js';
 import { RandomRenderTask } from '../../automatic1111/tasks/RandomRenderTask.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
+import { ReplyService } from '../services/ReplyService.js';
 
 export class DiscordAutomatic1111Client extends BaseDiscordClient {
-    #automatic1111Client: Automatic1111Client;
-    #ollamaClient: OllamaClient;
-    #automatic1111ReplyService: Automatic1111ReplyService;
-    #messageService: MessageService;
+    #services: IServiceContainer;
+
+    #environmentSettings: EnvironmentSettings;
+    #discordClient: DiscordClient;
+    #replyService: ReplyService;
+    #typingService: TypingService;
+    #taskQueue: TaskQueue;
 
     constructor(services: IServiceContainer) {
         super(services);
 
-        this.#messageService = services.messageService;
+        this.#services = services;
 
-        this.#resetTransitiveServices();
+        this.#discordClient = services.discordClient;
+        this.#replyService = services.replyService;
+        this.#
+        this.#taskQueue = services.taskQueue;
 
-        this.logger = new Logger(this.environmentSettings.isProduction, 'DiscordAutomatic1111Client');
+        this.logger = new Logger(this.#environmentSettings.isProduction, 'DiscordAutomatic1111Client');
 
         this.#registerEvents();
-    }
-
-    #resetTransitiveServices() {
-        this.logger(LogLevel.Info, 'Resetting transitive services...');
-
-        this.#automatic1111Client = new Automatic1111Client(this.environmentSettings);
-        this.#ollamaClient = new OllamaClient(this.environmentSettings);
-
-        this.#automatic1111ReplyService = new Automatic1111ReplyService(
-            this.environmentSettings,
-            this.featureService,
-            this.#automatic1111Client);
     }
 
     #registerEvents() {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this;
 
-        this.client.once(Events.ClientReady, (event) => this.#onClientReady.call(self, event));
-        this.client.on(Events.MessageCreate, async (message) => await this.#onMessageCreate.call(self, message));
-        this.client.on(Events.InteractionCreate, async (interaction) => await this.#onInteraction.call(self, interaction));
+        this.#discordClient.once(Events.ClientReady, (event) => this.#onClientReady.call(self, event));
+        this.#discordClient.on(Events.MessageCreate, async (message) => await this.#onMessageCreate.call(self, message));
+        this.#discordClient.on(Events.InteractionCreate, async (interaction) => await this.#onInteraction.call(self, interaction));
     }
 
     #onClientReady(): Promise<void> {
-        if(this.client.user === null) {
+        if (this.#discordClient.user === null) {
             return;
         }
 
         this.logger(LogLevel.Info, 'Client is ready.');
-        this.client.user.setPresence({ activities: [], status: DiscordPresenceStatus.Online });
+        this.#discordClient.user.setPresence({ activities: [], status: DiscordPresenceStatus.Online });
     }
 
     async #onMessageCreate(message: Message): Promise<void> {
         this.logger(LogLevel.Info, `Discord message created. ${message.author.displayName} (${message.author.username}): "${message}"`);
 
-        if(!this.replyService.shouldReply(message)) {
+        if(!this.#replyService.shouldReply(message)) {
             this.logger(LogLevel.Info, 'Reply should not be created - skipping reply.');
             return;
         }
 
-        this.#resetTransitiveServices();
-
         this.logger(LogLevel.Info, 'Replying to message...');
 
-        this.taskQueue.add(new PromptRenderTask(
-            this.environmentSettings,
-            this.client,
-            this.#automatic1111Client,
-            this.#automatic1111ReplyService,
-            this.replyService,
-            this.taskQueue,
+        this.#taskQueue.add(new PromptRenderTask(
+            this.#services,
             message));
 
-        await this.typingService.startTyping(message);
+        await this.#typingService.startTyping(message);
     }
 
     async #onInteraction(interaction: ButtonInteraction): Promise<void> {
         this.logger(LogLevel.Info, `Beginning interaction response to custom action ${interaction.customId}...`);
-
-        this.#resetTransitiveServices();
 
         await interaction.deferReply();
 

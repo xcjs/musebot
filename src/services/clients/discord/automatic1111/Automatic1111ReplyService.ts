@@ -19,15 +19,22 @@ import { IServiceContainer } from '../../../IServiceContainer.js';
 
 export class Automatic1111ReplyService {
     #services: IServiceContainer;
+
+    #environmentSettings: EnvironmentSettings;
+    #featureService: FeatureService;
     #automatic1111Client: Automatic1111Client;
 
     #logger;
 
     get host() {
-        return this.#services.automatic1111Client.host;
+        return this.#automatic1111Client.host;
     }
 
     constructor(services: IServiceContainer) {
+        this.#services = services;
+
+        this.#environmentSettings = services.environmentSettings;
+
         this.#logger = new Logger(this.#environmentSettings.isProduction, 'Automatic1111ReplyService');
     }
 
@@ -82,8 +89,8 @@ export class Automatic1111ReplyService {
             content,
             files,
             components: isStatefulResponse ?
-                new StatefulImageGenerationActionRows(this.#environmentSettings, this.#featureService, renderRequest).build() :
-                [new StatelessImageGenerationActionRow(this.#featureService).build()]
+                new StatefulImageGenerationActionRows(this.#services, renderRequest).build() :
+                [new StatelessImageGenerationActionRow(this.#services).build()]
         };
 
         if(interaction instanceof Message) {

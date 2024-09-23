@@ -16,9 +16,10 @@ import { IStreamResponse } from './models/responses/IStreamResponse.js';
 import { IModelsResponse } from './models/responses/IModelsResponse.js';
 import { JaggedRecursiveStringArray } from './types/JaggedRecursiveStringArray.js';
 import { IServiceContainer } from '../../IServiceContainer.js';
+import { EnvironmentSettings } from '../../EnvironmentSettings.js';
 
 export class EasyDiffusionClient {
-    #services: IServiceContainer;
+    #environmentSettings: EnvironmentSettings;
 
     #logger;
 
@@ -31,11 +32,11 @@ export class EasyDiffusionClient {
     }
 
     constructor(services: IServiceContainer) {
-        this.#services = services;
+        this.#environmentSettings = services.environmentSettings;
 
-        this.#logger = Logger(this.#services.environmentSettings.isProduction, 'EasyDiffusionClient');
+        this.#logger = Logger(this.#environmentSettings.isProduction, 'EasyDiffusionClient');
 
-        this.#host = getRandomArrayEntry(this.#services.environmentSettings.stableDiffusionHosts);
+        this.#host = getRandomArrayEntry(this.#environmentSettings.stableDiffusionHosts);
         this.#logger(LogLevel.Info, `Selected host: ${this.#host}`);
     }
 

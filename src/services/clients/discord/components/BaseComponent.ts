@@ -1,10 +1,11 @@
+import { IServiceContainer } from '../../../IServiceContainer.js';
 import { FeatureService } from '../../../features/FeatureService.js';
 
 export abstract class BaseComponent<ComponentType> {
     protected featureService: FeatureService;
 
-    constructor(featureService: FeatureService) {
-        this.featureService = featureService;
+    constructor(services: IServiceContainer) {
+        this.featureService = services.featureService;
     }
 
     build(): ComponentType {

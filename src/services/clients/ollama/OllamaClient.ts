@@ -4,9 +4,10 @@ import { GenerateRequest, GenerateResponse, Ollama } from 'ollama';
 import { getRandomArrayEntry, getRandomInt } from '../../../utilities/random-utilities.js';
 import { IHttpExchange } from '../../../models/IHttpExchange.js';
 import { IServiceContainer } from '../../IServiceContainer.js';
+import { EnvironmentSettings } from '../../EnvironmentSettings.js';
 
 export class OllamaClient {
-    #services: IServiceContainer;
+    #environmentSettings: EnvironmentSettings;
 
     #host: URL;
     #client: Ollama;
@@ -19,11 +20,11 @@ export class OllamaClient {
     }
 
     constructor(services: IServiceContainer) {
-        this.#services = services;
+        this.#environmentSettings = services.environmentSettings;
 
-        this.#logger = Logger(this.#services.environmentSettings.isProduction, 'OllamaClient');
+        this.#logger = Logger(this.#environmentSettings.isProduction, 'OllamaClient');
 
-        const host = getRandomArrayEntry(this.#services.environmentSettings.ollamaHosts);
+        const host = getRandomArrayEntry(this.#environmentSettings.ollamaHosts);
         this.#host = host;
         this.#logger(LogLevel.Info, `Selected host: ${host}`);
 
@@ -31,7 +32,7 @@ export class OllamaClient {
             host: host.toString()
         });
 
-        this.#model = this.#selectModel(this.#services.environmentSettings.ollamaModels);
+        this.#model = this.#selectModel(this.#environmentSettings.ollamaModels);
     }
 
     async sendMessage(message: string, context: Array<number> | null): Promise<IHttpExchange<GenerateRequest, GenerateResponse | null>> {
@@ -39,7 +40,7 @@ export class OllamaClient {
             context,
             model: this.#model,
             prompt: message,
-            system: this.#services.environmentSettings.ollamaSystemPrompt
+            system: this.#environmentSettings.ollamaSystemPrompt
         };
 
         this.#logger(LogLevel.Info, `Calling Ollama API with the prompt: ${message}`);
@@ -66,7 +67,7 @@ export class OllamaClient {
             context,
             model: this.#model,
             prompt: message,
-            system: this.#services.environmentSettings.ollamaSystemPrompt
+            system: this.#environmentSettings.ollamaSystemPrompt
         };
 
         this.#logger(LogLevel.Info, `Calling Ollama API at with the prompt: ${message}.`);

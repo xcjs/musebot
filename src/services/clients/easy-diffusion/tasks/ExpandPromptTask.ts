@@ -13,6 +13,7 @@ import { ContentType } from '../../../../enums/ContentType.js';
 import { AttachRenderTask } from './AttachRenderTask.js';
 import { TaskQueue } from '../../../tasks/services/TaskQueue.js';
 import { MessageService } from '../../discord/services/MessageService.js';
+import { IServiceContainer } from '../../../IServiceContainer.js';
 
 export class ExpandPromptTask extends BaseTask {
     #environmentSettings: EnvironmentSettings;
@@ -32,27 +33,19 @@ export class ExpandPromptTask extends BaseTask {
         return `Ollama_${this.#ollamaClient.host}`;
     }
 
-    constructor(
-        environmentSettings: EnvironmentSettings,
-        ollamaClient: OllamaClient,
-        easyDiffusionClient: EasyDiffusionClient,
-        easyDiffusionReplyService: EasyDiffusionReplyService,
-        messageService: MessageService,
-        replyService: ReplyService,
-        taskQueue: TaskQueue,
-        interaction: ButtonInteraction) {
-        super(environmentSettings.maxTaskAttempts);
+    constructor(services: IServiceContainer, interaction: ButtonInteraction) {
+        super(services);
 
-        this.#environmentSettings = environmentSettings;
-        this.#ollamaClient = ollamaClient;
-        this.#easyDiffusionClient = easyDiffusionClient;
-        this.#easyDiffusionReplyService = easyDiffusionReplyService;
-        this.#messageService = messageService;
-        this.#replyService = replyService;
-        this.#taskQueue = taskQueue;
+        this.#environmentSettings = services.environmentSettings;
+        this.#ollamaClient = services.ollamaClient;
+        this.#easyDiffusionClient = services.easyDiffusionClient;
+        this.#easyDiffusionReplyService = services.easyDiffusionReplyService;
+        this.#messageService = services.messageService;
+        this.#replyService = services.replyService;
+        this.#taskQueue = services.taskQueue;
         this.#interaction = interaction;
 
-        this.#logger = new Logger(environmentSettings.isProduction, 'ExpandPromptTask');
+        this.#logger = new Logger(this.#environmentSettings.isProduction, 'ExpandPromptTask');
     }
 
     override async process(): Promise<void> {

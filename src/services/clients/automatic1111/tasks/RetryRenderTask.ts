@@ -13,6 +13,7 @@ import { Automatic1111ReplyService } from '../../discord/automatic1111/Automatic
 import { MessageService } from '../../discord/services/MessageService.js';
 import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
 import { Txt2ImgOptionsRequest } from '../models/requests/Txt2ImgOptionsRequest.js';
+import { IServiceContainer } from '../../../IServiceContainer.js';
 
 export class RetryRenderTask extends BaseTask {
     #environmentSettings: EnvironmentSettings;
@@ -30,22 +31,18 @@ export class RetryRenderTask extends BaseTask {
     }
 
     constructor(
-        environmentSettings: EnvironmentSettings,
-        automatic1111Client: Automatic1111Client,
-        automatic1111ReplyService: Automatic1111ReplyService,
-        messageService: MessageService,
-        replyService: ReplyService,
+        services: IServiceContainer,
         interaction: ButtonInteraction) {
-        super(environmentSettings.maxTaskAttempts);
+        super(services);
 
-        this.#environmentSettings = environmentSettings;
-        this.#automatic1111Client = automatic1111Client;
-        this.#automatic1111ReplyService = automatic1111ReplyService;
-        this.#messageService = messageService;
-        this.#replyService = replyService;
+        this.#environmentSettings = services.environmentSettings;
+        this.#automatic1111Client = services.automatic1111Client;
+        this.#automatic1111ReplyService = services.automatic1111ReplyService;
+        this.#messageService = services.messageService;
+        this.#replyService = services.replyService;
         this.#interaction = interaction;
 
-        this.#logger = new Logger(environmentSettings.isProduction, 'RetryRenderTask');
+        this.#logger = new Logger(this.#environmentSettings.isProduction, 'RetryRenderTask');
     }
 
     override async process(): Promise<void> {

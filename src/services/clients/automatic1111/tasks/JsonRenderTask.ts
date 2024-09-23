@@ -7,8 +7,10 @@ import { TaskStatus } from '../../../tasks/enums/TaskStatus.js';
 import { ReplyService } from '../../discord/services/ReplyService.js';
 import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
 import { Automatic1111ReplyService } from '../../discord/automatic1111/Automatic1111ReplyService.js';
+import { IServiceContainer } from '../../../IServiceContainer.js';
 
 export class JsonRenderTask extends BaseTask {
+    environmentSettings: EnvironmentSettings;
     #discordClient: DiscordClient;
     #automatic1111ReplyService: Automatic1111ReplyService;
     #replyService: ReplyService;
@@ -22,19 +24,16 @@ export class JsonRenderTask extends BaseTask {
     }
 
     constructor(
-        environmentSettings: EnvironmentSettings,
-        discordClient: DiscordClient,
-        automatic1111ReplyService: Automatic1111ReplyService,
-        replyService: ReplyService,
+        services: IServiceContainer,
         message: Message) {
-        super(environmentSettings.maxTaskAttempts);
+        super(services);
 
-        this.#discordClient = discordClient;
-        this.#automatic1111ReplyService = automatic1111ReplyService;
-        this.#replyService = replyService;
+        this.#discordClient = services.discordClient;
+        this.#automatic1111ReplyService = services.automatic1111ReplyService;
+        this.#replyService = services.replyService;
         this.#message = message;
 
-        this.#logger = new Logger(environmentSettings.isProduction, 'JsonRenderTask');
+        this.#logger = new Logger(this.environmentSettings.isProduction, 'JsonRenderTask');
     }
 
     override async process(): Promise<void> {
