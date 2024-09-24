@@ -2,7 +2,6 @@ import { AttachmentBuilder, BaseMessageOptions, ButtonInteraction, Message } fro
 import { Logger, LogLevel } from 'meklog';
 
 import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
-import { FeatureService } from '../../../features/FeatureService.js';
 import { MAX_FILE_NAME_LENGTH } from '../../../../enums/FileConstants.js';
 import { Automatic1111Client } from '../../automatic1111/Automatic1111Client.js';
 import { IHttpExchangeWithAttachedData } from '../../../../models/IHttpExchangeWithAttachedData.js';
@@ -21,7 +20,6 @@ export class Automatic1111ReplyService {
     #services: IServiceContainer;
 
     #environmentSettings: EnvironmentSettings;
-    #featureService: FeatureService;
     #automatic1111Client: Automatic1111Client;
 
     #logger;
@@ -34,6 +32,7 @@ export class Automatic1111ReplyService {
         this.#services = services;
 
         this.#environmentSettings = services.environmentSettings;
+        this.#automatic1111Client = services.automatic1111Client;
 
         this.#logger = new Logger(this.#environmentSettings.isProduction, 'Automatic1111ReplyService');
     }
