@@ -25,12 +25,13 @@ export class DiscordOllamaClient extends BaseDiscordClient {
     constructor(services: IServiceContainer) {
         super(services);
 
+        this.#services = services;
+
         this.#environmentSettings = services.environmentSettings;
         this.#discordClient = services.discordClient;
         this.#typingService = services.typingService;
         this.#replyService = services.replyService;
         this.#taskQueue = services.taskQueue;
-
 
         this.logger = new Logger(this.#environmentSettings.isProduction, 'DiscordOllamaClient');
 

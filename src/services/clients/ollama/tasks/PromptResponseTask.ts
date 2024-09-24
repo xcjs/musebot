@@ -7,18 +7,14 @@ import { TaskStatus } from '../../../tasks/enums/TaskStatus.js';
 import { ReplyService } from '../../discord/services/ReplyService.js';
 import { OllamaClient } from '../OllamaClient.js';
 import { OllamaReplyService } from '../../../clients/discord/ollama/OllamaReplyService.js';
-import { EasyDiffusionClient } from '../../easy-diffusion/EasyDiffusionClient.js';
 import { FeatureService } from '../../../features/FeatureService.js';
 import { SupportedFeature } from '../../../features/enum/SupportedFeature.js';
-import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiffusionReplyService.js';
 import { OllamaStreamingReplyService } from '../../discord/ollama/OllamaStreamingReplyService.js'
 import { DiscordConstants } from '../../discord/enums/DiscordConstants.js';
 import { TaskQueue } from '../../../tasks/services/TaskQueue.js';
 import { AttachRenderTask as EdAttachRenderTask } from '../../easy-diffusion/tasks/AttachRenderTask.js';
 import { AttachRenderTask as A1AttachRenderTask } from '../../automatic1111/tasks/AttachRenderTask.js';
 import { StableDiffusionApiType } from '../../stable-diffusion/enums/StableDiffusionApiType.js';
-import { Automatic1111Client } from '../../automatic1111/Automatic1111Client.js';
-import { Automatic1111ReplyService } from '../../discord/automatic1111/Automatic1111ReplyService.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
 
 export class PromptResponseTask extends BaseTask {
@@ -31,10 +27,6 @@ export class PromptResponseTask extends BaseTask {
     #ollamaStreamingReplyService: OllamaStreamingReplyService;
     #discordClient: DiscordClient;
     #replyService: ReplyService;
-    #easyDiffusionClient: EasyDiffusionClient;
-    #easyDiffusionReplyService: EasyDiffusionReplyService;
-    #automatic1111Client: Automatic1111Client;
-    #automatic1111ReplyService: Automatic1111ReplyService;
     #taskQueue: TaskQueue;
 
     #message: Message;
@@ -67,10 +59,7 @@ export class PromptResponseTask extends BaseTask {
         this.#ollamaStreamingReplyService = services.ollamaStreamingReplyService;
         this.#discordClient = services.discordClient;
         this.#replyService = services.replyService;
-        this.#easyDiffusionClient = services.easyDiffusionClient;
-        this.#easyDiffusionReplyService = services.easyDiffusionReplyService;
-        this.#automatic1111Client = services.automatic1111Client;
-        this.#automatic1111ReplyService = services.automatic1111ReplyService;
+        this.#taskQueue = services.taskQueue;
 
         this.#message = message;
         this.#context = context;
