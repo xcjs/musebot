@@ -5,14 +5,16 @@ import { ClearContextButton } from '../buttons/ClearContextButton.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 
 export class LargeLanguageModelActionRow extends BaseComponent<ActionRowBuilder<ButtonBuilder>> {
-
+    #services: IServiceContainer;
 
     constructor(services: IServiceContainer) {
         super(services);
+
+        this.#services = services;
     }
 
     override build(): ActionRowBuilder<ButtonBuilder> {
-        const clearContextButton = new ClearContextButton(this.featureService).build();
+        const clearContextButton = new ClearContextButton(this.#services).build();
         const actionRowBuilder = new ActionRowBuilder<ButtonBuilder>()
             .addComponents(clearContextButton);
 

@@ -3,8 +3,6 @@ import { Logger, LogLevel } from 'meklog';
 
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
-import { EasyDiffusionClient } from '../EasyDiffusionClient.js';
-import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiffusionReplyService.js';
 import { TaskStatus } from '../../../tasks/enums/TaskStatus.js';
 import { RenderRequest } from '../models/requests/RenderRequest.js';
 import { OllamaClient } from '../../ollama/OllamaClient.js';
@@ -16,11 +14,10 @@ import { MessageService } from '../../discord/services/MessageService.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
 
 export class ExpandPromptTask extends BaseTask {
-    #environmentSettings: EnvironmentSettings;
+    #services: IServiceContainer;
 
+    #environmentSettings: EnvironmentSettings;
     #ollamaClient: OllamaClient;
-    #easyDiffusionClient: EasyDiffusionClient;
-    #easyDiffusionReplyService: EasyDiffusionReplyService;
     #messageService: MessageService;
     #replyService: ReplyService;
     #taskQueue: TaskQueue;
@@ -36,10 +33,10 @@ export class ExpandPromptTask extends BaseTask {
     constructor(services: IServiceContainer, interaction: ButtonInteraction) {
         super(services);
 
+        this.#services = services;
+
         this.#environmentSettings = services.environmentSettings;
         this.#ollamaClient = services.ollamaClient;
-        this.#easyDiffusionClient = services.easyDiffusionClient;
-        this.#easyDiffusionReplyService = services.easyDiffusionReplyService;
         this.#messageService = services.messageService;
         this.#replyService = services.replyService;
         this.#taskQueue = services.taskQueue;
@@ -68,10 +65,7 @@ export class ExpandPromptTask extends BaseTask {
         const content = `${this.#interaction.member} expanded the detail in the prompt: \`${originalRequest.prompt}\``;
 
         this.#taskQueue.add(new AttachRenderTask(
-            this.#environmentSettings,
-            this.#easyDiffusionClient,
-            this.#easyDiffusionReplyService,
-            this.#replyService,
+            this.#services,
             this.#interaction,
             exchange.response.response,
             content

@@ -11,8 +11,10 @@ import { MessageService } from '../../discord/services/MessageService.js';
 import { Automatic1111ReplyService } from '../../discord/automatic1111/Automatic1111ReplyService.js';
 import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
 import { Txt2ImgOptionsRequest } from '../models/requests/Txt2ImgOptionsRequest.js';
+import { IServiceContainer } from '../../../IServiceContainer.js';
 
 export class UpscaleRenderTask extends BaseTask {
+    #environmentSettings: EnvironmentSettings;
     #automatic1111ReplyService: Automatic1111ReplyService;
     #messageService: MessageService;
     #replyService: ReplyService;
@@ -25,20 +27,16 @@ export class UpscaleRenderTask extends BaseTask {
         return `Automatic1111_${this.#automatic1111ReplyService.host}`;
     }
 
-    constructor(
-        environmentSettings: EnvironmentSettings,
-        automatic1111ReplyService: Automatic1111ReplyService,
-        messageService: MessageService,
-        replyService: ReplyService,
-        interaction: ButtonInteraction) {
-        super(environmentSettings.maxTaskAttempts);
+    constructor(services: IServiceContainer, interaction: ButtonInteraction) {
+        super(services);
 
-        this.#automatic1111ReplyService = automatic1111ReplyService;
-        this.#messageService = messageService;
-        this.#replyService = replyService;
+        this.#environmentSettings = services.environmentSettings;
+        this.#automatic1111ReplyService = services.automatic1111ReplyService;
+        this.#messageService = services.messageService;
+        this.#replyService = services.replyService;
         this.#interaction = interaction;
 
-        this.#logger = new Logger(environmentSettings.isProduction, 'UpscaleRenderTask');
+        this.#logger = new Logger(this.#environmentSettings.isProduction, 'UpscaleRenderTask');
     }
 
     override async process(): Promise<void> {

@@ -9,6 +9,7 @@ import { FeatureService } from '../../../features/FeatureService.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
 
 export class OllamaStreamingReplyService {
+    #services: IServiceContainer;
     #environmentSettings: EnvironmentSettings;
     #featureService: FeatureService;
 
@@ -17,6 +18,8 @@ export class OllamaStreamingReplyService {
     #replies: Array<Message> = [];
 
     constructor(services: IServiceContainer) {
+        this.#services = services;
+
         this.#environmentSettings = services.environmentSettings;
         this.#featureService = services.featureService;
 
@@ -26,7 +29,7 @@ export class OllamaStreamingReplyService {
     async reply(message: Message, responseBatch: string, done: boolean): Promise<Array<Message>> {
         this.#logger(LogLevel.Info, 'Sending a streaming Discord reply...');
 
-        const components = done ? [new LargeLanguageModelActionRow(this.#featureService).build()] : null;
+        const components = done ? [new LargeLanguageModelActionRow(this.#services).build()] : null;
 
         if(this.#currentReply() == null && responseBatch.length <= DiscordConstants.ContentMaxLength) {
             this.#replies.push(await message.reply({

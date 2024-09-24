@@ -14,6 +14,8 @@ import { ReplyService } from '../../discord/services/ReplyService.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
 
 export class PromptRenderTask extends BaseTask {
+    #services: IServiceContainer;
+
     #environmentSettings: EnvironmentSettings;
     #discordClient: DiscordClient;
     #easyDiffusionClient: EasyDiffusionClient;
@@ -31,18 +33,19 @@ export class PromptRenderTask extends BaseTask {
 
     constructor(
         services: IServiceContainer,
-        message: Message,
-        taskQueue: TaskQueue) {
+        message: Message) {
         super(services);
+
+        this.#services = services;
 
         this.#environmentSettings = services.environmentSettings;
         this.#discordClient = services.discordClient;
         this.#easyDiffusionClient = services.easyDiffusionClient;
         this.#easyDiffusionReplyService = services.easyDiffusionReplyService;
         this.#replyService = services.replyService;
+        this.#taskQueue = services.taskQueue;
 
         this.#message = message;
-        this.#taskQueue = taskQueue;
 
         this.#logger = new Logger(this.#environmentSettings.isProduction, 'PromptRenderTask');
     }
@@ -53,10 +56,7 @@ export class PromptRenderTask extends BaseTask {
 
         if(prompt.charAt(0) === '{') {
             this.#taskQueue.add(new JsonRenderTask(
-                this.#environmentSettings,
-                this.#discordClient,
-                this.#easyDiffusionReplyService,
-                this.#replyService,
+                this.#services,
                 this.#message));
             return;
         }

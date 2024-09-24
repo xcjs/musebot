@@ -10,19 +10,14 @@ import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
 import { DiscordPresenceStatus } from '../enums/DiscordPresenceStatus.js';
 import { BaseDiscordClient } from '../BaseDiscordClient.js';
 import { TaskQueue } from '../../../tasks/services/TaskQueue.js';
-import { FeatureService } from '../../../features/FeatureService.js';
 import { TypingService } from '../services/TypingService.js';
-import { Automatic1111Client } from '../../automatic1111/Automatic1111Client.js';
-import { Automatic1111ReplyService } from './Automatic1111ReplyService.js';
 import { PromptRenderTask } from '../../automatic1111/tasks/PromptRenderTask.js';
-import { MessageService } from '../services/MessageService.js';
 import { RetryRenderTask } from '../../automatic1111/tasks/RetryRenderTask.js';
 import { BotInteraction } from '../../../../enums/BotInteraction.js';
 import { ShowSourceTask } from '../../automatic1111/tasks/ShowSourceTask.js';
 import { DecreaseGuidanceScaleRenderTask } from '../../automatic1111/tasks/DecreaseGuidanceScaleRenderTask.js';
 import { IncreaseGuidanceScaleRenderTask } from '../../automatic1111/tasks/IncreaseGuidanceScaleRenderTask.js';
 import { ExpandPromptTask } from '../../automatic1111/tasks/ExpandPromptTask.js';
-import { OllamaClient } from '../../ollama/OllamaClient.js';
 import { UpscaleRenderTask } from '../../automatic1111/tasks/UpscaleRenderTask.js';
 import { RandomRenderTask } from '../../automatic1111/tasks/RandomRenderTask.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
@@ -44,7 +39,7 @@ export class DiscordAutomatic1111Client extends BaseDiscordClient {
 
         this.#discordClient = services.discordClient;
         this.#replyService = services.replyService;
-        this.#
+        this.#typingService = services.typingService;
         this.#taskQueue = services.taskQueue;
 
         this.logger = new Logger(this.#environmentSettings.isProduction, 'DiscordAutomatic1111Client');
@@ -119,81 +114,34 @@ export class DiscordAutomatic1111Client extends BaseDiscordClient {
                 break;
         }
 
-        await this.typingService.startTyping(interaction);
+        await this.#typingService.startTyping(interaction);
     }
 
     #retry(interaction: ButtonInteraction): void {
-        this.taskQueue.add(new RetryRenderTask(
-            this.environmentSettings,
-            this.#automatic1111Client,
-            this.#automatic1111ReplyService,
-            this.#messageService,
-            this.replyService,
-            interaction));
+        this.#taskQueue.add(new RetryRenderTask(this.#services, interaction));
     }
 
     #upscale(interaction: ButtonInteraction) {
-        this.taskQueue.add(new UpscaleRenderTask(
-            this.environmentSettings,
-            this.#automatic1111ReplyService,
-            this.#messageService,
-            this.replyService,
-            interaction
-        ));
+        this.#taskQueue.add(new UpscaleRenderTask(this.#services, interaction));
     }
 
     #showSource(interaction: ButtonInteraction): void {
-        this.taskQueue.add(new ShowSourceTask(
-            this.environmentSettings,
-            this.#automatic1111ReplyService,
-            this.#messageService,
-            this.replyService,
-            interaction
-        ));
+        this.#taskQueue.add(new ShowSourceTask(this.#services, interaction));
     }
 
     #decreaseGuidanceScale(interaction: ButtonInteraction): void {
-       this.taskQueue.add(new DecreaseGuidanceScaleRenderTask(
-            this.environmentSettings,
-            this.#automatic1111Client,
-            this.#automatic1111ReplyService,
-            this.#messageService,
-            this.replyService,
-            interaction
-       ));
+       this.#taskQueue.add(new DecreaseGuidanceScaleRenderTask(this.#services, interaction));
     }
 
     #increaseGuidanceScale(interaction: ButtonInteraction): void {
-        this.taskQueue.add(new IncreaseGuidanceScaleRenderTask(
-            this.environmentSettings,
-            this.#automatic1111Client,
-            this.#automatic1111ReplyService,
-            this.#messageService,
-            this.replyService,
-            interaction
-       ));
+        this.#taskQueue.add(new IncreaseGuidanceScaleRenderTask(this.#services, interaction));
     }
 
     #expandPrompt(interaction: ButtonInteraction): void {
-        this.taskQueue.add(new ExpandPromptTask(
-            this.environmentSettings,
-            this.#ollamaClient,
-            this.#automatic1111Client,
-            this.#automatic1111ReplyService,
-            this.#messageService,
-            this.replyService,
-            this.taskQueue,
-            interaction
-        ));
+        this.#taskQueue.add(new ExpandPromptTask(this.#services, interaction));
     }
 
     #randomize(interaction: ButtonInteraction) {
-        this.taskQueue.add(new RandomRenderTask(
-            this.environmentSettings,
-            this.#automatic1111Client,
-            this.#automatic1111ReplyService,
-            this.replyService,
-            interaction
-        ));
+        this.#taskQueue.add(new RandomRenderTask(this.#services, interaction));
     }
 }

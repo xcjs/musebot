@@ -22,6 +22,8 @@ import { Automatic1111ReplyService } from '../../discord/automatic1111/Automatic
 import { IServiceContainer } from '../../../IServiceContainer.js';
 
 export class PromptResponseTask extends BaseTask {
+    #services: IServiceContainer;
+
     #environmentSettings: EnvironmentSettings;
     #featureService: FeatureService;
     #ollamaClient: OllamaClient;
@@ -55,6 +57,9 @@ export class PromptResponseTask extends BaseTask {
         message: Message,
         context: Array<number>) {
         super(services);
+
+        this.#services = services;
+
         this.#environmentSettings = services.environmentSettings;
         this.#featureService = services.featureService;
         this.#ollamaClient = services.ollamaClient;
@@ -150,20 +155,14 @@ export class PromptResponseTask extends BaseTask {
 
         if(this.#environmentSettings.stableDiffusionApiType === StableDiffusionApiType.EasyDiffusion) {
             renderTask = new EdAttachRenderTask(
-                this.#environmentSettings,
-                this.#easyDiffusionClient,
-                this.#easyDiffusionReplyService,
-                this.#replyService,
+                this.#services,
                 lastReply,
                 prompt,
                 lastReply.content,
                 true);
         } else {
             renderTask = new A1AttachRenderTask(
-                this.#environmentSettings,
-                this.#automatic1111Client,
-                this.#automatic1111ReplyService,
-                this.#replyService,
+                this.#services,
                 lastReply,
                 prompt,
                 lastReply.content,
