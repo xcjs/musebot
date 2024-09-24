@@ -40,6 +40,7 @@ export class ExpandPromptTask extends BaseTask {
         this.#messageService = services.messageService;
         this.#replyService = services.replyService;
         this.#taskQueue = services.taskQueue;
+
         this.#interaction = interaction;
 
         this.#logger = new Logger(this.#environmentSettings.isProduction, 'ExpandPromptTask');

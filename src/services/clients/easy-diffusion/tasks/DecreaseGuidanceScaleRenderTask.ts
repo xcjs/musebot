@@ -36,6 +36,7 @@ export class DecreaseGuidanceScaleRenderTask extends BaseTask {
         this.#easyDiffusionReplyService = services.easyDiffusionReplyService;
         this.#messageService = services.messageService;
         this.#replyService = services.replyService;
+
         this.#interaction = interaction;
 
         this.#logger = new Logger(this.#environmentSettings.isProduction, 'DecreaseGuidanceScaleRenderTask');

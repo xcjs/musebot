@@ -26,9 +26,11 @@ export class JsonRenderTask extends BaseTask {
     constructor(services: IServiceContainer, message: Message) {
         super(services);
 
+        this.#environmentSettings = services.environmentSettings;
         this.#discordClient = services.discordClient;
         this.#easyDiffusionReplyService = services.easyDiffusionReplyService;
         this.#replyService = services.replyService;
+
         this.#message = message;
 
         this.#logger = new Logger(this.#environmentSettings.isProduction, 'JsonRenderTask');

@@ -30,6 +30,7 @@ export class UpscaleRenderTask extends BaseTask {
     constructor(services: IServiceContainer, interaction: ButtonInteraction) {
         super(services);
 
+        this.#environmentSettings = services.environmentSettings;
         this.#easyDiffusionReplyService = services.easyDiffusionReplyService;
         this.#messageService = services.messageService;
         this.#replyService = services.replyService;
