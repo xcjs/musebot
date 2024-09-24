@@ -9,6 +9,7 @@ export class ReplyService {
     #discordClient: DiscordClient;
 
     constructor(services: IServiceContainer) {
+        this.#environmentSettings = services.environmentSettings;
         this.#discordClient = services.discordClient;
     }
 

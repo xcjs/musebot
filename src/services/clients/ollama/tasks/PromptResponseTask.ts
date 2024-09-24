@@ -6,12 +6,12 @@ import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { TaskStatus } from '../../../tasks/enums/TaskStatus.js';
 import { ReplyService } from '../../discord/services/ReplyService.js';
 import { OllamaClient } from '../OllamaClient.js';
-import { OllamaReplyService } from '../services/OllamaReplyService.js';
+import { OllamaReplyService } from '../../../clients/discord/ollama/OllamaReplyService.js';
 import { EasyDiffusionClient } from '../../easy-diffusion/EasyDiffusionClient.js';
 import { FeatureService } from '../../../features/FeatureService.js';
 import { SupportedFeature } from '../../../features/enum/SupportedFeature.js';
 import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiffusionReplyService.js';
-import { OllamaStreamingReplyService } from '../services/OllamaStreamingReplyService.js';
+import { OllamaStreamingReplyService } from '../../discord/ollama/OllamaStreamingReplyService.js'
 import { DiscordConstants } from '../../discord/enums/DiscordConstants.js';
 import { TaskQueue } from '../../../tasks/services/TaskQueue.js';
 import { AttachRenderTask as EdAttachRenderTask } from '../../easy-diffusion/tasks/AttachRenderTask.js';

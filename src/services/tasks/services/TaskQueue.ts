@@ -10,10 +10,9 @@ import { IServiceContainer } from '../../IServiceContainer.js';
 export class TaskQueue {
     #environmentSettings: EnvironmentSettings;
 
-    #channels: Array<TaskChannel> = [];
-
     #logger;
 
+    #channels: Array<TaskChannel> = [];
     #isActive: boolean = false;
 
     get isActive() {

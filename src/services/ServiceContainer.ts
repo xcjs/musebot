@@ -6,18 +6,18 @@ import { MessageService } from './clients/discord/services/MessageService.js';
 import { TypingService } from './clients/discord/services/TypingService.js';
 import { FeatureService } from './features/FeatureService.js';
 import { TaskQueue } from './tasks/services/TaskQueue.js';
-import { DiscordAutomatic1111Client } from './clients/discord/automatic1111/DiscordAutomatic1111Client.js';
+import { DiscordAutomatic1111Client } from './clients/discord//automatic1111/DiscordAutomatic1111Client.js';
 import { Automatic1111Client } from './clients/automatic1111/Automatic1111Client.js';
 import { DiscordConstants } from './clients/discord/enums/DiscordConstants.js';
 import { EasyDiffusionClient } from './clients/easy-diffusion/EasyDiffusionClient.js';
 import { DiscordEasyDiffusionClient } from './clients/discord/easy-diffusion/DiscordEasyDiffusionClient.js';
 import { OllamaClient } from './clients/ollama/OllamaClient.js';
-import { DiscordOllamaClient } from './clients/discord/automatic1111/DiscordOllamaClient.js';
+import { DiscordOllamaClient } from './clients/discord/ollama/DiscordOllamaClient.js';
 import { ReplyService } from './clients/discord/services/ReplyService.js';
 import { Automatic1111ReplyService } from './clients/discord/automatic1111/Automatic1111ReplyService.js';
-import { OllamaReplyService } from './clients/ollama/services/OllamaReplyService.js';
+import { OllamaReplyService } from './clients/discord/ollama/OllamaReplyService.js';
 import { EasyDiffusionReplyService } from './clients/discord/easy-diffusion/EasyDiffusionReplyService.js';
-import { OllamaStreamingReplyService } from './clients/ollama/services/OllamaStreamingReplyService.js';
+import { OllamaStreamingReplyService } from './clients/discord/ollama/OllamaStreamingReplyService.js';
 
 export class ServiceContainer implements IServiceContainer {
     // Singletons -------------------------------------------------------------/
@@ -101,6 +101,7 @@ export class ServiceContainer implements IServiceContainer {
         // Singletons instantiated here.
         this.#environmentSettings = new EnvironmentSettings();
         this.#featureService = new FeatureService(this);
+        this.#typingService = new TypingService(this);
         this.#taskQueue = new TaskQueue(this);
 
         this.#discordClient = new DiscordClient({

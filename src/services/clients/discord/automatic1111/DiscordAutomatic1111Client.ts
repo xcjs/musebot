@@ -76,9 +76,7 @@ export class DiscordAutomatic1111Client extends BaseDiscordClient {
 
         this.logger(LogLevel.Info, 'Replying to message...');
 
-        this.#taskQueue.add(new PromptRenderTask(
-            this.#services,
-            message));
+        this.#taskQueue.add(new PromptRenderTask(this.#services, message));
 
         await this.#typingService.startTyping(message);
     }
