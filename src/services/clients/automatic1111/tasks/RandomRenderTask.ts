@@ -31,15 +31,16 @@ export class RandomRenderTask extends BaseTask {
         return `Automatic1111_${this.#automatic1111Client.host}`;
     }
 
-    constructor(
-        services: IServiceContainer,
-        interaction: ButtonInteraction) {
+    constructor(services: IServiceContainer, interaction: ButtonInteraction) {
         super(services);
+
+        this.#services = services;
 
         this.#environmentSettings = services.environmentSettings;
         this.#automatic1111Client = services.automatic1111Client;
         this.#automatic1111ReplyService = services.automatic1111ReplyService;
         this.#replyService = services.replyService;
+
         this.#interaction = interaction;
 
         this.#logger = new Logger(this.#environmentSettings.isProduction, 'RandomRenderTask');

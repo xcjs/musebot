@@ -3,6 +3,7 @@ import { Logger, LogLevel } from 'meklog';
 import { BaseTask } from './BaseTask';
 import { EnvironmentSettings } from '../../EnvironmentSettings.js';
 import { TaskStatus } from '../enums/TaskStatus.js';
+import { IServiceContainer } from '../../IServiceContainer';
 
 export class TaskChannel {
     #environmentSettings: EnvironmentSettings;
@@ -28,8 +29,8 @@ export class TaskChannel {
         return this.#queue.length > 0;
     }
 
-    constructor(environmentSettings: EnvironmentSettings, name: string) {
-        this.#environmentSettings = environmentSettings;
+    constructor(services: IServiceContainer, name: string) {
+        this.#environmentSettings = services.environmentSettings;
         this.#name = name;
 
         this.#logger = new Logger(this.#environmentSettings.isProduction, 'TaskChannel');

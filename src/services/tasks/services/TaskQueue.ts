@@ -8,6 +8,8 @@ import { PromisedSettledResultStatus } from '../../../enums/PromisedSettledResul
 import { IServiceContainer } from '../../IServiceContainer.js';
 
 export class TaskQueue {
+    #services: IServiceContainer;
+
     #environmentSettings: EnvironmentSettings;
 
     #logger;
@@ -20,7 +22,10 @@ export class TaskQueue {
     }
 
     constructor(services: IServiceContainer) {
+        this.#services = services;
+
         this.#environmentSettings = services.environmentSettings;
+
         this.#logger = new Logger(this.#environmentSettings.isProduction, 'TaskQueue');
     }
 
@@ -30,7 +35,7 @@ export class TaskQueue {
         let taskChannel: TaskChannel;
 
         if(this.#channels.filter(x => x.name === task.taskChannel).length === 0) {
-            taskChannel = new TaskChannel(this.#environmentSettings, task.taskChannel);
+            taskChannel = new TaskChannel(this.#services, task.taskChannel);
             this.#channels.push(taskChannel);
         } else {
             taskChannel = this.#channels.find(x => x.name === task.taskChannel);
