@@ -10,8 +10,10 @@ import { ReplyService } from '../../discord/services/ReplyService.js';
 import { MessageService } from '../../discord/services/MessageService.js';
 import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
 import { Automatic1111ReplyService } from '../../discord/automatic1111/Automatic1111ReplyService.js';
+import { IServiceContainer } from '../../../IServiceContainer.js';
 
 export class ShowSourceTask extends BaseTask {
+    #environmentSettings: EnvironmentSettings;
     #automatic1111ReplyService: Automatic1111ReplyService;
     #messageService: MessageService;
     #replyService: ReplyService;
@@ -24,19 +26,19 @@ export class ShowSourceTask extends BaseTask {
         return 'Discord';
     }
 
-    constructor(environmentSettings: EnvironmentSettings,
-        automatic1111ReplyService: Automatic1111ReplyService,
-        messageService: MessageService,
-        replyService: ReplyService,
+    constructor(
+        services: IServiceContainer,
         interaction: ButtonInteraction) {
-        super(environmentSettings.maxTaskAttempts);
+        super(services);
 
-        this.#automatic1111ReplyService = automatic1111ReplyService;
-        this.#messageService = messageService;
-        this.#replyService = replyService;
+        this.#environmentSettings = services.environmentSettings;
+        this.#automatic1111ReplyService = services.automatic1111ReplyService;
+        this.#messageService = services.messageService;
+        this.#replyService = services.replyService;
+
         this.#interaction = interaction;
 
-        this.#logger = new Logger(environmentSettings.isProduction, 'ShowSourceTask');
+        this.#logger = new Logger(this.#environmentSettings.isProduction, 'ShowSourceTask');
     }
 
     override async process(): Promise<void> {

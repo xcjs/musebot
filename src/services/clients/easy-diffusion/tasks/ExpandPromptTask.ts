@@ -3,8 +3,6 @@ import { Logger, LogLevel } from 'meklog';
 
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
-import { EasyDiffusionClient } from '../EasyDiffusionClient.js';
-import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiffusionReplyService.js';
 import { TaskStatus } from '../../../tasks/enums/TaskStatus.js';
 import { RenderRequest } from '../models/requests/RenderRequest.js';
 import { OllamaClient } from '../../ollama/OllamaClient.js';
@@ -13,13 +11,13 @@ import { ContentType } from '../../../../enums/ContentType.js';
 import { AttachRenderTask } from './AttachRenderTask.js';
 import { TaskQueue } from '../../../tasks/services/TaskQueue.js';
 import { MessageService } from '../../discord/services/MessageService.js';
+import { IServiceContainer } from '../../../IServiceContainer.js';
 
 export class ExpandPromptTask extends BaseTask {
-    #environmentSettings: EnvironmentSettings;
+    #services: IServiceContainer;
 
+    #environmentSettings: EnvironmentSettings;
     #ollamaClient: OllamaClient;
-    #easyDiffusionClient: EasyDiffusionClient;
-    #easyDiffusionReplyService: EasyDiffusionReplyService;
     #messageService: MessageService;
     #replyService: ReplyService;
     #taskQueue: TaskQueue;
@@ -32,27 +30,20 @@ export class ExpandPromptTask extends BaseTask {
         return `Ollama_${this.#ollamaClient.host}`;
     }
 
-    constructor(
-        environmentSettings: EnvironmentSettings,
-        ollamaClient: OllamaClient,
-        easyDiffusionClient: EasyDiffusionClient,
-        easyDiffusionReplyService: EasyDiffusionReplyService,
-        messageService: MessageService,
-        replyService: ReplyService,
-        taskQueue: TaskQueue,
-        interaction: ButtonInteraction) {
-        super(environmentSettings.maxTaskAttempts);
+    constructor(services: IServiceContainer, interaction: ButtonInteraction) {
+        super(services);
 
-        this.#environmentSettings = environmentSettings;
-        this.#ollamaClient = ollamaClient;
-        this.#easyDiffusionClient = easyDiffusionClient;
-        this.#easyDiffusionReplyService = easyDiffusionReplyService;
-        this.#messageService = messageService;
-        this.#replyService = replyService;
-        this.#taskQueue = taskQueue;
+        this.#services = services;
+
+        this.#environmentSettings = services.environmentSettings;
+        this.#ollamaClient = services.ollamaClient;
+        this.#messageService = services.messageService;
+        this.#replyService = services.replyService;
+        this.#taskQueue = services.taskQueue;
+
         this.#interaction = interaction;
 
-        this.#logger = new Logger(environmentSettings.isProduction, 'ExpandPromptTask');
+        this.#logger = new Logger(this.#environmentSettings.isProduction, 'ExpandPromptTask');
     }
 
     override async process(): Promise<void> {
@@ -75,10 +66,7 @@ export class ExpandPromptTask extends BaseTask {
         const content = `${this.#interaction.member} expanded the detail in the prompt: \`${originalRequest.prompt}\``;
 
         this.#taskQueue.add(new AttachRenderTask(
-            this.#environmentSettings,
-            this.#easyDiffusionClient,
-            this.#easyDiffusionReplyService,
-            this.#replyService,
+            this.#services,
             this.#interaction,
             exchange.response.response,
             content

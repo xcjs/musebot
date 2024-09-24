@@ -5,21 +5,21 @@ import { GenerateRequest, GenerateResponse } from 'ollama';
 import { IHttpExchange } from '../../../../models/IHttpExchange.js';
 import { splitText } from '../../../../utilities/string-utilities.js';
 import { DiscordConstants } from '../../discord/enums/DiscordConstants.js';
-import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
 import { LargeLanguageModelActionRow } from '../../discord/components/buttonRows/LargeLanguageModelActionRow.js';
-import { FeatureService } from '../../../features/FeatureService.js';
+import { IServiceContainer } from '../../../IServiceContainer.js';
+import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
 
 export class OllamaReplyService {
+    #services: IServiceContainer;
+
     #environmentSettings: EnvironmentSettings;
-    #featureService: FeatureService;
 
     #logger;
 
-    constructor(
-        environmentSettings: EnvironmentSettings,
-        featureService: FeatureService,) {
-        this.#environmentSettings = environmentSettings;
-        this.#featureService = featureService;
+    constructor(services: IServiceContainer) {
+        this.#services = services;
+
+        this.#environmentSettings = services.environmentSettings;
 
         this.#logger = new Logger(this.#environmentSettings.isProduction, 'OllamaReplyService');
     }
@@ -36,7 +36,7 @@ export class OllamaReplyService {
             if(i === responses.length - 1) {
                 replies.push(await message.reply({
                     content: response,
-                    components: [new LargeLanguageModelActionRow(this.#featureService).build()]
+                    components: [new LargeLanguageModelActionRow(this.#services).build()]
                 }));
             } else {
                 replies.push(await message.reply(response));

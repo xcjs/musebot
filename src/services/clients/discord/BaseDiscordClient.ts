@@ -1,55 +1,24 @@
-import { Client as DiscordClient, GatewayIntentBits, Partials } from 'discord.js';
+import { Client as DiscordClient } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
 import { EnvironmentSettings } from '../../EnvironmentSettings.js';
-import { TypingService } from './services/TypingService.js';
-import { DiscordConstants } from './enums/DiscordConstants.js';
-import { FeatureService } from '../../features/FeatureService.js';
-import { TaskQueue } from '../../tasks/services/TaskQueue.js';
-import { ReplyService } from './services/ReplyService.js';
+import { IServiceContainer } from '../../IServiceContainer.js';
 
 export class BaseDiscordClient {
-    protected environmentSettings: EnvironmentSettings;
-    protected taskQueue: TaskQueue;
-    protected replyService: ReplyService;
-    protected typingService: TypingService;
-    protected featureService: FeatureService;
+    #environmentSettings: EnvironmentSettings;
+    #discordClient: DiscordClient;
 
-    protected client: DiscordClient;
     protected logger;
 
-    constructor(
-        environmentSettings: EnvironmentSettings,
-        featureService: FeatureService,
-        taskQueue: TaskQueue,
-        typingService: TypingService) {
-        this.environmentSettings = environmentSettings;
-        this.featureService = featureService;
-        this.taskQueue = taskQueue;
-        this.typingService = typingService;
+    constructor(services: IServiceContainer) {
+        this.#discordClient = services.discordClient;
+        this.#environmentSettings = services.environmentSettings;
 
-        this.client = new DiscordClient({
-            intents: [
-                GatewayIntentBits.Guilds,
-                GatewayIntentBits.GuildMessages,
-                GatewayIntentBits.GuildMembers,
-                GatewayIntentBits.DirectMessages,
-                GatewayIntentBits.MessageContent
-            ],
-            allowedMentions: { users: [], roles: [], repliedUser: false },
-            partials: [
-                Partials.Channel
-            ],
-            shards: DiscordConstants.ShardCountAuto
-        });
-
-        this.replyService = new ReplyService(environmentSettings, this.client);
-
-        this.logger = new Logger(this.environmentSettings.isProduction, 'BaseDiscordClient');
+        this.logger = new Logger(this.#environmentSettings.isProduction, 'BaseDiscordClient');
     }
 
     login() {
         this.logger(LogLevel.Info, 'Performing client login...');
-        this.client.login(this.environmentSettings.discordToken);
+        this.#discordClient.login(this.#environmentSettings.discordToken);
     }
 }

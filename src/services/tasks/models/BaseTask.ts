@@ -1,3 +1,4 @@
+import { IServiceContainer } from '../../IServiceContainer.js';
 import { TaskStatus } from '../enums/TaskStatus.js';
 
 export abstract class BaseTask {
@@ -6,8 +7,8 @@ export abstract class BaseTask {
     #maxAttempts = 0;
     #createdTime: Date;
 
-    constructor(maxAttempts: number) {
-        this.#maxAttempts = maxAttempts;
+    constructor(services: IServiceContainer) {
+        this.#maxAttempts = services.environmentSettings.maxTaskAttempts;
         this.#createdTime = new Date();
     }
 

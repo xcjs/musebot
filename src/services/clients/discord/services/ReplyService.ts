@@ -1,15 +1,16 @@
-import { ButtonInteraction, Client, Message, MessageType } from 'discord.js';
+import { ButtonInteraction, Client as DiscordClient, Message, MessageType } from 'discord.js';
 
-import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
 import { JavaScriptType } from '../../../../enums/JavaScriptType.js';
+import { IServiceContainer } from '../../../IServiceContainer.js';
+import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
 
 export class ReplyService {
     #environmentSettings: EnvironmentSettings;
-    #client: Client;
+    #discordClient: DiscordClient;
 
-    constructor(environmentSettings: EnvironmentSettings, client: Client) {
-        this.#environmentSettings = environmentSettings;
-        this.#client = client;
+    constructor(services: IServiceContainer) {
+        this.#environmentSettings = services.environmentSettings;
+        this.#discordClient = services.discordClient;
     }
 
     shouldReply(message: Message): boolean {
@@ -19,8 +20,8 @@ export class ReplyService {
             && message.type === MessageType.Default // The message is a default message type.
             && !!message.author.id  // The message should have an author.
             && !message.author.bot  // No messages by bots.
-            && !!message.mentions.members?.find(x => x.id === this.#client.user?.id) // The message explicitly tags this bot.
-            && message.author.id !== this.#client.user?.id // No messages by this bot.
+            && !!message.mentions.members?.find(x => x.id === this.#discordClient.user?.id) // The message explicitly tags this bot.
+            && message.author.id !== this.#discordClient.user?.id // No messages by this bot.
             && (
                 this.#environmentSettings.discordChannels.length === 0
                 || this.#environmentSettings.discordChannels.includes(message.channel.id)) // The channel is in the configured whitelist if there is one.

@@ -13,8 +13,11 @@ import { ReplyService } from '../../discord/services/ReplyService.js';
 import { Automatic1111Client } from '../Automatic1111Client.js';
 import { Automatic1111ReplyService } from '../../discord/automatic1111/Automatic1111ReplyService.js';
 import { Txt2ImgOptionsFactory } from '../factories/Txt2ImgOptionsFactory.js';
+import { IServiceContainer } from '../../../IServiceContainer.js';
 
 export class RandomRenderTask extends BaseTask {
+    #services: IServiceContainer;
+
     #environmentSettings: EnvironmentSettings;
     #automatic1111Client: Automatic1111Client;
     #automatic1111ReplyService: Automatic1111ReplyService;
@@ -28,21 +31,19 @@ export class RandomRenderTask extends BaseTask {
         return `Automatic1111_${this.#automatic1111Client.host}`;
     }
 
-    constructor(
-        environmentSettings: EnvironmentSettings,
-        automatic1111Client: Automatic1111Client,
-        automatic1111ReplyService: Automatic1111ReplyService,
-        replyService: ReplyService,
-        interaction: ButtonInteraction) {
-        super(environmentSettings.maxTaskAttempts);
+    constructor(services: IServiceContainer, interaction: ButtonInteraction) {
+        super(services);
 
-        this.#environmentSettings = environmentSettings;
-        this.#automatic1111Client = automatic1111Client;
-        this.#automatic1111ReplyService = automatic1111ReplyService;
-        this.#replyService = replyService;
+        this.#services = services;
+
+        this.#environmentSettings = services.environmentSettings;
+        this.#automatic1111Client = services.automatic1111Client;
+        this.#automatic1111ReplyService = services.automatic1111ReplyService;
+        this.#replyService = services.replyService;
+
         this.#interaction = interaction;
 
-        this.#logger = new Logger(environmentSettings.isProduction, 'RandomRenderTask');
+        this.#logger = new Logger(this.#environmentSettings.isProduction, 'RandomRenderTask');
     }
 
     override async process(): Promise<void> {
@@ -54,7 +55,7 @@ export class RandomRenderTask extends BaseTask {
 
         this.#logger(LogLevel.Info, `Using ${model} as the selected image generation model.`);
 
-        const ollamaClient = new OllamaClient(this.#environmentSettings);
+        const ollamaClient = new OllamaClient(this.#services);
         const prompt = getRandomArrayEntry(this.#environmentSettings.stableDiffusionOllamaPrompts);
         const exchange = await ollamaClient.sendMessage(prompt, null);
 

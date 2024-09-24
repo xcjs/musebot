@@ -10,15 +10,17 @@ import { JavaScriptType } from '../../../enums/JavaScriptType.js';
 import { IHttpExchange } from '../../../models/IHttpExchange.js';
 import { RenderRequest } from './models/requests/RenderRequest.js';
 import { getRandomArrayEntry } from '../../../utilities/random-utilities.js';
-import { EnvironmentSettings } from '../../EnvironmentSettings.js';
 import { StreamStatus } from './enums/StreamStatus.js';
 import { IRenderResponse } from './models/responses/IRenderResponse.js';
 import { IStreamResponse } from './models/responses/IStreamResponse.js';
 import { IModelsResponse } from './models/responses/IModelsResponse.js';
 import { JaggedRecursiveStringArray } from './types/JaggedRecursiveStringArray.js';
+import { IServiceContainer } from '../../IServiceContainer.js';
+import { EnvironmentSettings } from '../../EnvironmentSettings.js';
 
 export class EasyDiffusionClient {
     #environmentSettings: EnvironmentSettings;
+
     #logger;
 
     #host: URL;
@@ -29,8 +31,9 @@ export class EasyDiffusionClient {
         return this.#host;
     }
 
-    constructor(environmentSettings: EnvironmentSettings) {
-        this.#environmentSettings = environmentSettings;
+    constructor(services: IServiceContainer) {
+        this.#environmentSettings = services.environmentSettings;
+
         this.#logger = Logger(this.#environmentSettings.isProduction, 'EasyDiffusionClient');
 
         this.#host = getRandomArrayEntry(this.#environmentSettings.stableDiffusionHosts);

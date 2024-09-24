@@ -42,7 +42,7 @@ export class EnvironmentSettings {
         return this.nodeEnvironment === NodeEnvironment.Production;
     }
 
-    constructor(shouldLogEnvironmentSettings: boolean = true) {
+    constructor() {
         dotenv.config();
 
         this.packageName = nodePackage.name;
@@ -71,16 +71,12 @@ export class EnvironmentSettings {
 
         this.#logger = new Logger(this.isProduction, 'EnvironmentSettings');
 
-        this.#validate(shouldLogEnvironmentSettings);
+        this.#validate();
 
-        this.#logConfiguration(shouldLogEnvironmentSettings);
+        this.#logConfiguration();
     }
 
-    #logConfiguration(shouldLogEnvironmentSettings: boolean): void {
-        if(!shouldLogEnvironmentSettings) {
-            return;
-        }
-
+    #logConfiguration(): void {
         this.#logger(LogLevel.Info, `Package Name: ${this.packageName}`);
         this.#logger(LogLevel.Info, `Package Version: ${this.version}`);
         this.#logger(LogLevel.Info, `NODE_ENV: ${this.nodeEnvironment}`);
@@ -96,11 +92,7 @@ export class EnvironmentSettings {
         this.#logger(LogLevel.Info, `MUSEBOT_EASY_DIFFUSION_OLLAMA_PROMPTS: ${this.stableDiffusionOllamaPrompts.join(' | ')}`);
     }
 
-    #validate(shouldLogEnvironmentSettings: boolean): void {
-        if(shouldLogEnvironmentSettings) {
-            return;
-        }
-
+    #validate(): void {
         if(this.discordToken.length === 0) {
             throw new Error(`EASY_DIFFUSION_DISCORD_BOT_TOKEN requires a value.`);
         }

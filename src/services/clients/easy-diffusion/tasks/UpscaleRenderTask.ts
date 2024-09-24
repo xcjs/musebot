@@ -11,8 +11,10 @@ import { DiscordConstants } from '../../discord/enums/DiscordConstants.js';
 import { ReplyService } from '../../discord/services/ReplyService.js';
 import { UpscaledRenderRequest } from '../models/requests/UpscaledRenderRequest.js';
 import { MessageService } from '../../discord/services/MessageService.js';
+import { IServiceContainer } from '../../../IServiceContainer.js';
 
 export class UpscaleRenderTask extends BaseTask {
+    #environmentSettings: EnvironmentSettings;
     #easyDiffusionReplyService: EasyDiffusionReplyService;
     #messageService: MessageService;
     #replyService: ReplyService;
@@ -25,20 +27,17 @@ export class UpscaleRenderTask extends BaseTask {
         return `EasyDiffusion_${this.#easyDiffusionReplyService.host}`;
     }
 
-    constructor(
-        environmentSettings: EnvironmentSettings,
-        easyDiffusionReplyService: EasyDiffusionReplyService,
-        messageService: MessageService,
-        replyService: ReplyService,
-        interaction: ButtonInteraction) {
-        super(environmentSettings.maxTaskAttempts);
+    constructor(services: IServiceContainer, interaction: ButtonInteraction) {
+        super(services);
 
-        this.#easyDiffusionReplyService = easyDiffusionReplyService;
-        this.#messageService = messageService;
-        this.#replyService = replyService;
+        this.#environmentSettings = services.environmentSettings;
+        this.#easyDiffusionReplyService = services.easyDiffusionReplyService;
+        this.#messageService = services.messageService;
+        this.#replyService = services.replyService;
+
         this.#interaction = interaction;
 
-        this.#logger = new Logger(environmentSettings.isProduction, 'UpscaleRenderTask');
+        this.#logger = new Logger(this.#environmentSettings.isProduction, 'UpscaleRenderTask');
     }
 
     override async process(): Promise<void> {

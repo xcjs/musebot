@@ -11,8 +11,11 @@ import { Automatic1111ReplyService } from '../../discord/automatic1111/Automatic
 import { Txt2ImgOptionsFactory } from '../factories/Txt2ImgOptionsFactory.js';
 import { TaskQueue } from '../../../tasks/services/TaskQueue.js';
 import { JsonRenderTask } from './JsonRenderTask.js';
+import { IServiceContainer } from '../../../IServiceContainer.js';
 
 export class PromptRenderTask extends BaseTask {
+    #services: IServiceContainer;
+
     #environmentSettings: EnvironmentSettings;
     #discordClient: DiscordClient;
     #automatic1111Client: Automatic1111Client;
@@ -29,24 +32,21 @@ export class PromptRenderTask extends BaseTask {
     }
 
     constructor(
-        environmentSettings: EnvironmentSettings,
-        discordClient: DiscordClient,
-        automatic1111Client: Automatic1111Client,
-        automatic1111ReplyService: Automatic1111ReplyService,
-        replyService: ReplyService,
-        taskQueue: TaskQueue,
+        services: IServiceContainer,
         message: Message) {
-        super(environmentSettings.maxTaskAttempts);
+        super(services);
 
-        this.#environmentSettings = environmentSettings;
-        this.#discordClient = discordClient;
-        this.#automatic1111Client = automatic1111Client;
-        this.#automatic1111ReplyService = automatic1111ReplyService;
-        this.#replyService = replyService;
-        this.#taskQueue = taskQueue;
+        this.#services = services;
+
+        this.#environmentSettings = services.environmentSettings;
+        this.#discordClient = services.discordClient;
+        this.#automatic1111Client = services.automatic1111Client;
+        this.#automatic1111ReplyService = services.automatic1111ReplyService;
+        this.#replyService = services.replyService;
+        this.#taskQueue = services.taskQueue;
         this.#message = message;
 
-        this.#logger = new Logger(environmentSettings.isProduction, 'PromptRenderTask');
+        this.#logger = new Logger(services.environmentSettings.isProduction, 'PromptRenderTask');
     }
 
     override async process(): Promise<void> {
@@ -55,10 +55,7 @@ export class PromptRenderTask extends BaseTask {
 
         if(prompt.charAt(0) === '{') {
             this.#taskQueue.add(new JsonRenderTask(
-                this.#environmentSettings,
-                this.#discordClient,
-                this.#automatic1111ReplyService,
-                this.#replyService,
+                this.#services,
                 this.#message));
             return;
         }

@@ -1,7 +1,6 @@
 import { Logger, LogLevel } from 'meklog'
 
 import { getRandomArrayEntry } from '../../../utilities/random-utilities.js';
-import { EnvironmentSettings } from '../../EnvironmentSettings.js';
 import { IHttpExchangeWithAttachedData } from '../../../models/IHttpExchangeWithAttachedData.js';
 import { HttpMethod } from '../../../enums/HttpMethod.js';
 import { HttpHeader } from '../../../enums/HttpHeader.js';
@@ -12,9 +11,12 @@ import { StableDiffusionOptions } from './models/requests/models/StableDiffusion
 import { Txt2ImgOptionsResponse } from './models/responses/Txt2ImgOptionsResponse.js';
 import { ExtraSingleImageRequest } from './models/requests/ExtraSingleImageRequest.js';
 import { ExtraSingleImageResponse } from './models/responses/ExtraSingleImageResponse.js';
+import { IServiceContainer } from '../../IServiceContainer.js';
+import { EnvironmentSettings } from '../../EnvironmentSettings.js';
 
 export class Automatic1111Client {
     #environmentSettings: EnvironmentSettings;
+
     #logger;
 
     #host: URL;
@@ -23,8 +25,9 @@ export class Automatic1111Client {
         return this.#host;
     }
 
-    constructor(environmentSettings: EnvironmentSettings) {
-        this.#environmentSettings = environmentSettings;
+    constructor(services: IServiceContainer) {
+        this.#environmentSettings = services.environmentSettings;
+
         this.#logger = Logger(this.#environmentSettings.isProduction, 'Automatic1111Client');
 
         this.#host = getRandomArrayEntry(this.#environmentSettings.stableDiffusionHosts);

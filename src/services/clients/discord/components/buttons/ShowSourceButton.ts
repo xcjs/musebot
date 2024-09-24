@@ -1,12 +1,12 @@
 import { ButtonBuilder, ButtonStyle } from 'discord.js';
 
 import { BaseComponent } from '../BaseComponent.js';
+import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { BotInteraction } from '../../../../../enums/BotInteraction.js';
-import { FeatureService } from '../../../../features/FeatureService.js';
 
 export class ShowSourceButton extends BaseComponent<ButtonBuilder> {
-    constructor(featureService: FeatureService) {
-        super(featureService);
+    constructor(services: IServiceContainer) {
+        super(services);
     }
 
     override build(): ButtonBuilder {

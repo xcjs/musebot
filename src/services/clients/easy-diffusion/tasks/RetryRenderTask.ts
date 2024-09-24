@@ -12,6 +12,7 @@ import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiff
 import { DiscordConstants } from '../../discord/enums/DiscordConstants.js';
 import { ReplyService } from '../../discord/services/ReplyService.js';
 import { MessageService } from '../../discord/services/MessageService.js';
+import { IServiceContainer } from '../../../IServiceContainer.js';
 
 export class RetryRenderTask extends BaseTask {
     #environmentSettings: EnvironmentSettings;
@@ -28,23 +29,18 @@ export class RetryRenderTask extends BaseTask {
         return `EasyDiffusion_${this.#easyDiffusionClient.host}`;
     }
 
-    constructor(
-        environmentSettings: EnvironmentSettings,
-        easyDiffusionClient: EasyDiffusionClient,
-        easyDiffusionReplyService: EasyDiffusionReplyService,
-        messageService: MessageService,
-        replyService: ReplyService,
-        interaction: ButtonInteraction) {
-        super(environmentSettings.maxTaskAttempts);
+    constructor(services: IServiceContainer, interaction: ButtonInteraction) {
+        super(services);
 
-        this.#environmentSettings = environmentSettings;
-        this.#easyDiffusionClient = easyDiffusionClient;
-        this.#easyDiffusionReplyService = easyDiffusionReplyService;
-        this.#messageService = messageService;
-        this.#replyService = replyService;
+        this.#environmentSettings = services.environmentSettings;
+        this.#easyDiffusionClient = services.easyDiffusionClient;
+        this.#easyDiffusionReplyService = services.easyDiffusionReplyService;
+        this.#messageService = services.messageService;
+        this.#replyService = services.replyService;
+
         this.#interaction = interaction;
 
-        this.#logger = new Logger(environmentSettings.isProduction, 'RetryRenderTask');
+        this.#logger = new Logger(this.#environmentSettings.isProduction, 'RetryRenderTask');
     }
 
     override async process(): Promise<void> {

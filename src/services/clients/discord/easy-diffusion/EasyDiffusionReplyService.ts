@@ -7,18 +7,21 @@ import { IRenderResponse } from '../../easy-diffusion/models/responses/IRenderRe
 import { IStreamResponse } from '../../easy-diffusion/models/responses/IStreamResponse.js';
 import { BufferEncoding } from '../../../../enums/BufferEncoding.js';
 import { DiscordConstants } from '../enums/DiscordConstants.js';
-import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
 import { StatefulImageGenerationActionRows } from '../components/buttonRows/StatefulImageGenerationActionRows.js';
 import { StatelessImageGenerationActionRow } from '../components/buttonRows/StatelessImageGenerationActionRow.js';
-import { FeatureService } from '../../../features/FeatureService.js';
 import { MAX_FILE_NAME_LENGTH } from '../../../../enums/FileConstants.js';
-import { EasyDiffusionClient } from '../../easy-diffusion/EasyDiffusionClient.js';
 import { UpscaledRenderRequest } from '../../easy-diffusion/models/requests/UpscaledRenderRequest.js';
+import { IServiceContainer } from '../../../IServiceContainer.js';
+import { EasyDiffusionClient } from '../../easy-diffusion/EasyDiffusionClient.js';
+import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
+import { FeatureService } from '../../../features/FeatureService.js';
 
 export class EasyDiffusionReplyService {
+    #services: IServiceContainer;
+
     #environmentSettings: EnvironmentSettings;
-    #easyDiffusionClient: EasyDiffusionClient;
     #featureService: FeatureService;
+    #easyDiffusionClient: EasyDiffusionClient;
 
     #logger;
 
@@ -26,12 +29,14 @@ export class EasyDiffusionReplyService {
         return this.#easyDiffusionClient.host;
     }
 
-    constructor(environmentSettings: EnvironmentSettings, featureService: FeatureService, easyDiffusionClient: EasyDiffusionClient) {
-        this.#environmentSettings = environmentSettings;
-        this.#featureService = featureService;
-        this.#easyDiffusionClient = easyDiffusionClient;
+    constructor(services: IServiceContainer) {
+        this.#services = services;
 
-        this.#logger = new Logger(environmentSettings.isProduction, 'EasyDiffusionReplyService');
+        this.#environmentSettings = services.environmentSettings;
+        this.#featureService = services.featureService;
+        this.#easyDiffusionClient = services.easyDiffusionClient;
+
+        this.#logger = new Logger(this.#environmentSettings.isProduction, 'EasyDiffusionReplyService');
     }
 
     async renderImage(request: RenderRequest | UpscaledRenderRequest): Promise<IHttpExchangeWithAttachedResponse<RenderRequest, IRenderResponse, IStreamResponse>> {
@@ -87,8 +92,8 @@ export class EasyDiffusionReplyService {
             content,
             files,
             components: isStatefulResponse ?
-                new StatefulImageGenerationActionRows(this.#environmentSettings, this.#featureService, renderRequest).build() :
-                [new StatelessImageGenerationActionRow(this.#featureService).build()]
+                new StatefulImageGenerationActionRows(this.#services, renderRequest).build() :
+                [new StatelessImageGenerationActionRow(this.#services).build()]
         };
 
         if(interaction instanceof Message) {

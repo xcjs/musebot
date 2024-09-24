@@ -9,6 +9,7 @@ import { ReplyService } from '../../discord/services/ReplyService.js';
 import { Automatic1111ReplyService } from '../../discord/automatic1111/Automatic1111ReplyService.js';
 import { Automatic1111Client } from '../Automatic1111Client.js';
 import { Txt2ImgOptionsFactory } from '../factories/Txt2ImgOptionsFactory.js';
+import { IServiceContainer } from '../../../IServiceContainer.js';
 
 export class AttachRenderTask extends BaseTask {
     #environmentSettings: EnvironmentSettings;
@@ -28,26 +29,24 @@ export class AttachRenderTask extends BaseTask {
     }
 
     constructor(
-        environmentSettings: EnvironmentSettings,
-        automatic1111Client: Automatic1111Client,
-        automatic1111ReplyService: Automatic1111ReplyService,
-        replyService: ReplyService,
+        services: IServiceContainer,
         interaction: Message | ButtonInteraction,
         prompt: string,
         content: string | null = null,
         isEdit: boolean = false) {
-        super(environmentSettings.maxTaskAttempts);
+        super(services);
 
-        this.#environmentSettings = environmentSettings;
-        this.#automatic1111Client = automatic1111Client;
-        this.#automatic1111ReplyService = automatic1111ReplyService;
-        this.#replyService = replyService;
+        this.#environmentSettings = services.environmentSettings;
+        this.#automatic1111Client = services.automatic1111Client;
+        this.#automatic1111ReplyService = services.automatic1111ReplyService;
+        this.#replyService = services.replyService;
+
         this.#interaction = interaction;
         this.#prompt = prompt;
         this.#content = content;
         this.#isEdit = isEdit;
 
-        this.#logger = new Logger(environmentSettings.isProduction, 'AttachRenderTask');
+        this.#logger = new Logger(this.#environmentSettings.isProduction, 'AttachRenderTask');
     }
 
     override async process(): Promise<void> {

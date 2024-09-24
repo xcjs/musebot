@@ -1,9 +1,10 @@
 import { Logger, LogLevel } from 'meklog';
 import { GenerateRequest, GenerateResponse, Ollama } from 'ollama';
 
-import { EnvironmentSettings } from '../../EnvironmentSettings.js';
 import { getRandomArrayEntry, getRandomInt } from '../../../utilities/random-utilities.js';
 import { IHttpExchange } from '../../../models/IHttpExchange.js';
+import { IServiceContainer } from '../../IServiceContainer.js';
+import { EnvironmentSettings } from '../../EnvironmentSettings.js';
 
 export class OllamaClient {
     #environmentSettings: EnvironmentSettings;
@@ -18,8 +19,8 @@ export class OllamaClient {
         return this.#host;
     }
 
-    constructor(environmentSettings: EnvironmentSettings) {
-        this.#environmentSettings = environmentSettings;
+    constructor(services: IServiceContainer) {
+        this.#environmentSettings = services.environmentSettings;
 
         this.#logger = Logger(this.#environmentSettings.isProduction, 'OllamaClient');
 

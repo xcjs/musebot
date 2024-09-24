@@ -1,7 +1,9 @@
 import { BaseGuildTextChannel, ButtonInteraction, Message } from 'discord.js';
 import {Logger, LogLevel } from 'meklog';
+
 import { EnvironmentSettings } from '../../../EnvironmentSettings';
 import { TaskQueue } from '../../../tasks/services/TaskQueue';
+import { IServiceContainer } from '../../../IServiceContainer';
 
 export class TypingService {
     #environmentSettings: EnvironmentSettings;
@@ -12,9 +14,9 @@ export class TypingService {
     #sendTypingIntervalMilliseconds = 1000;
     #typingInterval: NodeJS.Timeout | null = null;
 
-    constructor(environmentSettings: EnvironmentSettings, taskQueue: TaskQueue) {
-        this.#environmentSettings = environmentSettings;
-        this.#taskQueue = taskQueue;
+    constructor(services: IServiceContainer) {
+        this.#environmentSettings = services.environmentSettings;
+        this.#taskQueue = services.taskQueue;
 
         this.#logger = new Logger(this.#environmentSettings.isProduction, 'TypingService');
     }

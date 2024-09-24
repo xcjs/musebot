@@ -5,23 +5,28 @@ import { TaskStatus } from '../enums/TaskStatus.js';
 import { BaseTask } from '../models/BaseTask.js';
 import { TaskChannel } from '../models/TaskChannel.js';
 import { PromisedSettledResultStatus } from '../../../enums/PromisedSettledResultStatus.js';
+import { IServiceContainer } from '../../IServiceContainer.js';
 
 export class TaskQueue {
-    #environmentSettings: EnvironmentSettings;
+    #services: IServiceContainer;
 
-    #channels: Array<TaskChannel> = [];
+    #environmentSettings: EnvironmentSettings;
 
     #logger;
 
+    #channels: Array<TaskChannel> = [];
     #isActive: boolean = false;
 
     get isActive() {
         return this.#isActive;
     }
 
-    constructor(environmentSettings: EnvironmentSettings) {
-        this.#environmentSettings = environmentSettings;
-        this.#logger = new Logger(environmentSettings.isProduction, 'TaskQueue');
+    constructor(services: IServiceContainer) {
+        this.#services = services;
+
+        this.#environmentSettings = services.environmentSettings;
+
+        this.#logger = new Logger(this.#environmentSettings.isProduction, 'TaskQueue');
     }
 
     async add(task: BaseTask): Promise<void> {
@@ -30,7 +35,7 @@ export class TaskQueue {
         let taskChannel: TaskChannel;
 
         if(this.#channels.filter(x => x.name === task.taskChannel).length === 0) {
-            taskChannel = new TaskChannel(this.#environmentSettings, task.taskChannel);
+            taskChannel = new TaskChannel(this.#services, task.taskChannel);
             this.#channels.push(taskChannel);
         } else {
             taskChannel = this.#channels.find(x => x.name === task.taskChannel);

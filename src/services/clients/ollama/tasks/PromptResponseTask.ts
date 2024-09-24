@@ -6,34 +6,28 @@ import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { TaskStatus } from '../../../tasks/enums/TaskStatus.js';
 import { ReplyService } from '../../discord/services/ReplyService.js';
 import { OllamaClient } from '../OllamaClient.js';
-import { OllamaReplyService } from '../services/OllamaReplyService.js';
-import { EasyDiffusionClient } from '../../easy-diffusion/EasyDiffusionClient.js';
+import { OllamaReplyService } from '../../../clients/discord/ollama/OllamaReplyService.js';
 import { FeatureService } from '../../../features/FeatureService.js';
 import { SupportedFeature } from '../../../features/enum/SupportedFeature.js';
-import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiffusionReplyService.js';
-import { OllamaStreamingReplyService } from '../services/OllamaStreamingReplyService.js';
+import { OllamaStreamingReplyService } from '../../discord/ollama/OllamaStreamingReplyService.js'
 import { DiscordConstants } from '../../discord/enums/DiscordConstants.js';
 import { TaskQueue } from '../../../tasks/services/TaskQueue.js';
 import { AttachRenderTask as EdAttachRenderTask } from '../../easy-diffusion/tasks/AttachRenderTask.js';
 import { AttachRenderTask as A1AttachRenderTask } from '../../automatic1111/tasks/AttachRenderTask.js';
 import { StableDiffusionApiType } from '../../stable-diffusion/enums/StableDiffusionApiType.js';
-import { Automatic1111Client } from '../../automatic1111/Automatic1111Client.js';
-import { Automatic1111ReplyService } from '../../discord/automatic1111/Automatic1111ReplyService.js';
+import { IServiceContainer } from '../../../IServiceContainer.js';
 
 export class PromptResponseTask extends BaseTask {
+    #services: IServiceContainer;
+
     #environmentSettings: EnvironmentSettings;
     #featureService: FeatureService;
     #ollamaClient: OllamaClient;
     #ollamaReplyService: OllamaReplyService;
     #ollamaStreamingReplyService: OllamaStreamingReplyService;
-    #replyService: ReplyService;
-    #automatic1111Client: Automatic1111Client;
-    #automatic1111ReplyService: Automatic1111ReplyService;
-    #easyDiffusionClient: EasyDiffusionClient;
-    #easyDiffusionReplyService: EasyDiffusionReplyService;
-    #taskQueue: TaskQueue;
-
     #discordClient: DiscordClient;
+    #replyService: ReplyService;
+    #taskQueue: TaskQueue;
 
     #message: Message;
     #context: Array<number> = [];
@@ -51,39 +45,26 @@ export class PromptResponseTask extends BaseTask {
     }
 
     constructor(
-        environmentSettings: EnvironmentSettings,
-        featureService: FeatureService,
-        ollamaClient: OllamaClient,
-        ollamaReplyService: OllamaReplyService,
-        ollamaStreamingReplyService: OllamaStreamingReplyService,
-        replyService: ReplyService,
-        discordClient: DiscordClient,
-        automatic1111Client: Automatic1111Client,
-        automatic1111ReplyService: Automatic1111ReplyService,
-        easyDiffusionClient: EasyDiffusionClient,
-        easyDiffusionReplyService: EasyDiffusionReplyService,
-        taskQueue: TaskQueue,
+        services: IServiceContainer,
         message: Message,
         context: Array<number>) {
-        super(environmentSettings.maxTaskAttempts);
+        super(services);
 
-        this.#environmentSettings = environmentSettings;
-        this.#featureService = featureService;
-        this.#ollamaClient = ollamaClient;
-        this.#ollamaReplyService = ollamaReplyService;
-        this.#ollamaStreamingReplyService  = ollamaStreamingReplyService;
-        this.#replyService = replyService;
-        this.#discordClient = discordClient;
-        this.#automatic1111Client = automatic1111Client;
-        this.#automatic1111ReplyService = automatic1111ReplyService;
-        this.#easyDiffusionClient = easyDiffusionClient;
-        this.#easyDiffusionReplyService = easyDiffusionReplyService;
-        this.#taskQueue = taskQueue;
+        this.#services = services;
+
+        this.#environmentSettings = services.environmentSettings;
+        this.#featureService = services.featureService;
+        this.#ollamaClient = services.ollamaClient;
+        this.#ollamaReplyService = services.ollamaReplyService;
+        this.#ollamaStreamingReplyService = services.ollamaStreamingReplyService;
+        this.#discordClient = services.discordClient;
+        this.#replyService = services.replyService;
+        this.#taskQueue = services.taskQueue;
 
         this.#message = message;
         this.#context = context;
 
-        this.#logger = new Logger(environmentSettings.isProduction, 'PromptResponseTask');
+        this.#logger = new Logger(this.#environmentSettings.isProduction, 'PromptResponseTask');
     }
 
     override async process(): Promise<void> {
@@ -163,20 +144,14 @@ export class PromptResponseTask extends BaseTask {
 
         if(this.#environmentSettings.stableDiffusionApiType === StableDiffusionApiType.EasyDiffusion) {
             renderTask = new EdAttachRenderTask(
-                this.#environmentSettings,
-                this.#easyDiffusionClient,
-                this.#easyDiffusionReplyService,
-                this.#replyService,
+                this.#services,
                 lastReply,
                 prompt,
                 lastReply.content,
                 true);
         } else {
             renderTask = new A1AttachRenderTask(
-                this.#environmentSettings,
-                this.#automatic1111Client,
-                this.#automatic1111ReplyService,
-                this.#replyService,
+                this.#services,
                 lastReply,
                 prompt,
                 lastReply.content,

@@ -13,8 +13,11 @@ import { wrapText } from '../../../../utilities/string-utilities.js';
 import { MAX_FILE_NAME_LENGTH, MAX_TEXT_LINE_LENGTH } from '../../../../enums/FileConstants.js';
 import { BufferEncoding } from '../../../../enums/BufferEncoding.js';
 import { ReplyService } from '../../discord/services/ReplyService.js';
+import { IServiceContainer } from '../../../IServiceContainer.js';
 
 export class RandomRenderTask extends BaseTask {
+    #services: IServiceContainer;
+
     #environmentSettings: EnvironmentSettings;
     #easyDiffusionClient: EasyDiffusionClient;
     #easyDiffusionReplyService: EasyDiffusionReplyService;
@@ -28,21 +31,19 @@ export class RandomRenderTask extends BaseTask {
         return `EasyDiffusion_${this.#easyDiffusionClient.host}`;
     }
 
-    constructor(
-        environmentSettings: EnvironmentSettings,
-        easyDiffusionClient: EasyDiffusionClient,
-        easyDiffusionReplyService: EasyDiffusionReplyService,
-        replyService: ReplyService,
-        interaction: ButtonInteraction) {
-        super(environmentSettings.maxTaskAttempts);
+    constructor(services: IServiceContainer, interaction: ButtonInteraction) {
+        super(services);
 
-        this.#environmentSettings = environmentSettings;
-        this.#easyDiffusionClient = easyDiffusionClient;
-        this.#easyDiffusionReplyService = easyDiffusionReplyService;
-        this.#replyService = replyService;
+        this.#services = services;
+
+        this.#environmentSettings = services.environmentSettings;
+        this.#easyDiffusionClient = services.easyDiffusionClient;
+        this.#easyDiffusionReplyService = services.easyDiffusionReplyService;
+        this.#replyService = services.replyService;
+
         this.#interaction = interaction;
 
-        this.#logger = new Logger(environmentSettings.isProduction, 'RandomRenderTask');
+        this.#logger = new Logger(this.#environmentSettings.isProduction, 'RandomRenderTask');
     }
 
     override async process(): Promise<void> {
@@ -54,7 +55,7 @@ export class RandomRenderTask extends BaseTask {
 
         this.#logger(LogLevel.Info, `Using ${model} as the selected EasyDiffusion model.`);
 
-        const ollamaClient = new OllamaClient(this.#environmentSettings);
+        const ollamaClient = new OllamaClient(this.#services);
         const prompt = getRandomArrayEntry(this.#environmentSettings.stableDiffusionOllamaPrompts);
         const exchange = await ollamaClient.sendMessage(prompt, null);
 

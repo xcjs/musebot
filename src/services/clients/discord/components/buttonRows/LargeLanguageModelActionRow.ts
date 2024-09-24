@@ -1,16 +1,20 @@
 import { ActionRowBuilder, ButtonBuilder } from 'discord.js';
 
 import { BaseComponent } from '../BaseComponent.js';
-import { FeatureService } from '../../../../features/FeatureService.js';
 import { ClearContextButton } from '../buttons/ClearContextButton.js';
+import { IServiceContainer } from '../../../../IServiceContainer.js';
 
 export class LargeLanguageModelActionRow extends BaseComponent<ActionRowBuilder<ButtonBuilder>> {
-    constructor(featureService: FeatureService) {
-        super(featureService);
+    #services: IServiceContainer;
+
+    constructor(services: IServiceContainer) {
+        super(services);
+
+        this.#services = services;
     }
 
     override build(): ActionRowBuilder<ButtonBuilder> {
-        const clearContextButton = new ClearContextButton(this.featureService).build();
+        const clearContextButton = new ClearContextButton(this.#services).build();
         const actionRowBuilder = new ActionRowBuilder<ButtonBuilder>()
             .addComponents(clearContextButton);
 
