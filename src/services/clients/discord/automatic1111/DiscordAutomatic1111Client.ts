@@ -37,6 +37,7 @@ export class DiscordAutomatic1111Client extends BaseDiscordClient {
 
         this.#services = services;
 
+        this.#environmentSettings = services.environmentSettings;
         this.#discordClient = services.discordClient;
         this.#replyService = services.replyService;
         this.#typingService = services.typingService;
