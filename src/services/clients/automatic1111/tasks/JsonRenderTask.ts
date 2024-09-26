@@ -10,7 +10,7 @@ import { Automatic1111ReplyService } from '../../discord/automatic1111/Automatic
 import { IServiceContainer } from '../../../IServiceContainer.js';
 
 export class JsonRenderTask extends BaseTask {
-    environmentSettings: EnvironmentSettings;
+    #environmentSettings: EnvironmentSettings;
     #discordClient: DiscordClient;
     #automatic1111ReplyService: Automatic1111ReplyService;
     #replyService: ReplyService;
@@ -28,12 +28,13 @@ export class JsonRenderTask extends BaseTask {
         message: Message) {
         super(services);
 
+        this.#environmentSettings = services.environmentSettings;
         this.#discordClient = services.discordClient;
         this.#automatic1111ReplyService = services.automatic1111ReplyService;
         this.#replyService = services.replyService;
         this.#message = message;
 
-        this.#logger = new Logger(this.environmentSettings.isProduction, 'JsonRenderTask');
+        this.#logger = new Logger(this.#environmentSettings.isProduction, 'JsonRenderTask');
     }
 
     override async process(): Promise<void> {
