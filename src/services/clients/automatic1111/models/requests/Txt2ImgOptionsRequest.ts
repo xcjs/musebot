@@ -2,6 +2,7 @@ import { ControlNetUnit } from './models/ControlNetUnit';
 import { SamplingMethod } from '../../enums/SamplingMethod';
 import { ScheduleType } from '../../enums/ScheduleType';
 import { Upscaler } from '../../enums/Upscaler';
+import { Automatic1111Options } from './models/Automatic1111Options';
 
 export interface Txt2ImgOptionsRequest {
     enable_hr: boolean;
@@ -36,7 +37,7 @@ export interface Txt2ImgOptionsRequest {
     s_tmax: number | null;
     s_tmin: number | null;
     s_noise: number | null;
-    override_settings?: Record<string, unknown>;
+    override_settings?: Automatic1111Options;
     override_settings_restore_afterwards?: boolean;
     script_name: string | null;
     send_images: boolean;
