@@ -7,7 +7,7 @@ import { HttpHeader } from '../../../enums/HttpHeader.js';
 import { ContentType } from '../../../enums/ContentType.js';
 import { Txt2ImgOptionsRequest } from './models/requests/Txt2ImgOptionsRequest.js';
 import { StableDiffusionModel } from './models/requests/StableDiffusionModel.js';
-import { StableDiffusionOptions } from './models/requests/models/StableDiffusionOptions.js';
+import { Automatic1111Options } from './models/requests/models/Automatic1111Options.js';
 import { Txt2ImgOptionsResponse } from './models/responses/Txt2ImgOptionsResponse.js';
 import { ExtraSingleImageRequest } from './models/requests/ExtraSingleImageRequest.js';
 import { ExtraSingleImageResponse } from './models/responses/ExtraSingleImageResponse.js';
@@ -39,8 +39,6 @@ export class Automatic1111Client {
         this.#logger(LogLevel.Info, 'Sending txt2img request to Automatic1111...');
 
         try {
-            await this.#setModel(model);
-
             const response = await fetch(new URL('/sdapi/v1/txt2img', this.#host), {
                 method: HttpMethod.Post,
                 headers: {
@@ -103,9 +101,8 @@ export class Automatic1111Client {
         try {
             this.#logger(LogLevel.Info, `Setting the active image generation model...`);
 
-            const options: StableDiffusionOptions = {
-                sd_model_checkpoint: model
-            };
+            const options = new Automatic1111Options();
+            options.sd_model_checkpoint = model;
 
             await fetch(new URL('/sdapi/v1/options', this.#host), {
                 method: HttpMethod.Post,

@@ -1,10 +1,9 @@
-import { ImageOutputFormat } from '../../../../easy-diffusion/enums/ImageOutputFormat';
-import { DatEnabledModel } from '../enums/DatEnabledModel';
-import { ImageFormat } from '../enums/ImageFormat';
-import { KeyEditDelimiterWhitespace } from '../enums/KeyEditDelimiterWhitespace';
-import { ProfilingActivity } from '../enums/ProfilingActivity';
-import { RealEsrganEnabledModel } from '../enums/RealEsrganEnabledModel';
-import { SaveImagesReplaceAction } from '../enums/SaveImagesReplaceAction';
+import { DatEnabledModel } from '../enums/DatEnabledModel.js';
+import { ImageFormat } from '../enums/ImageFormat.js';
+import { KeyEditDelimiterWhitespace } from '../enums/KeyEditDelimiterWhitespace.js';
+import { ProfilingActivity } from '../enums/ProfilingActivity.js';
+import { RealEsrganEnabledModel } from '../enums/RealEsrganEnabledModel.js';
+import { SaveImagesReplaceAction } from '../enums/SaveImagesReplaceAction.js';
 
 export class Automatic1111Options {
   samples_save: boolean = true;
@@ -92,7 +91,7 @@ export class Automatic1111Options {
   disable_mmap_load_safetensors: boolean = false;
   hide_ldm_prints: boolean = true;
   dump_stacks_on_signal: boolean = false;
-  profiling_explanation: string = 'Those settings allow you to enable torch profiler when generating pictures.\nProfiling allows you to see which code uses how much of computer\'s resources during generation.\nEach generation writes its own profile to one file, overwriting previous.\nThe file can be viewed in <a href=\"chrome:tracing\">Chrome</a>, or on a <a href=\"https://ui.perfetto.dev/\">Perfetto</a> web site.\nWarning: writing profile can take a lot of time, up to 30 seconds, and the file itself can be around 500MB in size.';
+  profiling_explanation: string = 'Those settings allow you to enable torch profiler when generating pictures.\nProfiling allows you to see which code uses how much of computer\'s resources during generation.\nEach generation writes its own profile to one file, overwriting previous.\nThe file can be viewed in <a href="chrome:tracing">Chrome</a>, or on a <a href="https://ui.perfetto.dev/">Perfetto</a> web site.\nWarning: writing profile can take a lot of time, up to 30 seconds, and the file itself can be around 500MB in size.';
   profiling_enable: boolean = false;
 
   profiling_activities: Array<ProfilingActivity> = [
@@ -189,7 +188,7 @@ export class Automatic1111Options {
   interrogate_clip_min_length: number = 24;
   interrogate_clip_max_length: number = 48;
   interrogate_clip_dict_limit: number = 1500;
-  interrogate_clip_skip_categories: Array<any> = [];
+  interrogate_clip_skip_categories: Array<unknown> = [];
   interrogate_deepbooru_score_threshold: number = 0.5;
   deepbooru_sort_alpha: boolean = true;
   deepbooru_use_spaces: boolean = true;
@@ -247,10 +246,10 @@ export class Automatic1111Options {
   img2img_settings_accordion: boolean = false;
   interrupt_after_current: boolean = true;
   localization: string = 'None';
-  quick_setting_list: Array<any> = [];
-  ui_tab_order: Array<any> = [];
-  hidden_tabs: Array<any> = [];
-  ui_reorder_list: Array<any> = [];
+  quick_setting_list: Array<unknown> = [];
+  ui_tab_order: Array<unknown> = [];
+  hidden_tabs: Array<unknown> = [];
+  ui_reorder_list: Array<unknown> = [];
   gradio_theme: string = 'Default';
   gradio_themes_cache: boolean = true;
   show_progress_in_title: boolean = true;
@@ -267,11 +266,11 @@ export class Automatic1111Options {
   add_user_name_to_info: boolean = false;
   add_version_to_infotext: boolean = true;
   disable_weights_auto_swap: boolean = true;
-  infotext_skip_pasting: Array<any> = [];
-  infotext_styles: string = 'Apply if any';
+  infotext_skip_pasting: Array<unknown> = [];
+  infotext_styles: string = 'Apply if unknown';
   show_progressbar: boolean = true;
   live_previews_enable: boolean = true;
-  live_previews_image_format: ImageOutputFormat = ImageOutputFormat.Png;
+  live_previews_image_format: ImageFormat = ImageFormat.Png;
   show_progress_grid: boolean = true;
   show_progress_every_n_steps: number = 10;
   show_progress_type: string = 'Approx NN';
@@ -281,7 +280,7 @@ export class Automatic1111Options {
   live_preview_fast_interrupt: boolean = false;
   js_live_preview_in_modal_lightbox: boolean = false;
   prevent_screen_sleep_during_generation: boolean = true;
-  hide_samplers: Array<any> = [];
+  hide_samplers: Array<unknown> = [];
   eta_ddim: string = "0";
   eta_ancestral: number = 1;
   ddim_discretize: string = 'uniform';
@@ -303,52 +302,52 @@ export class Automatic1111Options {
   skip_early_cond: string = '0';
   beta_dist_alpha: number = 0.6;
   beta_dist_beta: number = 0.6;
-  postprocessing_enable_in_main_ui: Array<any> = [];
-  postprocessing_disable_in_extras: Array<any> = [];
-  postprocessing_operation_order: Array<any> = [];
+  postprocessing_enable_in_main_ui: Array<unknown> = [];
+  postprocessing_disable_in_extras: Array<unknown> = [];
+  postprocessing_operation_order: Array<unknown> = [];
   upscaling_max_images_in_cache: number = 5;
   postprocessing_existing_caption_action: string = 'Ignore';
-  disabled_extensions: Array<any> = [];
+  disabled_extensions: Array<unknown> = [];
   disable_all_extensions: string = 'none';
   restore_config_state_file: string = '';
   sd_checkpoint_hash: string = '';
   forge_unet_storage_dtype: string = 'Automatic';
-  "forge_inference_memory": 1024,
-  "forge_async_loading": "Queue",
-  "forge_pin_shared_memory": "CPU",
-  "forge_preset": "sd",
-  "forge_additional_modules": [],
-  "sd_t2i_width": 512,
-  "sd_t2i_height": 640,
-  "sd_t2i_cfg": 7,
-  "sd_t2i_hr_cfg": 7,
-  "sd_i2i_width": 512,
-  "sd_i2i_height": 512,
-  "sd_i2i_cfg": 7,
-  "xl_t2i_width": 896,
-  "xl_t2i_height": 1152,
-  "xl_t2i_cfg": 5,
-  "xl_t2i_hr_cfg": 5,
-  "xl_i2i_width": 1024,
-  "xl_i2i_height": 1024,
-  "xl_i2i_cfg": 5,
-  "flux_t2i_width": 896,
-  "flux_t2i_height": 1152,
-  "flux_t2i_cfg": 1,
-  "flux_t2i_hr_cfg": 1,
-  "flux_t2i_d_cfg": 3.5,
-  "flux_t2i_hr_d_cfg": 3.5,
-  "flux_i2i_width": 1024,
-  "flux_i2i_height": 1024,
-  "flux_i2i_cfg": 1,
-  "flux_i2i_d_cfg": 3.5,
-  "settings_in_ui": "This page allows you to add some settings to the main interface of txt2img and img2img tabs.",
-  "extra_options_txt2img": [],
-  "extra_options_img2img": [],
-  "extra_options_cols": 1,
-  "extra_options_accordion": false
+  forge_inference_memory: number = 1024;
+  forge_async_loading: 'Queue';
+  forge_pin_shared_memory: string = "CPU";
+  forge_preset: string = 'sd';
+  forge_additional_modules: Array<unknown> = [];
+  sd_t2i_width: number = 512;
+  sd_t2i_height: number = 640;
+  sd_t2i_cfg: number = 7;
+  sd_t2i_hr_cfg: number = 7;
+  sd_i2i_width: number = 512;
+  sd_i2i_height: number = 512;
+  sd_i2i_cfg: number = 7;
+  xl_t2i_width: number = 896;
+  xl_t2i_height: number = 1152;
+  xl_t2i_cfg: number = 5;
+  xl_t2i_hr_cfg: number = 5;
+  xl_i2i_width: number = 1024;
+  xl_i2i_height: number = 1024;
+  xl_i2i_cfg: number = 5;
+  flux_t2i_width: number = 896;
+  flux_t2i_height: number = 1152;
+  flux_t2i_cfg: number = 1;
+  flux_t2i_hr_cfg: number = 1;
+  flux_t2i_d_cfg: number = 3.5;
+  flux_t2i_hr_d_cfg: number = 3.5;
+  flux_i2i_width: number = 1024;
+  flux_i2i_height: number = 1024;
+  flux_i2i_cfg: number = 1;
+  flux_i2i_d_cfg: number = 3.5;
+  settings_in_ui: 'This page allows you to add some settings to the main interface of txt2img and img2img tabs.';
+  extra_options_txt2img: Array<unknown> = [];
+  extra_options_img2img: Array<unknown> = [];
+  extra_options_cols: number = 1;
+  extra_options_accordion: boolean = false;
 
   constructor() {
 
   }
-};
+}
