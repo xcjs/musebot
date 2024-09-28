@@ -1,5 +1,7 @@
+import { ImageOutputFormat } from '../../../../easy-diffusion/enums/ImageOutputFormat';
 import { DatEnabledModel } from '../enums/DatEnabledModel';
 import { ImageFormat } from '../enums/ImageFormat';
+import { KeyEditDelimiterWhitespace } from '../enums/KeyEditDelimiterWhitespace';
 import { ProfilingActivity } from '../enums/ProfilingActivity';
 import { RealEsrganEnabledModel } from '../enums/RealEsrganEnabledModel';
 import { SaveImagesReplaceAction } from '../enums/SaveImagesReplaceAction';
@@ -155,160 +157,162 @@ export class Automatic1111Options {
   img2img_inpaint_sketch_default_brush_color: string = '#ffffff';
   img2img_inpaint_mask_high_contrast: boolean = true;
   return_mask: boolean = false;
-  "return_mask_composite": false,
-  "img2img_batch_show_results_limit": 32,
-  "overlay_inpaint": true,
-  "img2img_autosize": false,
-  "cross_attention_optimization": "Automatic",
-  "s_min_uncond": "0",
-  "s_min_uncond_all": false,
-  "token_merging_ratio": "0",
-  "token_merging_ratio_img2img": "0",
-  "token_merging_ratio_hr": "0",
-  "pad_cond_uncond": false,
-  "pad_cond_uncond_v0": false,
-  "persistent_cond_cache": true,
-  "batch_cond_uncond": true,
-  "fp8_storage": "Disable",
-  "cache_fp16_weight": false,
-  "forge_try_reproduce": "None",
-  "auto_backcompat": true,
-  "use_old_emphasis_implementation": false,
-  "use_old_karras_scheduler_sigmas": false,
-  "no_dpmpp_sde_batch_determinism": false,
-  "use_old_hires_fix_width_height": false,
-  "hires_fix_use_firstpass_conds": false,
-  "use_old_scheduling": false,
-  "use_downcasted_alpha_bar": false,
-  "refiner_switch_by_sample_steps": false,
-  "interrogate_keep_models_in_memory": false,
-  "interrogate_return_ranks": false,
-  "interrogate_clip_num_beams": 1,
-  "interrogate_clip_min_length": 24,
-  "interrogate_clip_max_length": 48,
-  "interrogate_clip_dict_limit": 1500,
-  "interrogate_clip_skip_categories": [],
-  "interrogate_deepbooru_score_threshold": 0.5,
-  "deepbooru_sort_alpha": true,
-  "deepbooru_use_spaces": true,
-  "deepbooru_escape": true,
-  "deepbooru_filter_tags": "",
-  "extra_networks_show_hidden_directories": true,
-  "extra_networks_dir_button_function": false,
-  "extra_networks_hidden_models": "When searched",
-  "extra_networks_default_multiplier": 1,
-  "extra_networks_card_width": "0",
-  "extra_networks_card_height": "0",
-  "extra_networks_card_text_scale": 1,
-  "extra_networks_card_show_desc": true,
-  "extra_networks_card_description_is_html": false,
-  "extra_networks_card_order_field": "Path",
-  "extra_networks_card_order": "Ascending",
-  "extra_networks_tree_view_style": "Dirs",
-  "extra_networks_tree_view_default_enabled": true,
-  "extra_networks_tree_view_default_width": 180,
-  "extra_networks_add_text_separator": " ",
-  "ui_extra_networks_tab_reorder": "",
-  "textual_inversion_print_at_load": false,
-  "textual_inversion_add_hashes_to_infotext": true,
-  "sd_hypernetwork": "None",
-  "keyedit_precision_attention": 0.1,
-  "keyedit_precision_extra": 0.05,
-  "keyedit_delimiters": ".,\\/!?%^*;:{}=`~() ",
-  "keyedit_delimiters_whitespace": [
-    "Tab",
-    "Carriage Return",
-    "Line Feed"
-  ],
-  "keyedit_move": true,
-  "disable_token_counters": false,
-  "include_styles_into_token_counters": true,
-  "return_grid": true,
-  "do_not_show_images": false,
-  "js_modal_lightbox": true,
-  "js_modal_lightbox_initially_zoomed": true,
-  "js_modal_lightbox_gamepad": false,
-  "js_modal_lightbox_gamepad_repeat": 250,
-  "sd_webui_modal_lightbox_icon_opacity": 1,
-  "sd_webui_modal_lightbox_toolbar_opacity": 0.9,
-  "gallery_height": "",
-  "open_dir_button_choice": "Subdirectory",
-  "compact_prompt_box": false,
-  "samplers_in_dropdown": true,
-  "dimensions_and_batch_together": true,
-  "sd_checkpoint_dropdown_use_short": false,
-  "hires_fix_show_sampler": false,
-  "hires_fix_show_prompts": false,
-  "txt2img_settings_accordion": false,
-  "img2img_settings_accordion": false,
-  "interrupt_after_current": true,
-  "localization": "None",
-  "quick_setting_list": [],
-  "ui_tab_order": [],
-  "hidden_tabs": [],
-  "ui_reorder_list": [],
-  "gradio_theme": "Default",
-  "gradio_themes_cache": true,
-  "show_progress_in_title": true,
-  "send_seed": true,
-  "send_size": true,
-  "enable_reloading_ui_scripts": false,
-  "infotext_explanation": "Infotext is what this software calls the text that contains generation parameters and can be used to generate the same picture again.\nIt is displayed in UI below the image. To use infotext, paste it into the prompt and click the ↙️ paste button.",
-  "enable_pnginfo": true,
-  "save_txt": false,
-  "add_model_name_to_info": true,
-  "add_model_hash_to_info": true,
-  "add_vae_name_to_info": true,
-  "add_vae_hash_to_info": true,
-  "add_user_name_to_info": false,
-  "add_version_to_infotext": true,
-  "disable_weights_auto_swap": true,
-  "infotext_skip_pasting": [],
-  "infotext_styles": "Apply if any",
-  "show_progressbar": true,
-  "live_previews_enable": true,
-  "live_previews_image_format": "png",
-  "show_progress_grid": true,
-  "show_progress_every_n_steps": 10,
-  "show_progress_type": "Approx NN",
-  "live_preview_allow_lowvram_full": false,
-  "live_preview_content": "Prompt",
-  "live_preview_refresh_period": 1000,
-  "live_preview_fast_interrupt": false,
-  "js_live_preview_in_modal_lightbox": false,
-  "prevent_screen_sleep_during_generation": true,
-  "hide_samplers": [],
-  "eta_ddim": "0",
-  "eta_ancestral": 1,
-  "ddim_discretize": "uniform",
-  "s_churn": "0",
-  "s_tmin": "0",
-  "s_tmax": "0",
-  "s_noise": 1,
-  "sigma_min": "0",
-  "sigma_max": "0",
-  "rho": "0",
-  "eta_noise_seed_delta": "0",
-  "always_discard_next_to_last_sigma": false,
-  "sgm_noise_multiplier": false,
-  "uni_pc_variant": "bh1",
-  "uni_pc_skip_type": "time_uniform",
-  "uni_pc_order": 3,
-  "uni_pc_lower_order_final": true,
-  "sd_noise_schedule": "Default",
-  "skip_early_cond": "0",
-  "beta_dist_alpha": 0.6,
-  "beta_dist_beta": 0.6,
-  "postprocessing_enable_in_main_ui": [],
-  "postprocessing_disable_in_extras": [],
-  "postprocessing_operation_order": [],
-  "upscaling_max_images_in_cache": 5,
-  "postprocessing_existing_caption_action": "Ignore",
-  "disabled_extensions": [],
-  "disable_all_extensions": "none",
-  "restore_config_state_file": "",
-  "sd_checkpoint_hash": "",
-  "forge_unet_storage_dtype": "Automatic",
+  return_mask_composite: boolean = false;
+  img2img_batch_show_results_limit: number = 32;
+  overlay_inpaint: boolean = true;
+  img2img_autosize: boolean = false;
+  cross_attention_optimization: string = 'Automatic';
+  s_min_uncond: string = '0';
+  s_min_uncond_all: boolean = false;
+  token_merging_ratio: string = '0';
+  token_merging_ratio_img2img: string = '0';
+  token_merging_ratio_hr: string = '0';
+  pad_cond_uncond: boolean = false;
+  pad_cond_uncond_v0: boolean = false;
+  persistent_cond_cache: boolean = true;
+  batch_cond_uncond: boolean = true;
+  fp8_storage: string = 'Disable';
+  cache_fp16_weight: boolean = false;
+  forge_try_reproduce: string = 'None';
+  auto_backcompat: boolean = true;
+  use_old_emphasis_implementation: boolean = false;
+  use_old_karras_scheduler_sigmas: boolean = false;
+  no_dpmpp_sde_batch_determinism: boolean = false;
+  use_old_hires_fix_width_height: boolean = false;
+  hires_fix_use_firstpass_conds: boolean = false;
+  use_old_scheduling: boolean = false;
+  use_downcasted_alpha_bar: boolean = false;
+  refiner_switch_by_sample_steps: boolean = false;
+  interrogate_keep_models_in_memory: boolean = false;
+  interrogate_return_ranks: boolean = false;
+  interrogate_clip_num_beams: number = 1;
+  interrogate_clip_min_length: number = 24;
+  interrogate_clip_max_length: number = 48;
+  interrogate_clip_dict_limit: number = 1500;
+  interrogate_clip_skip_categories: Array<any> = [];
+  interrogate_deepbooru_score_threshold: number = 0.5;
+  deepbooru_sort_alpha: boolean = true;
+  deepbooru_use_spaces: boolean = true;
+  deepbooru_escape: boolean = true;
+  deepbooru_filter_tags: string =  '';
+  extra_networks_show_hidden_directories: boolean = true;
+  extra_networks_dir_button_function: boolean = false;
+  extra_networks_hidden_models: string = 'When searched';
+  extra_networks_default_multiplier: number = 1;
+  extra_networks_card_width: string = '0';
+  extra_networks_card_height: string = '0';
+  extra_networks_card_text_scale: number = 1;
+  extra_networks_card_show_desc: boolean = true;
+  extra_networks_card_description_is_html: boolean = false;
+  extra_networks_card_order_field: string = 'Path';
+  extra_networks_card_order: 'Ascending';
+  extra_networks_tree_view_style: string = 'Dirs';
+  extra_networks_tree_view_default_enabled: boolean = true;
+  extra_networks_tree_view_default_width: number = 180;
+  extra_networks_add_text_separator: string= ' ';
+  ui_extra_networks_tab_reorder: string = '';
+  textual_inversion_print_at_load: boolean = false;
+  textual_inversion_add_hashes_to_infotext: boolean = true;
+  sd_hypernetwork: string = 'None';
+  keyedit_precision_attention: number = 0.1;
+  keyedit_precision_extra: number = 0.05;
+  keyedit_delimiters: '.,\\/!?%^*;:{}=`~() ';
+
+  keyedit_delimiters_whitespace: Array<KeyEditDelimiterWhitespace> = [
+    KeyEditDelimiterWhitespace.Tab,
+    KeyEditDelimiterWhitespace.CarriageReturn,
+    KeyEditDelimiterWhitespace.LineFeed
+  ];
+
+  keyedit_move: boolean = true;
+  disable_token_counters: boolean = false;
+  include_styles_into_token_counters: boolean = true;
+  return_grid: boolean = true;
+  do_not_show_images: boolean = false;
+  js_modal_lightbox: boolean = true;
+  js_modal_lightbox_initially_zoomed: boolean = true;
+  js_modal_lightbox_gamepad: boolean = false;
+  js_modal_lightbox_gamepad_repeat: number = 250;
+  sd_webui_modal_lightbox_icon_opacity: number = 1;
+  sd_webui_modal_lightbox_toolbar_opacity: number = 0.9;
+  gallery_height: string = '';
+  open_dir_button_choice: string = 'Subdirectory';
+  compact_prompt_box: boolean = false;
+  samplers_in_dropdown: boolean = true;
+  dimensions_and_batch_together: boolean = true;
+  sd_checkpoint_dropdown_use_short: boolean = false;
+  hires_fix_show_sampler: boolean = false;
+  hires_fix_show_prompts: boolean = false;
+  txt2img_settings_accordion: boolean = false;
+  img2img_settings_accordion: boolean = false;
+  interrupt_after_current: boolean = true;
+  localization: string = 'None';
+  quick_setting_list: Array<any> = [];
+  ui_tab_order: Array<any> = [];
+  hidden_tabs: Array<any> = [];
+  ui_reorder_list: Array<any> = [];
+  gradio_theme: string = 'Default';
+  gradio_themes_cache: boolean = true;
+  show_progress_in_title: boolean = true;
+  send_seed: boolean = true;
+  send_size: true;
+  enable_reloading_ui_scripts: boolean = false;
+  infotext_explanation: string = 'Infotext is what this software calls the text that contains generation parameters and can be used to generate the same picture again.\nIt is displayed in UI below the image. To use infotext, paste it into the prompt and click the ↙️ paste button.';
+  enable_pnginfo: boolean = true;
+  save_txt: boolean = false;
+  add_model_name_to_info: boolean = true;
+  add_model_hash_to_info: boolean = true;
+  add_vae_name_to_info: boolean = true;
+  add_vae_hash_to_info: boolean = true;
+  add_user_name_to_info: boolean = false;
+  add_version_to_infotext: boolean = true;
+  disable_weights_auto_swap: boolean = true;
+  infotext_skip_pasting: Array<any> = [];
+  infotext_styles: string = 'Apply if any';
+  show_progressbar: boolean = true;
+  live_previews_enable: boolean = true;
+  live_previews_image_format: ImageOutputFormat = ImageOutputFormat.Png;
+  show_progress_grid: boolean = true;
+  show_progress_every_n_steps: number = 10;
+  show_progress_type: string = 'Approx NN';
+  live_preview_allow_lowvram_full: boolean = false;
+  live_preview_content: string = 'Prompt';
+  live_preview_refresh_period: number = 1000;
+  live_preview_fast_interrupt: boolean = false;
+  js_live_preview_in_modal_lightbox: boolean = false;
+  prevent_screen_sleep_during_generation: boolean = true;
+  hide_samplers: Array<any> = [];
+  eta_ddim: string = "0";
+  eta_ancestral: number = 1;
+  ddim_discretize: string = 'uniform';
+  s_churn: string = '0';
+  s_tmin: string = '0';
+  s_tmax: string = '0';
+  s_noise: number = 1;
+  sigma_min: string = '0';
+  sigma_max: string = '0';
+  rho: string = '0';
+  eta_noise_seed_delta: string = '0';
+  always_discard_next_to_last_sigma: boolean = false;
+  sgm_noise_multiplier: boolean = false;
+  uni_pc_variant: string = 'bh1';
+  uni_pc_skip_type: string = 'time_uniform';
+  uni_pc_order: number = 3;
+  uni_pc_lower_order_final: boolean = true;
+  sd_noise_schedule: string = 'Default';
+  skip_early_cond: string = '0';
+  beta_dist_alpha: number = 0.6;
+  beta_dist_beta: number = 0.6;
+  postprocessing_enable_in_main_ui: Array<any> = [];
+  postprocessing_disable_in_extras: Array<any> = [];
+  postprocessing_operation_order: Array<any> = [];
+  upscaling_max_images_in_cache: number = 5;
+  postprocessing_existing_caption_action: string = 'Ignore';
+  disabled_extensions: Array<any> = [];
+  disable_all_extensions: string = 'none';
+  restore_config_state_file: string = '';
+  sd_checkpoint_hash: string = '';
+  forge_unet_storage_dtype: string = 'Automatic';
   "forge_inference_memory": 1024,
   "forge_async_loading": "Queue",
   "forge_pin_shared_memory": "CPU",
