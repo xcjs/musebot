@@ -1,7 +1,6 @@
 import { ButtonInteraction, Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { EasyDiffusionClient } from '../EasyDiffusionClient.js';
 import { RenderRequest } from '../models/requests/RenderRequest.js';
@@ -10,9 +9,10 @@ import { getRandomArrayEntry } from '../../../../utilities/random-utilities.js';
 import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiffusionReplyService.js';
 import { ReplyService } from '../../discord/services/ReplyService.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
+import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
 
 export class AttachRenderTask extends BaseTask {
-    #environmentSettings: EnvironmentSettings;
+    #environmentSettings: IEnvironmentSettings;
     #easyDiffusionClient: EasyDiffusionClient;
     #easyDiffusionReplyService: EasyDiffusionReplyService;
     #replyService: ReplyService;

@@ -1,7 +1,6 @@
 import { Client as DiscordClient } from 'discord.js';
 
 import { TypingService } from './clients/discord/services/TypingService.js';
-import { EnvironmentSettings } from './EnvironmentSettings.js';
 import { FeatureService } from './features/FeatureService.js';
 import { TaskQueue } from './tasks/services/TaskQueue.js';
 import { MessageService } from './clients/discord/services/MessageService.js';
@@ -16,11 +15,12 @@ import { Automatic1111ReplyService } from './clients/discord/automatic1111/Autom
 import { EasyDiffusionReplyService } from './clients/discord/easy-diffusion/EasyDiffusionReplyService.js';
 import { OllamaReplyService } from './clients/discord/ollama/OllamaReplyService.js';
 import { OllamaStreamingReplyService } from './clients/discord/ollama/OllamaStreamingReplyService.js';
+import { IEnvironmentSettings } from './IEnvironmentSettings.js';
 
 export interface IServiceContainer {
     // Singletons -------------------------------------------------------------/
 
-    environmentSettings: EnvironmentSettings;
+    environmentSettings: IEnvironmentSettings;
     featureService: FeatureService;
     taskQueue: TaskQueue;
     typingService: TypingService;

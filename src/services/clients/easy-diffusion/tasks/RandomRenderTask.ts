@@ -2,7 +2,6 @@ import { AttachmentBuilder, ButtonInteraction } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
-import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
 import { EasyDiffusionClient } from '../EasyDiffusionClient.js';
 import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiffusionReplyService.js';
 import { TaskStatus } from '../../../tasks/enums/TaskStatus.js';
@@ -14,11 +13,12 @@ import { MAX_FILE_NAME_LENGTH, MAX_TEXT_LINE_LENGTH } from '../../../../enums/Fi
 import { BufferEncoding } from '../../../../enums/BufferEncoding.js';
 import { ReplyService } from '../../discord/services/ReplyService.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
+import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
 
 export class RandomRenderTask extends BaseTask {
     #services: IServiceContainer;
 
-    #environmentSettings: EnvironmentSettings;
+    #environmentSettings: IEnvironmentSettings;
     #easyDiffusionClient: EasyDiffusionClient;
     #easyDiffusionReplyService: EasyDiffusionReplyService;
     #replyService: ReplyService;

@@ -7,12 +7,12 @@ import { splitText } from '../../../../utilities/string-utilities.js';
 import { DiscordConstants } from '../../discord/enums/DiscordConstants.js';
 import { LargeLanguageModelActionRow } from '../../discord/components/buttonRows/LargeLanguageModelActionRow.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
-import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
+import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
 
 export class OllamaReplyService {
     #services: IServiceContainer;
 
-    #environmentSettings: EnvironmentSettings;
+    #environmentSettings: IEnvironmentSettings;
 
     #logger;
 

@@ -1,7 +1,6 @@
 import { AttachmentBuilder, ButtonInteraction } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { TaskStatus } from '../../../tasks/enums/TaskStatus.js';
 import { BufferEncoding } from '../../../../enums/BufferEncoding.js';
@@ -11,9 +10,10 @@ import { MessageService } from '../../discord/services/MessageService.js';
 import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
 import { Automatic1111ReplyService } from '../../discord/automatic1111/Automatic1111ReplyService.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
+import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
 
 export class ShowSourceTask extends BaseTask {
-    #environmentSettings: EnvironmentSettings;
+    #environmentSettings: IEnvironmentSettings;
     #automatic1111ReplyService: Automatic1111ReplyService;
     #messageService: MessageService;
     #replyService: ReplyService;

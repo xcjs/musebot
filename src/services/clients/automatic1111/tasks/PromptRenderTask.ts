@@ -1,7 +1,6 @@
 import { Client as DiscordClient, Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { TaskStatus } from '../../../tasks/enums/TaskStatus.js';
 import { getRandomArrayEntry } from '../../../../utilities/random-utilities.js';
@@ -12,11 +11,12 @@ import { Txt2ImgOptionsFactory } from '../factories/Txt2ImgOptionsFactory.js';
 import { TaskQueue } from '../../../tasks/services/TaskQueue.js';
 import { JsonRenderTask } from './JsonRenderTask.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
+import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
 
 export class PromptRenderTask extends BaseTask {
     #services: IServiceContainer;
 
-    #environmentSettings: EnvironmentSettings;
+    #environmentSettings: IEnvironmentSettings;
     #discordClient: DiscordClient;
     #automatic1111Client: Automatic1111Client;
     #automatic1111ReplyService: Automatic1111ReplyService;

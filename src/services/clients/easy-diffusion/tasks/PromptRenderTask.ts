@@ -1,7 +1,6 @@
 import { Client as DiscordClient, Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { EasyDiffusionClient } from '../EasyDiffusionClient.js';
 import { RenderRequest } from '../models/requests/RenderRequest.js';
@@ -12,11 +11,12 @@ import { TaskQueue } from '../../../tasks/services/TaskQueue.js';
 import { JsonRenderTask } from './JsonRenderTask.js';
 import { ReplyService } from '../../discord/services/ReplyService.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
+import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
 
 export class PromptRenderTask extends BaseTask {
     #services: IServiceContainer;
 
-    #environmentSettings: EnvironmentSettings;
+    #environmentSettings: IEnvironmentSettings;
     #discordClient: DiscordClient;
     #easyDiffusionClient: EasyDiffusionClient;
     #easyDiffusionReplyService: EasyDiffusionReplyService;

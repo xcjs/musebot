@@ -6,15 +6,15 @@ import { DiscordPresenceStatus } from '../enums/DiscordPresenceStatus.js';
 import { PromptResponseTask } from '../../ollama/tasks/PromptResponseTask.js';
 import { BotInteraction } from '../../../../enums/BotInteraction.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
-import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
 import { ReplyService } from '../services/ReplyService.js';
 import { TaskQueue } from '../../../tasks/services/TaskQueue.js';
 import { TypingService } from '../services/TypingService.js';
+import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
 
 export class DiscordOllamaClient extends BaseDiscordClient {
     #services: IServiceContainer;
 
-    #environmentSettings: EnvironmentSettings;
+    #environmentSettings: IEnvironmentSettings;
     #discordClient: DiscordClient;
     #typingService: TypingService;
     #replyService: ReplyService;

@@ -7,8 +7,9 @@ import nodePackage from '../../package.json' with { type: 'json' };
 import { NodeEnvironment } from '../enums/NodeEnvironment.js';
 import { BotFunction } from '../enums/BotFunction.js';
 import { StableDiffusionApiType } from './clients/stable-diffusion/enums/StableDiffusionApiType';
+import { IEnvironmentSettings } from './IEnvironmentSettings';
 
-export class EnvironmentSettings {
+export class EnvironmentSettings implements IEnvironmentSettings {
     packageName: string;
     version: string;
 

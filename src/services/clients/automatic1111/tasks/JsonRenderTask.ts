@@ -1,16 +1,16 @@
 import { Client as DiscordClient, Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { TaskStatus } from '../../../tasks/enums/TaskStatus.js';
 import { ReplyService } from '../../discord/services/ReplyService.js';
 import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
 import { Automatic1111ReplyService } from '../../discord/automatic1111/Automatic1111ReplyService.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
+import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
 
 export class JsonRenderTask extends BaseTask {
-    #environmentSettings: EnvironmentSettings;
+    #environmentSettings: IEnvironmentSettings;
     #discordClient: DiscordClient;
     #automatic1111ReplyService: Automatic1111ReplyService;
     #replyService: ReplyService;

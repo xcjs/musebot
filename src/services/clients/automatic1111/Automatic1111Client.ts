@@ -12,10 +12,10 @@ import { Txt2ImgOptionsResponse } from './models/responses/Txt2ImgOptionsRespons
 import { ExtraSingleImageRequest } from './models/requests/ExtraSingleImageRequest.js';
 import { ExtraSingleImageResponse } from './models/responses/ExtraSingleImageResponse.js';
 import { IServiceContainer } from '../../IServiceContainer.js';
-import { EnvironmentSettings } from '../../EnvironmentSettings.js';
+import { IEnvironmentSettings } from '../../IEnvironmentSettings.js';
 
 export class Automatic1111Client {
-    #environmentSettings: EnvironmentSettings;
+    #environmentSettings: IEnvironmentSettings;
 
     #logger;
 

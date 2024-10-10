@@ -1,7 +1,6 @@
 import { ButtonInteraction } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { TaskStatus } from '../../../tasks/enums/TaskStatus.js';
 import { ContentType } from '../../../../enums/ContentType.js';
@@ -12,9 +11,10 @@ import { ReplyService } from '../../discord/services/ReplyService.js';
 import { UpscaledRenderRequest } from '../models/requests/UpscaledRenderRequest.js';
 import { MessageService } from '../../discord/services/MessageService.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
+import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
 
 export class UpscaleRenderTask extends BaseTask {
-    #environmentSettings: EnvironmentSettings;
+    #environmentSettings: IEnvironmentSettings;
     #easyDiffusionReplyService: EasyDiffusionReplyService;
     #messageService: MessageService;
     #replyService: ReplyService;

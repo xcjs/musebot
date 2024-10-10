@@ -1,7 +1,6 @@
 import { ButtonInteraction } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { Automatic1111Client } from '../Automatic1111Client.js';
 import { TaskStatus } from '../../../tasks/enums/TaskStatus.js';
@@ -14,9 +13,10 @@ import { MessageService } from '../../discord/services/MessageService.js';
 import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
 import { Txt2ImgOptionsRequest } from '../models/requests/Txt2ImgOptionsRequest.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
+import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
 
 export class RetryRenderTask extends BaseTask {
-    #environmentSettings: EnvironmentSettings;
+    #environmentSettings: IEnvironmentSettings;
     #automatic1111Client: Automatic1111Client;
     #automatic1111ReplyService: Automatic1111ReplyService;
     #messageService: MessageService;

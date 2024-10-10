@@ -4,10 +4,10 @@ import { GenerateRequest, GenerateResponse, Ollama } from 'ollama';
 import { getRandomArrayEntry, getRandomInt } from '../../../utilities/random-utilities.js';
 import { IHttpExchange } from '../../../models/IHttpExchange.js';
 import { IServiceContainer } from '../../IServiceContainer.js';
-import { EnvironmentSettings } from '../../EnvironmentSettings.js';
+import { IEnvironmentSettings } from '../../IEnvironmentSettings.js';
 
 export class OllamaClient {
-    #environmentSettings: EnvironmentSettings;
+    #environmentSettings: IEnvironmentSettings;
 
     #host: URL;
     #client: Ollama;

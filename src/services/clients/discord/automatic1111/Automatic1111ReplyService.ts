@@ -1,7 +1,6 @@
 import { AttachmentBuilder, BaseMessageOptions, ButtonInteraction, Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
 import { MAX_FILE_NAME_LENGTH } from '../../../../enums/FileConstants.js';
 import { Automatic1111Client } from '../../automatic1111/Automatic1111Client.js';
 import { IHttpExchangeWithAttachedData } from '../../../../models/IHttpExchangeWithAttachedData.js';
@@ -15,11 +14,12 @@ import { Txt2ImgOptionsResponse } from '../../automatic1111/models/responses/Txt
 import { UpscalerRequestFactory } from '../../automatic1111/factories/UpscalerRequestFactory.js';
 import { ExtraSingleImageResponse } from '../../automatic1111/models/responses/ExtraSingleImageResponse.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
+import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
 
 export class Automatic1111ReplyService {
     #services: IServiceContainer;
 
-    #environmentSettings: EnvironmentSettings;
+    #environmentSettings: IEnvironmentSettings;
     #automatic1111Client: Automatic1111Client;
 
     #logger;

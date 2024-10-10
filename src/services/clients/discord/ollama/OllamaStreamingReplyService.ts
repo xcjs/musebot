@@ -1,16 +1,16 @@
 import { Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
 import { DiscordConstants } from '../../discord/enums/DiscordConstants.js';
 import { splitText } from '../../../../utilities/string-utilities.js';
 import { LargeLanguageModelActionRow } from '../../discord/components/buttonRows/LargeLanguageModelActionRow.js';
 import { FeatureService } from '../../../features/FeatureService.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
+import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
 
 export class OllamaStreamingReplyService {
     #services: IServiceContainer;
-    #environmentSettings: EnvironmentSettings;
+    #environmentSettings: IEnvironmentSettings;
     #featureService: FeatureService;
 
     #logger;

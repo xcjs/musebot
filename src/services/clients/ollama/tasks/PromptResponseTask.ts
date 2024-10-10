@@ -1,7 +1,6 @@
 import { Client as DiscordClient, Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { TaskStatus } from '../../../tasks/enums/TaskStatus.js';
 import { ReplyService } from '../../discord/services/ReplyService.js';
@@ -16,11 +15,12 @@ import { AttachRenderTask as EdAttachRenderTask } from '../../easy-diffusion/tas
 import { AttachRenderTask as A1AttachRenderTask } from '../../automatic1111/tasks/AttachRenderTask.js';
 import { StableDiffusionApiType } from '../../stable-diffusion/enums/StableDiffusionApiType.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
+import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
 
 export class PromptResponseTask extends BaseTask {
     #services: IServiceContainer;
 
-    #environmentSettings: EnvironmentSettings;
+    #environmentSettings: IEnvironmentSettings;
     #featureService: FeatureService;
     #ollamaClient: OllamaClient;
     #ollamaReplyService: OllamaReplyService;

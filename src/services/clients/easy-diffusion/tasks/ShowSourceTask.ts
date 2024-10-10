@@ -1,7 +1,6 @@
 import { AttachmentBuilder, ButtonInteraction } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
 import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiffusionReplyService.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { TaskStatus } from '../../../tasks/enums/TaskStatus.js';
@@ -11,9 +10,10 @@ import { RenderRequest } from '../models/requests/RenderRequest.js';
 import { ReplyService } from '../../discord/services/ReplyService.js';
 import { MessageService } from '../../discord/services/MessageService.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
+import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
 
 export class ShowSourceTask extends BaseTask {
-    #environmentSettings: EnvironmentSettings;
+    #environmentSettings: IEnvironmentSettings;
     #easyDiffusionReplyService: EasyDiffusionReplyService;
     #messageService: MessageService;
     #replyService: ReplyService;

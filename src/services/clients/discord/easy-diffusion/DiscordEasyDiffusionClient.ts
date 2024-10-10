@@ -21,12 +21,12 @@ import { IServiceContainer } from '../../../IServiceContainer.js';
 import { ReplyService } from '../services/ReplyService.js';
 import { TaskQueue } from '../../../tasks/services/TaskQueue.js';
 import { TypingService } from '../services/TypingService.js';
-import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
+import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
 
 export class DiscordEasyDiffusionClient extends BaseDiscordClient {
     #services: IServiceContainer;
 
-    #environmentSettings: EnvironmentSettings;
+    #environmentSettings: IEnvironmentSettings;
     #discordClient: DiscordClient;
     #replyService: ReplyService;
     #typingService: TypingService;

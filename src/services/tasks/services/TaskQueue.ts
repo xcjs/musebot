@@ -1,16 +1,16 @@
 import { Logger, LogLevel } from 'meklog';
 
-import { EnvironmentSettings } from '../../EnvironmentSettings.js';
 import { TaskStatus } from '../enums/TaskStatus.js';
 import { BaseTask } from '../models/BaseTask.js';
 import { TaskChannel } from '../models/TaskChannel.js';
 import { PromisedSettledResultStatus } from '../../../enums/PromisedSettledResultStatus.js';
 import { IServiceContainer } from '../../IServiceContainer.js';
+import { IEnvironmentSettings } from '../../IEnvironmentSettings.js';
 
 export class TaskQueue {
     #services: IServiceContainer;
 
-    #environmentSettings: EnvironmentSettings;
+    #environmentSettings: IEnvironmentSettings;
 
     #logger;
 

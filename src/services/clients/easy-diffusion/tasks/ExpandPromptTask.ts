@@ -2,7 +2,6 @@ import { ButtonInteraction } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
-import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
 import { TaskStatus } from '../../../tasks/enums/TaskStatus.js';
 import { RenderRequest } from '../models/requests/RenderRequest.js';
 import { OllamaClient } from '../../ollama/OllamaClient.js';
@@ -12,11 +11,12 @@ import { AttachRenderTask } from './AttachRenderTask.js';
 import { TaskQueue } from '../../../tasks/services/TaskQueue.js';
 import { MessageService } from '../../discord/services/MessageService.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
+import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
 
 export class ExpandPromptTask extends BaseTask {
     #services: IServiceContainer;
 
-    #environmentSettings: EnvironmentSettings;
+    #environmentSettings: IEnvironmentSettings;
     #ollamaClient: OllamaClient;
     #messageService: MessageService;
     #replyService: ReplyService;

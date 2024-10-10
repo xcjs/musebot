@@ -2,10 +2,10 @@ import { ShardingManager, Events } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
 import { DiscordEvent } from '../enums/DiscordEvent.js';
-import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
+import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
 
 export class ShardingManagerManager {
-    #environmentSettings: EnvironmentSettings;
+    #environmentSettings: IEnvironmentSettings;
     #absoluteBotPath: string;
 
     #logger;

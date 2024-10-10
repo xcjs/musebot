@@ -13,13 +13,13 @@ import { MAX_FILE_NAME_LENGTH } from '../../../../enums/FileConstants.js';
 import { UpscaledRenderRequest } from '../../easy-diffusion/models/requests/UpscaledRenderRequest.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
 import { EasyDiffusionClient } from '../../easy-diffusion/EasyDiffusionClient.js';
-import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
 import { FeatureService } from '../../../features/FeatureService.js';
+import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
 
 export class EasyDiffusionReplyService {
     #services: IServiceContainer;
 
-    #environmentSettings: EnvironmentSettings;
+    #environmentSettings: IEnvironmentSettings;
     #featureService: FeatureService;
     #easyDiffusionClient: EasyDiffusionClient;
 

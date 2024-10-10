@@ -18,12 +18,13 @@ import { Automatic1111ReplyService } from './clients/discord/automatic1111/Autom
 import { OllamaReplyService } from './clients/discord/ollama/OllamaReplyService.js';
 import { EasyDiffusionReplyService } from './clients/discord/easy-diffusion/EasyDiffusionReplyService.js';
 import { OllamaStreamingReplyService } from './clients/discord/ollama/OllamaStreamingReplyService.js';
+import { IEnvironmentSettings } from './IEnvironmentSettings.js';
 
 export class ServiceContainer implements IServiceContainer {
     // Singletons -------------------------------------------------------------/
 
-    #environmentSettings: EnvironmentSettings;
-    get environmentSettings(): EnvironmentSettings {
+    #environmentSettings: IEnvironmentSettings;
+    get environmentSettings(): IEnvironmentSettings {
         return this.#environmentSettings;
     }
 

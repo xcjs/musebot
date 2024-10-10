@@ -16,10 +16,10 @@ import { IStreamResponse } from './models/responses/IStreamResponse.js';
 import { IModelsResponse } from './models/responses/IModelsResponse.js';
 import { JaggedRecursiveStringArray } from './types/JaggedRecursiveStringArray.js';
 import { IServiceContainer } from '../../IServiceContainer.js';
-import { EnvironmentSettings } from '../../EnvironmentSettings.js';
+import { IEnvironmentSettings } from '../../IEnvironmentSettings.js';
 
 export class EasyDiffusionClient {
-    #environmentSettings: EnvironmentSettings;
+    #environmentSettings: IEnvironmentSettings;
 
     #logger;
 

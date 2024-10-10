@@ -7,7 +7,6 @@ import { GuidanceScaleMinusButton } from '../buttons/GuidanceScaleMinusButton.js
 import { GuidanceScalePlusButton } from '../buttons/GuidanceScalePlusButton.js';
 import { ShowSourceButton } from '../buttons/ShowSourceButton.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
-import { EnvironmentSettings } from '../../../../EnvironmentSettings.js';
 import { RenderRequest } from '../../../easy-diffusion/models/requests/RenderRequest.js';
 import { EasyDiffusionGuidanceScaleLimit } from '../../../easy-diffusion/enums/EasyDiffusionGuidanceScaleLimit.js';
 import { UpscaleButton } from '../buttons/UpscaleButton.js';
@@ -15,11 +14,12 @@ import { ExpandPromptButton } from '../buttons/ExpandPromptButton.js';
 import { StableDiffusionGuidanceScaleLimit } from '../../../automatic1111/enums/StableDiffusionGuidanceScaleLimit.js';
 import { Txt2ImgOptionsRequest } from '../../../automatic1111/models/requests/Txt2ImgOptionsRequest.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
 
 export class StatefulImageGenerationActionRows extends BaseComponent<Array<ActionRowBuilder<ButtonBuilder>>> {
     #services: IServiceContainer;
 
-    #environmentSettings: EnvironmentSettings;
+    #environmentSettings: IEnvironmentSettings;
     #renderRequest: RenderRequest | Txt2ImgOptionsRequest;
 
     constructor(services: IServiceContainer, renderRequest: RenderRequest | Txt2ImgOptionsRequest) {

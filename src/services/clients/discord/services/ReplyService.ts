@@ -2,10 +2,10 @@ import { ButtonInteraction, Client as DiscordClient, Message, MessageType } from
 
 import { JavaScriptType } from '../../../../enums/JavaScriptType.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
-import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
+import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
 
 export class ReplyService {
-    #environmentSettings: EnvironmentSettings;
+    #environmentSettings: IEnvironmentSettings;
     #discordClient: DiscordClient;
 
     constructor(services: IServiceContainer) {

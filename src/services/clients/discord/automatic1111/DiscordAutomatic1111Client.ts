@@ -6,7 +6,6 @@ import {
 } from 'discord.js';
 import {Logger, LogLevel } from 'meklog';
 
-import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
 import { DiscordPresenceStatus } from '../enums/DiscordPresenceStatus.js';
 import { BaseDiscordClient } from '../BaseDiscordClient.js';
 import { TaskQueue } from '../../../tasks/services/TaskQueue.js';
@@ -22,11 +21,12 @@ import { UpscaleRenderTask } from '../../automatic1111/tasks/UpscaleRenderTask.j
 import { RandomRenderTask } from '../../automatic1111/tasks/RandomRenderTask.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
 import { ReplyService } from '../services/ReplyService.js';
+import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
 
 export class DiscordAutomatic1111Client extends BaseDiscordClient {
     #services: IServiceContainer;
 
-    #environmentSettings: EnvironmentSettings;
+    #environmentSettings: IEnvironmentSettings;
     #discordClient: DiscordClient;
     #replyService: ReplyService;
     #typingService: TypingService;

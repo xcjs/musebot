@@ -1,7 +1,6 @@
 import { ButtonInteraction, Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { TaskStatus } from '../../../tasks/enums/TaskStatus.js';
 import { getRandomArrayEntry } from '../../../../utilities/random-utilities.js';
@@ -10,9 +9,10 @@ import { Automatic1111ReplyService } from '../../discord/automatic1111/Automatic
 import { Automatic1111Client } from '../Automatic1111Client.js';
 import { Txt2ImgOptionsFactory } from '../factories/Txt2ImgOptionsFactory.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
+import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
 
 export class AttachRenderTask extends BaseTask {
-    #environmentSettings: EnvironmentSettings;
+    #environmentSettings: IEnvironmentSettings;
     #automatic1111Client: Automatic1111Client;
     #automatic1111ReplyService: Automatic1111ReplyService;
     #replyService: ReplyService;

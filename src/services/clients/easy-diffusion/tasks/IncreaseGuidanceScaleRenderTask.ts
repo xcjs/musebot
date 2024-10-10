@@ -3,7 +3,6 @@ import { Logger, LogLevel } from 'meklog';
 
 import { ContentType } from '../../../../enums/ContentType.js';
 import { getRandomArrayEntry } from '../../../../utilities/random-utilities.js';
-import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
 import { TaskStatus } from '../../../tasks/enums/TaskStatus.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiffusionReplyService.js';
@@ -12,9 +11,10 @@ import { RenderRequest } from '../models/requests/RenderRequest.js';
 import { ReplyService } from '../../discord/services/ReplyService.js';
 import { MessageService } from '../../discord/services/MessageService.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
+import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
 
 export class IncreaseGuidanceScaleRenderTask extends BaseTask {
-    #environmentSettings: EnvironmentSettings;
+    #environmentSettings: IEnvironmentSettings;
     #easyDiffusionClient: EasyDiffusionClient;
     #easyDiffusionReplyService: EasyDiffusionReplyService;
     #messageService: MessageService;

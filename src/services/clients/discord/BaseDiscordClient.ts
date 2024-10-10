@@ -1,11 +1,11 @@
 import { Client as DiscordClient } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { EnvironmentSettings } from '../../EnvironmentSettings.js';
 import { IServiceContainer } from '../../IServiceContainer.js';
+import { IEnvironmentSettings } from '../../IEnvironmentSettings.js';
 
 export class BaseDiscordClient {
-    #environmentSettings: EnvironmentSettings;
+    #environmentSettings: IEnvironmentSettings;
     #discordClient: DiscordClient;
 
     protected logger;

@@ -1,12 +1,12 @@
 import { Logger, LogLevel } from 'meklog';
 
 import { BaseTask } from './BaseTask';
-import { EnvironmentSettings } from '../../EnvironmentSettings.js';
 import { TaskStatus } from '../enums/TaskStatus.js';
 import { IServiceContainer } from '../../IServiceContainer';
+import { IEnvironmentSettings } from '../../IEnvironmentSettings';
 
 export class TaskChannel {
-    #environmentSettings: EnvironmentSettings;
+    #environmentSettings: IEnvironmentSettings;
 
     #name: string;
     #queue: Array<BaseTask> = [];
