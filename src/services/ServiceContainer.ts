@@ -1,24 +1,24 @@
 import { Client as DiscordClient, GatewayIntentBits, Partials } from 'discord.js';
 
-import { EnvironmentSettings } from './EnvironmentSettings.js';
-import { IServiceContainer } from './IServiceContainer.js';
-import { MessageService } from './clients/discord/services/MessageService.js';
-import { TypingService } from './clients/discord/services/TypingService.js';
-import { FeatureService } from './features/FeatureService.js';
-import { TaskQueue } from './tasks/services/TaskQueue.js';
-import { DiscordAutomatic1111Client } from './clients/discord//automatic1111/DiscordAutomatic1111Client.js';
-import { Automatic1111Client } from './clients/automatic1111/Automatic1111Client.js';
-import { DiscordConstants } from './clients/discord/enums/DiscordConstants.js';
-import { EasyDiffusionClient } from './clients/easy-diffusion/EasyDiffusionClient.js';
-import { DiscordEasyDiffusionClient } from './clients/discord/easy-diffusion/DiscordEasyDiffusionClient.js';
-import { OllamaClient } from './clients/ollama/OllamaClient.js';
-import { DiscordOllamaClient } from './clients/discord/ollama/DiscordOllamaClient.js';
-import { ReplyService } from './clients/discord/services/ReplyService.js';
-import { Automatic1111ReplyService } from './clients/discord/automatic1111/Automatic1111ReplyService.js';
-import { OllamaReplyService } from './clients/discord/ollama/OllamaReplyService.js';
-import { EasyDiffusionReplyService } from './clients/discord/easy-diffusion/EasyDiffusionReplyService.js';
-import { OllamaStreamingReplyService } from './clients/discord/ollama/OllamaStreamingReplyService.js';
-import { IEnvironmentSettings } from './IEnvironmentSettings.js';
+import { EnvironmentSettings } from 'services/EnvironmentSettings.js';
+import { IEnvironmentSettings } from 'services/IEnvironmentSettings.js';
+import { IServiceContainer } from 'services/IServiceContainer.js';
+import { MessageService } from 'services/clients/chat/discord/MessageService.js';
+import { TypingService } from 'services/clients/chat/discord/TypingService.js';
+import { FeatureService } from 'services/features/FeatureService.js';
+import { TaskQueue } from 'services/tasks/TaskQueue.js';
+import { DiscordAutomatic1111Client } from 'services/clients/chat/discord/automatic1111/DiscordAutomatic1111Client.js';
+import { Automatic1111Client } from 'services/clients/images/automatic1111/Automatic1111Client.js';
+import { DiscordConstants } from 'services/clients/chat/discord/enums/DiscordConstants.js';
+import { EasyDiffusionClient } from 'services/clients/images/easy-diffusion/EasyDiffusionClient.js';
+import { DiscordEasyDiffusionClient } from 'services/clients/chat/discord/easy-diffusion/DiscordEasyDiffusionClient.js';
+import { OllamaClient } from 'services/clients/text/ollama/OllamaClient.js';
+import { DiscordOllamaClient } from 'services/clients/chat/discord/ollama/DiscordOllamaClient.js';
+import { ReplyService } from 'services/clients/chat/discord/ReplyService.js';
+import { Automatic1111ReplyService } from 'services/clients/chat/discord/automatic1111/Automatic1111ReplyService.js';
+import { OllamaReplyService } from 'services/clients/chat/discord/ollama/OllamaReplyService.js';
+import { EasyDiffusionReplyService } from 'services/clients/chat/discord/easy-diffusion/EasyDiffusionReplyService.js';
+import { OllamaStreamingReplyService } from 'services/clients/chat/discord/ollama/OllamaStreamingReplyService.js';
 
 export class ServiceContainer implements IServiceContainer {
     // Singletons -------------------------------------------------------------/
