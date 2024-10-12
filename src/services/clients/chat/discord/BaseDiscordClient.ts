@@ -1,10 +1,11 @@
 import { Client as DiscordClient } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
+import { IGenerativeChatClient } from '../IGenerativeChatClient.js';
 import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
 
-export class BaseDiscordClient {
+export class BaseDiscordClient implements IGenerativeChatClient {
     #environmentSettings: IEnvironmentSettings;
     #discordClient: DiscordClient;
 
@@ -17,8 +18,8 @@ export class BaseDiscordClient {
         this.logger = new Logger(this.#environmentSettings.isProduction, 'BaseDiscordClient');
     }
 
-    login() {
+    async login(): Promise<void> {
         this.logger(LogLevel.Info, 'Performing client login...');
-        this.#discordClient.login(this.#environmentSettings.discordToken);
+        await this.#discordClient.login(this.#environmentSettings.discordToken);
     }
 }

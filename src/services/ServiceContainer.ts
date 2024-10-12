@@ -22,6 +22,9 @@ import { IServiceContainer } from './IServiceContainer.js';
 import { TaskQueue } from './tasks/TaskQueue.js';
 import { ITaskQueue } from './tasks/ITaskQueue.js';
 import { ITypingService } from './clients/chat/ITypingService.js';
+import { IGenerativeChatClient } from './clients/chat/IGenerativeChatClient.js';
+import { BotFunction } from '../enums/BotFunction.js';
+import { StableDiffusionApiType } from './clients/images/stable-diffusion/enums/StableDiffusionApiType.js';
 
 export class ServiceContainer implements IServiceContainer {
     // Singletons -------------------------------------------------------------/
@@ -51,6 +54,11 @@ export class ServiceContainer implements IServiceContainer {
         return this.#discordClient;
     }
 
+    #generativeChatClient: IGenerativeChatClient;
+    get generativeChatClient(): IGenerativeChatClient {
+        return this.#generativeChatClient;
+    }
+
     // Transitives ------------------------------------------------------------/
 
     get messageService(): MessageService {
@@ -69,20 +77,12 @@ export class ServiceContainer implements IServiceContainer {
         return new Automatic1111ReplyService(this);
     }
 
-    get discordAutomatic1111Client(): DiscordAutomatic1111Client {
-        return new DiscordAutomatic1111Client(this);
-    }
-
     get easyDiffusionClient(): EasyDiffusionClient {
         return new EasyDiffusionClient(this);
     }
 
     get easyDiffusionReplyService(): EasyDiffusionReplyService {
         return new EasyDiffusionReplyService(this);
-    }
-
-    get discordEasyDiffusionClient(): DiscordEasyDiffusionClient {
-        return new DiscordEasyDiffusionClient(this);
     }
 
     get ollamaClient(): OllamaClient {
@@ -95,10 +95,6 @@ export class ServiceContainer implements IServiceContainer {
 
     get ollamaStreamingReplyService(): OllamaStreamingReplyService {
         return new OllamaStreamingReplyService(this);
-    }
-
-    get discordOllamaClient(): DiscordOllamaClient {
-        return new DiscordOllamaClient(this);
     }
 
     constructor() {
@@ -122,5 +118,21 @@ export class ServiceContainer implements IServiceContainer {
             ],
             shards: DiscordConstants.ShardCountAuto
         });
+
+        switch (this.#environmentSettings.botFunction) {
+            case BotFunction.Images:
+                switch (this.#environmentSettings.stableDiffusionApiType) {
+                    case StableDiffusionApiType.Automatic1111:
+                        this.#generativeChatClient = new DiscordAutomatic1111Client(this);
+                        break;
+                    case StableDiffusionApiType.EasyDiffusion:
+                        this.#generativeChatClient = new DiscordEasyDiffusionClient(this);
+                        break;
+                }
+                break;
+            case BotFunction.Text:
+                this.#generativeChatClient = new DiscordOllamaClient(this);
+                break;
+        }
     }
 }

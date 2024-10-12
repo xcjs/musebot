@@ -2,11 +2,8 @@ import { Client as DiscordClient } from 'discord.js';
 
 import { IEnvironmentSettings } from './IEnvironmentSettings.js';
 import { Automatic1111ReplyService } from './clients/chat/discord/automatic1111/Automatic1111ReplyService.js';
-import { DiscordAutomatic1111Client } from './clients/chat/discord/automatic1111/DiscordAutomatic1111Client.js';
-import { DiscordEasyDiffusionClient } from './clients/chat/discord/easy-diffusion/DiscordEasyDiffusionClient.js';
 import { EasyDiffusionReplyService } from './clients/chat/discord/easy-diffusion/EasyDiffusionReplyService.js';
 import { MessageService } from './clients/chat/discord/MessageService.js';
-import { DiscordOllamaClient } from './clients/chat/discord/ollama/DiscordOllamaClient.js';
 import { OllamaReplyService } from './clients/chat/discord/ollama/OllamaReplyService.js';
 import { OllamaStreamingReplyService } from './clients/chat/discord/ollama/OllamaStreamingReplyService.js';
 import { ReplyService } from './clients/chat/discord/ReplyService.js';
@@ -32,12 +29,9 @@ export interface IServiceContainer {
     replyService: ReplyService;
     automatic1111Client: Automatic1111Client;
     automatic1111ReplyService: Automatic1111ReplyService;
-    discordAutomatic1111Client: DiscordAutomatic1111Client;
     easyDiffusionClient: EasyDiffusionClient;
     easyDiffusionReplyService: EasyDiffusionReplyService;
-    discordEasyDiffusionClient: DiscordEasyDiffusionClient;
     ollamaClient: OllamaClient;
     ollamaReplyService: OllamaReplyService;
     ollamaStreamingReplyService: OllamaStreamingReplyService;
-    discordOllamaClient: DiscordOllamaClient;
 }
