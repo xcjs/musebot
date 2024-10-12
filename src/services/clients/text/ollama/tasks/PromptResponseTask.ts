@@ -1,21 +1,22 @@
 import { Client as DiscordClient, Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { DiscordConstants } from 'services/clients/chat/discord/enums/DiscordConstants.js';
-import { OllamaReplyService } from 'services/clients/chat/discord/ollama/OllamaReplyService.js';
-import { OllamaStreamingReplyService } from 'services/clients/chat/discord/ollama/OllamaStreamingReplyService.js';
-import { ReplyService } from 'services/clients/chat/discord/ReplyService.js';
-import { StableDiffusionApiType } from 'services/clients/images/stable-diffusion/enums/StableDiffusionApiType.js';
-import { SupportedFeature } from 'services/features/enum/SupportedFeature.js';
-import { IEnvironmentSettings } from 'services/IEnvironmentSettings.js';
-import { IServiceContainer } from 'services/IServiceContainer.js';
-import { TaskStatus } from 'services/tasks/enums/TaskStatus.js';
-import { BaseTask } from 'services/tasks/models/BaseTask.js';
+
+import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
+import { IFeatureService } from '../../../../features/IFeatureService.js';
+import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
+import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
+import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
+import { BaseTask } from '../../../../tasks/models/BaseTask.js';
+import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.js';
+import { OllamaReplyService } from '../../../chat/discord/ollama/OllamaReplyService.js';
+import { OllamaStreamingReplyService } from '../../../chat/discord/ollama/OllamaStreamingReplyService.js';
+import { ReplyService } from '../../../chat/discord/ReplyService.js';
+import { StableDiffusionApiType } from '../../../images/stable-diffusion/enums/StableDiffusionApiType.js';
 import { OllamaClient } from '../OllamaClient.js';
-import { IFeatureService } from 'services/features/IFeatureService.js';
-import { AttachRenderTask as A1AttachRenderTask } from 'services/clients/images/automatic1111/tasks/AttachRenderTask.js';
-import { AttachRenderTask as EdAttachRenderTask } from 'services/clients/images/easy-diffusion/tasks/AttachRenderTask.js';
-import { ITaskQueue } from 'services/tasks/ITaskQueue.js';
+import { AttachRenderTask as A1AttachRenderTask } from '../../../images/automatic1111/tasks/AttachRenderTask.js';
+import { AttachRenderTask as EdAttachRenderTask } from '../../../images/easy-diffusion/tasks/AttachRenderTask.js';
 
 export class PromptResponseTask extends BaseTask {
     #services: IServiceContainer;

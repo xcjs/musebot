@@ -1,5 +1,5 @@
-import { VRamUsageLevel } from 'services/clients/images/easy-diffusion/enums/VRamUsageLevel.js';
-import { getRandomInt } from 'utilities/random-utilities.js';
+import { getRandomInt } from '../../../../../../utilities/random-utilities.js';
+import { VRamUsageLevel } from '../../enums/VRamUsageLevel.js';
 
 export class RenderRequest {
     prompt = '';

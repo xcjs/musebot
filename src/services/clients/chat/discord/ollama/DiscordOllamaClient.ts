@@ -1,15 +1,15 @@
 import { ButtonInteraction, Client as DiscordClient, Events, Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { BaseDiscordClient } from 'services/clients/chat/discord/BaseDiscordClient.js';
-import { DiscordPresenceStatus } from 'services/clients/chat/discord/enums/DiscordPresenceStatus.js';
-import { PromptResponseTask } from 'services/clients/text/ollama/tasks/PromptResponseTask.js';
-import { BotInteraction } from 'enums/BotInteraction.js';
-import { IServiceContainer } from 'services/IServiceContainer.js';
-import { ReplyService } from 'services/clients/chat/discord/ReplyService.js';
-import { IEnvironmentSettings } from 'services/IEnvironmentSettings.js';
-import { ITaskQueue } from 'services/tasks/ITaskQueue.js';
+import { BaseDiscordClient } from '../BaseDiscordClient.js';
+import { BotInteraction } from '../../../../../enums/BotInteraction.js';
+import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
+import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
+import { PromptResponseTask } from '../../../text/ollama/tasks/PromptResponseTask.js';
 import { ITypingService } from '../../ITypingService.js';
+import { DiscordPresenceStatus } from '../enums/DiscordPresenceStatus.js';
+import { ReplyService } from '../ReplyService.js';
 
 export class DiscordOllamaClient extends BaseDiscordClient {
     #services: IServiceContainer;

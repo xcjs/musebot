@@ -1,18 +1,18 @@
 import { ButtonInteraction } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { ContentType } from 'enums/ContentType.js';
-import { getRandomArrayEntry } from 'utilities/random-utilities.js';
-import { TaskStatus } from 'services/tasks/enums/TaskStatus.js';
-import { BaseTask } from 'services/tasks/models/BaseTask.js';
-import { ReplyService } from 'services/clients/chat/discord/ReplyService.js';
-import { MessageService } from 'services/clients/chat/discord/MessageService.js';
+import { ContentType } from '../../../../../enums/ContentType.js';
+import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
+import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
+import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
+import { BaseTask } from '../../../../tasks/models/BaseTask.js';
+import { Automatic1111ReplyService } from '../../../chat/discord/automatic1111/Automatic1111ReplyService.js';
+import { MessageService } from '../../../chat/discord/MessageService.js';
+import { ReplyService } from '../../../chat/discord/ReplyService.js';
+import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 import { Automatic1111Client } from '../Automatic1111Client.js';
-import { Automatic1111ReplyService } from 'services/clients/chat/discord/automatic1111/Automatic1111ReplyService.js';
-import { SerializableRenderRequest } from 'services/clients/images/stable-diffusion/models/SerializableRenderRequest.js';
 import { Txt2ImgOptionsRequest } from '../models/requests/Txt2ImgOptionsRequest.js';
-import { IServiceContainer } from 'services/IServiceContainer.js';
-import { IEnvironmentSettings } from 'services/IEnvironmentSettings.js';
 
 export class IncreaseGuidanceScaleRenderTask extends BaseTask {
     #environmentSettings: IEnvironmentSettings;

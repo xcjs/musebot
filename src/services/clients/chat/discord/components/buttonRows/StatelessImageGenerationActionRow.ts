@@ -1,9 +1,9 @@
 import { ActionRowBuilder, ButtonBuilder } from 'discord.js';
 
-import { BaseComponent } from 'services/clients/chat/discord/components/BaseComponent.js';
-import { RandomizeButton } from 'services/clients/chat/discord/components/buttons/RandomizeButton.js';
-import { SupportedFeature } from 'services/features/enum/SupportedFeature.js';
-import { IServiceContainer } from 'services/IServiceContainer.js';
+import { SupportedFeature } from '../../../../../features/enum/SupportedFeature.js';
+import { IServiceContainer } from '../../../../../IServiceContainer.js';
+import { BaseComponent } from '../BaseComponent.js';
+import { RandomizeButton } from '../buttons/RandomizeButton.js';
 
 export class StatelessImageGenerationActionRow extends BaseComponent<ActionRowBuilder<ButtonBuilder>> {
     #services: IServiceContainer;

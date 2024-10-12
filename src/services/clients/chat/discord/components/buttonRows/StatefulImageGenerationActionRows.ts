@@ -1,20 +1,20 @@
 import { ActionRowBuilder, ButtonBuilder } from 'discord.js';
 
-import { BaseComponent } from 'services/clients/chat/discord/components/BaseComponent.js';
-import { RandomizeButton } from 'services/clients/chat/discord/components/buttons/RandomizeButton.js';
-import { RetryButton } from 'services/clients/chat/discord/components/buttons/RetryButton.js';
-import { GuidanceScaleMinusButton } from 'services/clients/chat/discord/components/buttons/GuidanceScaleMinusButton.js';
-import { GuidanceScalePlusButton } from 'services/clients/chat/discord/components/buttons/GuidanceScalePlusButton.js';
-import { ShowSourceButton } from 'services/clients/chat/discord/components/buttons/ShowSourceButton.js';
-import { SupportedFeature } from 'services/features/enum/SupportedFeature.js';
-import { RenderRequest } from 'services/clients/images/easy-diffusion/models/requests/RenderRequest.js';
-import { EasyDiffusionGuidanceScaleLimit } from 'services/clients/images/easy-diffusion/enums/EasyDiffusionGuidanceScaleLimit.js';
-import { UpscaleButton } from 'services/clients/chat/discord/components/buttons/UpscaleButton.js';
+import { SupportedFeature } from '../../../../../features/enum/SupportedFeature.js';
+import { IEnvironmentSettings } from '../../../../../IEnvironmentSettings.js';
+import { IServiceContainer } from '../../../../../IServiceContainer.js';
+import { StableDiffusionGuidanceScaleLimit } from '../../../../images/automatic1111/enums/StableDiffusionGuidanceScaleLimit.js';
+import { Txt2ImgOptionsRequest } from '../../../../images/automatic1111/models/requests/Txt2ImgOptionsRequest.js';
+import { EasyDiffusionGuidanceScaleLimit } from '../../../../images/easy-diffusion/enums/EasyDiffusionGuidanceScaleLimit.js';
+import { RenderRequest } from '../../../../images/easy-diffusion/models/requests/RenderRequest.js';
+import { BaseComponent } from '../BaseComponent.js';
 import { ExpandPromptButton } from '../buttons/ExpandPromptButton.js';
-import { StableDiffusionGuidanceScaleLimit } from 'services/clients/images/automatic1111/enums/StableDiffusionGuidanceScaleLimit.js';
-import { Txt2ImgOptionsRequest } from 'services/clients/images/automatic1111/models/requests/Txt2ImgOptionsRequest.js';
-import { IServiceContainer } from 'services/IServiceContainer.js';
-import { IEnvironmentSettings } from 'services/IEnvironmentSettings.js';
+import { GuidanceScaleMinusButton } from '../buttons/GuidanceScaleMinusButton.js';
+import { GuidanceScalePlusButton } from '../buttons/GuidanceScalePlusButton.js';
+import { RandomizeButton } from '../buttons/RandomizeButton.js';
+import { RetryButton } from '../buttons/RetryButton.js';
+import { ShowSourceButton } from '../buttons/ShowSourceButton.js';
+import { UpscaleButton } from '../buttons/UpscaleButton.js';
 
 export class StatefulImageGenerationActionRows extends BaseComponent<Array<ActionRowBuilder<ButtonBuilder>>> {
     #services: IServiceContainer;

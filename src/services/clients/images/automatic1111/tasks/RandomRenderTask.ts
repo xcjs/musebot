@@ -1,19 +1,19 @@
 import { AttachmentBuilder, ButtonInteraction } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { BaseTask } from 'services/tasks/models/BaseTask.js';
-import { TaskStatus } from 'services/tasks/enums/TaskStatus.js';
-import { getRandomArrayEntry } from 'utilities/random-utilities.js';
-import { OllamaClient } from 'services/clients/text/ollama/OllamaClient.js';
-import { wrapText } from 'utilities/string-utilities.js';
-import { MAX_FILE_NAME_LENGTH, MAX_TEXT_LINE_LENGTH } from 'enums/FileConstants.js';
-import { BufferEncoding } from 'enums/BufferEncoding.js';
-import { ReplyService } from 'services/clients/chat/discord/ReplyService.js';
-import { Automatic1111Client } from 'services/clients/images/automatic1111/Automatic1111Client.js';
-import { Automatic1111ReplyService } from 'services/clients/chat/discord/automatic1111/Automatic1111ReplyService.js';
-import { Txt2ImgOptionsFactory } from 'services/clients/images/automatic1111/factories/Txt2ImgOptionsFactory.js';
-import { IServiceContainer } from 'services/IServiceContainer.js';
-import { IEnvironmentSettings } from 'services/IEnvironmentSettings.js';
+import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
+import { MAX_TEXT_LINE_LENGTH, MAX_FILE_NAME_LENGTH } from '../../../../../enums/FileConstants.js';
+import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
+import { wrapText } from '../../../../../utilities/string-utilities.js';
+import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
+import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
+import { BaseTask } from '../../../../tasks/models/BaseTask.js';
+import { Automatic1111ReplyService } from '../../../chat/discord/automatic1111/Automatic1111ReplyService.js';
+import { ReplyService } from '../../../chat/discord/ReplyService.js';
+import { OllamaClient } from '../../../text/ollama/OllamaClient.js';
+import { Automatic1111Client } from '../Automatic1111Client.js';
+import { Txt2ImgOptionsFactory } from '../factories/Txt2ImgOptionsFactory.js';
 
 export class RandomRenderTask extends BaseTask {
     #services: IServiceContainer;

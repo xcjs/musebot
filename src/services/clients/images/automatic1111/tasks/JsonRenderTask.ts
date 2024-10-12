@@ -1,13 +1,13 @@
 import { Client as DiscordClient, Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { BaseTask } from 'services/tasks/models/BaseTask.js';
-import { TaskStatus } from 'services/tasks/enums/TaskStatus.js';
-import { ReplyService } from 'services/clients/chat/discord/ReplyService.js';
-import { SerializableRenderRequest } from 'services/clients/images/stable-diffusion/models/SerializableRenderRequest.js';
-import { Automatic1111ReplyService } from 'services/clients/chat/discord/automatic1111/Automatic1111ReplyService.js';
-import { IServiceContainer } from 'services/IServiceContainer.js';
-import { IEnvironmentSettings } from 'services/IEnvironmentSettings.js';
+import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
+import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
+import { BaseTask } from '../../../../tasks/models/BaseTask.js';
+import { Automatic1111ReplyService } from '../../../chat/discord/automatic1111/Automatic1111ReplyService.js';
+import { ReplyService } from '../../../chat/discord/ReplyService.js';
+import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 
 export class JsonRenderTask extends BaseTask {
     #environmentSettings: IEnvironmentSettings;

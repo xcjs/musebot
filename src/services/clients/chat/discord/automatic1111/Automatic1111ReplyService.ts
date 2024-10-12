@@ -1,20 +1,20 @@
 import { AttachmentBuilder, BaseMessageOptions, ButtonInteraction, Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { MAX_FILE_NAME_LENGTH } from 'enums/FileConstants.js';
-import { Automatic1111Client } from 'services/clients/images/automatic1111/Automatic1111Client.js';
-import { IHttpExchangeWithAttachedData } from 'models/IHttpExchangeWithAttachedData.js';
-import { DiscordConstants } from 'services/clients/chat/discord/enums/DiscordConstants.js';
-import { SerializableRenderRequest } from 'services/clients/images/stable-diffusion/models/SerializableRenderRequest.js';
-import { BufferEncoding } from 'enums/BufferEncoding.js';
-import { StatefulImageGenerationActionRows } from 'services/clients/chat/discord/components/buttonRows/StatefulImageGenerationActionRows.js';
-import { StatelessImageGenerationActionRow } from 'services/clients/chat/discord/components/buttonRows/StatelessImageGenerationActionRow.js';
-import { Txt2ImgOptionsRequest } from 'services/clients/images/automatic1111/models/requests/Txt2ImgOptionsRequest.js';
-import { Txt2ImgOptionsResponse } from 'services/clients/images/automatic1111/models/responses/Txt2ImgOptionsResponse.js';
-import { UpscalerRequestFactory } from 'services/clients/images/automatic1111/factories/UpscalerRequestFactory.js';
-import { ExtraSingleImageResponse } from 'services/clients/images/automatic1111/models/responses/ExtraSingleImageResponse.js';
-import { IServiceContainer } from 'services/IServiceContainer.js';
-import { IEnvironmentSettings } from 'services/IEnvironmentSettings.js';
+import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
+import { MAX_FILE_NAME_LENGTH } from '../../../../../enums/FileConstants.js';
+import { IHttpExchangeWithAttachedData } from '../../../../../models/IHttpExchangeWithAttachedData.js';
+import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
+import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { Automatic1111Client } from '../../../images/automatic1111/Automatic1111Client.js';
+import { UpscalerRequestFactory } from '../../../images/automatic1111/factories/UpscalerRequestFactory.js';
+import { Txt2ImgOptionsRequest } from '../../../images/automatic1111/models/requests/Txt2ImgOptionsRequest.js';
+import { ExtraSingleImageResponse } from '../../../images/automatic1111/models/responses/ExtraSingleImageResponse.js';
+import { Txt2ImgOptionsResponse } from '../../../images/automatic1111/models/responses/Txt2ImgOptionsResponse.js';
+import { SerializableRenderRequest } from '../../../images/stable-diffusion/models/SerializableRenderRequest.js';
+import { StatefulImageGenerationActionRows } from '../components/buttonRows/StatefulImageGenerationActionRows.js';
+import { StatelessImageGenerationActionRow } from '../components/buttonRows/StatelessImageGenerationActionRow.js';
+import { DiscordConstants } from '../enums/DiscordConstants.js';
 
 export class Automatic1111ReplyService {
     #services: IServiceContainer;

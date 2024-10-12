@@ -1,18 +1,18 @@
 import { Logger, LogLevel } from 'meklog'
 
-import { getRandomArrayEntry } from 'utilities/random-utilities.js';
-import { IHttpExchangeWithAttachedData } from 'models/IHttpExchangeWithAttachedData.js';
-import { HttpMethod } from 'enums/HttpMethod.js';
-import { HttpHeader } from 'enums/HttpHeader.js';
-import { ContentType } from 'enums/ContentType.js';
-import { Txt2ImgOptionsRequest } from 'services/clients/images/automatic1111/models/requests/Txt2ImgOptionsRequest.js';
-import { StableDiffusionModel } from 'services/clients/images/automatic1111/models/requests/StableDiffusionModel.js';
-import { StableDiffusionOptions } from 'services/clients/images/automatic1111/models/requests/models/StableDiffusionOptions.js';
-import { Txt2ImgOptionsResponse } from 'services/clients/images/automatic1111/models/responses/Txt2ImgOptionsResponse.js';
-import { ExtraSingleImageRequest } from 'services/clients/images/automatic1111/models/requests/ExtraSingleImageRequest.js';
-import { ExtraSingleImageResponse } from 'services/clients/images/automatic1111/models/responses/ExtraSingleImageResponse.js';
-import { IServiceContainer } from 'services/IServiceContainer.js';
-import { IEnvironmentSettings } from 'services/IEnvironmentSettings.js';
+import { ContentType } from '../../../../enums/ContentType.js';
+import { HttpHeader } from '../../../../enums/HttpHeader.js';
+import { HttpMethod } from '../../../../enums/HttpMethod.js';
+import { IHttpExchangeWithAttachedData } from '../../../../models/IHttpExchangeWithAttachedData.js';
+import { getRandomArrayEntry } from '../../../../utilities/random-utilities.js';
+import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
+import { IServiceContainer } from '../../../IServiceContainer.js';
+import { ExtraSingleImageRequest } from './models/requests/ExtraSingleImageRequest.js';
+import { StableDiffusionOptions } from './models/requests/models/StableDiffusionOptions.js';
+import { StableDiffusionModel } from './models/requests/StableDiffusionModel.js';
+import { Txt2ImgOptionsRequest } from './models/requests/Txt2ImgOptionsRequest.js';
+import { ExtraSingleImageResponse } from './models/responses/ExtraSingleImageResponse.js';
+import { Txt2ImgOptionsResponse } from './models/responses/Txt2ImgOptionsResponse.js';
 
 export class Automatic1111Client {
     #environmentSettings: IEnvironmentSettings;

@@ -1,4 +1,4 @@
-import { SupportedFeature } from 'services/features/enum/SupportedFeature';
+import { SupportedFeature } from './enum/SupportedFeature.js';
 
 export interface IFeatureService {
     supportedFeatures: Array<SupportedFeature>;

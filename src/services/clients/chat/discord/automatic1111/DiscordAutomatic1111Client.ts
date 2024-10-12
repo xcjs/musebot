@@ -6,22 +6,22 @@ import {
 } from 'discord.js';
 import {Logger, LogLevel } from 'meklog';
 
-import { DiscordPresenceStatus } from 'services/clients/chat/discord/enums/DiscordPresenceStatus.js';
-import { BaseDiscordClient } from 'services/clients/chat/discord/BaseDiscordClient.js';
-import { PromptRenderTask } from 'services/clients/images/automatic1111/tasks/PromptRenderTask.js';
-import { RetryRenderTask } from 'services/clients/images/automatic1111/tasks/RetryRenderTask.js';
-import { BotInteraction } from 'enums/BotInteraction.js';
-import { ShowSourceTask } from 'services/clients/images/automatic1111/tasks/ShowSourceTask.js';
-import { DecreaseGuidanceScaleRenderTask } from 'services/clients/images/automatic1111/tasks/DecreaseGuidanceScaleRenderTask.js';
-import { IncreaseGuidanceScaleRenderTask } from 'services/clients/images/automatic1111/tasks/IncreaseGuidanceScaleRenderTask.js';
-import { ExpandPromptTask } from 'services/clients/images/automatic1111/tasks/ExpandPromptTask.js';
-import { UpscaleRenderTask } from 'services/clients/images/automatic1111/tasks/UpscaleRenderTask.js';
-import { RandomRenderTask } from 'services/clients/images/automatic1111/tasks/RandomRenderTask.js';
-import { IServiceContainer } from 'services/IServiceContainer.js';
-import { ReplyService } from 'services/clients/chat/discord/ReplyService.js';
-import { IEnvironmentSettings } from 'services/IEnvironmentSettings.js';
-import { ITaskQueue } from 'services/tasks/ITaskQueue.js';
+import { BaseDiscordClient } from '../BaseDiscordClient.js';
+import { BotInteraction } from '../../../../../enums/BotInteraction.js';
+import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
+import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
+import { DecreaseGuidanceScaleRenderTask } from '../../../images/automatic1111/tasks/DecreaseGuidanceScaleRenderTask.js';
+import { ExpandPromptTask } from '../../../images/automatic1111/tasks/ExpandPromptTask.js';
+import { IncreaseGuidanceScaleRenderTask } from '../../../images/automatic1111/tasks/IncreaseGuidanceScaleRenderTask.js';
+import { PromptRenderTask } from '../../../images/automatic1111/tasks/PromptRenderTask.js';
+import { RandomRenderTask } from '../../../images/automatic1111/tasks/RandomRenderTask.js';
+import { RetryRenderTask } from '../../../images/automatic1111/tasks/RetryRenderTask.js';
+import { ShowSourceTask } from '../../../images/automatic1111/tasks/ShowSourceTask.js';
+import { UpscaleRenderTask } from '../../../images/automatic1111/tasks/UpscaleRenderTask.js';
 import { ITypingService } from '../../ITypingService.js';
+import { DiscordPresenceStatus } from '../enums/DiscordPresenceStatus.js';
+import { ReplyService } from '../ReplyService.js';
 
 export class DiscordAutomatic1111Client extends BaseDiscordClient {
     #services: IServiceContainer;

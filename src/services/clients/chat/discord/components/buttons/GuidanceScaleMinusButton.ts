@@ -1,8 +1,8 @@
 import { ButtonBuilder, ButtonStyle } from 'discord.js';
 
-import { BotInteraction } from 'enums/BotInteraction.js';
-import { IServiceContainer } from 'services/IServiceContainer.js';
-import { BaseComponent } from 'services/clients/chat/discord/components/BaseComponent.js';
+import { BotInteraction } from '../../../../../../enums/BotInteraction.js';
+import { IServiceContainer } from '../../../../../IServiceContainer.js';
+import { BaseComponent } from '../BaseComponent.js';
 
 export class GuidanceScaleMinusButton extends BaseComponent<ButtonBuilder> {
     constructor(services: IServiceContainer) {

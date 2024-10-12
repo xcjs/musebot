@@ -2,21 +2,21 @@ import path from 'node:path';
 
 import {Logger, LogLevel } from 'meklog'
 
-import { ContentType } from 'enums/ContentType.js';
-import { HttpHeader } from 'enums/HttpHeader.js';
-import { HttpMethod } from 'enums/HttpMethod.js';
-import { HttpStatusCode } from 'enums/HttpStatusCode.js';
-import { JavaScriptType } from 'enums/JavaScriptType.js';
-import { IHttpExchange } from 'models/IHttpExchange.js';
-import { RenderRequest } from 'services/clients/images/easy-diffusion/models/requests/RenderRequest.js';
-import { getRandomArrayEntry } from 'utilities/random-utilities.js';
-import { StreamStatus } from 'services/clients/images/easy-diffusion/enums/StreamStatus.js';
-import { IRenderResponse } from 'services/clients/images/easy-diffusion/models/responses/IRenderResponse.js';
-import { IStreamResponse } from 'services/clients/images/easy-diffusion/models/responses/IStreamResponse.js';
-import { IModelsResponse } from 'services/clients/images/easy-diffusion/models/responses/IModelsResponse.js';
-import { JaggedRecursiveStringArray } from 'services/clients/images/easy-diffusion/types/JaggedRecursiveStringArray.js';
-import { IServiceContainer } from 'services/IServiceContainer.js';
-import { IEnvironmentSettings } from 'services/IEnvironmentSettings.js';
+import { ContentType } from '../../../../enums/ContentType.js';
+import { HttpHeader } from '../../../../enums/HttpHeader.js';
+import { HttpMethod } from '../../../../enums/HttpMethod.js';
+import { HttpStatusCode } from '../../../../enums/HttpStatusCode.js';
+import { JavaScriptType } from '../../../../enums/JavaScriptType.js';
+import { IHttpExchange } from '../../../../models/IHttpExchange.js';
+import { getRandomArrayEntry } from '../../../../utilities/random-utilities.js';
+import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
+import { IServiceContainer } from '../../../IServiceContainer.js';
+import { StreamStatus } from './enums/StreamStatus.js';
+import { RenderRequest } from './models/requests/RenderRequest.js';
+import { IModelsResponse } from './models/responses/IModelsResponse.js';
+import { IRenderResponse } from './models/responses/IRenderResponse.js';
+import { IStreamResponse } from './models/responses/IStreamResponse.js';
+import { JaggedRecursiveStringArray } from './types/JaggedRecursiveStringArray.js';
 
 export class EasyDiffusionClient {
     #environmentSettings: IEnvironmentSettings;

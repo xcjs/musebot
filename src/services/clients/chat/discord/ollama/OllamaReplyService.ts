@@ -2,12 +2,12 @@ import { Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 import { GenerateRequest, GenerateResponse } from 'ollama';
 
-import { IHttpExchange } from 'models/IHttpExchange.js';
-import { splitText } from 'utilities/string-utilities.js';
-import { DiscordConstants } from 'services/clients/chat/discord/enums/DiscordConstants.js';
-import { LargeLanguageModelActionRow } from 'services/clients/chat/discord/components/buttonRows/LargeLanguageModelActionRow.js';
-import { IServiceContainer } from 'services/IServiceContainer.js';
-import { IEnvironmentSettings } from 'services/IEnvironmentSettings.js';
+import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
+import { splitText } from '../../../../../utilities/string-utilities.js';
+import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
+import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { LargeLanguageModelActionRow } from '../components/buttonRows/LargeLanguageModelActionRow.js';
+import { DiscordConstants } from '../enums/DiscordConstants.js';
 
 export class OllamaReplyService {
     #services: IServiceContainer;

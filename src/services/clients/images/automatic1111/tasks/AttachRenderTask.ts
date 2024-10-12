@@ -1,15 +1,15 @@
 import { ButtonInteraction, Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { BaseTask } from 'services/tasks/models/BaseTask.js';
-import { TaskStatus } from 'services/tasks/enums/TaskStatus.js';
-import { getRandomArrayEntry } from 'utilities/random-utilities.js';
-import { ReplyService } from 'services/clients/chat/discord/ReplyService.js';
-import { Automatic1111ReplyService } from 'services/clients/chat/discord/automatic1111/Automatic1111ReplyService.js';
+import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
+import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
+import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
+import { BaseTask } from '../../../../tasks/models/BaseTask.js';
+import { Automatic1111ReplyService } from '../../../chat/discord/automatic1111/Automatic1111ReplyService.js';
+import { ReplyService } from '../../../chat/discord/ReplyService.js';
 import { Automatic1111Client } from '../Automatic1111Client.js';
 import { Txt2ImgOptionsFactory } from '../factories/Txt2ImgOptionsFactory.js';
-import { IServiceContainer } from 'services/IServiceContainer.js';
-import { IEnvironmentSettings } from 'services/IEnvironmentSettings.js';
 
 export class AttachRenderTask extends BaseTask {
     #environmentSettings: IEnvironmentSettings;

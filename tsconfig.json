@@ -1,7 +1,5 @@
 {
   "compilerOptions": {
-    "baseUrl": "./",
-    "rootDir": "./",
     "esModuleInterop": true,
     "target": "ES2022",
     "module": "ESNext",

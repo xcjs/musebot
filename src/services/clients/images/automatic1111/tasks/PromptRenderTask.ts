@@ -1,17 +1,17 @@
 import { Client as DiscordClient, Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { BaseTask } from 'services/tasks/models/BaseTask.js';
-import { TaskStatus } from 'services/tasks/enums/TaskStatus.js';
-import { getRandomArrayEntry } from 'utilities/random-utilities.js';
-import { ReplyService } from 'services/clients/chat/discord/ReplyService.js';
-import { Automatic1111Client } from 'services/clients/images/automatic1111/Automatic1111Client.js';
-import { Automatic1111ReplyService } from 'services/clients/chat/discord/automatic1111/Automatic1111ReplyService.js';
-import { Txt2ImgOptionsFactory } from 'services/clients/images/automatic1111/factories/Txt2ImgOptionsFactory.js';
-import { JsonRenderTask } from 'services/clients/images/automatic1111/tasks/JsonRenderTask.js';
-import { IServiceContainer } from 'services/IServiceContainer.js';
-import { IEnvironmentSettings } from 'services/IEnvironmentSettings.js';
-import { ITaskQueue } from 'services/tasks/ITaskQueue.js';
+import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
+import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
+import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
+import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
+import { BaseTask } from '../../../../tasks/models/BaseTask.js';
+import { Automatic1111ReplyService } from '../../../chat/discord/automatic1111/Automatic1111ReplyService.js';
+import { ReplyService } from '../../../chat/discord/ReplyService.js';
+import { Automatic1111Client } from '../Automatic1111Client.js';
+import { Txt2ImgOptionsFactory } from '../factories/Txt2ImgOptionsFactory.js';
+import { JsonRenderTask } from './JsonRenderTask.js';
 
 export class PromptRenderTask extends BaseTask {
     #services: IServiceContainer;

@@ -1,8 +1,8 @@
 import { ActionRowBuilder, ButtonBuilder } from 'discord.js';
 
-import { BaseComponent } from 'services/clients/chat/discord/components/BaseComponent.js';
-import { ClearContextButton } from 'services/clients/chat/discord/components/buttons/ClearContextButton.js';
-import { IServiceContainer } from 'services/IServiceContainer.js';
+import { IServiceContainer } from '../../../../../IServiceContainer.js';
+import { BaseComponent } from '../BaseComponent.js';
+import { ClearContextButton } from '../buttons/ClearContextButton.js';
 
 export class LargeLanguageModelActionRow extends BaseComponent<ActionRowBuilder<ButtonBuilder>> {
     #services: IServiceContainer;

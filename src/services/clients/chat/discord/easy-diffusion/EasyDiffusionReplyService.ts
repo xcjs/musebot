@@ -1,19 +1,19 @@
 import { AttachmentBuilder, BaseMessageOptions, ButtonInteraction, Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { IHttpExchangeWithAttachedResponse } from 'models/IHttpExchangeWithAttachedResponse.js';
-import { RenderRequest } from 'services/clients/images/easy-diffusion/models/requests/RenderRequest.js';
-import { IRenderResponse } from 'services/clients/images/easy-diffusion/models/responses/IRenderResponse.js';
-import { IStreamResponse } from 'services/clients/images/easy-diffusion/models/responses/IStreamResponse.js';
-import { BufferEncoding } from 'enums/BufferEncoding.js';
-import { DiscordConstants } from 'services/clients/chat/discord/enums/DiscordConstants.js';
-import { StatefulImageGenerationActionRows } from 'services/clients/chat/discord/components/buttonRows/StatefulImageGenerationActionRows.js';
-import { StatelessImageGenerationActionRow } from 'services/clients/chat/discord/components/buttonRows/StatelessImageGenerationActionRow.js';
-import { MAX_FILE_NAME_LENGTH } from 'enums/FileConstants.js';
-import { UpscaledRenderRequest } from 'services/clients/images/easy-diffusion/models/requests/UpscaledRenderRequest.js';
-import { IServiceContainer } from 'services/IServiceContainer.js';
-import { EasyDiffusionClient } from 'services/clients/images/easy-diffusion/EasyDiffusionClient.js';
-import { IEnvironmentSettings } from 'services/IEnvironmentSettings.js';
+import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
+import { MAX_FILE_NAME_LENGTH } from '../../../../../enums/FileConstants.js';
+import { IHttpExchangeWithAttachedResponse } from '../../../../../models/IHttpExchangeWithAttachedResponse.js';
+import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
+import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { EasyDiffusionClient } from '../../../images/easy-diffusion/EasyDiffusionClient.js';
+import { RenderRequest } from '../../../images/easy-diffusion/models/requests/RenderRequest.js';
+import { UpscaledRenderRequest } from '../../../images/easy-diffusion/models/requests/UpscaledRenderRequest.js';
+import { IRenderResponse } from '../../../images/easy-diffusion/models/responses/IRenderResponse.js';
+import { IStreamResponse } from '../../../images/easy-diffusion/models/responses/IStreamResponse.js';
+import { StatefulImageGenerationActionRows } from '../components/buttonRows/StatefulImageGenerationActionRows.js';
+import { StatelessImageGenerationActionRow } from '../components/buttonRows/StatelessImageGenerationActionRow.js';
+import { DiscordConstants } from '../enums/DiscordConstants.js';
 
 export class EasyDiffusionReplyService {
     #services: IServiceContainer;

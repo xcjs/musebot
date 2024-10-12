@@ -1,17 +1,17 @@
 import { ButtonInteraction } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { BaseTask } from 'services/tasks/models/BaseTask.js';
-import { TaskStatus } from 'services/tasks/enums/TaskStatus.js';
-import { OllamaClient } from 'services/clients/text/ollama/OllamaClient.js';
-import { ReplyService } from 'services/clients/chat/discord/ReplyService.js';
-import { ContentType } from 'enums/ContentType.js';
-import { MessageService } from 'services/clients/chat/discord/MessageService.js';
-import { SerializableRenderRequest } from 'services/clients/images/stable-diffusion/models/SerializableRenderRequest.js';
-import { AttachRenderTask } from 'services/clients/images/automatic1111/tasks/AttachRenderTask.js';
-import { IServiceContainer } from 'services/IServiceContainer.js';
-import { IEnvironmentSettings } from 'services/IEnvironmentSettings.js';
-import { ITaskQueue } from 'services/tasks/ITaskQueue.js';
+import { ContentType } from '../../../../../enums/ContentType.js';
+import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
+import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
+import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
+import { BaseTask } from '../../../../tasks/models/BaseTask.js';
+import { MessageService } from '../../../chat/discord/MessageService.js';
+import { ReplyService } from '../../../chat/discord/ReplyService.js';
+import { OllamaClient } from '../../../text/ollama/OllamaClient.js';
+import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
+import { AttachRenderTask } from './AttachRenderTask.js';
 
 export class ExpandPromptTask extends BaseTask {
     #services: IServiceContainer;

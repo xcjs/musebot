@@ -1,8 +1,8 @@
-import { Dictionary } from 'types/Dictionary.js';
-import { ImageOutputFormat } from 'services/clients/images/easy-diffusion/enums/ImageOutputFormat.js';
-import { MetadataOutputFormat } from 'services/clients/images/easy-diffusion/enums/MetadataOutputFormat.js'
-import { VRamUsageLevel } from 'services/clients/images/easy-diffusion/enums/VRamUsageLevel.js'
-import { IFilter } from 'services/clients/images/easy-diffusion/models/responses/IFilter.js';
+import { Dictionary } from '../../../../../../types/Dictionary.js';
+import { ImageOutputFormat } from '../../enums/ImageOutputFormat.js';
+import { MetadataOutputFormat } from '../../enums/MetadataOutputFormat.js';
+import { VRamUsageLevel } from '../../enums/VRamUsageLevel.js';
+import { IFilter } from './IFilter.js';
 
 export interface ITaskData {
     request_id: number;

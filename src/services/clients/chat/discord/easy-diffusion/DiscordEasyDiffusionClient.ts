@@ -6,22 +6,22 @@ import {
 } from 'discord.js';
 import {Logger, LogLevel } from 'meklog';
 
-import { DiscordPresenceStatus } from 'services/clients/chat/discord/enums/DiscordPresenceStatus.js';
-import { BotInteraction } from 'enums/BotInteraction.js';
 import { BaseDiscordClient } from '../BaseDiscordClient.js';
-import { PromptRenderTask } from 'services/clients/images/easy-diffusion/tasks/PromptRenderTask.js';
-import { RetryRenderTask } from 'services/clients/images/easy-diffusion/tasks/RetryRenderTask.js';
-import { ShowSourceTask } from 'services/clients/images/easy-diffusion/tasks/ShowSourceTask.js';
-import { DecreaseGuidanceScaleRenderTask } from 'services/clients/images/easy-diffusion/tasks/DecreaseGuidanceScaleRenderTask.js';
-import { IncreaseGuidanceScaleRenderTask } from 'services/clients/images/easy-diffusion/tasks/IncreaseGuidanceScaleRenderTask.js';
-import { RandomRenderTask } from 'services/clients/images/easy-diffusion/tasks/RandomRenderTask.js';
-import { UpscaleRenderTask } from 'services/clients/images/easy-diffusion/tasks/UpscaleRenderTask.js';
-import { ExpandPromptTask } from 'services/clients/images/easy-diffusion/tasks/ExpandPromptTask.js';
-import { IServiceContainer } from 'services/IServiceContainer.js';
-import { ReplyService } from 'services/clients/chat/discord/ReplyService.js';
-import { IEnvironmentSettings } from 'services/IEnvironmentSettings.js';
-import { ITaskQueue } from 'services/tasks/ITaskQueue.js';
+import { BotInteraction } from '../../../../../enums/BotInteraction.js';
+import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
+import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
+import { DecreaseGuidanceScaleRenderTask } from '../../../images/easy-diffusion/tasks/DecreaseGuidanceScaleRenderTask.js';
+import { ExpandPromptTask } from '../../../images/easy-diffusion/tasks/ExpandPromptTask.js';
+import { IncreaseGuidanceScaleRenderTask } from '../../../images/easy-diffusion/tasks/IncreaseGuidanceScaleRenderTask.js';
+import { PromptRenderTask } from '../../../images/easy-diffusion/tasks/PromptRenderTask.js';
+import { RandomRenderTask } from '../../../images/easy-diffusion/tasks/RandomRenderTask.js';
+import { RetryRenderTask } from '../../../images/easy-diffusion/tasks/RetryRenderTask.js';
+import { ShowSourceTask } from '../../../images/easy-diffusion/tasks/ShowSourceTask.js';
+import { UpscaleRenderTask } from '../../../images/easy-diffusion/tasks/UpscaleRenderTask.js';
 import { ITypingService } from '../../ITypingService.js';
+import { DiscordPresenceStatus } from '../enums/DiscordPresenceStatus.js';
+import { ReplyService } from '../ReplyService.js';
 
 export class DiscordEasyDiffusionClient extends BaseDiscordClient {
     #services: IServiceContainer;

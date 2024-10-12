@@ -1,17 +1,17 @@
 import { ButtonInteraction } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { ContentType } from 'enums/ContentType.js';
-import { getRandomArrayEntry } from 'utilities/random-utilities.js';
-import { TaskStatus } from 'services/tasks/enums/TaskStatus.js';
-import { BaseTask } from 'services/tasks/models/BaseTask.js';
-import { EasyDiffusionReplyService } from 'services/clients/chat/discord/easy-diffusion/EasyDiffusionReplyService.js';
-import { EasyDiffusionClient } from 'services/clients/images/easy-diffusion/EasyDiffusionClient.js';
-import { RenderRequest } from 'services/clients/images/easy-diffusion/models/requests/RenderRequest.js';
-import { ReplyService } from 'services/clients/chat/discord/ReplyService.js';
-import { MessageService } from 'services/clients/chat/discord/MessageService.js';
-import { IServiceContainer } from 'services/IServiceContainer.js';
-import { IEnvironmentSettings } from 'services/IEnvironmentSettings.js';
+import { ContentType } from '../../../../../enums/ContentType.js';
+import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
+import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
+import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
+import { BaseTask } from '../../../../tasks/models/BaseTask.js';
+import { EasyDiffusionReplyService } from '../../../chat/discord/easy-diffusion/EasyDiffusionReplyService.js';
+import { MessageService } from '../../../chat/discord/MessageService.js';
+import { ReplyService } from '../../../chat/discord/ReplyService.js';
+import { EasyDiffusionClient } from '../EasyDiffusionClient.js';
+import { RenderRequest } from '../models/requests/RenderRequest.js';
 
 export class DecreaseGuidanceScaleRenderTask extends BaseTask {
     #environmentSettings: IEnvironmentSettings;
