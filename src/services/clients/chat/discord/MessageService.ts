@@ -1,6 +1,6 @@
 import { Attachment, ButtonInteraction, Message } from 'discord.js';
 
-import { ContentType } from '../../../../enums/ContentType.js';
+import { ContentType } from 'enums/ContentType.js';
 
 export class MessageService {
     constructor() {

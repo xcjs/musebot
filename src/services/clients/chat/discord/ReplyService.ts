@@ -1,8 +1,8 @@
 import { ButtonInteraction, Client as DiscordClient, Message, MessageType } from 'discord.js';
 
-import { JavaScriptType } from '../../../../enums/JavaScriptType.js';
-import { IServiceContainer } from '../../../IServiceContainer.js';
-import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
+import { JavaScriptType } from 'enums/JavaScriptType.js';
+import { IEnvironmentSettings } from 'services/IEnvironmentSettings';
+import { IServiceContainer } from 'services/IServiceContainer';
 
 export class ReplyService {
     #environmentSettings: IEnvironmentSettings;
