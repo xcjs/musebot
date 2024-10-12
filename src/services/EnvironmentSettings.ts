@@ -4,10 +4,10 @@ import dotenv from 'dotenv';
 import { Logger, LogLevel } from 'meklog';
 
 import nodePackage from '../../package.json' with { type: 'json' };
-import { NodeEnvironment } from '../enums/NodeEnvironment.js';
-import { BotFunction } from '../enums/BotFunction.js';
-import { StableDiffusionApiType } from './clients/stable-diffusion/enums/StableDiffusionApiType';
-import { IEnvironmentSettings } from './IEnvironmentSettings';
+import { NodeEnvironment } from 'enums/NodeEnvironment.js';
+import { BotFunction } from 'enums/BotFunction.js';
+import { StableDiffusionApiType } from 'services/clients/images/stable-diffusion/enums/StableDiffusionApiType';
+import { IEnvironmentSettings } from 'services/IEnvironmentSettings';
 
 export class EnvironmentSettings implements IEnvironmentSettings {
     packageName: string;

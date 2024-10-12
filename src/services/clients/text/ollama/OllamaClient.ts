@@ -1,10 +1,10 @@
 import { Logger, LogLevel } from 'meklog';
 import { GenerateRequest, GenerateResponse, Ollama } from 'ollama';
 
-import { getRandomArrayEntry, getRandomInt } from '../../../utilities/random-utilities.js';
-import { IHttpExchange } from '../../../models/IHttpExchange.js';
-import { IServiceContainer } from '../../IServiceContainer.js';
-import { IEnvironmentSettings } from '../../IEnvironmentSettings.js';
+import { getRandomArrayEntry, getRandomInt } from 'utilities/random-utilities.js';
+import { IHttpExchange } from 'models/IHttpExchange.js';
+import { IServiceContainer } from 'services/IServiceContainer.js';
+import { IEnvironmentSettings } from 'services/IEnvironmentSettings.js';
 
 export class OllamaClient {
     #environmentSettings: IEnvironmentSettings;

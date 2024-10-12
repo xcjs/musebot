@@ -1,17 +1,17 @@
 import { ButtonInteraction } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { BaseTask } from '../../../tasks/models/BaseTask.js';
-import { TaskStatus } from '../../../tasks/enums/TaskStatus.js';
-import { ContentType } from '../../../../enums/ContentType.js';
-import { RenderRequest } from '../models/requests/RenderRequest.js';
-import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiffusionReplyService.js';
-import { DiscordConstants } from '../../discord/enums/DiscordConstants.js';
-import { ReplyService } from '../../discord/services/ReplyService.js';
+import { BaseTask } from 'services/tasks/models/BaseTask.js';
+import { TaskStatus } from 'services/tasks/enums/TaskStatus.js';
+import { ContentType } from 'enums/ContentType.js';
+import { RenderRequest } from 'services/clients/images/easy-diffusion/models/requests/RenderRequest.js';
+import { EasyDiffusionReplyService } from 'services/clients/chat/discord/easy-diffusion/EasyDiffusionReplyService.js';
+import { DiscordConstants } from 'services/clients/chat/discord/enums/DiscordConstants.js';
+import { ReplyService } from 'services/clients/chat/discord/ReplyService.js';
 import { UpscaledRenderRequest } from '../models/requests/UpscaledRenderRequest.js';
-import { MessageService } from '../../discord/services/MessageService.js';
-import { IServiceContainer } from '../../../IServiceContainer.js';
-import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
+import { MessageService } from 'services/clients/chat/discord/MessageService.js';
+import { IServiceContainer } from 'services/IServiceContainer.js';
+import { IEnvironmentSettings } from 'services/IEnvironmentSettings.js';
 
 export class UpscaleRenderTask extends BaseTask {
     #environmentSettings: IEnvironmentSettings;

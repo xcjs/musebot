@@ -1,6 +1,6 @@
-import { BotFunction } from '../enums/BotFunction';
-import { NodeEnvironment } from '../enums/NodeEnvironment';
-import { StableDiffusionApiType } from './clients/stable-diffusion/enums/StableDiffusionApiType';
+import { BotFunction } from 'enums/BotFunction';
+import { NodeEnvironment } from 'enums/NodeEnvironment';
+import { StableDiffusionApiType } from 'services/clients/images/stable-diffusion/enums/StableDiffusionApiType';
 
 export interface IEnvironmentSettings {
     packageName: string;
