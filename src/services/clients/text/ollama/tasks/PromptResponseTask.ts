@@ -1,21 +1,21 @@
 import { Client as DiscordClient, Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { DiscordConstants } from 'services/clients/chat/discord/enums/DiscordConstants';
-import { OllamaReplyService } from 'services/clients/chat/discord/ollama/OllamaReplyService';
-import { OllamaStreamingReplyService } from 'services/clients/chat/discord/ollama/OllamaStreamingReplyService';
-import { ReplyService } from 'services/clients/chat/discord/ReplyService';
-import { StableDiffusionApiType } from 'services/clients/images/stable-diffusion/enums/StableDiffusionApiType';
-import { SupportedFeature } from 'services/features/enum/SupportedFeature';
-import { IEnvironmentSettings } from 'services/IEnvironmentSettings';
-import { IServiceContainer } from 'services/IServiceContainer';
-import { TaskStatus } from 'services/tasks/enums/TaskStatus';
-import { BaseTask } from 'services/tasks/models/BaseTask';
-import { TaskQueue } from 'services/tasks/TaskQueue';
-import { OllamaClient } from '../OllamaClient';
-import { IFeatureService } from 'services/features/IFeatureService';
-import { AttachRenderTask as A1AttachRenderTask } from 'services/clients/images/automatic1111/tasks/AttachRenderTask';
-import { AttachRenderTask as EdAttachRenderTask } from 'services/clients/images/easy-diffusion/tasks/AttachRenderTask';
+import { DiscordConstants } from 'services/clients/chat/discord/enums/DiscordConstants.js';
+import { OllamaReplyService } from 'services/clients/chat/discord/ollama/OllamaReplyService.js';
+import { OllamaStreamingReplyService } from 'services/clients/chat/discord/ollama/OllamaStreamingReplyService.js';
+import { ReplyService } from 'services/clients/chat/discord/ReplyService.js';
+import { StableDiffusionApiType } from 'services/clients/images/stable-diffusion/enums/StableDiffusionApiType.js';
+import { SupportedFeature } from 'services/features/enum/SupportedFeature.js';
+import { IEnvironmentSettings } from 'services/IEnvironmentSettings.js';
+import { IServiceContainer } from 'services/IServiceContainer.js';
+import { TaskStatus } from 'services/tasks/enums/TaskStatus.js';
+import { BaseTask } from 'services/tasks/models/BaseTask.js';
+import { OllamaClient } from '../OllamaClient.js';
+import { IFeatureService } from 'services/features/IFeatureService.js';
+import { AttachRenderTask as A1AttachRenderTask } from 'services/clients/images/automatic1111/tasks/AttachRenderTask.js';
+import { AttachRenderTask as EdAttachRenderTask } from 'services/clients/images/easy-diffusion/tasks/AttachRenderTask.js';
+import { ITaskQueue } from 'services/tasks/ITaskQueue.js';
 
 export class PromptResponseTask extends BaseTask {
     #services: IServiceContainer;
@@ -27,7 +27,7 @@ export class PromptResponseTask extends BaseTask {
     #ollamaStreamingReplyService: OllamaStreamingReplyService;
     #discordClient: DiscordClient;
     #replyService: ReplyService;
-    #taskQueue: TaskQueue;
+    #taskQueue: ITaskQueue;
 
     #message: Message;
     #context: Array<number> = [];

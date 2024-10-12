@@ -8,10 +8,10 @@ import { OllamaClient } from 'services/clients/text/ollama/OllamaClient.js';
 import { ReplyService } from 'services/clients/chat/discord/ReplyService.js';
 import { ContentType } from 'enums/ContentType.js';
 import { AttachRenderTask } from 'services/clients/images/easy-diffusion/tasks/AttachRenderTask.js';
-import { TaskQueue } from 'services/tasks/TaskQueue.js';
 import { MessageService } from 'services/clients/chat/discord/MessageService.js';
 import { IServiceContainer } from 'services/IServiceContainer.js';
 import { IEnvironmentSettings } from 'services/IEnvironmentSettings.js';
+import { ITaskQueue } from 'services/tasks/ITaskQueue.js';
 
 export class ExpandPromptTask extends BaseTask {
     #services: IServiceContainer;
@@ -20,7 +20,7 @@ export class ExpandPromptTask extends BaseTask {
     #ollamaClient: OllamaClient;
     #messageService: MessageService;
     #replyService: ReplyService;
-    #taskQueue: TaskQueue;
+    #taskQueue: ITaskQueue;
 
     #interaction: ButtonInteraction;
 

@@ -8,10 +8,10 @@ import { ReplyService } from 'services/clients/chat/discord/ReplyService.js';
 import { Automatic1111Client } from 'services/clients/images/automatic1111/Automatic1111Client.js';
 import { Automatic1111ReplyService } from 'services/clients/chat/discord/automatic1111/Automatic1111ReplyService.js';
 import { Txt2ImgOptionsFactory } from 'services/clients/images/automatic1111/factories/Txt2ImgOptionsFactory.js';
-import { TaskQueue } from 'services/tasks/TaskQueue.js';
 import { JsonRenderTask } from 'services/clients/images/automatic1111/tasks/JsonRenderTask.js';
 import { IServiceContainer } from 'services/IServiceContainer.js';
 import { IEnvironmentSettings } from 'services/IEnvironmentSettings.js';
+import { ITaskQueue } from 'services/tasks/ITaskQueue.js';
 
 export class PromptRenderTask extends BaseTask {
     #services: IServiceContainer;
@@ -21,7 +21,7 @@ export class PromptRenderTask extends BaseTask {
     #automatic1111Client: Automatic1111Client;
     #automatic1111ReplyService: Automatic1111ReplyService;
     #replyService: ReplyService;
-    #taskQueue: TaskQueue;
+    #taskQueue: ITaskQueue;
 
     #message: Message;
 

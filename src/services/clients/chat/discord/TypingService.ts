@@ -1,13 +1,13 @@
 import { BaseGuildTextChannel, ButtonInteraction, Message } from 'discord.js';
 import {Logger, LogLevel } from 'meklog';
 
-import { IEnvironmentSettings } from 'services/IEnvironmentSettings';
-import { IServiceContainer } from 'services/IServiceContainer';
-import { TaskQueue } from 'services/tasks/TaskQueue';
+import { IEnvironmentSettings } from 'services/IEnvironmentSettings.js';
+import { IServiceContainer } from 'services/IServiceContainer.js';
+import { ITaskQueue } from 'services/tasks/ITaskQueue.js';
 
 export class TypingService {
     #environmentSettings: IEnvironmentSettings;
-    #taskQueue: TaskQueue;
+    #taskQueue: ITaskQueue;
 
     #logger;
 

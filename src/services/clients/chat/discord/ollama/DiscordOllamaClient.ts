@@ -7,9 +7,9 @@ import { PromptResponseTask } from 'services/clients/text/ollama/tasks/PromptRes
 import { BotInteraction } from 'enums/BotInteraction.js';
 import { IServiceContainer } from 'services/IServiceContainer.js';
 import { ReplyService } from 'services/clients/chat/discord/ReplyService.js';
-import { TaskQueue } from 'services/tasks/TaskQueue.js';
 import { TypingService } from 'services/clients/chat/discord/TypingService.js';
 import { IEnvironmentSettings } from 'services/IEnvironmentSettings.js';
+import { ITaskQueue } from 'services/tasks/ITaskQueue.js';
 
 export class DiscordOllamaClient extends BaseDiscordClient {
     #services: IServiceContainer;
@@ -18,7 +18,7 @@ export class DiscordOllamaClient extends BaseDiscordClient {
     #discordClient: DiscordClient;
     #typingService: TypingService;
     #replyService: ReplyService;
-    #taskQueue: TaskQueue;
+    #taskQueue: ITaskQueue;
 
     #context: Array<number> = [];
 

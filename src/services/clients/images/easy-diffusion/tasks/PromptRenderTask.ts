@@ -7,11 +7,11 @@ import { RenderRequest } from 'services/clients/images/easy-diffusion/models/req
 import { TaskStatus } from 'services/tasks/enums/TaskStatus.js';
 import { getRandomArrayEntry } from 'utilities/random-utilities.js';
 import { EasyDiffusionReplyService } from 'services/clients/chat/discord/easy-diffusion/EasyDiffusionReplyService.js';
-import { TaskQueue } from 'services/tasks/TaskQueue.js';
 import { JsonRenderTask } from './JsonRenderTask.js';
 import { ReplyService } from 'services/clients/chat/discord/ReplyService.js';
 import { IServiceContainer } from 'services/IServiceContainer.js';
 import { IEnvironmentSettings } from 'services/IEnvironmentSettings.js';
+import { ITaskQueue } from 'services/tasks/ITaskQueue.js';
 
 export class PromptRenderTask extends BaseTask {
     #services: IServiceContainer;
@@ -21,7 +21,7 @@ export class PromptRenderTask extends BaseTask {
     #easyDiffusionClient: EasyDiffusionClient;
     #easyDiffusionReplyService: EasyDiffusionReplyService;
     #replyService: ReplyService;
-    #taskQueue: TaskQueue;
+    #taskQueue: ITaskQueue;
 
     #message: Message;
 

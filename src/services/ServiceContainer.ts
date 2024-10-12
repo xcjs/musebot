@@ -1,25 +1,26 @@
 import { Client as DiscordClient, GatewayIntentBits, Partials } from 'discord.js';
 
-import { Automatic1111ReplyService } from './clients/chat/discord/automatic1111/Automatic1111ReplyService';
-import { DiscordAutomatic1111Client } from './clients/chat/discord/automatic1111/DiscordAutomatic1111Client';
-import { DiscordEasyDiffusionClient } from './clients/chat/discord/easy-diffusion/DiscordEasyDiffusionClient';
-import { EasyDiffusionReplyService } from './clients/chat/discord/easy-diffusion/EasyDiffusionReplyService';
-import { DiscordConstants } from './clients/chat/discord/enums/DiscordConstants';
-import { MessageService } from './clients/chat/discord/MessageService';
-import { DiscordOllamaClient } from './clients/chat/discord/ollama/DiscordOllamaClient';
-import { OllamaReplyService } from './clients/chat/discord/ollama/OllamaReplyService';
-import { OllamaStreamingReplyService } from './clients/chat/discord/ollama/OllamaStreamingReplyService';
-import { ReplyService } from './clients/chat/discord/ReplyService';
-import { TypingService } from './clients/chat/discord/TypingService';
-import { Automatic1111Client } from './clients/images/automatic1111/Automatic1111Client';
-import { EasyDiffusionClient } from './clients/images/easy-diffusion/EasyDiffusionClient';
-import { OllamaClient } from './clients/text/ollama/OllamaClient';
-import { EnvironmentSettings } from './EnvironmentSettings';
-import { FeatureService } from './features/FeatureService';
-import { IFeatureService } from './features/IFeatureService';
-import { IEnvironmentSettings } from './IEnvironmentSettings';
-import { IServiceContainer } from './IServiceContainer';
-import { TaskQueue } from './tasks/TaskQueue';
+import { Automatic1111ReplyService } from './clients/chat/discord/automatic1111/Automatic1111ReplyService.js';
+import { DiscordAutomatic1111Client } from './clients/chat/discord/automatic1111/DiscordAutomatic1111Client.js';
+import { DiscordEasyDiffusionClient } from './clients/chat/discord/easy-diffusion/DiscordEasyDiffusionClient.js';
+import { EasyDiffusionReplyService } from './clients/chat/discord/easy-diffusion/EasyDiffusionReplyService.js';
+import { DiscordConstants } from './clients/chat/discord/enums/DiscordConstants.js';
+import { MessageService } from './clients/chat/discord/MessageService.js';
+import { DiscordOllamaClient } from './clients/chat/discord/ollama/DiscordOllamaClient.js';
+import { OllamaReplyService } from './clients/chat/discord/ollama/OllamaReplyService.js';
+import { OllamaStreamingReplyService } from './clients/chat/discord/ollama/OllamaStreamingReplyService.js';
+import { ReplyService } from './clients/chat/discord/ReplyService.js';
+import { TypingService } from './clients/chat/discord/TypingService.js';
+import { Automatic1111Client } from './clients/images/automatic1111/Automatic1111Client.js';
+import { EasyDiffusionClient } from './clients/images/easy-diffusion/EasyDiffusionClient.js';
+import { OllamaClient } from './clients/text/ollama/OllamaClient.js';
+import { EnvironmentSettings } from './EnvironmentSettings.js';
+import { FeatureService } from './features/FeatureService.js';
+import { IFeatureService } from './features/IFeatureService.js';
+import { IEnvironmentSettings } from './IEnvironmentSettings.js';
+import { IServiceContainer } from './IServiceContainer.js';
+import { TaskQueue } from './tasks/TaskQueue.js';
+import { ITaskQueue } from './tasks/ITaskQueue.js';
 
 export class ServiceContainer implements IServiceContainer {
     // Singletons -------------------------------------------------------------/
@@ -34,8 +35,8 @@ export class ServiceContainer implements IServiceContainer {
         return this.#featureService;
     }
 
-    #taskQueue: TaskQueue;
-    get taskQueue(): TaskQueue {
+    #taskQueue: ITaskQueue;
+    get taskQueue(): ITaskQueue {
         return this.#taskQueue;
     }
 
