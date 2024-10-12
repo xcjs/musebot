@@ -21,7 +21,7 @@ import { ShowSourceTask } from '../../../images/automatic1111/tasks/ShowSourceTa
 import { UpscaleRenderTask } from '../../../images/automatic1111/tasks/UpscaleRenderTask.js';
 import { ITypingService } from '../../ITypingService.js';
 import { DiscordPresenceStatus } from '../enums/DiscordPresenceStatus.js';
-import { ReplyService } from '../ReplyService.js';
+import { ReplyService } from '../replies/ReplyService.js';
 
 export class DiscordAutomatic1111Client extends BaseDiscordClient {
     #services: IServiceContainer;

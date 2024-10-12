@@ -9,7 +9,7 @@ import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { Automatic1111ReplyService } from '../../../chat/discord/automatic1111/Automatic1111ReplyService.js';
 import { MessageService } from '../../../chat/discord/MessageService.js';
-import { ReplyService } from '../../../chat/discord/ReplyService.js';
+import { ReplyService } from '../../../chat/discord/replies/ReplyService.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 
 export class ShowSourceTask extends BaseTask {

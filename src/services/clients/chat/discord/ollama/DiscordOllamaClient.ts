@@ -9,7 +9,7 @@ import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
 import { PromptResponseTask } from '../../../text/ollama/tasks/PromptResponseTask.js';
 import { ITypingService } from '../../ITypingService.js';
 import { DiscordPresenceStatus } from '../enums/DiscordPresenceStatus.js';
-import { ReplyService } from '../ReplyService.js';
+import { ReplyService } from '../replies/ReplyService.js';
 
 export class DiscordOllamaClient extends BaseDiscordClient {
     #services: IServiceContainer;

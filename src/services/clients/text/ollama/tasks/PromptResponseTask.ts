@@ -12,7 +12,7 @@ import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.js';
 import { OllamaReplyService } from '../../../chat/discord/ollama/OllamaReplyService.js';
 import { OllamaStreamingReplyService } from '../../../chat/discord/ollama/OllamaStreamingReplyService.js';
-import { ReplyService } from '../../../chat/discord/ReplyService.js';
+import { ReplyService } from '../../../chat/discord/replies/ReplyService.js';
 import { StableDiffusionApiType } from '../../../images/stable-diffusion/enums/StableDiffusionApiType.js';
 import { OllamaClient } from '../OllamaClient.js';
 import { AttachRenderTask as A1AttachRenderTask } from '../../../images/automatic1111/tasks/AttachRenderTask.js';

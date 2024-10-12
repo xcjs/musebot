@@ -8,7 +8,7 @@ import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { Automatic1111ReplyService } from '../../../chat/discord/automatic1111/Automatic1111ReplyService.js';
-import { ReplyService } from '../../../chat/discord/ReplyService.js';
+import { ReplyService } from '../../../chat/discord/replies/ReplyService.js';
 import { Automatic1111Client } from '../Automatic1111Client.js';
 import { Txt2ImgOptionsFactory } from '../factories/Txt2ImgOptionsFactory.js';
 import { JsonRenderTask } from './JsonRenderTask.js';

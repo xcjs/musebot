@@ -6,7 +6,7 @@ import { EasyDiffusionReplyService } from './clients/chat/discord/easy-diffusion
 import { MessageService } from './clients/chat/discord/MessageService.js';
 import { OllamaReplyService } from './clients/chat/discord/ollama/OllamaReplyService.js';
 import { OllamaStreamingReplyService } from './clients/chat/discord/ollama/OllamaStreamingReplyService.js';
-import { ReplyService } from './clients/chat/discord/ReplyService.js';
+import { ReplyService } from './clients/chat/discord/replies/ReplyService.js';
 import { Automatic1111Client } from './clients/images/automatic1111/Automatic1111Client.js';
 import { EasyDiffusionClient } from './clients/images/easy-diffusion/EasyDiffusionClient.js';
 import { OllamaClient } from './clients/text/ollama/OllamaClient.js';

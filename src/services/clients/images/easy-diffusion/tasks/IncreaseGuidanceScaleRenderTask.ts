@@ -9,7 +9,7 @@ import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { EasyDiffusionReplyService } from '../../../chat/discord/easy-diffusion/EasyDiffusionReplyService.js';
 import { MessageService } from '../../../chat/discord/MessageService.js';
-import { ReplyService } from '../../../chat/discord/ReplyService.js';
+import { ReplyService } from '../../../chat/discord/replies/ReplyService.js';
 import { EasyDiffusionClient } from '../EasyDiffusionClient.js';
 import { RenderRequest } from '../models/requests/RenderRequest.js';
 
