@@ -10,12 +10,12 @@ import { DiscordOllamaClient } from './clients/chat/discord/ollama/DiscordOllama
 import { OllamaReplyService } from './clients/chat/discord/ollama/OllamaReplyService.js';
 import { OllamaStreamingReplyService } from './clients/chat/discord/ollama/OllamaStreamingReplyService.js';
 import { ReplyService } from './clients/chat/discord/ReplyService.js';
-import { TypingService } from './clients/chat/discord/TypingService.js';
 import { Automatic1111Client } from './clients/images/automatic1111/Automatic1111Client.js';
 import { EasyDiffusionClient } from './clients/images/easy-diffusion/EasyDiffusionClient.js';
 import { OllamaClient } from './clients/text/ollama/OllamaClient.js';
 import { IFeatureService } from './features/IFeatureService.js';
 import { ITaskQueue } from './tasks/ITaskQueue.js';
+import { ITypingService } from './clients/chat/ITypingService.js';
 
 export interface IServiceContainer {
     // Singletons -------------------------------------------------------------/
@@ -23,7 +23,7 @@ export interface IServiceContainer {
     environmentSettings: IEnvironmentSettings;
     featureService: IFeatureService;
     taskQueue: ITaskQueue;
-    typingService: TypingService;
+    typingService: ITypingService;
     discordClient: DiscordClient;
 
     // Transitives ------------------------------------------------------------/

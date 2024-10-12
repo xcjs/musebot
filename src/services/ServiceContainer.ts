@@ -21,6 +21,7 @@ import { IEnvironmentSettings } from './IEnvironmentSettings.js';
 import { IServiceContainer } from './IServiceContainer.js';
 import { TaskQueue } from './tasks/TaskQueue.js';
 import { ITaskQueue } from './tasks/ITaskQueue.js';
+import { ITypingService } from './clients/chat/ITypingService.js';
 
 export class ServiceContainer implements IServiceContainer {
     // Singletons -------------------------------------------------------------/
@@ -40,8 +41,8 @@ export class ServiceContainer implements IServiceContainer {
         return this.#taskQueue;
     }
 
-    #typingService: TypingService;
-    get typingService(): TypingService {
+    #typingService: ITypingService;
+    get typingService(): ITypingService {
         return this.#typingService;
     }
 

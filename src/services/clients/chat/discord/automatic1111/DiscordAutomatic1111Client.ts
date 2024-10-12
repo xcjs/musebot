@@ -8,7 +8,6 @@ import {Logger, LogLevel } from 'meklog';
 
 import { DiscordPresenceStatus } from 'services/clients/chat/discord/enums/DiscordPresenceStatus.js';
 import { BaseDiscordClient } from 'services/clients/chat/discord/BaseDiscordClient.js';
-import { TypingService } from 'services/clients/chat/discord/TypingService.js';
 import { PromptRenderTask } from 'services/clients/images/automatic1111/tasks/PromptRenderTask.js';
 import { RetryRenderTask } from 'services/clients/images/automatic1111/tasks/RetryRenderTask.js';
 import { BotInteraction } from 'enums/BotInteraction.js';
@@ -22,6 +21,7 @@ import { IServiceContainer } from 'services/IServiceContainer.js';
 import { ReplyService } from 'services/clients/chat/discord/ReplyService.js';
 import { IEnvironmentSettings } from 'services/IEnvironmentSettings.js';
 import { ITaskQueue } from 'services/tasks/ITaskQueue.js';
+import { ITypingService } from '../../ITypingService.js';
 
 export class DiscordAutomatic1111Client extends BaseDiscordClient {
     #services: IServiceContainer;
@@ -29,7 +29,7 @@ export class DiscordAutomatic1111Client extends BaseDiscordClient {
     #environmentSettings: IEnvironmentSettings;
     #discordClient: DiscordClient;
     #replyService: ReplyService;
-    #typingService: TypingService;
+    #typingService: ITypingService;
     #taskQueue: ITaskQueue;
 
     constructor(services: IServiceContainer) {

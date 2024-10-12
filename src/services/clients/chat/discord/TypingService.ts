@@ -22,7 +22,7 @@ export class TypingService {
     }
 
     async startTyping(message: Message | ButtonInteraction): Promise<void> {
-    if(this.#typingInterval !== null) {
+        if(this.#typingInterval !== null) {
             return;
         }
 

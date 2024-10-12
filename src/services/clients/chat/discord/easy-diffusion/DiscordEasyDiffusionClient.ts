@@ -19,9 +19,9 @@ import { UpscaleRenderTask } from 'services/clients/images/easy-diffusion/tasks/
 import { ExpandPromptTask } from 'services/clients/images/easy-diffusion/tasks/ExpandPromptTask.js';
 import { IServiceContainer } from 'services/IServiceContainer.js';
 import { ReplyService } from 'services/clients/chat/discord/ReplyService.js';
-import { TypingService } from 'services/clients/chat/discord/TypingService.js';
 import { IEnvironmentSettings } from 'services/IEnvironmentSettings.js';
 import { ITaskQueue } from 'services/tasks/ITaskQueue.js';
+import { ITypingService } from '../../ITypingService.js';
 
 export class DiscordEasyDiffusionClient extends BaseDiscordClient {
     #services: IServiceContainer;
@@ -29,7 +29,7 @@ export class DiscordEasyDiffusionClient extends BaseDiscordClient {
     #environmentSettings: IEnvironmentSettings;
     #discordClient: DiscordClient;
     #replyService: ReplyService;
-    #typingService: TypingService;
+    #typingService: ITypingService;
     #taskQueue: ITaskQueue;
 
     constructor(services: IServiceContainer) {
