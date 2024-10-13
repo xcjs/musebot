@@ -7,7 +7,6 @@ import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
-import { MessageService } from '../../../chat/discord/MessageService.js';
 import { ReplyService } from '../../../chat/discord/replies/ReplyService.js';
 import { OllamaClient } from '../../../text/ollama/OllamaClient.js';
 import { RenderRequest } from '../models/requests/RenderRequest.js';
@@ -18,7 +17,6 @@ export class ExpandPromptTask extends BaseTask {
 
     #environmentSettings: IEnvironmentSettings;
     #ollamaClient: OllamaClient;
-    #messageService: MessageService;
     #replyService: ReplyService;
     #taskQueue: ITaskQueue;
 
@@ -37,7 +35,6 @@ export class ExpandPromptTask extends BaseTask {
 
         this.#environmentSettings = services.environmentSettings;
         this.#ollamaClient = services.ollamaClient;
-        this.#messageService = services.messageService;
         this.#replyService = services.replyService;
         this.#taskQueue = services.taskQueue;
 
@@ -55,7 +52,7 @@ export class ExpandPromptTask extends BaseTask {
             ContentType.Png
         ];
 
-        const imageAttachment = this.#messageService.getAttachmentsByType(this.#interaction, imageTypes)[0];
+        const imageAttachment = this.#replyService.getAttachmentsByType(this.#interaction, imageTypes)[0];
         const originalRequest = RenderRequest.fromJson(imageAttachment.description);
 
         const prompt = `The following is a prompt used to generate an image - expand it with meticulous detail so it can be rendered better: ${originalRequest.prompt}`;

@@ -1,8 +1,9 @@
-import { ButtonInteraction, Client as DiscordClient, Message, MessageType  } from 'discord.js';
+import { Attachment, ButtonInteraction, Client as DiscordClient, Message, MessageType  } from 'discord.js';
 
 import { IReplyService } from '../../IReplyService.js';
 import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { ContentType } from '../../../../../enums/ContentType.js';
 import { JavaScriptType } from '../../../../../enums/JavaScriptType.js';
 
 export abstract class BaseReplyService implements IReplyService {
@@ -34,6 +35,22 @@ export abstract class BaseReplyService implements IReplyService {
 
     reply(): Promise<void> {
         throw 'The reply() implementation must be overridden.';
+    }
+
+    getAttachmentsByType(interaction: Message | ButtonInteraction, contentTypes: Array<ContentType>): Array<Attachment> {
+        let attachments: Array<Attachment>;
+
+        if (interaction instanceof Message) {
+            attachments = Array.from(interaction.attachments, ([name, value]) => ({ name, value })).map(x => x.value);
+        } else if (interaction instanceof ButtonInteraction) {
+            attachments = Array.from(interaction.message.attachments, ([name, value]) => ({ name, value })).map(x => x.value);
+        }
+
+        const matchingAttachments = attachments.filter(attachment =>
+            contentTypes.includes(Object.values(ContentType)
+                .find(contentTypeValue => contentTypeValue === attachment.contentType)));
+
+        return matchingAttachments;
     }
 
     async replyWithError(interaction: Message | ButtonInteraction): Promise<void> {

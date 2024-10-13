@@ -8,14 +8,12 @@ import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { Automatic1111ReplyService } from '../../../chat/discord/automatic1111/Automatic1111ReplyService.js';
-import { MessageService } from '../../../chat/discord/MessageService.js';
 import { ReplyService } from '../../../chat/discord/replies/ReplyService.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 
 export class ShowSourceTask extends BaseTask {
     #environmentSettings: IEnvironmentSettings;
     #automatic1111ReplyService: Automatic1111ReplyService;
-    #messageService: MessageService;
     #replyService: ReplyService;
 
     #interaction: ButtonInteraction;
@@ -33,7 +31,6 @@ export class ShowSourceTask extends BaseTask {
 
         this.#environmentSettings = services.environmentSettings;
         this.#automatic1111ReplyService = services.automatic1111ReplyService;
-        this.#messageService = services.messageService;
         this.#replyService = services.replyService;
 
         this.#interaction = interaction;
@@ -48,7 +45,7 @@ export class ShowSourceTask extends BaseTask {
             ContentType.Png
         ];
 
-        const imageAttachment = this.#messageService.getAttachmentsByType(this.#interaction, imageTypes)[0];
+        const imageAttachment = this.#replyService.getAttachmentsByType(this.#interaction, imageTypes)[0];
         const jsonRequest = imageAttachment.description;
         const renderRequest = SerializableRenderRequest.fromJson(jsonRequest);
 

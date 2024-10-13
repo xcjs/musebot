@@ -3,7 +3,6 @@ import { Client as DiscordClient } from 'discord.js';
 import { IEnvironmentSettings } from './IEnvironmentSettings.js';
 import { Automatic1111ReplyService } from './clients/chat/discord/automatic1111/Automatic1111ReplyService.js';
 import { EasyDiffusionReplyService } from './clients/chat/discord/easy-diffusion/EasyDiffusionReplyService.js';
-import { MessageService } from './clients/chat/discord/MessageService.js';
 import { OllamaReplyService } from './clients/chat/discord/ollama/OllamaReplyService.js';
 import { OllamaStreamingReplyService } from './clients/chat/discord/ollama/OllamaStreamingReplyService.js';
 import { ReplyService } from './clients/chat/discord/replies/ReplyService.js';
@@ -25,7 +24,6 @@ export interface IServiceContainer {
 
     // Transitives ------------------------------------------------------------/
 
-    messageService: MessageService;
     replyService: ReplyService;
     automatic1111Client: Automatic1111Client;
     automatic1111ReplyService: Automatic1111ReplyService;

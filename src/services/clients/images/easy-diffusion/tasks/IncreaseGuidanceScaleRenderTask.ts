@@ -8,7 +8,6 @@ import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { EasyDiffusionReplyService } from '../../../chat/discord/easy-diffusion/EasyDiffusionReplyService.js';
-import { MessageService } from '../../../chat/discord/MessageService.js';
 import { ReplyService } from '../../../chat/discord/replies/ReplyService.js';
 import { EasyDiffusionClient } from '../EasyDiffusionClient.js';
 import { RenderRequest } from '../models/requests/RenderRequest.js';
@@ -17,7 +16,6 @@ export class IncreaseGuidanceScaleRenderTask extends BaseTask {
     #environmentSettings: IEnvironmentSettings;
     #easyDiffusionClient: EasyDiffusionClient;
     #easyDiffusionReplyService: EasyDiffusionReplyService;
-    #messageService: MessageService;
     #replyService: ReplyService;
 
     #interaction: ButtonInteraction;
@@ -34,7 +32,6 @@ export class IncreaseGuidanceScaleRenderTask extends BaseTask {
         this.#environmentSettings = services.environmentSettings;
         this.#easyDiffusionClient = services.easyDiffusionClient;
         this.#easyDiffusionReplyService = services.easyDiffusionReplyService;
-        this.#messageService = services.messageService;
         this.#replyService = services.replyService;
 
         this.#interaction = interaction;
@@ -51,7 +48,7 @@ export class IncreaseGuidanceScaleRenderTask extends BaseTask {
             ContentType.Png
         ];
 
-        const imageAttachment = this.#messageService.getAttachmentsByType(this.#interaction, imageTypes)[0];
+        const imageAttachment = this.#replyService.getAttachmentsByType(this.#interaction, imageTypes)[0];
 
         let request: RenderRequest = null;
 

@@ -5,7 +5,6 @@ import { DiscordAutomatic1111Client } from './clients/chat/discord/automatic1111
 import { DiscordEasyDiffusionClient } from './clients/chat/discord/easy-diffusion/DiscordEasyDiffusionClient.js';
 import { EasyDiffusionReplyService } from './clients/chat/discord/easy-diffusion/EasyDiffusionReplyService.js';
 import { DiscordConstants } from './clients/chat/discord/enums/DiscordConstants.js';
-import { MessageService } from './clients/chat/discord/MessageService.js';
 import { DiscordOllamaClient } from './clients/chat/discord/ollama/DiscordOllamaClient.js';
 import { OllamaReplyService } from './clients/chat/discord/ollama/OllamaReplyService.js';
 import { OllamaStreamingReplyService } from './clients/chat/discord/ollama/OllamaStreamingReplyService.js';
@@ -60,10 +59,6 @@ export class ServiceContainer implements IServiceContainer {
     }
 
     // Transitives ------------------------------------------------------------/
-
-    get messageService(): MessageService {
-        return new MessageService();
-    }
 
     get replyService(): ReplyService {
         return new ReplyService(this);
