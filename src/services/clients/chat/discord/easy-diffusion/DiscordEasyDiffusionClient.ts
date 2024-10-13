@@ -21,14 +21,14 @@ import { ShowSourceTask } from '../../../images/easy-diffusion/tasks/ShowSourceT
 import { UpscaleRenderTask } from '../../../images/easy-diffusion/tasks/UpscaleRenderTask.js';
 import { ITypingService } from '../../ITypingService.js';
 import { DiscordPresenceStatus } from '../enums/DiscordPresenceStatus.js';
-import { ReplyService } from '../replies/ReplyService.js';
+import { IReplyService } from '../../IReplyService.js';
 
 export class DiscordEasyDiffusionClient extends BaseDiscordClient {
     #services: IServiceContainer;
 
     #environmentSettings: IEnvironmentSettings;
     #discordClient: DiscordClient;
-    #replyService: ReplyService;
+    #replyService: IReplyService;
     #typingService: ITypingService;
     #taskQueue: ITaskQueue;
 

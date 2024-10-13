@@ -5,13 +5,13 @@ import { Automatic1111ReplyService } from './clients/chat/discord/automatic1111/
 import { EasyDiffusionReplyService } from './clients/chat/discord/easy-diffusion/EasyDiffusionReplyService.js';
 import { OllamaReplyService } from './clients/chat/discord/ollama/OllamaReplyService.js';
 import { OllamaStreamingReplyService } from './clients/chat/discord/ollama/OllamaStreamingReplyService.js';
-import { ReplyService } from './clients/chat/discord/replies/ReplyService.js';
 import { Automatic1111Client } from './clients/images/automatic1111/Automatic1111Client.js';
 import { EasyDiffusionClient } from './clients/images/easy-diffusion/EasyDiffusionClient.js';
 import { OllamaClient } from './clients/text/ollama/OllamaClient.js';
 import { IFeatureService } from './features/IFeatureService.js';
 import { ITaskQueue } from './tasks/ITaskQueue.js';
 import { ITypingService } from './clients/chat/ITypingService.js';
+import { IReplyService } from './clients/chat/IReplyService.js';
 
 export interface IServiceContainer {
     // Singletons -------------------------------------------------------------/
@@ -24,7 +24,7 @@ export interface IServiceContainer {
 
     // Transitives ------------------------------------------------------------/
 
-    replyService: ReplyService;
+    replyService: IReplyService;
     automatic1111Client: Automatic1111Client;
     automatic1111ReplyService: Automatic1111ReplyService;
     easyDiffusionClient: EasyDiffusionClient;

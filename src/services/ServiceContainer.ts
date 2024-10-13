@@ -24,6 +24,7 @@ import { ITypingService } from './clients/chat/ITypingService.js';
 import { IGenerativeChatClient } from './clients/chat/IGenerativeChatClient.js';
 import { BotFunction } from '../enums/BotFunction.js';
 import { StableDiffusionApiType } from './clients/images/stable-diffusion/enums/StableDiffusionApiType.js';
+import { IReplyService } from './clients/chat/IReplyService.js';
 
 export class ServiceContainer implements IServiceContainer {
     // Singletons -------------------------------------------------------------/
@@ -60,7 +61,7 @@ export class ServiceContainer implements IServiceContainer {
 
     // Transitives ------------------------------------------------------------/
 
-    get replyService(): ReplyService {
+    get replyService(): IReplyService {
         return new ReplyService(this);
     }
 

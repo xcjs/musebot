@@ -8,10 +8,10 @@ import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { Automatic1111ReplyService } from '../../../chat/discord/automatic1111/Automatic1111ReplyService.js';
-import { ReplyService } from '../../../chat/discord/replies/ReplyService.js';
 import { Automatic1111Client } from '../Automatic1111Client.js';
 import { Txt2ImgOptionsFactory } from '../factories/Txt2ImgOptionsFactory.js';
 import { JsonRenderTask } from './JsonRenderTask.js';
+import { IReplyService } from '../../../chat/IReplyService.js';
 
 export class PromptRenderTask extends BaseTask {
     #services: IServiceContainer;
@@ -20,7 +20,7 @@ export class PromptRenderTask extends BaseTask {
     #discordClient: DiscordClient;
     #automatic1111Client: Automatic1111Client;
     #automatic1111ReplyService: Automatic1111ReplyService;
-    #replyService: ReplyService;
+    #replyService: IReplyService;
     #taskQueue: ITaskQueue;
 
     #message: Message;

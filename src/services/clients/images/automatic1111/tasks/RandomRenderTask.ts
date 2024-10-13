@@ -10,10 +10,10 @@ import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { Automatic1111ReplyService } from '../../../chat/discord/automatic1111/Automatic1111ReplyService.js';
-import { ReplyService } from '../../../chat/discord/replies/ReplyService.js';
 import { OllamaClient } from '../../../text/ollama/OllamaClient.js';
 import { Automatic1111Client } from '../Automatic1111Client.js';
 import { Txt2ImgOptionsFactory } from '../factories/Txt2ImgOptionsFactory.js';
+import { IReplyService } from '../../../chat/IReplyService.js';
 
 export class RandomRenderTask extends BaseTask {
     #services: IServiceContainer;
@@ -21,7 +21,7 @@ export class RandomRenderTask extends BaseTask {
     #environmentSettings: IEnvironmentSettings;
     #automatic1111Client: Automatic1111Client;
     #automatic1111ReplyService: Automatic1111ReplyService;
-    #replyService: ReplyService;
+    #replyService: IReplyService;
 
     #interaction: ButtonInteraction;
 

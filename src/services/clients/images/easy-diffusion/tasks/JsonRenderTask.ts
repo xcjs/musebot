@@ -6,14 +6,14 @@ import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { EasyDiffusionReplyService } from '../../../chat/discord/easy-diffusion/EasyDiffusionReplyService.js';
-import { ReplyService } from '../../../chat/discord/replies/ReplyService.js';
 import { RenderRequest } from '../models/requests/RenderRequest.js';
+import { IReplyService } from '../../../chat/IReplyService.js';
 
 export class JsonRenderTask extends BaseTask {
     #environmentSettings: IEnvironmentSettings;
     #discordClient: DiscordClient;
     #easyDiffusionReplyService: EasyDiffusionReplyService;
-    #replyService: ReplyService;
+    #replyService: IReplyService;
 
     #message: Message;
 

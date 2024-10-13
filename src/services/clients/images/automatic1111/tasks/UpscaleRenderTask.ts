@@ -8,14 +8,14 @@ import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { Automatic1111ReplyService } from '../../../chat/discord/automatic1111/Automatic1111ReplyService.js';
 import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.js';
-import { ReplyService } from '../../../chat/discord/replies/ReplyService.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 import { Txt2ImgOptionsRequest } from '../models/requests/Txt2ImgOptionsRequest.js';
+import { IReplyService } from '../../../chat/IReplyService.js';
 
 export class UpscaleRenderTask extends BaseTask {
     #environmentSettings: IEnvironmentSettings;
     #automatic1111ReplyService: Automatic1111ReplyService;
-    #replyService: ReplyService;
+    #replyService: IReplyService;
 
     #interaction: ButtonInteraction;
 

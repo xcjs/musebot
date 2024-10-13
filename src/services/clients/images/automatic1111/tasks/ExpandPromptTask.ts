@@ -7,17 +7,17 @@ import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
-import { ReplyService } from '../../../chat/discord/replies/ReplyService.js';
 import { OllamaClient } from '../../../text/ollama/OllamaClient.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 import { AttachRenderTask } from './AttachRenderTask.js';
+import { IReplyService } from '../../../chat/IReplyService.js';
 
 export class ExpandPromptTask extends BaseTask {
     #services: IServiceContainer;
 
     #environmentSettings: IEnvironmentSettings;
     #ollamaClient: OllamaClient;
-    #replyService: ReplyService;
+    #replyService: IReplyService;
     #taskQueue: ITaskQueue;
 
     #interaction: ButtonInteraction;
