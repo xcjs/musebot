@@ -17,8 +17,9 @@ import { OllamaClient } from '../OllamaClient.js';
 import { AttachRenderTask as A1AttachRenderTask } from '../../../images/automatic1111/tasks/AttachRenderTask.js';
 import { AttachRenderTask as EdAttachRenderTask } from '../../../images/easy-diffusion/tasks/AttachRenderTask.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
+import { IPromptResponseTask } from '../../tasks/IPromptResponseTask.js';
 
-export class PromptResponseTask extends BaseTask {
+export class PromptResponseTask extends BaseTask implements IPromptResponseTask {
     #services: IServiceContainer;
 
     #environmentSettings: IEnvironmentSettings;

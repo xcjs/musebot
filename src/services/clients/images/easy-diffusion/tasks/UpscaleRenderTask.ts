@@ -11,8 +11,9 @@ import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.j
 import { RenderRequest } from '../models/requests/RenderRequest.js';
 import { UpscaledRenderRequest } from '../models/requests/UpscaledRenderRequest.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
+import { IUpscaleRenderTask } from '../../tasks/IUpscaleRenderTask.js';
 
-export class UpscaleRenderTask extends BaseTask {
+export class UpscaleRenderTask extends BaseTask implements IUpscaleRenderTask {
     #environmentSettings: IEnvironmentSettings;
     #easyDiffusionReplyService: EasyDiffusionReplyService;
     #replyService: IReplyService;

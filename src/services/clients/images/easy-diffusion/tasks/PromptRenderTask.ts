@@ -12,8 +12,9 @@ import { EasyDiffusionClient } from '../EasyDiffusionClient.js';
 import { RenderRequest } from '../models/requests/RenderRequest.js';
 import { JsonRenderTask } from './JsonRenderTask.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
+import { IPromptRenderTask } from '../../tasks/IPromptRenderTask.js';
 
-export class PromptRenderTask extends BaseTask {
+export class PromptRenderTask extends BaseTask implements IPromptRenderTask {
     #services: IServiceContainer;
 
     #environmentSettings: IEnvironmentSettings;

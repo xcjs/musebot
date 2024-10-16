@@ -8,8 +8,9 @@ import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { EasyDiffusionReplyService } from '../../../chat/discord/easy-diffusion/EasyDiffusionReplyService.js';
 import { RenderRequest } from '../models/requests/RenderRequest.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
+import { IJsonRenderTask } from '../../tasks/IJsonRenderTask.js';
 
-export class JsonRenderTask extends BaseTask {
+export class JsonRenderTask extends BaseTask implements IJsonRenderTask {
     #environmentSettings: IEnvironmentSettings;
     #discordClient: DiscordClient;
     #easyDiffusionReplyService: EasyDiffusionReplyService;

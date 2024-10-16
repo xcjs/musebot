@@ -10,8 +10,9 @@ import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { Automatic1111ReplyService } from '../../../chat/discord/automatic1111/Automatic1111ReplyService.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
+import { IShowSourceRenderTask } from '../../tasks/IShowSourceRenderTask.js';
 
-export class ShowSourceTask extends BaseTask {
+export class ShowSourceTask extends BaseTask implements IShowSourceRenderTask {
     #environmentSettings: IEnvironmentSettings;
     #automatic1111ReplyService: Automatic1111ReplyService;
     #replyService: IReplyService;

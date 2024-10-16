@@ -11,8 +11,9 @@ import { OllamaClient } from '../../../text/ollama/OllamaClient.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 import { AttachRenderTask } from './AttachRenderTask.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
+import { IExpandPromptTask } from '../../tasks/IExpandPromptTask.js';
 
-export class ExpandPromptTask extends BaseTask {
+export class ExpandPromptTask extends BaseTask implements IExpandPromptTask {
     #services: IServiceContainer;
 
     #environmentSettings: IEnvironmentSettings;

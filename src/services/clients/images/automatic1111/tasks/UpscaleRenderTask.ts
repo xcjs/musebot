@@ -11,8 +11,9 @@ import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.j
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 import { Txt2ImgOptionsRequest } from '../models/requests/Txt2ImgOptionsRequest.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
+import { IUpscaleRenderTask } from '../../tasks/IUpscaleRenderTask.js';
 
-export class UpscaleRenderTask extends BaseTask {
+export class UpscaleRenderTask extends BaseTask implements IUpscaleRenderTask {
     #environmentSettings: IEnvironmentSettings;
     #automatic1111ReplyService: Automatic1111ReplyService;
     #replyService: IReplyService;

@@ -10,8 +10,9 @@ import { EasyDiffusionReplyService } from '../../../chat/discord/easy-diffusion/
 import { EasyDiffusionClient } from '../EasyDiffusionClient.js';
 import { RenderRequest } from '../models/requests/RenderRequest.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
+import { IAttachRenderTask } from '../../tasks/IAttachRenderTask.js';
 
-export class AttachRenderTask extends BaseTask {
+export class AttachRenderTask extends BaseTask implements IAttachRenderTask {
     #environmentSettings: IEnvironmentSettings;
     #easyDiffusionClient: EasyDiffusionClient;
     #easyDiffusionReplyService: EasyDiffusionReplyService;

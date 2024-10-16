@@ -12,8 +12,9 @@ import { SerializableRenderRequest } from '../../stable-diffusion/models/Seriali
 import { Automatic1111Client } from '../Automatic1111Client.js';
 import { Txt2ImgOptionsRequest } from '../models/requests/Txt2ImgOptionsRequest.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
+import { IIncreaseGuidanceScaleRenderTask } from '../../tasks/IIncreaseGuidanceScaleRenderTask.js';
 
-export class IncreaseGuidanceScaleRenderTask extends BaseTask {
+export class IncreaseGuidanceScaleRenderTask extends BaseTask implements IIncreaseGuidanceScaleRenderTask {
     #environmentSettings: IEnvironmentSettings;
     #automatic1111Client: Automatic1111Client;
     #automatic1111ReplyService: Automatic1111ReplyService;

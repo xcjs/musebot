@@ -12,8 +12,9 @@ import { Automatic1111Client } from '../Automatic1111Client.js';
 import { Txt2ImgOptionsFactory } from '../factories/Txt2ImgOptionsFactory.js';
 import { JsonRenderTask } from './JsonRenderTask.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
+import { IPromptRenderTask } from '../../tasks/IPromptRenderTask.js';
 
-export class PromptRenderTask extends BaseTask {
+export class PromptRenderTask extends BaseTask implements IPromptRenderTask {
     #services: IServiceContainer;
 
     #environmentSettings: IEnvironmentSettings;

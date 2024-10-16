@@ -14,8 +14,9 @@ import { OllamaClient } from '../../../text/ollama/OllamaClient.js';
 import { Automatic1111Client } from '../Automatic1111Client.js';
 import { Txt2ImgOptionsFactory } from '../factories/Txt2ImgOptionsFactory.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
+import { IRandomRenderTask } from '../../tasks/IRandomRenderTask.js';
 
-export class RandomRenderTask extends BaseTask {
+export class RandomRenderTask extends BaseTask implements IRandomRenderTask {
     #services: IServiceContainer;
 
     #environmentSettings: IEnvironmentSettings;

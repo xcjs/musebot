@@ -11,8 +11,9 @@ import { EasyDiffusionReplyService } from '../../../chat/discord/easy-diffusion/
 import { EasyDiffusionClient } from '../EasyDiffusionClient.js';
 import { RenderRequest } from '../models/requests/RenderRequest.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
+import { IIncreaseGuidanceScaleRenderTask } from '../../tasks/IIncreaseGuidanceScaleRenderTask.js';
 
-export class IncreaseGuidanceScaleRenderTask extends BaseTask {
+export class IncreaseGuidanceScaleRenderTask extends BaseTask implements IIncreaseGuidanceScaleRenderTask {
     #environmentSettings: IEnvironmentSettings;
     #easyDiffusionClient: EasyDiffusionClient;
     #easyDiffusionReplyService: EasyDiffusionReplyService;

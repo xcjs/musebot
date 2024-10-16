@@ -1,18 +1,17 @@
 import { AttachmentBuilder, ButtonInteraction } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
-import { ContentType } from '../../../../../enums/ContentType.js';
-import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
-import { IServiceContainer } from '../../../../IServiceContainer.js';
-import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
-import { BaseTask } from '../../../../tasks/models/BaseTask.js';
-import { EasyDiffusionReplyService } from '../../../chat/discord/easy-diffusion/EasyDiffusionReplyService.js';
-import { RenderRequest } from '../models/requests/RenderRequest.js';
-import { IReplyService } from '../../../chat/IReplyService.js';
-import { IShowSourceRenderTask } from '../../tasks/IShowSourceRenderTask.js';
+import { BaseTask } from '../../../tasks/models/BaseTask.js';
+import { TaskStatus } from '../../../tasks/enums/TaskStatus.js';
+import { BufferEncoding } from '../../../../enums/BufferEncoding.js';
+import { ContentType } from '../../../../enums/ContentType.js';
+import { IServiceContainer } from '../../../IServiceContainer.js';
+import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
+import { EasyDiffusionReplyService } from '../../chat/discord/easy-diffusion/EasyDiffusionReplyService.js';
+import { RenderRequest } from '../../images/easy-diffusion/models/requests/RenderRequest.js';
+import { IReplyService } from '../../chat/IReplyService.js';
 
-export class ShowSourceTask extends BaseTask implements IShowSourceRenderTask {
+export class ShowSourceTask extends BaseTask {
     #environmentSettings: IEnvironmentSettings;
     #easyDiffusionReplyService: EasyDiffusionReplyService;
     #replyService: IReplyService;

@@ -8,8 +8,9 @@ import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { Automatic1111ReplyService } from '../../../chat/discord/automatic1111/Automatic1111ReplyService.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
+import { IJsonRenderTask } from '../../tasks/IJsonRenderTask.js';
 
-export class JsonRenderTask extends BaseTask {
+export class JsonRenderTask extends BaseTask implements IJsonRenderTask {
     #environmentSettings: IEnvironmentSettings;
     #discordClient: DiscordClient;
     #automatic1111ReplyService: Automatic1111ReplyService;

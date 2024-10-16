@@ -13,8 +13,9 @@ import { SerializableRenderRequest } from '../../stable-diffusion/models/Seriali
 import { Automatic1111Client } from '../Automatic1111Client.js';
 import { Txt2ImgOptionsRequest } from '../models/requests/Txt2ImgOptionsRequest.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
+import { IRetryRenderTask } from '../../tasks/IRetryRenderTask.js';
 
-export class RetryRenderTask extends BaseTask {
+export class RetryRenderTask extends BaseTask implements IRetryRenderTask {
     #environmentSettings: IEnvironmentSettings;
     #automatic1111Client: Automatic1111Client;
     #automatic1111ReplyService: Automatic1111ReplyService;
