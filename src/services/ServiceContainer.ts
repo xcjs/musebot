@@ -1,4 +1,4 @@
-import { Client as DiscordClient, GatewayIntentBits, Partials } from 'discord.js';
+import { ButtonInteraction, Client as DiscordClient, GatewayIntentBits, Message, Partials } from 'discord.js';
 
 import { Automatic1111ReplyService } from './clients/chat/discord/automatic1111/Automatic1111ReplyService.js';
 import { DiscordAutomatic1111Client } from './clients/chat/discord/automatic1111/DiscordAutomatic1111Client.js';
@@ -25,6 +25,9 @@ import { IGenerativeChatClient } from './clients/chat/IGenerativeChatClient.js';
 import { BotFunction } from '../enums/BotFunction.js';
 import { StableDiffusionApiType } from './clients/images/stable-diffusion/enums/StableDiffusionApiType.js';
 import { IReplyService } from './clients/chat/IReplyService.js';
+import { AttachRenderTask as A1AttachRenderTask } from './clients/images/automatic1111/tasks/AttachRenderTask.js';
+import { AttachRenderTask as EdAttachRenderTask } from './clients/images/easy-diffusion/tasks/AttachRenderTask.js';
+import { IAttachRenderTask } from './clients/images/tasks/IAttachRenderTask.js';
 
 export class ServiceContainer implements IServiceContainer {
     // Singletons -------------------------------------------------------------/
@@ -91,6 +94,61 @@ export class ServiceContainer implements IServiceContainer {
 
     get ollamaStreamingReplyService(): OllamaStreamingReplyService {
         return new OllamaStreamingReplyService(this);
+    }
+
+    // Factories --------------------------------------------------------------/
+
+    getAttachRenderTask(
+        interaction: ButtonInteraction | Message,
+        prompt: string,
+        content: string | null = null,
+        isEdit: boolean = false): IAttachRenderTask {
+        switch (this.#environmentSettings.stableDiffusionApiType) {
+            case StableDiffusionApiType.Automatic1111:
+                return new A1AttachRenderTask(this, interaction, prompt, content, isEdit);
+            case StableDiffusionApiType.EasyDiffusion:
+                return new EdAttachRenderTask(this, interaction, prompt, content, isEdit);
+        }
+    }
+
+    getDecreaseGuidanceScaleRenderTask() {
+
+    }
+
+    getExpandPromptTask() {
+
+    }
+
+    getIncreaseGuidanceScaleRenderTask() {
+
+    }
+
+    getJsonRenderTask() {
+
+    }
+
+    getPromptRenderTask() {
+
+    }
+
+    getRandomRenderTask() {
+
+    }
+
+    getRetryRenderTask() {
+
+    }
+
+    getShowSourceTask() {
+
+    }
+
+    getUpscaleRenderTask() {
+
+    }
+
+    getPromptResponseTask() {
+
     }
 
     constructor() {
