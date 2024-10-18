@@ -60,20 +60,23 @@ export class DecreaseGuidanceScaleRenderTask extends BaseTask implements IDecrea
         this.#logger(LogLevel.Info, `Using ${model} as the selected image generation model.`);
 
         let request: Txt2ImgOptionsRequest = null;
+        let cfgScaleValue = 0;
 
         if (imageAttachment?.description) {
             request = SerializableRenderRequest.fromJson(imageAttachment.description).toTxt2ImgOptionsRequest();
 
             if (model.toLocaleLowerCase().startsWith('flux')) {
                 request.distilled_cfg_scale -= this.#environmentSettings.stableDiffusionGuidanceScaleInterval;
+                cfgScaleValue = request.distilled_cfg_scale;
             } else {
                 request.cfg_scale -= this.#environmentSettings.stableDiffusionGuidanceScaleInterval;
+                cfgScaleValue = request.cfg_scale;
             }
         }
 
         const renderData = await this.#automatic1111Client.render(request, model);
-        const content = `The guidance scale was decreased from ${request.distilled_cfg_scale
-            + this.#environmentSettings.stableDiffusionGuidanceScaleInterval} to ${request.distilled_cfg_scale} by ${this.#interaction.member}.`;
+        const content = `The guidance scale was decreased from ${cfgScaleValue
+            + this.#environmentSettings.stableDiffusionGuidanceScaleInterval} to ${cfgScaleValue} by ${this.#interaction.member}.`;
 
         await this.#automatic1111ReplyService.reply(this.#interaction, renderData, content);
     }
