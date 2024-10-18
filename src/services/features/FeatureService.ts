@@ -1,9 +1,10 @@
-import { EnvironmentSettings } from '../EnvironmentSettings.js';
+import { IEnvironmentSettings } from '../IEnvironmentSettings.js';
 import { IServiceContainer } from '../IServiceContainer.js';
+import { IFeatureService } from './IFeatureService.js';
 import { SupportedFeature } from './enum/SupportedFeature.js';
 
-export class FeatureService {
-    #environmentSettings: EnvironmentSettings;
+export class FeatureService implements IFeatureService {
+    #environmentSettings: IEnvironmentSettings;
 
     #supportedFeatures: Array<SupportedFeature> = [];
 

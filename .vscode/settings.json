@@ -39,5 +39,6 @@
         "upscaler",
         "upscaling"
     ],
-    "cmake.ignoreCMakeListsMissing": true
+    "cmake.ignoreCMakeListsMissing": true,
+    "typescript.preferences.importModuleSpecifierEnding": "js"
 }

@@ -1,22 +1,20 @@
 import { AttachmentBuilder, ButtonInteraction } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { EnvironmentSettings } from '../../../EnvironmentSettings.js';
-import { EasyDiffusionReplyService } from '../../discord/easy-diffusion/EasyDiffusionReplyService.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { TaskStatus } from '../../../tasks/enums/TaskStatus.js';
 import { BufferEncoding } from '../../../../enums/BufferEncoding.js';
 import { ContentType } from '../../../../enums/ContentType.js';
-import { RenderRequest } from '../models/requests/RenderRequest.js';
-import { ReplyService } from '../../discord/services/ReplyService.js';
-import { MessageService } from '../../discord/services/MessageService.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
+import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
+import { EasyDiffusionReplyService } from '../../chat/discord/easy-diffusion/EasyDiffusionReplyService.js';
+import { RenderRequest } from '../../images/easy-diffusion/models/requests/RenderRequest.js';
+import { IReplyService } from '../../chat/IReplyService.js';
 
 export class ShowSourceTask extends BaseTask {
-    #environmentSettings: EnvironmentSettings;
+    #environmentSettings: IEnvironmentSettings;
     #easyDiffusionReplyService: EasyDiffusionReplyService;
-    #messageService: MessageService;
-    #replyService: ReplyService;
+    #replyService: IReplyService;
 
     #interaction: ButtonInteraction;
 
@@ -31,7 +29,6 @@ export class ShowSourceTask extends BaseTask {
 
         this.#environmentSettings = services.environmentSettings;
         this.#easyDiffusionReplyService = services.easyDiffusionReplyService;
-        this.#messageService = services.messageService;
         this.#replyService = services.replyService;
 
         this.#interaction = interaction;
@@ -46,7 +43,7 @@ export class ShowSourceTask extends BaseTask {
             ContentType.Png
         ];
 
-        const imageAttachment = this.#messageService.getAttachmentsByType(this.#interaction, imageTypes)[0];
+        const imageAttachment = this.#replyService.getAttachmentsByType(this.#interaction, imageTypes)[0];
         const jsonRequest = imageAttachment.description;
         const renderRequest = RenderRequest.fromJson(jsonRequest);
 
