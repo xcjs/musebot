@@ -10,9 +10,9 @@ import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { EasyDiffusionReplyService } from '../../../chat/discord/easy-diffusion/EasyDiffusionReplyService.js';
 import { RenderRequest } from '../models/requests/RenderRequest.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
-import { IShowSourceRenderTask } from '../../tasks/IShowSourceRenderTask.js';
+import { IShowSourceTask } from '../../tasks/IShowSourceTask.js';
 
-export class ShowSourceTask extends BaseTask implements IShowSourceRenderTask {
+export class ShowSourceTask extends BaseTask implements IShowSourceTask {
     #environmentSettings: IEnvironmentSettings;
     #easyDiffusionReplyService: EasyDiffusionReplyService;
     #replyService: IReplyService;

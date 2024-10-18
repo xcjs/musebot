@@ -28,6 +28,15 @@ import { IReplyService } from './clients/chat/IReplyService.js';
 import { AttachRenderTask as A1AttachRenderTask } from './clients/images/automatic1111/tasks/AttachRenderTask.js';
 import { AttachRenderTask as EdAttachRenderTask } from './clients/images/easy-diffusion/tasks/AttachRenderTask.js';
 import { IAttachRenderTask } from './clients/images/tasks/IAttachRenderTask.js';
+import { IDecreaseGuidanceScaleRenderTask } from './clients/images/tasks/IDecreaseGuidanceScaleRenderTask.js';
+import { IExpandPromptTask } from './clients/images/tasks/IExpandPromptTask.js';
+import { IIncreaseGuidanceScaleRenderTask } from './clients/images/tasks/IIncreaseGuidanceScaleRenderTask.js';
+import { IJsonRenderTask } from './clients/images/tasks/IJsonRenderTask.js';
+import { IPromptRenderTask } from './clients/images/tasks/IPromptRenderTask.js';
+import { IRandomRenderTask } from './clients/images/tasks/IRandomRenderTask.js';
+import { IRetryRenderTask } from './clients/images/tasks/IRetryRenderTask.js';
+import { IShowSourceTask } from './clients/images/tasks/IShowSourceTask.js';
+import { IUpscaleRenderTask } from './clients/images/tasks/IUpscaleRenderTask.js';
 
 export class ServiceContainer implements IServiceContainer {
     // Singletons -------------------------------------------------------------/
@@ -96,6 +105,56 @@ export class ServiceContainer implements IServiceContainer {
         return new OllamaStreamingReplyService(this);
     }
 
+    #attachRenderTask: IAttachRenderTask;
+    get attachRenderTask(): IAttachRenderTask {
+        return this.#attachRenderTask;
+    }
+
+    #decreaseGuidanceScaleRenderTask: IDecreaseGuidanceScaleRenderTask;
+    get decreaseGuidanceScaleRenderTask(): IDecreaseGuidanceScaleRenderTask {
+        return this.#decreaseGuidanceScaleRenderTask;
+    }
+
+    #expandPromptTask: IExpandPromptTask;
+    get expandPromptTask(): IExpandPromptTask {
+        return this.#expandPromptTask;
+    }
+
+    #increaseGuidanceScaleRenderTask: IIncreaseGuidanceScaleRenderTask;
+    get increaseGuidanceScaleRenderTask(): IIncreaseGuidanceScaleRenderTask {
+        return this.#increaseGuidanceScaleRenderTask;
+    }
+
+    #jsonRenderTask: IJsonRenderTask;
+    get jsonRenderTask(): IJsonRenderTask {
+        return this.#jsonRenderTask;
+    }
+
+    #promptRenderTask: IPromptRenderTask;
+    get promptRenderTask(): IPromptRenderTask {
+        return this.#promptRenderTask;
+    }
+
+    #randomRenderTask: IRandomRenderTask;
+    get randomRenderTask(): IRandomRenderTask {
+        return this.#randomRenderTask;
+    }
+
+    #retryRenderTask: IRetryRenderTask;
+    get retryRenderTask(): IRetryRenderTask {
+        return this.#retryRenderTask;
+    }
+
+    #showSourceTask: IShowSourceTask;
+    get showSourceTask(): IShowSourceTask {
+        return this.#showSourceTask;
+    }
+
+    #upscaleRenderTask: IUpscaleRenderTask;
+    get upscaleRenderTask(): IUpscaleRenderTask {
+        return this.#upscaleRenderTask;
+    }
+
     // Factories --------------------------------------------------------------/
 
     getAttachRenderTask(
@@ -109,46 +168,6 @@ export class ServiceContainer implements IServiceContainer {
             case StableDiffusionApiType.EasyDiffusion:
                 return new EdAttachRenderTask(this, interaction, prompt, content, isEdit);
         }
-    }
-
-    getDecreaseGuidanceScaleRenderTask() {
-
-    }
-
-    getExpandPromptTask() {
-
-    }
-
-    getIncreaseGuidanceScaleRenderTask() {
-
-    }
-
-    getJsonRenderTask() {
-
-    }
-
-    getPromptRenderTask() {
-
-    }
-
-    getRandomRenderTask() {
-
-    }
-
-    getRetryRenderTask() {
-
-    }
-
-    getShowSourceTask() {
-
-    }
-
-    getUpscaleRenderTask() {
-
-    }
-
-    getPromptResponseTask() {
-
     }
 
     constructor() {
