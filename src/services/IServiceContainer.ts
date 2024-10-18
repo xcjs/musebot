@@ -1,4 +1,4 @@
-import { Client as DiscordClient } from 'discord.js';
+import { ButtonInteraction, Client as DiscordClient, Message } from 'discord.js';
 
 import { IEnvironmentSettings } from './IEnvironmentSettings.js';
 import { Automatic1111ReplyService } from './clients/chat/discord/automatic1111/Automatic1111ReplyService.js';
@@ -12,6 +12,17 @@ import { IFeatureService } from './features/IFeatureService.js';
 import { ITaskQueue } from './tasks/ITaskQueue.js';
 import { ITypingService } from './clients/chat/ITypingService.js';
 import { IReplyService } from './clients/chat/IReplyService.js';
+import { IAttachRenderTask } from './clients/images/tasks/IAttachRenderTask.js';
+import { IDecreaseGuidanceScaleRenderTask } from './clients/images/tasks/IDecreaseGuidanceScaleRenderTask.js';
+import { IExpandPromptTask } from './clients/images/tasks/IExpandPromptTask.js';
+import { IIncreaseGuidanceScaleRenderTask } from './clients/images/tasks/IIncreaseGuidanceScaleRenderTask.js';
+import { IJsonRenderTask } from './clients/images/tasks/IJsonRenderTask.js';
+import { IPromptRenderTask } from './clients/images/tasks/IPromptRenderTask.js';
+import { IRandomRenderTask } from './clients/images/tasks/IRandomRenderTask.js';
+import { IRetryRenderTask } from './clients/images/tasks/IRetryRenderTask.js';
+import { IShowSourceTask } from './clients/images/tasks/IShowSourceTask.js';
+import { IUpscaleRenderTask } from './clients/images/tasks/IUpscaleRenderTask.js';
+import { IPromptResponseTask } from './clients/text/tasks/IPromptResponseTask.js';
 
 export interface IServiceContainer {
     // Singletons -------------------------------------------------------------/
@@ -32,4 +43,23 @@ export interface IServiceContainer {
     ollamaClient: OllamaClient;
     ollamaReplyService: OllamaReplyService;
     ollamaStreamingReplyService: OllamaStreamingReplyService;
+
+    // Factories --------------------------------------------------------------/
+
+    getAttachRenderTask(
+        interaction: ButtonInteraction | Message,
+        prompt: string,
+        content: string | null,
+        isEdit: boolean): IAttachRenderTask;
+
+    getDecreaseGuidanceScaleRenderTask(interaction: ButtonInteraction): IDecreaseGuidanceScaleRenderTask;
+    getExpandPromptTask(interaction: ButtonInteraction): IExpandPromptTask;
+    getIncreaseGuidanceScaleRenderTask(interaction: ButtonInteraction): IIncreaseGuidanceScaleRenderTask;
+    getJsonRenderTask(message: Message): IJsonRenderTask;
+    getPromptRenderTask(message: Message): IPromptRenderTask;
+    getRandomRenderTask(interaction: ButtonInteraction): IRandomRenderTask;
+    getRetryRenderTask(interaction: ButtonInteraction): IRetryRenderTask;
+    getShowSourceTask(interaction: ButtonInteraction): IShowSourceTask;
+    getUpscaleRenderTask(interaction: ButtonInteraction): IUpscaleRenderTask;
+    getPromptResponseTask(message: Message, context: Array<number>): IPromptResponseTask;
 }

@@ -29,16 +29,37 @@ import { AttachRenderTask as A1AttachRenderTask } from './clients/images/automat
 import { AttachRenderTask as EdAttachRenderTask } from './clients/images/easy-diffusion/tasks/AttachRenderTask.js';
 import { IAttachRenderTask } from './clients/images/tasks/IAttachRenderTask.js';
 import { IDecreaseGuidanceScaleRenderTask } from './clients/images/tasks/IDecreaseGuidanceScaleRenderTask.js';
+import { DecreaseGuidanceScaleRenderTask as A1DecreaseGuidanceScaleRenderTask } from './clients/images/automatic1111/tasks/DecreaseGuidanceScaleRenderTask.js';
+import { DecreaseGuidanceScaleRenderTask as EdDecreaseGuidanceScaleRenderTask } from './clients/images/easy-diffusion/tasks/DecreaseGuidanceScaleRenderTask.js';
 import { IExpandPromptTask } from './clients/images/tasks/IExpandPromptTask.js';
+import { SupportedFeature } from './features/enum/SupportedFeature.js';
+import { IncreaseGuidanceScaleRenderTask as A1IncreaseGuidanceScaleRenderTask } from './clients/images/automatic1111/tasks/IncreaseGuidanceScaleRenderTask.js';
+import { IncreaseGuidanceScaleRenderTask as EdIncreaseGuidanceScaleRenderTask } from './clients/images/easy-diffusion/tasks/IncreaseGuidanceScaleRenderTask.js';
 import { IIncreaseGuidanceScaleRenderTask } from './clients/images/tasks/IIncreaseGuidanceScaleRenderTask.js';
 import { IJsonRenderTask } from './clients/images/tasks/IJsonRenderTask.js';
+import { JsonRenderTask as A1JsonRenderTask } from './clients/images/automatic1111/tasks/JsonRenderTask.js';
+import { JsonRenderTask as EdJsonRenderTask } from './clients/images/easy-diffusion/tasks/JsonRenderTask.js';
 import { IPromptRenderTask } from './clients/images/tasks/IPromptRenderTask.js';
+import { PromptRenderTask as A1PromptRenderTask } from './clients/images/automatic1111/tasks/PromptRenderTask.js';
+import { PromptRenderTask as EdPromptRenderTask } from './clients/images/easy-diffusion/tasks/PromptRenderTask.js';
 import { IRandomRenderTask } from './clients/images/tasks/IRandomRenderTask.js';
+import { RandomRenderTask as A1RandomRenderTask } from './clients/images/automatic1111/tasks/RandomRenderTask.js';
+import { RandomRenderTask as EdRandomRenderTask } from './clients/images/easy-diffusion/tasks/RandomRenderTask.js';
 import { IRetryRenderTask } from './clients/images/tasks/IRetryRenderTask.js';
+import { RetryRenderTask as A1RetryRenderTask } from './clients/images/automatic1111/tasks/RetryRenderTask.js';
+import { RetryRenderTask as EdRetryRenderTask } from './clients/images/easy-diffusion/tasks/RetryRenderTask.js';
 import { IShowSourceTask } from './clients/images/tasks/IShowSourceTask.js';
+import { ShowSourceTask as A1ShowSourceTask } from './clients/images/automatic1111/tasks/ShowSourceTask.js';
+import { ShowSourceTask as EdShowSourceTask } from './clients/images/easy-diffusion/tasks/ShowSourceTask.js';
 import { IUpscaleRenderTask } from './clients/images/tasks/IUpscaleRenderTask.js';
+import { UpscaleRenderTask as A1UpscaleRenderTask } from './clients/images/automatic1111/tasks/UpscaleRenderTask.js';
+import { UpscaleRenderTask as EdUpscaleRenderTask } from './clients/images/easy-diffusion/tasks/UpscaleRenderTask.js';
+import { IPromptResponseTask } from './clients/text/tasks/IPromptResponseTask.js';
+import { PromptResponseTask } from './clients/text/ollama/tasks/PromptResponseTask.js';
 
 export class ServiceContainer implements IServiceContainer {
+    #taskNotConfiguredError = 'The task you are attempting to instantiate is not supported by your current configuration.';
+
     // Singletons -------------------------------------------------------------/
 
     #environmentSettings: IEnvironmentSettings;
@@ -105,56 +126,6 @@ export class ServiceContainer implements IServiceContainer {
         return new OllamaStreamingReplyService(this);
     }
 
-    #attachRenderTask: IAttachRenderTask;
-    get attachRenderTask(): IAttachRenderTask {
-        return this.#attachRenderTask;
-    }
-
-    #decreaseGuidanceScaleRenderTask: IDecreaseGuidanceScaleRenderTask;
-    get decreaseGuidanceScaleRenderTask(): IDecreaseGuidanceScaleRenderTask {
-        return this.#decreaseGuidanceScaleRenderTask;
-    }
-
-    #expandPromptTask: IExpandPromptTask;
-    get expandPromptTask(): IExpandPromptTask {
-        return this.#expandPromptTask;
-    }
-
-    #increaseGuidanceScaleRenderTask: IIncreaseGuidanceScaleRenderTask;
-    get increaseGuidanceScaleRenderTask(): IIncreaseGuidanceScaleRenderTask {
-        return this.#increaseGuidanceScaleRenderTask;
-    }
-
-    #jsonRenderTask: IJsonRenderTask;
-    get jsonRenderTask(): IJsonRenderTask {
-        return this.#jsonRenderTask;
-    }
-
-    #promptRenderTask: IPromptRenderTask;
-    get promptRenderTask(): IPromptRenderTask {
-        return this.#promptRenderTask;
-    }
-
-    #randomRenderTask: IRandomRenderTask;
-    get randomRenderTask(): IRandomRenderTask {
-        return this.#randomRenderTask;
-    }
-
-    #retryRenderTask: IRetryRenderTask;
-    get retryRenderTask(): IRetryRenderTask {
-        return this.#retryRenderTask;
-    }
-
-    #showSourceTask: IShowSourceTask;
-    get showSourceTask(): IShowSourceTask {
-        return this.#showSourceTask;
-    }
-
-    #upscaleRenderTask: IUpscaleRenderTask;
-    get upscaleRenderTask(): IUpscaleRenderTask {
-        return this.#upscaleRenderTask;
-    }
-
     // Factories --------------------------------------------------------------/
 
     getAttachRenderTask(
@@ -162,12 +133,161 @@ export class ServiceContainer implements IServiceContainer {
         prompt: string,
         content: string | null = null,
         isEdit: boolean = false): IAttachRenderTask {
+        if (!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)) {
+            throw this.#taskNotConfiguredError;
+        }
+
         switch (this.#environmentSettings.stableDiffusionApiType) {
             case StableDiffusionApiType.Automatic1111:
                 return new A1AttachRenderTask(this, interaction, prompt, content, isEdit);
             case StableDiffusionApiType.EasyDiffusion:
                 return new EdAttachRenderTask(this, interaction, prompt, content, isEdit);
+            default:
+                throw this.#taskNotConfiguredError;
         }
+    }
+
+    getDecreaseGuidanceScaleRenderTask(interaction: ButtonInteraction): IDecreaseGuidanceScaleRenderTask {
+        if (!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)) {
+            throw this.#taskNotConfiguredError;
+        }
+
+        switch (this.#environmentSettings.stableDiffusionApiType) {
+            case StableDiffusionApiType.Automatic1111:
+                return new A1DecreaseGuidanceScaleRenderTask(this, interaction);
+            case StableDiffusionApiType.EasyDiffusion:
+                return new EdDecreaseGuidanceScaleRenderTask(this, interaction);
+            default:
+                throw this.#taskNotConfiguredError;
+        }
+    }
+
+    getExpandPromptTask(interaction: ButtonInteraction): IExpandPromptTask {
+        if(!this.#featureService.hasFeature(SupportedFeature.ImagesAndText)) {
+            throw this.#taskNotConfiguredError;
+        }
+
+        switch (this.#environmentSettings.stableDiffusionApiType) {
+            case StableDiffusionApiType.Automatic1111:
+                return new A1DecreaseGuidanceScaleRenderTask(this, interaction);
+            case StableDiffusionApiType.EasyDiffusion:
+                return new EdDecreaseGuidanceScaleRenderTask(this, interaction);
+            default:
+                throw this.#taskNotConfiguredError;
+        }
+    }
+
+    getIncreaseGuidanceScaleRenderTask(interaction: ButtonInteraction): IIncreaseGuidanceScaleRenderTask {
+        if (!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)) {
+            throw this.#taskNotConfiguredError;
+        }
+
+        switch (this.#environmentSettings.stableDiffusionApiType) {
+            case StableDiffusionApiType.Automatic1111:
+                return new A1IncreaseGuidanceScaleRenderTask(this, interaction);
+            case StableDiffusionApiType.EasyDiffusion:
+                return new EdIncreaseGuidanceScaleRenderTask(this, interaction);
+            default:
+                throw this.#taskNotConfiguredError;
+        }
+    }
+
+    getJsonRenderTask(message: Message): IJsonRenderTask {
+        if (!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)) {
+            throw this.#taskNotConfiguredError;
+        }
+
+        switch (this.#environmentSettings.stableDiffusionApiType) {
+            case StableDiffusionApiType.Automatic1111:
+                return new A1JsonRenderTask(this, message);
+            case StableDiffusionApiType.EasyDiffusion:
+                return new EdJsonRenderTask(this, message);
+            default:
+                throw this.#taskNotConfiguredError;
+        }
+    }
+
+    getPromptRenderTask(message: Message): IPromptRenderTask {
+        if (!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)) {
+            throw this.#taskNotConfiguredError;
+        }
+
+        switch (this.#environmentSettings.stableDiffusionApiType) {
+            case StableDiffusionApiType.Automatic1111:
+                return new A1PromptRenderTask(this, message);
+            case StableDiffusionApiType.EasyDiffusion:
+                return new EdPromptRenderTask(this, message);
+            default:
+                throw this.#taskNotConfiguredError;
+        }
+    }
+
+    getRandomRenderTask(interaction: ButtonInteraction): IRandomRenderTask {
+        if (!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)) {
+            throw this.#taskNotConfiguredError;
+        }
+
+        switch (this.#environmentSettings.stableDiffusionApiType) {
+            case StableDiffusionApiType.Automatic1111:
+                return new A1RandomRenderTask(this, interaction);
+            case StableDiffusionApiType.EasyDiffusion:
+                return new EdRandomRenderTask(this, interaction);
+            default:
+                throw this.#taskNotConfiguredError;
+        }
+    }
+
+    getRetryRenderTask(interaction: ButtonInteraction): IRetryRenderTask {
+        if (!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)) {
+            throw this.#taskNotConfiguredError;
+        }
+
+        switch (this.#environmentSettings.stableDiffusionApiType) {
+            case StableDiffusionApiType.Automatic1111:
+                return new A1RetryRenderTask(this, interaction);
+            case StableDiffusionApiType.EasyDiffusion:
+                return new EdRetryRenderTask(this, interaction);
+            default:
+                throw this.#taskNotConfiguredError;
+        }
+    }
+
+    getShowSourceTask(interaction: ButtonInteraction): IShowSourceTask {
+        if (!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)) {
+            throw this.#taskNotConfiguredError;
+        }
+
+        switch (this.#environmentSettings.stableDiffusionApiType) {
+            case StableDiffusionApiType.Automatic1111:
+                return new A1ShowSourceTask(this, interaction);
+            case StableDiffusionApiType.EasyDiffusion:
+                return new EdShowSourceTask(this, interaction);
+            default:
+                throw this.#taskNotConfiguredError;
+        }
+    }
+
+    getUpscaleRenderTask(interaction: ButtonInteraction): IUpscaleRenderTask {
+        if (!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)) {
+            throw this.#taskNotConfiguredError;
+        }
+
+        switch (this.#environmentSettings.stableDiffusionApiType) {
+            case StableDiffusionApiType.Automatic1111:
+                return new A1UpscaleRenderTask(this, interaction);
+            case StableDiffusionApiType.EasyDiffusion:
+                return new EdUpscaleRenderTask(this, interaction);
+            default:
+                throw this.#taskNotConfiguredError;
+        }
+    }
+
+    getPromptResponseTask(message: Message, context: Array<number>): IPromptResponseTask {
+        if(!this.#featureService.hasFeature(SupportedFeature.TextGeneration)) {
+            throw this.#taskNotConfiguredError;
+        }
+
+        return new PromptResponseTask(this, message, context);
     }
 
     constructor() {
