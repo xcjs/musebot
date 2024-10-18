@@ -1,7 +1,6 @@
 import { Client as DiscordClient, Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../../../../features/IFeatureService.js';
 import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
@@ -39,7 +38,7 @@ export class PromptResponseTask extends BaseTask implements IPromptResponseTask 
         return `Ollama_${this.#ollamaClient.host}`;
     }
 
-    set onSuccess(callback: (context: Array<number>) => void) {
+    override set onSuccess(callback: (context: Array<number>) => void) {
         this.#onSuccess = callback;
     }
 

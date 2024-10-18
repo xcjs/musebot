@@ -1,11 +1,9 @@
 import { ButtonInteraction, Client as DiscordClient, GatewayIntentBits, Message, Partials } from 'discord.js';
 
 import { Automatic1111ReplyService } from './clients/chat/discord/automatic1111/Automatic1111ReplyService.js';
-import { DiscordAutomatic1111Client } from './clients/chat/discord/automatic1111/DiscordAutomatic1111Client.js';
-import { DiscordEasyDiffusionClient } from './clients/chat/discord/easy-diffusion/DiscordEasyDiffusionClient.js';
 import { EasyDiffusionReplyService } from './clients/chat/discord/easy-diffusion/EasyDiffusionReplyService.js';
 import { DiscordConstants } from './clients/chat/discord/enums/DiscordConstants.js';
-import { DiscordOllamaClient } from './clients/chat/discord/ollama/DiscordOllamaClient.js';
+import { GenerativeTextChatClient } from './clients/chat/discord/GenerativeTextChatClient.js';
 import { OllamaReplyService } from './clients/chat/discord/ollama/OllamaReplyService.js';
 import { OllamaStreamingReplyService } from './clients/chat/discord/ollama/OllamaStreamingReplyService.js';
 import { ReplyService } from './clients/chat/discord/replies/ReplyService.js';
@@ -56,6 +54,7 @@ import { UpscaleRenderTask as A1UpscaleRenderTask } from './clients/images/autom
 import { UpscaleRenderTask as EdUpscaleRenderTask } from './clients/images/easy-diffusion/tasks/UpscaleRenderTask.js';
 import { IPromptResponseTask } from './clients/text/tasks/IPromptResponseTask.js';
 import { PromptResponseTask } from './clients/text/ollama/tasks/PromptResponseTask.js';
+import { GenerativeImageChatClient } from './clients/chat/discord/GenerativeImageChatClient.js';
 
 export class ServiceContainer implements IServiceContainer {
     #taskNotConfiguredError = 'The task you are attempting to instantiate is not supported by your current configuration.';
@@ -314,17 +313,10 @@ export class ServiceContainer implements IServiceContainer {
 
         switch (this.#environmentSettings.botFunction) {
             case BotFunction.Images:
-                switch (this.#environmentSettings.stableDiffusionApiType) {
-                    case StableDiffusionApiType.Automatic1111:
-                        this.#generativeChatClient = new DiscordAutomatic1111Client(this);
-                        break;
-                    case StableDiffusionApiType.EasyDiffusion:
-                        this.#generativeChatClient = new DiscordEasyDiffusionClient(this);
-                        break;
-                }
+                this.#generativeChatClient = new GenerativeImageChatClient(this);
                 break;
             case BotFunction.Text:
-                this.#generativeChatClient = new DiscordOllamaClient(this);
+                this.#generativeChatClient = new GenerativeTextChatClient(this);
                 break;
         }
     }

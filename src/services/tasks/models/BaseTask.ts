@@ -40,6 +40,8 @@ export abstract class BaseTask {
         return this.#createdTime;
     }
 
+    set onSuccess(callback: (context: Array<number>) => void) { }
+
     process(): Promise<void> {
         return Promise.reject('The base process() method must be overridden.');
     }

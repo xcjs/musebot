@@ -1,17 +1,17 @@
 import { ButtonInteraction, Client as DiscordClient, Events, Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { BaseDiscordClient } from '../BaseDiscordClient.js';
-import { BotInteraction } from '../../../../../enums/BotInteraction.js';
-import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
-import { IServiceContainer } from '../../../../IServiceContainer.js';
-import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
-import { PromptResponseTask } from '../../../text/ollama/tasks/PromptResponseTask.js';
-import { ITypingService } from '../../ITypingService.js';
-import { DiscordPresenceStatus } from '../enums/DiscordPresenceStatus.js';
-import { IReplyService } from '../../IReplyService.js';
+import { BaseDiscordClient } from './BaseDiscordClient.js';
+import { BotInteraction } from '../../../../enums/BotInteraction.js';
+import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
+import { IServiceContainer } from '../../../IServiceContainer.js';
+import { ITaskQueue } from '../../../tasks/ITaskQueue.js';
+import { ITypingService } from '../ITypingService.js';
+import { DiscordPresenceStatus } from './enums/DiscordPresenceStatus.js';
+import { IReplyService } from '../IReplyService.js';
+import { BaseTask } from '../../../tasks/models/BaseTask.js';
 
-export class DiscordOllamaClient extends BaseDiscordClient {
+export class GenerativeTextChatClient extends BaseDiscordClient {
     #services: IServiceContainer;
 
     #environmentSettings: IEnvironmentSettings;
@@ -33,7 +33,7 @@ export class DiscordOllamaClient extends BaseDiscordClient {
         this.#replyService = services.replyService;
         this.#taskQueue = services.taskQueue;
 
-        this.logger = new Logger(this.#environmentSettings.isProduction, 'DiscordOllamaClient');
+        this.logger = new Logger(this.#environmentSettings.isProduction, 'GenerativeTextChatClient');
 
         this.#registerEvents();
     }
@@ -66,12 +66,8 @@ export class DiscordOllamaClient extends BaseDiscordClient {
 
         this.logger(LogLevel.Info, 'Replying to message...');
 
-        const promptResponseTask = new PromptResponseTask(
-            this.#services,
-            message,
-            this.#context);
-
-            promptResponseTask.onSuccess = (context: Array<number>) => { this.#context = context; };
+        const promptResponseTask = this.#services.getPromptResponseTask(message, this.#context) as BaseTask;
+        promptResponseTask.onSuccess = (context: Array<number>) => { this.#context = context; };
 
         this.#taskQueue.add(promptResponseTask);
 
