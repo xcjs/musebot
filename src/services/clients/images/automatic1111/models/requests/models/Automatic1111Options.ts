@@ -4,8 +4,9 @@ import { KeyEditDelimiterWhitespace } from '../../../../../automatic1111/models/
 import { ProfilingActivity } from '../../../../../automatic1111/models/requests/enums/ProfilingActivity.js';
 import { RealEsrganEnabledModel } from '../../../../../automatic1111/models/requests/enums/RealEsrganEnabledModel.js';
 import { SaveImagesReplaceAction } from '../../../../../automatic1111/models/requests/enums/SaveImagesReplaceAction.js';
+import { BaseAutomatic1111Options } from './BaseAutomatic1111Options.js';
 
-export class Automatic1111Options {
+export class Automatic1111Options extends BaseAutomatic1111Options {
   samples_save: boolean = true;
   samples_format: ImageFormat = ImageFormat.Png;
   samples_filename_pattern: string = "";
@@ -117,7 +118,6 @@ export class Automatic1111Options {
   training_enable_tensorboard: boolean = false;
   training_tensorboard_save_images: boolean = false;
   training_tensorboard_flush_every: number = 120;
-  sd_model_checkpoint: string = 'string';
   sd_checkpoints_limit: number = 1;
   sd_checkpoints_keep_in_cpu: boolean = true;
   sd_checkpoint_cache: string = '0';
@@ -348,6 +348,6 @@ export class Automatic1111Options {
   extra_options_accordion: boolean = false;
 
   constructor() {
-
+    super();
   }
 }

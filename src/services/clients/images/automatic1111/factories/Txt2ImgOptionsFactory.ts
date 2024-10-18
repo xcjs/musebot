@@ -1,6 +1,6 @@
 import { SamplingMethod } from '../enums/SamplingMethod.js';
 import { ScheduleType } from '../enums/ScheduleType.js';
-import { Automatic1111Options } from '../models/requests/models/Automatic1111Options.js';
+import { BaseAutomatic1111Options } from '../models/requests/models/BaseAutomatic1111Options.js';
 import { Txt2ImgOptionsRequest } from '../models/requests/Txt2ImgOptionsRequest.js';
 
 export class Txt2ImgOptionsFactory {
@@ -51,7 +51,7 @@ export class Txt2ImgOptionsFactory {
             s_tmax: 0,
             s_tmin: 0,
             s_noise: 1,
-            override_settings: new Automatic1111Options(),
+            override_settings: new BaseAutomatic1111Options(),
             override_settings_restore_afterwards: true,
             refiner_checkpoint: null,
             refiner_switch_at: 0,
