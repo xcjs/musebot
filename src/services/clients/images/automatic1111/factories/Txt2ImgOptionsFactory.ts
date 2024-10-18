@@ -35,7 +35,7 @@ export class Txt2ImgOptionsFactory {
             batch_size: 1,
             n_iter: 1,
             steps: 25,
-            cfg_scale:  1,
+            cfg_scale: 5,
             distilled_cfg_scale: 3.5,
             width: 512,
             height: 512,
@@ -92,6 +92,7 @@ export class Txt2ImgOptionsFactory {
         options.steps = 25;
         options.height = 1024;
         options.width = 1024;
+        options.distilled_cfg_scale = 0;
 
         return options;
     }
@@ -105,6 +106,10 @@ export class Txt2ImgOptionsFactory {
         options.steps = 20;
         options.height = 1024;
         options.width = 1024;
+
+        // The CFG scale for Flux corresponds to a negative prompt instead of
+        // positive, and due to its distilled nature, cannot be above 1.
+        options.cfg_scale = 1;
 
         return options;
     }

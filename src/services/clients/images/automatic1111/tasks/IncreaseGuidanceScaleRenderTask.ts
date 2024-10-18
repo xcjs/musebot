@@ -52,18 +52,23 @@ export class IncreaseGuidanceScaleRenderTask extends BaseTask implements IIncrea
 
         const imageAttachment = this.#replyService.getAttachmentsByType(this.#interaction, imageTypes)[0];
 
-        let request: Txt2ImgOptionsRequest = null;
-
-        if(imageAttachment?.description) {
-            request = SerializableRenderRequest.fromJson(imageAttachment.description).toTxt2ImgOptionsRequest();
-            request.distilled_cfg_scale += this.#environmentSettings.stableDiffusionGuidanceScaleInterval;
-        }
-
         const model = this.#environmentSettings.stableDiffusionModels.length > 0 ?
             getRandomArrayEntry(this.#environmentSettings.stableDiffusionModels) :
             getRandomArrayEntry(await this.#automatic1111Client.getModels()).title.split(' ')[0];
 
+        let request: Txt2ImgOptionsRequest = null;
+
         this.#logger(LogLevel.Info, `Using ${model} as the selected EasyDiffusion model.`);
+
+        if (imageAttachment?.description) {
+            request = SerializableRenderRequest.fromJson(imageAttachment.description).toTxt2ImgOptionsRequest();
+
+            if(model.toLocaleLowerCase().startsWith('flux')) {
+                request.distilled_cfg_scale += this.#environmentSettings.stableDiffusionGuidanceScaleInterval;
+            } else {
+                request.cfg_scale += this.#environmentSettings.stableDiffusionGuidanceScaleInterval;
+            }
+        }
 
         const renderData = await this.#automatic1111Client.render(request, model);
         const content = `The guidance scale was increased from ${request.distilled_cfg_scale
