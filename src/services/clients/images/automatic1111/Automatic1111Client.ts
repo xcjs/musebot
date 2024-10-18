@@ -82,7 +82,7 @@ export class Automatic1111Client {
 
     async upscaleImage(request: ExtraSingleImageRequest): Promise<ExtraSingleImageResponse> {
         try {
-            this.#logger(LogLevel.Info, `Upscaling an image...`);
+            this.#logger(LogLevel.Info, `Requesting image upscale...`);
 
             const response = await fetch(new URL('/sdapi/v1/extra-single-image', this.#host), {
                 headers: {
