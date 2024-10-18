@@ -139,7 +139,6 @@ export class Automatic1111Options extends BaseAutomatic1111Options {
   sd3_enable_t5: boolean = false;
   sd_vae_explanation: string =  '<abbr title=\'Variational autoencoder\'>VAE</abbr> is a neural network that transforms a standard <abbr title=\'red/green/blue\'>RGB</abbr>\nimage into latent space representation and back. Latent space representation is what stable diffusion is working on during sampling\n(i.e. when the progress bar is between empty and full). For txt2img, VAE is used to create a resulting image after the sampling is finished.\nFor img2img, VAE is used to process user\'s input image before the sampling, and to create an image after sampling.';
   sd_vae_checkpoint_cache: string = '0';
-  sd_vae: 'Automatic';
   sd_vae_overrides_per_model_preferences: boolean =  true;
   auto_vae_precision_bfloat16: boolean = false;
   auto_vae_precision: boolean = true;
