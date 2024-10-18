@@ -12,10 +12,7 @@ import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.js';
 import { OllamaReplyService } from '../../../chat/discord/ollama/OllamaReplyService.js';
 import { OllamaStreamingReplyService } from '../../../chat/discord/ollama/OllamaStreamingReplyService.js';
-import { StableDiffusionApiType } from '../../../images/stable-diffusion/enums/StableDiffusionApiType.js';
 import { OllamaClient } from '../OllamaClient.js';
-import { AttachRenderTask as A1AttachRenderTask } from '../../../images/automatic1111/tasks/AttachRenderTask.js';
-import { AttachRenderTask as EdAttachRenderTask } from '../../../images/easy-diffusion/tasks/AttachRenderTask.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { IPromptResponseTask } from '../../tasks/IPromptResponseTask.js';
 
@@ -141,25 +138,8 @@ export class PromptResponseTask extends BaseTask implements IPromptResponseTask 
         this.#logger(LogLevel.Info, 'An image will be attached to the Ollama response.');
 
         const lastReply = replies[replies.length - 1];
+        const attachTask = this.#services.getAttachRenderTask(lastReply, prompt, lastReply.content, true) as BaseTask;
 
-        let renderTask: BaseTask;
-
-        if(this.#environmentSettings.stableDiffusionApiType === StableDiffusionApiType.EasyDiffusion) {
-            renderTask = new EdAttachRenderTask(
-                this.#services,
-                lastReply,
-                prompt,
-                lastReply.content,
-                true);
-        } else {
-            renderTask = new A1AttachRenderTask(
-                this.#services,
-                lastReply,
-                prompt,
-                lastReply.content,
-                true);
-        }
-
-        this.#taskQueue.add(renderTask);
+        this.#taskQueue.add(attachTask);
     }
 }
