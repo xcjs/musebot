@@ -1,9 +1,9 @@
-import { DatEnabledModel } from '../enums/DatEnabledModel.js';
-import { ImageFormat } from '../enums/ImageFormat.js';
-import { KeyEditDelimiterWhitespace } from '../enums/KeyEditDelimiterWhitespace.js';
-import { ProfilingActivity } from '../enums/ProfilingActivity.js';
-import { RealEsrganEnabledModel } from '../enums/RealEsrganEnabledModel.js';
-import { SaveImagesReplaceAction } from '../enums/SaveImagesReplaceAction.js';
+import { DatEnabledModel } from '../../../../../automatic1111/models/requests/enums/DatEnabledModel.js';
+import { ImageFormat } from '../../../../../automatic1111/models/requests/enums/ImageFormat.js';
+import { KeyEditDelimiterWhitespace } from '../../../../../automatic1111/models/requests/enums/KeyEditDelimiterWhitespace.js';
+import { ProfilingActivity } from '../../../../../automatic1111/models/requests/enums/ProfilingActivity.js';
+import { RealEsrganEnabledModel } from '../../../../../automatic1111/models/requests/enums/RealEsrganEnabledModel.js';
+import { SaveImagesReplaceAction } from '../../../../../automatic1111/models/requests/enums/SaveImagesReplaceAction.js';
 
 export class Automatic1111Options {
   samples_save: boolean = true;
