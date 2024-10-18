@@ -1,43 +1,65 @@
-import { Client as DiscordClient } from 'discord.js';
+import { ButtonInteraction, Client as DiscordClient, Message } from 'discord.js';
 
-import { TypingService } from './clients/discord/services/TypingService.js';
-import { EnvironmentSettings } from './EnvironmentSettings.js';
-import { FeatureService } from './features/FeatureService.js';
-import { TaskQueue } from './tasks/services/TaskQueue.js';
-import { MessageService } from './clients/discord/services/MessageService.js';
-import { Automatic1111Client } from './clients/automatic1111/Automatic1111Client.js';
-import { DiscordAutomatic1111Client } from './clients/discord/automatic1111/DiscordAutomatic1111Client.js';
-import { EasyDiffusionClient } from './clients/easy-diffusion/EasyDiffusionClient';
-import { DiscordEasyDiffusionClient } from './clients/discord/easy-diffusion/DiscordEasyDiffusionClient.js';
-import { OllamaClient } from './clients/ollama/OllamaClient.js';
-import { DiscordOllamaClient } from './clients/discord/ollama/DiscordOllamaClient.js';
-import { ReplyService } from './clients/discord/services/ReplyService.js';
-import { Automatic1111ReplyService } from './clients/discord/automatic1111/Automatic1111ReplyService.js';
-import { EasyDiffusionReplyService } from './clients/discord/easy-diffusion/EasyDiffusionReplyService.js';
-import { OllamaReplyService } from './clients/discord/ollama/OllamaReplyService.js';
-import { OllamaStreamingReplyService } from './clients/discord/ollama/OllamaStreamingReplyService.js';
+import { IEnvironmentSettings } from './IEnvironmentSettings.js';
+import { Automatic1111ReplyService } from './clients/chat/discord/automatic1111/Automatic1111ReplyService.js';
+import { EasyDiffusionReplyService } from './clients/chat/discord/easy-diffusion/EasyDiffusionReplyService.js';
+import { OllamaReplyService } from './clients/chat/discord/ollama/OllamaReplyService.js';
+import { OllamaStreamingReplyService } from './clients/chat/discord/ollama/OllamaStreamingReplyService.js';
+import { Automatic1111Client } from './clients/images/automatic1111/Automatic1111Client.js';
+import { EasyDiffusionClient } from './clients/images/easy-diffusion/EasyDiffusionClient.js';
+import { OllamaClient } from './clients/text/ollama/OllamaClient.js';
+import { IFeatureService } from './features/IFeatureService.js';
+import { ITaskQueue } from './tasks/ITaskQueue.js';
+import { ITypingService } from './clients/chat/ITypingService.js';
+import { IReplyService } from './clients/chat/IReplyService.js';
+import { IAttachRenderTask } from './clients/images/tasks/IAttachRenderTask.js';
+import { IDecreaseGuidanceScaleRenderTask } from './clients/images/tasks/IDecreaseGuidanceScaleRenderTask.js';
+import { IExpandPromptTask } from './clients/images/tasks/IExpandPromptTask.js';
+import { IIncreaseGuidanceScaleRenderTask } from './clients/images/tasks/IIncreaseGuidanceScaleRenderTask.js';
+import { IJsonRenderTask } from './clients/images/tasks/IJsonRenderTask.js';
+import { IPromptRenderTask } from './clients/images/tasks/IPromptRenderTask.js';
+import { IRandomRenderTask } from './clients/images/tasks/IRandomRenderTask.js';
+import { IRetryRenderTask } from './clients/images/tasks/IRetryRenderTask.js';
+import { IShowSourceTask } from './clients/images/tasks/IShowSourceTask.js';
+import { IUpscaleRenderTask } from './clients/images/tasks/IUpscaleRenderTask.js';
+import { IPromptResponseTask } from './clients/text/tasks/IPromptResponseTask.js';
 
 export interface IServiceContainer {
     // Singletons -------------------------------------------------------------/
 
-    environmentSettings: EnvironmentSettings;
-    featureService: FeatureService;
-    taskQueue: TaskQueue;
-    typingService: TypingService;
+    environmentSettings: IEnvironmentSettings;
+    featureService: IFeatureService;
+    taskQueue: ITaskQueue;
+    typingService: ITypingService;
     discordClient: DiscordClient;
 
     // Transitives ------------------------------------------------------------/
 
-    messageService: MessageService;
-    replyService: ReplyService;
+    replyService: IReplyService;
     automatic1111Client: Automatic1111Client;
     automatic1111ReplyService: Automatic1111ReplyService;
-    discordAutomatic1111Client: DiscordAutomatic1111Client;
     easyDiffusionClient: EasyDiffusionClient;
     easyDiffusionReplyService: EasyDiffusionReplyService;
-    discordEasyDiffusionClient: DiscordEasyDiffusionClient;
     ollamaClient: OllamaClient;
     ollamaReplyService: OllamaReplyService;
     ollamaStreamingReplyService: OllamaStreamingReplyService;
-    discordOllamaClient: DiscordOllamaClient;
+
+    // Factories --------------------------------------------------------------/
+
+    getAttachRenderTask(
+        interaction: ButtonInteraction | Message,
+        prompt: string,
+        content: string | null,
+        isEdit: boolean): IAttachRenderTask;
+
+    getDecreaseGuidanceScaleRenderTask(interaction: ButtonInteraction): IDecreaseGuidanceScaleRenderTask;
+    getExpandPromptTask(interaction: ButtonInteraction): IExpandPromptTask;
+    getIncreaseGuidanceScaleRenderTask(interaction: ButtonInteraction): IIncreaseGuidanceScaleRenderTask;
+    getJsonRenderTask(message: Message): IJsonRenderTask;
+    getPromptRenderTask(message: Message): IPromptRenderTask;
+    getRandomRenderTask(interaction: ButtonInteraction): IRandomRenderTask;
+    getRetryRenderTask(interaction: ButtonInteraction): IRetryRenderTask;
+    getShowSourceTask(interaction: ButtonInteraction): IShowSourceTask;
+    getUpscaleRenderTask(interaction: ButtonInteraction): IUpscaleRenderTask;
+    getPromptResponseTask(message: Message, context: Array<number>): IPromptResponseTask;
 }

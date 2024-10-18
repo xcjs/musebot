@@ -70,5 +70,6 @@
         "webui",
         "xattention"
     ],
-    "cmake.ignoreCMakeListsMissing": true
+    "cmake.ignoreCMakeListsMissing": true,
+    "typescript.preferences.importModuleSpecifierEnding": "js"
 }
