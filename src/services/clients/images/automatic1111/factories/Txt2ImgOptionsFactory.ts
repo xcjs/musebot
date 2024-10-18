@@ -1,5 +1,6 @@
 import { SamplingMethod } from '../enums/SamplingMethod.js';
 import { ScheduleType } from '../enums/ScheduleType.js';
+import { BaseAutomatic1111Options } from '../models/requests/models/BaseAutomatic1111Options.js';
 import { Txt2ImgOptionsRequest } from '../models/requests/Txt2ImgOptionsRequest.js';
 
 export class Txt2ImgOptionsFactory {
@@ -9,19 +10,19 @@ export class Txt2ImgOptionsFactory {
 
         switch(rootPath.toLocaleLowerCase()) {
             case 'flux':
-                return Txt2ImgOptionsFactory.getFluxSettings(prompt);
+                return Txt2ImgOptionsFactory.getFluxSettings(model, prompt);
             case 'pony':
             case 'xl':
             case 'xl-hyper':
             case 'xl-turbo':
-                return Txt2ImgOptionsFactory.getStableDiffusionXlSettings(prompt);
+                return Txt2ImgOptionsFactory.getStableDiffusionXlSettings(model, prompt);
             default:
-                return Txt2ImgOptionsFactory.getBaseSettings(prompt);
+                return Txt2ImgOptionsFactory.getBaseSettings(model, prompt);
         }
     }
 
-    static getBaseSettings(prompt: string): Txt2ImgOptionsRequest {
-        return {
+    static getBaseSettings(model: string, prompt: string): Txt2ImgOptionsRequest {
+        const request = {
             prompt,
             negative_prompt: '',
             styles: [],
@@ -50,7 +51,7 @@ export class Txt2ImgOptionsFactory {
             s_tmax: 0,
             s_tmin: 0,
             s_noise: 1,
-            override_settings: {},
+            override_settings: new BaseAutomatic1111Options(),
             override_settings_restore_afterwards: true,
             refiner_checkpoint: null,
             refiner_switch_at: 0,
@@ -81,10 +82,14 @@ export class Txt2ImgOptionsFactory {
             use_deprecated_controlnet: false,
             controlnet_units: []
         };
+
+        request.override_settings.sd_model_checkpoint = model;
+
+        return request;
     }
 
-    static getStableDiffusionXlSettings(prompt: string): Txt2ImgOptionsRequest {
-        const options = Txt2ImgOptionsFactory.getBaseSettings(prompt);
+    static getStableDiffusionXlSettings(model: string, prompt: string): Txt2ImgOptionsRequest {
+        const options = Txt2ImgOptionsFactory.getBaseSettings(model, prompt);
 
         options.sampler_name = SamplingMethod.Euler_a;
         options.sampler_index = SamplingMethod.Euler_a;
@@ -97,8 +102,8 @@ export class Txt2ImgOptionsFactory {
         return options;
     }
 
-    static getFluxSettings(prompt: string): Txt2ImgOptionsRequest {
-        const options = Txt2ImgOptionsFactory.getBaseSettings(prompt);
+    static getFluxSettings(model: string, prompt: string): Txt2ImgOptionsRequest {
+        const options = Txt2ImgOptionsFactory.getBaseSettings(model, prompt);
 
         options.sampler_name = SamplingMethod.Euler;
         options.sampler_index = SamplingMethod.Euler;
