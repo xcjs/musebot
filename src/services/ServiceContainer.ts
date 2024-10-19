@@ -55,6 +55,8 @@ import { UpscaleRenderTask as EdUpscaleRenderTask } from './clients/images/easy-
 import { IPromptResponseTask } from './clients/text/tasks/IPromptResponseTask.js';
 import { PromptResponseTask } from './clients/text/ollama/tasks/PromptResponseTask.js';
 import { GenerativeImageChatClient } from './clients/chat/discord/GenerativeImageChatClient.js';
+import { ExpandPromptTask as A1ExpandPromptTask } from './clients/images/automatic1111/tasks/ExpandPromptTask.js';
+import { ExpandPromptTask as EdExpandPromptTask } from './clients/images/easy-diffusion/tasks/ExpandPromptTask.js';
 
 export class ServiceContainer implements IServiceContainer {
     #taskNotConfiguredError = 'The task you are attempting to instantiate is not supported by your current configuration.';
@@ -168,9 +170,9 @@ export class ServiceContainer implements IServiceContainer {
 
         switch (this.#environmentSettings.stableDiffusionApiType) {
             case StableDiffusionApiType.Automatic1111:
-                return new A1DecreaseGuidanceScaleRenderTask(this, interaction);
+                return new A1ExpandPromptTask(this, interaction);
             case StableDiffusionApiType.EasyDiffusion:
-                return new EdDecreaseGuidanceScaleRenderTask(this, interaction);
+                return new EdExpandPromptTask(this, interaction);
             default:
                 throw this.#taskNotConfiguredError;
         }
