@@ -2,7 +2,7 @@ import { AttachmentBuilder, ButtonInteraction } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
 import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
-import { MAX_TEXT_LINE_LENGTH, MAX_FILE_NAME_LENGTH } from '../../../../../enums/FileConstants.js';
+import { MAX_TEXT_LINE_LENGTH, MAX_FILE_NAME_LENGTH } from '../../../../../constants/FileConstants.js';
 import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
 import { wrapText } from '../../../../../utilities/string-utilities.js';
 import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';

@@ -2,7 +2,7 @@ import { AttachmentBuilder, BaseMessageOptions, ButtonInteraction, Message } fro
 import { Logger, LogLevel } from 'meklog';
 
 import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
-import { MAX_FILE_NAME_LENGTH } from '../../../../../enums/FileConstants.js';
+import { MAX_FILE_NAME_LENGTH } from '../../../../../constants/FileConstants.js';
 import { IHttpExchangeWithAttachedResponse } from '../../../../../models/IHttpExchangeWithAttachedResponse.js';
 import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
