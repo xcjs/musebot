@@ -1,4 +1,4 @@
-import { ShardingManager, Events } from 'discord.js';
+import { Events,ShardingManager } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
 import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';

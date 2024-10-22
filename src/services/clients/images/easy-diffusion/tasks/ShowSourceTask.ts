@@ -8,9 +8,9 @@ import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { EasyDiffusionReplyService } from '../../../chat/discord/easy-diffusion/EasyDiffusionReplyService.js';
-import { RenderRequest } from '../models/requests/RenderRequest.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { IShowSourceTask } from '../../tasks/IShowSourceTask.js';
+import { RenderRequest } from '../models/requests/RenderRequest.js';
 
 export class ShowSourceTask extends BaseTask implements IShowSourceTask {
     #environmentSettings: IEnvironmentSettings;

@@ -7,10 +7,10 @@ import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { Automatic1111ReplyService } from '../../../chat/discord/automatic1111/Automatic1111ReplyService.js';
-import { Automatic1111Client } from '../Automatic1111Client.js';
-import { Txt2ImgOptionsFactory } from '../factories/Txt2ImgOptionsFactory.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { IAttachRenderTask } from '../../tasks/IAttachRenderTask.js';
+import { Automatic1111Client } from '../Automatic1111Client.js';
+import { Txt2ImgOptionsFactory } from '../factories/Txt2ImgOptionsFactory.js';
 
 export class AttachRenderTask extends BaseTask implements IAttachRenderTask {
     #environmentSettings: IEnvironmentSettings;

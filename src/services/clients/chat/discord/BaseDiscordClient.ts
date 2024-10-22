@@ -1,9 +1,9 @@
 import { Client as DiscordClient } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { IGenerativeChatClient } from '../IGenerativeChatClient.js';
 import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
+import { IGenerativeChatClient } from '../IGenerativeChatClient.js';
 
 export class BaseDiscordClient implements IGenerativeChatClient {
     #environmentSettings: IEnvironmentSettings;

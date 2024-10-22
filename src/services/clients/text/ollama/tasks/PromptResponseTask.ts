@@ -11,9 +11,9 @@ import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.js';
 import { OllamaReplyService } from '../../../chat/discord/ollama/OllamaReplyService.js';
 import { OllamaStreamingReplyService } from '../../../chat/discord/ollama/OllamaStreamingReplyService.js';
-import { OllamaClient } from '../OllamaClient.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { IPromptResponseTask } from '../../tasks/IPromptResponseTask.js';
+import { OllamaClient } from '../OllamaClient.js';
 
 export class PromptResponseTask extends BaseTask implements IPromptResponseTask {
     #services: IServiceContainer;

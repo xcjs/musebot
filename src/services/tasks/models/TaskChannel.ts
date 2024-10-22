@@ -1,9 +1,9 @@
 import { Logger, LogLevel } from 'meklog';
 
-import { BaseTask } from './BaseTask.js';
-import { TaskStatus } from '../enums/TaskStatus.js';
-import { IServiceContainer } from '../../IServiceContainer.js';
 import { IEnvironmentSettings } from '../../IEnvironmentSettings.js';
+import { IServiceContainer } from '../../IServiceContainer.js';
+import { TaskStatus } from '../enums/TaskStatus.js';
+import { BaseTask } from './BaseTask.js';
 
 export class TaskChannel {
     #environmentSettings: IEnvironmentSettings;

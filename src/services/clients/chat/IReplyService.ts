@@ -1,4 +1,5 @@
-import { AttachmentBuilder, Attachment, ButtonInteraction, Message } from 'discord.js';
+import { Attachment, AttachmentBuilder, ButtonInteraction, Message } from 'discord.js';
+
 import { ContentType } from '../../../enums/ContentType.js';
 
 export interface IReplyService {

@@ -9,10 +9,10 @@ import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { EasyDiffusionReplyService } from '../../../chat/discord/easy-diffusion/EasyDiffusionReplyService.js';
 import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.js';
-import { EasyDiffusionClient } from '../EasyDiffusionClient.js';
-import { RenderRequest } from '../models/requests/RenderRequest.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { IRetryRenderTask } from '../../tasks/IRetryRenderTask.js';
+import { EasyDiffusionClient } from '../EasyDiffusionClient.js';
+import { RenderRequest } from '../models/requests/RenderRequest.js';
 
 export class RetryRenderTask extends BaseTask implements IRetryRenderTask {
     #environmentSettings: IEnvironmentSettings;

@@ -8,10 +8,10 @@ import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { EasyDiffusionReplyService } from '../../../chat/discord/easy-diffusion/EasyDiffusionReplyService.js';
 import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.js';
-import { RenderRequest } from '../models/requests/RenderRequest.js';
-import { UpscaledRenderRequest } from '../models/requests/UpscaledRenderRequest.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { IUpscaleRenderTask } from '../../tasks/IUpscaleRenderTask.js';
+import { RenderRequest } from '../models/requests/RenderRequest.js';
+import { UpscaledRenderRequest } from '../models/requests/UpscaledRenderRequest.js';
 
 export class UpscaleRenderTask extends BaseTask implements IUpscaleRenderTask {
     #environmentSettings: IEnvironmentSettings;

@@ -8,11 +8,11 @@ import { getRandomArrayEntry } from '../../../../utilities/random-utilities.js';
 import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
 import { ExtraSingleImageRequest } from './models/requests/ExtraSingleImageRequest.js';
+import { Automatic1111Options } from './models/requests/models/Automatic1111Options.js';
 import { StableDiffusionModel } from './models/requests/StableDiffusionModel.js';
 import { Txt2ImgOptionsRequest } from './models/requests/Txt2ImgOptionsRequest.js';
 import { ExtraSingleImageResponse } from './models/responses/ExtraSingleImageResponse.js';
 import { Txt2ImgOptionsResponse } from './models/responses/Txt2ImgOptionsResponse.js';
-import { Automatic1111Options } from './models/requests/models/Automatic1111Options.js';
 
 export class Automatic1111Client {
     #environmentSettings: IEnvironmentSettings;

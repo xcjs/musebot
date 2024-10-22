@@ -8,11 +8,11 @@ import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { Automatic1111ReplyService } from '../../../chat/discord/automatic1111/Automatic1111ReplyService.js';
+import { IReplyService } from '../../../chat/IReplyService.js';
+import { IPromptRenderTask } from '../../tasks/IPromptRenderTask.js';
 import { Automatic1111Client } from '../Automatic1111Client.js';
 import { Txt2ImgOptionsFactory } from '../factories/Txt2ImgOptionsFactory.js';
 import { JsonRenderTask } from './JsonRenderTask.js';
-import { IReplyService } from '../../../chat/IReplyService.js';
-import { IPromptRenderTask } from '../../tasks/IPromptRenderTask.js';
 
 export class PromptRenderTask extends BaseTask implements IPromptRenderTask {
     #services: IServiceContainer;

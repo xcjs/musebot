@@ -9,11 +9,11 @@ import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { Automatic1111ReplyService } from '../../../chat/discord/automatic1111/Automatic1111ReplyService.js';
 import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.js';
+import { IReplyService } from '../../../chat/IReplyService.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
+import { IRetryRenderTask } from '../../tasks/IRetryRenderTask.js';
 import { Automatic1111Client } from '../Automatic1111Client.js';
 import { Txt2ImgOptionsRequest } from '../models/requests/Txt2ImgOptionsRequest.js';
-import { IReplyService } from '../../../chat/IReplyService.js';
-import { IRetryRenderTask } from '../../tasks/IRetryRenderTask.js';
 
 export class RetryRenderTask extends BaseTask implements IRetryRenderTask {
     #environmentSettings: IEnvironmentSettings;
