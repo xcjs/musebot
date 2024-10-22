@@ -3,12 +3,16 @@ import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
-export default [
-  pluginJs.configs.recommended,
+export default tseslint.config(
   ...tseslint.configs.recommended,
   {
-    files: ['**/*.{js,mjs,cjs,ts}'],
+      ignores: ["dist/"]
+  },
+  {
+    ...pluginJs.configs.recommended,
+    files: ['src/**/*.{js,cjs,mjs,ts}'],
     languageOptions: {
+      sourceType: 'script',
       globals: globals.node
     },
     plugins: {
@@ -17,6 +21,6 @@ export default [
     rules: {
       'simple-import-sort/imports': 'error',
       'simple-import-sort/exports': 'error',
-    },
+    }
   }
-];
+);

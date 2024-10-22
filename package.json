@@ -16,7 +16,8 @@
     "dev": "tsc -w",
     "prebuild:bin": "npm run parcel",
     "build:bin": "npx nexe -b --python /usr/bin/python3 -o bin/musebot dist/musebot.cjs",
-    "lint": "eslint",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
     "clean": "mkdir -p .parcel-cache/ bin/ build/ dist/ && rm -r .parcel-cache/ bin/ build/ dist/"
   },
   "dependencies": {
