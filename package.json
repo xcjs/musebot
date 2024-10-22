@@ -29,6 +29,7 @@
   },
   "devDependencies": {
     "eslint": "^8.57.0",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
     "globals": "^15.6.0",
     "nexe": "^4.0.0-rc.6",
     "typescript-eslint": "^7.14.1"
