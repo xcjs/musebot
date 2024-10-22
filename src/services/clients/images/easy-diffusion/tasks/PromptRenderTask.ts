@@ -8,11 +8,11 @@ import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { EasyDiffusionReplyService } from '../../../chat/discord/easy-diffusion/EasyDiffusionReplyService.js';
+import { IReplyService } from '../../../chat/IReplyService.js';
+import { IPromptRenderTask } from '../../tasks/IPromptRenderTask.js';
 import { EasyDiffusionClient } from '../EasyDiffusionClient.js';
 import { RenderRequest } from '../models/requests/RenderRequest.js';
 import { JsonRenderTask } from './JsonRenderTask.js';
-import { IReplyService } from '../../../chat/IReplyService.js';
-import { IPromptRenderTask } from '../../tasks/IPromptRenderTask.js';
 
 export class PromptRenderTask extends BaseTask implements IPromptRenderTask {
     #services: IServiceContainer;

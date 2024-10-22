@@ -1,10 +1,10 @@
 import { Attachment, ButtonInteraction, Client as DiscordClient, Message, MessageType  } from 'discord.js';
 
-import { IReplyService } from '../../IReplyService.js';
-import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
-import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { ContentType } from '../../../../../enums/ContentType.js';
 import { JavaScriptType } from '../../../../../enums/JavaScriptType.js';
+import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
+import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { IReplyService } from '../../IReplyService.js';
 
 export abstract class BaseReplyService implements IReplyService {
     #environmentSettings: IEnvironmentSettings;

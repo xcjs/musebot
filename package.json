@@ -1,6 +1,6 @@
 {
   "name": "musebot",
-  "version": "5.3.2",
+  "version": "5.3.3",
   "description": "A Discord bot that connects to various generative AI APIs.",
   "private": "true",
   "license": "ISC",
@@ -16,7 +16,8 @@
     "dev": "tsc -w",
     "prebuild:bin": "npm run parcel",
     "build:bin": "npx nexe -b --python /usr/bin/python3 -o bin/musebot dist/musebot.cjs",
-    "lint": "eslint",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
     "clean": "mkdir -p .parcel-cache/ bin/ build/ dist/ && rm -r .parcel-cache/ bin/ build/ dist/"
   },
   "dependencies": {
@@ -29,6 +30,7 @@
   },
   "devDependencies": {
     "eslint": "^8.57.0",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
     "globals": "^15.6.0",
     "nexe": "^4.0.0-rc.6",
     "typescript-eslint": "^7.14.1"

@@ -1,8 +1,8 @@
-import { ControlNetUnit } from './models/ControlNetUnit';
 import { SamplingMethod } from '../../enums/SamplingMethod';
 import { ScheduleType } from '../../enums/ScheduleType';
 import { Upscaler } from '../../enums/Upscaler';
 import { BaseAutomatic1111Options } from './models/BaseAutomatic1111Options.js';
+import { ControlNetUnit } from './models/ControlNetUnit';
 
 export interface Txt2ImgOptionsRequest {
     enable_hr: boolean;

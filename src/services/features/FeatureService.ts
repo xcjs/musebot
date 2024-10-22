@@ -1,7 +1,7 @@
 import { IEnvironmentSettings } from '../IEnvironmentSettings.js';
 import { IServiceContainer } from '../IServiceContainer.js';
-import { IFeatureService } from './IFeatureService.js';
 import { SupportedFeature } from './enum/SupportedFeature.js';
+import { IFeatureService } from './IFeatureService.js';
 
 export class FeatureService implements IFeatureService {
     #environmentSettings: IEnvironmentSettings;

@@ -7,11 +7,11 @@ import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
+import { IReplyService } from '../../../chat/IReplyService.js';
 import { OllamaClient } from '../../../text/ollama/OllamaClient.js';
+import { IExpandPromptTask } from '../../tasks/IExpandPromptTask.js';
 import { RenderRequest } from '../models/requests/RenderRequest.js';
 import { AttachRenderTask } from './AttachRenderTask.js';
-import { IReplyService } from '../../../chat/IReplyService.js';
-import { IExpandPromptTask } from '../../tasks/IExpandPromptTask.js';
 
 export class ExpandPromptTask extends BaseTask implements IExpandPromptTask {
     #services: IServiceContainer;
