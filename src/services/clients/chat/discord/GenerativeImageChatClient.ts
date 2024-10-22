@@ -1,15 +1,15 @@
-import { Client as DiscordClient, ButtonInteraction, Events, Message } from 'discord.js';
+import { ButtonInteraction, Client as DiscordClient, Events, Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
 import { BotInteraction } from '../../../../enums/BotInteraction.js';
 import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
 import { ITaskQueue } from '../../../tasks/ITaskQueue.js';
-import { DiscordPresenceStatus } from './enums/DiscordPresenceStatus.js';
+import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { IReplyService } from '../IReplyService.js';
 import { ITypingService } from '../ITypingService.js';
 import { BaseDiscordClient } from './BaseDiscordClient.js';
-import { BaseTask } from '../../../tasks/models/BaseTask.js';
+import { DiscordPresenceStatus } from './enums/DiscordPresenceStatus.js';
 
 export class GenerativeImageChatClient extends BaseDiscordClient {
     #services: IServiceContainer;

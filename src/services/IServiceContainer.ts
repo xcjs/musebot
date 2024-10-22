@@ -1,17 +1,13 @@
 import { ButtonInteraction, Client as DiscordClient, Message } from 'discord.js';
 
-import { IEnvironmentSettings } from './IEnvironmentSettings.js';
 import { Automatic1111ReplyService } from './clients/chat/discord/automatic1111/Automatic1111ReplyService.js';
 import { EasyDiffusionReplyService } from './clients/chat/discord/easy-diffusion/EasyDiffusionReplyService.js';
 import { OllamaReplyService } from './clients/chat/discord/ollama/OllamaReplyService.js';
 import { OllamaStreamingReplyService } from './clients/chat/discord/ollama/OllamaStreamingReplyService.js';
+import { IReplyService } from './clients/chat/IReplyService.js';
+import { ITypingService } from './clients/chat/ITypingService.js';
 import { Automatic1111Client } from './clients/images/automatic1111/Automatic1111Client.js';
 import { EasyDiffusionClient } from './clients/images/easy-diffusion/EasyDiffusionClient.js';
-import { OllamaClient } from './clients/text/ollama/OllamaClient.js';
-import { IFeatureService } from './features/IFeatureService.js';
-import { ITaskQueue } from './tasks/ITaskQueue.js';
-import { ITypingService } from './clients/chat/ITypingService.js';
-import { IReplyService } from './clients/chat/IReplyService.js';
 import { IAttachRenderTask } from './clients/images/tasks/IAttachRenderTask.js';
 import { IDecreaseGuidanceScaleRenderTask } from './clients/images/tasks/IDecreaseGuidanceScaleRenderTask.js';
 import { IExpandPromptTask } from './clients/images/tasks/IExpandPromptTask.js';
@@ -22,7 +18,11 @@ import { IRandomRenderTask } from './clients/images/tasks/IRandomRenderTask.js';
 import { IRetryRenderTask } from './clients/images/tasks/IRetryRenderTask.js';
 import { IShowSourceTask } from './clients/images/tasks/IShowSourceTask.js';
 import { IUpscaleRenderTask } from './clients/images/tasks/IUpscaleRenderTask.js';
+import { OllamaClient } from './clients/text/ollama/OllamaClient.js';
 import { IPromptResponseTask } from './clients/text/tasks/IPromptResponseTask.js';
+import { IFeatureService } from './features/IFeatureService.js';
+import { IEnvironmentSettings } from './IEnvironmentSettings.js';
+import { ITaskQueue } from './tasks/ITaskQueue.js';
 
 export interface IServiceContainer {
     // Singletons -------------------------------------------------------------/
