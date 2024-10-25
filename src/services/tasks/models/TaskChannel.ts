@@ -44,13 +44,14 @@ export class TaskChannel {
         const incompleteTasks = this.#queue.filter(task => {
             if(task.taskStatus === TaskStatus.Idle
                 || task.taskStatus === TaskStatus.Busy
+                || task.taskStatus === TaskStatus.Delayed
                 || task.taskStatus === TaskStatus.Failed) {
                     return task;
             }
         });
 
         const failedTasks = incompleteTasks.filter(
-            x => x.taskStatus === TaskStatus.Failed)
+            x => x.taskStatus === TaskStatus.Failed || x.taskStatus === TaskStatus.Delayed)
             .sort(this.#compareByDate);
 
         const nonFailedTasks = incompleteTasks.filter(

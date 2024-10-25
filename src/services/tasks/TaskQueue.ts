@@ -57,10 +57,12 @@ export class TaskQueue implements ITaskQueue {
                 + ` task(s).`);
 
             try {
-                const processPromises = tasks.map((x) => {
-                    x.taskStatus = TaskStatus.Busy;
-                    return x.process()
-                });
+                const processPromises = tasks
+                    .filter(x => x.taskStatus !== TaskStatus.Delayed)
+                    .map((x) => {
+                        x.taskStatus = TaskStatus.Busy;
+                        return x.process();
+                    });
 
                 const processPromisesResults = await Promise.allSettled(processPromises);
 

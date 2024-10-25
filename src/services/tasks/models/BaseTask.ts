@@ -1,31 +1,54 @@
+import { Logger, LogLevel } from 'meklog';
+
+import { IEnvironmentSettings } from '../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../IServiceContainer.js';
 import { TaskStatus } from '../enums/TaskStatus.js';
 
 export abstract class BaseTask {
+    #environmentSettings: IEnvironmentSettings;
+    #logger;
+
     #taskStatus: TaskStatus = TaskStatus.Idle;
     #numAttempts = 0;
     #maxAttempts = 0;
     #createdTime: Date;
+    #delayUntil: Date;
 
     constructor(services: IServiceContainer) {
+        this.#environmentSettings = services.environmentSettings;
+
+        this.#logger = new Logger(this.#environmentSettings.isProduction, 'BaseTask');
+
         this.#maxAttempts = services.environmentSettings.maxTaskAttempts;
         this.#createdTime = new Date();
     }
 
     get taskStatus(): TaskStatus {
+        if(this.#taskStatus === TaskStatus.Delayed
+            && Date.now() >= this.#delayUntil.getTime()) {
+            this.#taskStatus = TaskStatus.Failed;
+        }
+
         return this.#taskStatus;
     }
 
     set taskStatus(taskStatus: TaskStatus) {
         if(taskStatus === TaskStatus.Failed) {
             this.#numAttempts++;
-        }
 
-        if(this.#numAttempts >= this.#maxAttempts) {
-            this.#taskStatus = TaskStatus.Dead;
+            if (this.#numAttempts >= this.#maxAttempts) {
+                this.#taskStatus = TaskStatus.Dead;
+            } else {
+                this.#taskStatus = TaskStatus.Delayed;
+                this.#delayUntil = new Date(Date.now() + this.#environmentSettings.taskRetryDelayMilliseconds);
+
+                this.#logger(LogLevel.Info, `Delaying task ${this.#createdTime} until ${this.#delayUntil}.`)
+            }
         } else {
             this.#taskStatus = taskStatus;
         }
+
+        this.#logger(LogLevel.Info, `Setting taskStatus of task ${this.#createdTime} to ${taskStatus}.`);
     }
 
     get taskChannel(): string {
