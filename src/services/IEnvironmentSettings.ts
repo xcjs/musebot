@@ -11,6 +11,7 @@ export interface IEnvironmentSettings {
     botFunction: BotFunction;
 
     maxTaskAttempts: number;
+    taskRetryDelayMilliseconds: number;
 
     discordToken: string;
     discordChannels: Array<string>;
