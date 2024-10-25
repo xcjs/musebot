@@ -59,7 +59,7 @@ export class TaskQueue implements ITaskQueue {
             try {
                 const processPromises = tasks.map((x) => {
                     x.taskStatus = TaskStatus.Busy;
-                    return x.process()
+                    return x.process();
                 });
 
                 const processPromisesResults = await Promise.allSettled(processPromises);
