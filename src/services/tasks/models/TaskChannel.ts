@@ -53,6 +53,10 @@ export class TaskChannel {
             x => x.taskStatus === TaskStatus.Failed)
             .sort(this.#compareByDate);
 
+        failedTasks.map((x) => {
+            x.taskStatus = TaskStatus.Delayed;
+        });
+
         const nonFailedTasks = incompleteTasks.filter(
             x => x.taskStatus !== TaskStatus.Failed)
             .sort(this.#compareByDate);
