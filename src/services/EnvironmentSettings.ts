@@ -17,7 +17,8 @@ export class EnvironmentSettings implements IEnvironmentSettings {
 
     botFunction: BotFunction;
 
-    maxTaskAttempts: number = 100;
+    maxTaskAttempts: number;
+    taskRetryDelayMilliseconds: number;
 
     discordToken: string;
     discordChannels: Array<string> = [];
@@ -52,6 +53,9 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         this.nodeEnvironment = process.env.NODE_ENV.trim() as NodeEnvironment;
 
         this.botFunction = process.env.MUSEBOT_FUNCTION.trim() as BotFunction;
+
+        this.maxTaskAttempts = process.env.TASK_QUEUE_MAX_ATTEMPTS ? parseInt(process.env.TASK_QUEUE_MAX_ATTEMPTS) : 10;
+        this.taskRetryDelayMilliseconds = process.env.TASK_QUEUE_RETRY_DELAY_MS ? parseInt(process.env.TASK_QUEUE_RETRY_DELAY_MS) : 1000;
 
         this.discordToken = process.env.MUSEBOT_DISCORD_TOKEN?.trim() || '';
         this.discordChannels = process.env.MUSEBOT_DISCORD_CHANNELS?.trim().split(',') || [];
