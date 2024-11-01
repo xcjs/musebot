@@ -1,9 +1,9 @@
 import { ButtonBuilder, ButtonStyle } from 'discord.js';
 
 import { BotInteraction } from '../../../../../../../enums/BotInteraction.js';
+import { SupportedFeature } from '../../../../../../features/enum/SupportedFeature.js';
 import { IServiceContainer } from '../../../../../../IServiceContainer.js';
 import { BaseComponent } from '../../BaseComponent.js';
-import { SupportedFeature } from '../../../../../../features/enum/SupportedFeature.js';
 
 export class RandomizeButton extends BaseComponent<ButtonBuilder> {
     override get label(): string {
