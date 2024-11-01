@@ -5,6 +5,7 @@ import { Txt2ImgOptionsRequest } from '../../../../images/automatic1111/models/r
 import { RenderRequest } from '../../../../images/easy-diffusion/models/requests/RenderRequest.js';
 import { buildActionRows } from '../ActionRowBuilderFactory.js';
 import { BaseComponent } from '../BaseComponent.js';
+import { HelpButton } from '../buttons/HelpButton.js';
 import { ExpandPromptButton } from '../buttons/images/ExpandPromptButton.js';
 import { GuidanceScaleMinusButton } from '../buttons/images/GuidanceScaleMinusButton.js';
 import { GuidanceScalePlusButton } from '../buttons/images/GuidanceScalePlusButton.js';
@@ -12,7 +13,6 @@ import { RandomizeButton } from '../buttons/images/RandomizeButton.js';
 import { RetryButton } from '../buttons/images/RetryButton.js';
 import { ShowSourceButton } from '../buttons/images/ShowSourceButton.js';
 import { UpscaleButton } from '../buttons/images/UpscaleButton.js';
-import { HelpButton } from '../buttons/HelpButton.js';
 
 export class StatefulImageGenerationActionRows extends BaseComponent<Array<ActionRowBuilder<ButtonBuilder>>> {
     #services: IServiceContainer;
