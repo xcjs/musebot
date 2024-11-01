@@ -1,8 +1,8 @@
 import { ButtonBuilder, ButtonStyle } from 'discord.js';
 
-import { BotInteraction } from '../../../../../../enums/BotInteraction.js';
-import { IServiceContainer } from '../../../../../IServiceContainer.js';
-import { BaseComponent } from '../BaseComponent.js';
+import { BotInteraction } from '../../../../../../../enums/BotInteraction.js';
+import { IServiceContainer } from '../../../../../../IServiceContainer.js';
+import { BaseComponent } from '../../BaseComponent.js';
 
 export class ExpandPromptButton extends BaseComponent<ButtonBuilder> {
     override get label(): string {

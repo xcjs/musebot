@@ -8,12 +8,12 @@ import { Txt2ImgOptionsRequest } from '../../../../images/automatic1111/models/r
 import { EasyDiffusionGuidanceScaleLimit } from '../../../../images/easy-diffusion/enums/EasyDiffusionGuidanceScaleLimit.js';
 import { RenderRequest } from '../../../../images/easy-diffusion/models/requests/RenderRequest.js';
 import { BaseComponent } from '../BaseComponent.js';
-import { ExpandPromptButton } from '../buttons/ExpandPromptButton.js';
-import { GuidanceScaleMinusButton } from '../buttons/GuidanceScaleMinusButton.js';
-import { GuidanceScalePlusButton } from '../buttons/GuidanceScalePlusButton.js';
-import { RandomizeButton } from '../buttons/RandomizeButton.js';
-import { RetryButton } from '../buttons/RetryButton.js';
-import { ShowSourceButton } from '../buttons/ShowSourceButton.js';
+import { ExpandPromptButton } from '../buttons/images/ExpandPromptButton.js';
+import { GuidanceScaleMinusButton } from '../buttons/images/GuidanceScaleMinusButton.js';
+import { GuidanceScalePlusButton } from '../buttons/images/GuidanceScalePlusButton.js';
+import { RandomizeButton } from '../buttons/images/RandomizeButton.js';
+import { RetryButton } from '../buttons/images/RetryButton.js';
+import { ShowSourceButton } from '../buttons/images/ShowSourceButton.js';
 import { UpscaleButton } from '../buttons/UpscaleButton.js';
 
 export class StatefulImageGenerationActionRows extends BaseComponent<Array<ActionRowBuilder<ButtonBuilder>>> {
