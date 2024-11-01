@@ -23,6 +23,7 @@ import { IPromptResponseTask } from './clients/text/tasks/IPromptResponseTask.js
 import { IFeatureService } from './features/IFeatureService.js';
 import { IEnvironmentSettings } from './IEnvironmentSettings.js';
 import { ITaskQueue } from './tasks/ITaskQueue.js';
+import { IHelpService } from './help/IHelpService.js';
 
 export interface IServiceContainer {
     // Singletons -------------------------------------------------------------/
@@ -43,6 +44,7 @@ export interface IServiceContainer {
     ollamaClient: OllamaClient;
     ollamaReplyService: OllamaReplyService;
     ollamaStreamingReplyService: OllamaStreamingReplyService;
+    helpService: IHelpService;
 
     // Factories --------------------------------------------------------------/
 
