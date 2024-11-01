@@ -5,6 +5,7 @@ import { Txt2ImgOptionsRequest } from '../../automatic1111/models/requests/Txt2I
 
 export class SerializableRenderRequest {
     prompt: string;
+    promptNegative: string | null;
     model: string;
     seed: number;
     width: number;
@@ -26,6 +27,7 @@ export class SerializableRenderRequest {
     toTxt2ImgOptionsRequest(): Txt2ImgOptionsRequest {
         const options = Txt2ImgOptionsFactory.getCurrentModelSettings(this.model, this.prompt);
 
+        options.negative_prompt = this.promptNegative;
         options.seed = this.seed;
         options.width = this.width;
         options.height = this.height;
@@ -46,10 +48,11 @@ export class SerializableRenderRequest {
         return Object.assign(request, requestObj);
     }
 
-    static fromSerializableRenderRequest(request: SerializableRenderRequest) {
+    static fromSerializableRenderRequest(request: SerializableRenderRequest): SerializableRenderRequest {
         const instancedRequest = new SerializableRenderRequest();
 
         instancedRequest.prompt = request.prompt;
+        instancedRequest.promptNegative = request.promptNegative;
         instancedRequest.model = request.model;
         instancedRequest.seed = request.seed;
         instancedRequest.width = request.width;
@@ -67,6 +70,7 @@ export class SerializableRenderRequest {
         const request = new SerializableRenderRequest();
 
         request.prompt = options.prompt;
+        request.promptNegative = options.negative_prompt;
         request.model = model;
         request.seed = seed;
         request.width = options.width;
