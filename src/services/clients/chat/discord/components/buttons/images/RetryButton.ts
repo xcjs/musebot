@@ -3,10 +3,23 @@ import { ButtonBuilder, ButtonStyle } from 'discord.js';
 import { BotInteraction } from '../../../../../../../enums/BotInteraction.js';
 import { IServiceContainer } from '../../../../../../IServiceContainer.js';
 import { BaseComponent } from '../../BaseComponent.js';
+import { SupportedFeature } from '../../../../../../features/enum/SupportedFeature.js';
 
 export class RetryButton extends BaseComponent<ButtonBuilder> {
     override get label(): string {
         return '🔄';
+    }
+
+    override get isSupported(): boolean {
+        return this.featureService.hasFeature(SupportedFeature.ImageGeneration);
+    }
+
+    override get title(): string {
+        return 'Retry';
+    }
+
+    override get helpText(): string {
+        return 'Retries your prompt and responds with a different image.';
     }
 
     constructor(services: IServiceContainer) {

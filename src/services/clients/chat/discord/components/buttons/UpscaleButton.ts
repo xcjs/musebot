@@ -3,10 +3,23 @@ import { ButtonBuilder, ButtonStyle } from 'discord.js';
 import { BotInteraction } from '../../../../../../enums/BotInteraction.js';
 import { IServiceContainer } from '../../../../../IServiceContainer.js';
 import { BaseComponent } from '../BaseComponent.js';
+import { SupportedFeature } from '../../../../../features/enum/SupportedFeature.js';
 
 export class UpscaleButton extends BaseComponent<ButtonBuilder> {
     override get label(): string {
         return '🔍';
+    }
+
+    override get isSupported(): boolean {
+        return this.featureService.hasFeature(SupportedFeature.ImageGeneration);
+    }
+
+    override get title(): string {
+        return 'Upscale';
+    }
+
+    override get helpText(): string {
+        return 'Use machine learning to enlarge your image.';
     }
 
     constructor(services: IServiceContainer) {

@@ -8,6 +8,18 @@ export abstract class BaseComponent<ComponentType> {
         return '';
     }
 
+    get isSupported(): boolean {
+        return false;
+    }
+
+    get title(): string {
+        return '';
+    }
+
+    get helpText(): string {
+        return '';
+    }
+
     constructor(services: IServiceContainer) {
         this.featureService = services.featureService;
     }
