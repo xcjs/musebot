@@ -36,7 +36,7 @@ export class OllamaReplyService {
             if(i === responses.length - 1) {
                 replies.push(await message.reply({
                     content: response,
-                    components: [new LargeLanguageModelActionRow(this.#services).build()]
+                    components: new LargeLanguageModelActionRow(this.#services).build()
                 }));
             } else {
                 replies.push(await message.reply(response));

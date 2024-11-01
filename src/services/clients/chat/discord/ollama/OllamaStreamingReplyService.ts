@@ -26,7 +26,7 @@ export class OllamaStreamingReplyService {
     async reply(message: Message, responseBatch: string, done: boolean): Promise<Array<Message>> {
         this.#logger(LogLevel.Info, 'Sending a streaming Discord reply...');
 
-        const components = done ? [new LargeLanguageModelActionRow(this.#services).build()] : null;
+        const components = done ? new LargeLanguageModelActionRow(this.#services).build() : null;
 
         if(this.#currentReply() == null && responseBatch.length <= DiscordConstants.ContentMaxLength) {
             this.#replies.push(await message.reply({

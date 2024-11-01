@@ -89,7 +89,7 @@ export class Automatic1111ReplyService {
             files,
             components: isStatefulResponse ?
                 new StatefulImageGenerationActionRows(this.#services, renderRequest).build() :
-                [new StatelessImageGenerationActionRow(this.#services).build()]
+                new StatelessImageGenerationActionRow(this.#services).build()
         };
 
         if(interaction instanceof Message) {
