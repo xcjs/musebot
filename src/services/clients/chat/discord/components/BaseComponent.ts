@@ -4,6 +4,10 @@ import { IServiceContainer } from '../../../../IServiceContainer.js';
 export abstract class BaseComponent<ComponentType> {
     protected featureService: IFeatureService;
 
+    get label(): string {
+        return '';
+    }
+
     constructor(services: IServiceContainer) {
         this.featureService = services.featureService;
     }

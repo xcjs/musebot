@@ -5,6 +5,10 @@ import { IServiceContainer } from '../../../../../IServiceContainer.js';
 import { BaseComponent } from '../BaseComponent.js';
 
 export class ShowSourceButton extends BaseComponent<ButtonBuilder> {
+    override get label(): string {
+        return '{ }';
+    }
+
     constructor(services: IServiceContainer) {
         super(services);
     }
@@ -12,7 +16,7 @@ export class ShowSourceButton extends BaseComponent<ButtonBuilder> {
     override build(): ButtonBuilder {
         return new ButtonBuilder()
             .setCustomId(BotInteraction.ShowSource)
-            .setLabel('{ }')
+            .setLabel(this.label)
             .setStyle(ButtonStyle.Secondary);
     }
 }

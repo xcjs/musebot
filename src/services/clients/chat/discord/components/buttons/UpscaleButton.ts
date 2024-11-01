@@ -5,6 +5,10 @@ import { IServiceContainer } from '../../../../../IServiceContainer.js';
 import { BaseComponent } from '../BaseComponent.js';
 
 export class UpscaleButton extends BaseComponent<ButtonBuilder> {
+    override get label(): string {
+        return '🔍';
+    }
+
     constructor(services: IServiceContainer) {
         super(services);
     }
@@ -12,7 +16,7 @@ export class UpscaleButton extends BaseComponent<ButtonBuilder> {
     override build(): ButtonBuilder {
         return new ButtonBuilder()
             .setCustomId(BotInteraction.Upscale)
-            .setLabel('🔍')
+            .setLabel(this.label)
             .setStyle(ButtonStyle.Secondary);
     }
 }
