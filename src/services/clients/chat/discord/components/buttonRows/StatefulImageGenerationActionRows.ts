@@ -14,7 +14,7 @@ import { GuidanceScalePlusButton } from '../buttons/images/GuidanceScalePlusButt
 import { RandomizeButton } from '../buttons/images/RandomizeButton.js';
 import { RetryButton } from '../buttons/images/RetryButton.js';
 import { ShowSourceButton } from '../buttons/images/ShowSourceButton.js';
-import { UpscaleButton } from '../buttons/UpscaleButton.js';
+import { UpscaleButton } from '../buttons/images/UpscaleButton.js';
 
 export class StatefulImageGenerationActionRows extends BaseComponent<Array<ActionRowBuilder<ButtonBuilder>>> {
     #services: IServiceContainer;
