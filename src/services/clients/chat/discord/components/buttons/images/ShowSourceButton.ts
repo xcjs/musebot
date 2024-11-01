@@ -20,7 +20,10 @@ export class ShowSourceButton extends BaseComponent<ButtonBuilder> {
 
     override get helpText(): string {
         return 'Show JSON information used to render the image.'
-            + ' This JSON message can be used for more customizable image renders when used as a prompt.';
+            + ' This message can be used to customize image renders when used as a prompt.'
+            + ' Hint - use -1 as the seed to use a random seed.'
+            + ' Some images may have large enough prompts that the JSON message cannot be stored alongside the image.'
+            + ' In these cases, some actions may be hidden.';
     }
 
     constructor(services: IServiceContainer) {
