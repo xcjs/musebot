@@ -1,10 +1,11 @@
 export enum BotInteraction {
-    Retry = 'retry',
-    ShowSource = 'showSource',
+    ClearContext = 'clearContext',
+    ExpandPrompt = 'expandPrompt',
     GuidanceScaleMinus = 'guidanceScaleMinus',
     GuidanceScalePlus = 'guidanceScalePlus',
-    ExpandPrompt = 'expandPrompt',
+    Help = 'help',
     Randomize = 'randomize',
-    Upscale = 'upscale',
-    ClearContext = 'clearContext'
+    Retry = 'retry',
+    ShowSource = 'showSource',
+    Upscale = 'upscale'
 }

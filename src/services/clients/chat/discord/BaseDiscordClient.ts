@@ -12,8 +12,8 @@ export class BaseDiscordClient implements IGenerativeChatClient {
     protected logger;
 
     constructor(services: IServiceContainer) {
-        this.#discordClient = services.discordClient;
         this.#environmentSettings = services.environmentSettings;
+        this.#discordClient = services.discordClient;
 
         this.logger = new Logger(this.#environmentSettings.isProduction, 'BaseDiscordClient');
     }

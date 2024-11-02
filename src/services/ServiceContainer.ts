@@ -53,6 +53,8 @@ import { EnvironmentSettings } from './EnvironmentSettings.js';
 import { SupportedFeature } from './features/enum/SupportedFeature.js';
 import { FeatureService } from './features/FeatureService.js';
 import { IFeatureService } from './features/IFeatureService.js';
+import { HelpService } from './help/HelpService.js';
+import { IHelpService } from './help/IHelpService.js';
 import { IEnvironmentSettings } from './IEnvironmentSettings.js';
 import { IServiceContainer } from './IServiceContainer.js';
 import { ITaskQueue } from './tasks/ITaskQueue.js';
@@ -125,6 +127,10 @@ export class ServiceContainer implements IServiceContainer {
 
     get ollamaStreamingReplyService(): OllamaStreamingReplyService {
         return new OllamaStreamingReplyService(this);
+    }
+
+    get helpService(): IHelpService {
+        return new HelpService(this);
     }
 
     // Factories --------------------------------------------------------------/

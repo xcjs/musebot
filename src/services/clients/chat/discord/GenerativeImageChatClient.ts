@@ -2,6 +2,7 @@ import { ButtonInteraction, Client as DiscordClient, Events, Message } from 'dis
 import { Logger, LogLevel } from 'meklog';
 
 import { BotInteraction } from '../../../../enums/BotInteraction.js';
+import { IHelpService } from '../../../help/IHelpService.js';
 import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
 import { ITaskQueue } from '../../../tasks/ITaskQueue.js';
@@ -18,6 +19,7 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
     #discordClient: DiscordClient;
     #replyService: IReplyService;
     #typingService: ITypingService;
+    #helpService: IHelpService;
     #taskQueue: ITaskQueue;
 
     constructor(services: IServiceContainer) {
@@ -29,6 +31,7 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
         this.#discordClient = services.discordClient;
         this.#replyService = services.replyService;
         this.#typingService = services.typingService;
+        this.#helpService = services.helpService;
         this.#taskQueue = services.taskQueue;
 
         this.logger = new Logger(this.#environmentSettings.isProduction, 'GenerativeImageChatClient');
@@ -94,6 +97,9 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
                 break;
             case BotInteraction.Randomize:
                 this.#taskQueue.add(this.#services.getRandomRenderTask(interaction) as BaseTask);
+                break;
+            case BotInteraction.Help:
+                await interaction.editReply(this.#helpService.buildHelpArticle());
                 break;
             default:
                 this.logger(LogLevel.Warning, `An unknown interaction was passed: ${interaction.customId}.`);
