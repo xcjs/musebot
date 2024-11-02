@@ -20,6 +20,10 @@ export class GuidanceScalePlusButton extends BaseComponent<ButtonBuilder> {
 
         isSupported = this.featureService.hasFeature(SupportedFeature.ImageGeneration);
 
+        if (this.#renderRequest === null) {
+            return isSupported;
+        }
+
         if (this.#renderRequest instanceof RenderRequest) {
             isSupported = isSupported
                 && this.#renderRequest.guidance_scale - this.#environmentSettings.stableDiffusionGuidanceScaleInterval
@@ -45,7 +49,7 @@ export class GuidanceScalePlusButton extends BaseComponent<ButtonBuilder> {
     #environmentSettings: IEnvironmentSettings;
     #renderRequest: RenderRequest | Txt2ImgOptionsRequest;
 
-    constructor(services: IServiceContainer, renderRequest: RenderRequest | Txt2ImgOptionsRequest) {
+    constructor(services: IServiceContainer, renderRequest: RenderRequest | Txt2ImgOptionsRequest | null) {
         super(services);
         this.#environmentSettings = services.environmentSettings;
         this.#renderRequest = renderRequest;

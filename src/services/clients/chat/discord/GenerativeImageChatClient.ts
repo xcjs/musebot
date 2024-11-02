@@ -101,12 +101,7 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
                 this.#taskQueue.add(this.#services.getRandomRenderTask(interaction) as BaseTask);
                 break;
             case BotInteraction.Help:
-                const replies = splitText(this.#helpService.buildHelpArticle(), DiscordConstants.ContentMaxLength);
-
-                replies.forEach(async reply => {
-                    await interaction.reply(reply);
-                });
-
+                await interaction.editReply(this.#helpService.buildHelpArticle());
                 break;
             default:
                 this.logger(LogLevel.Warning, `An unknown interaction was passed: ${interaction.customId}.`);

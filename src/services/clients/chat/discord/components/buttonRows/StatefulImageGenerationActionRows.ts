@@ -15,18 +15,23 @@ import { ShowSourceButton } from '../buttons/images/ShowSourceButton.js';
 import { UpscaleButton } from '../buttons/images/UpscaleButton.js';
 
 export class StatefulImageGenerationActionRows extends BaseComponent<Array<ActionRowBuilder<ButtonBuilder>>> {
+    #buttons: Array<BaseComponent<ButtonBuilder>> = [];
+    get buttons(): Array<BaseComponent<ButtonBuilder>> {
+        return this.#buttons;
+    }
+
     #services: IServiceContainer;
 
-    #renderRequest: RenderRequest | Txt2ImgOptionsRequest;
+    #renderRequest: RenderRequest | Txt2ImgOptionsRequest | null;
 
-    constructor(services: IServiceContainer, renderRequest: RenderRequest | Txt2ImgOptionsRequest) {
+    constructor(services: IServiceContainer, renderRequest: RenderRequest | Txt2ImgOptionsRequest | null) {
         super(services);
         this.#services = services;
         this.#renderRequest = renderRequest;
     }
 
     override build(): Array<ActionRowBuilder<ButtonBuilder>> {
-        const buttons: Array<BaseComponent<ButtonBuilder>> = [
+        this.#buttons = [
             new RetryButton(this.#services),
             new ShowSourceButton(this.#services),
             new UpscaleButton(this.#services),
@@ -37,6 +42,6 @@ export class StatefulImageGenerationActionRows extends BaseComponent<Array<Actio
             new HelpButton(this.#services)
         ];
 
-        return buildActionRows(buttons);
+        return buildActionRows(this.#buttons);
     }
 }

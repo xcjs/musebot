@@ -20,7 +20,7 @@ export class ClearContextButton extends BaseComponent<ButtonBuilder> {
 
     override get helpText(): string {
         return 'Clears the conversational context, effectively making the bot forget everything in the discussion so far.'
-            + ' Responses may also complete faster as large language model performance can be impacted by large contexts.';
+            + ' Responses may also complete faster afterward as large language model performance can be impacted by large contexts.';
     }
 
     constructor(services: IServiceContainer) {
