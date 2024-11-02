@@ -38,11 +38,11 @@ export class IncreaseGuidanceScaleRenderTask extends BaseTask implements IIncrea
 
         this.#interaction = interaction;
 
-        this.#logger = new Logger(this.#environmentSettings.isProduction, 'DecreaseGuidanceScaleRenderTask');
+        this.#logger = new Logger(this.#environmentSettings.isProduction, 'IncreaseGuidanceScaleRenderTask');
     }
 
     override async process(): Promise<void> {
-        this.#logger(LogLevel.Info, 'Processing a DecreaseGuidanceScaleRenderTask.');
+        this.#logger(LogLevel.Info, 'Processing an IncreaseGuidanceScaleRenderTask.');
 
         const imageTypes = [
             ContentType.Jpeg,
