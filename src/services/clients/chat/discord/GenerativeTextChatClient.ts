@@ -2,7 +2,6 @@ import { ButtonInteraction, Client as DiscordClient, Events, Message } from 'dis
 import { Logger, LogLevel } from 'meklog';
 
 import { BotInteraction } from '../../../../enums/BotInteraction.js';
-import { splitText } from '../../../../utilities/string-utilities.js';
 import { IHelpService } from '../../../help/IHelpService.js';
 import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
@@ -11,7 +10,6 @@ import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { IReplyService } from '../IReplyService.js';
 import { ITypingService } from '../ITypingService.js';
 import { BaseDiscordClient } from './BaseDiscordClient.js';
-import { DiscordConstants } from './enums/DiscordConstants.js';
 import { DiscordPresenceStatus } from './enums/DiscordPresenceStatus.js';
 
 export class GenerativeTextChatClient extends BaseDiscordClient {
