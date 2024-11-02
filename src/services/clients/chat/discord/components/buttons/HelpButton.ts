@@ -27,7 +27,7 @@ export class HelpButton extends BaseComponent<ButtonBuilder> {
 
     override build(): ButtonBuilder {
         return new ButtonBuilder()
-            .setCustomId(BotInteraction.Retry)
+            .setCustomId(BotInteraction.Help)
             .setLabel(this.label)
             .setStyle(ButtonStyle.Secondary);
     }

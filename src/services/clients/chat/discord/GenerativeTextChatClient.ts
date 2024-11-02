@@ -2,6 +2,8 @@ import { ButtonInteraction, Client as DiscordClient, Events, Message } from 'dis
 import { Logger, LogLevel } from 'meklog';
 
 import { BotInteraction } from '../../../../enums/BotInteraction.js';
+import { splitText } from '../../../../utilities/string-utilities.js';
+import { IHelpService } from '../../../help/IHelpService.js';
 import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
 import { ITaskQueue } from '../../../tasks/ITaskQueue.js';
@@ -9,6 +11,7 @@ import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { IReplyService } from '../IReplyService.js';
 import { ITypingService } from '../ITypingService.js';
 import { BaseDiscordClient } from './BaseDiscordClient.js';
+import { DiscordConstants } from './enums/DiscordConstants.js';
 import { DiscordPresenceStatus } from './enums/DiscordPresenceStatus.js';
 
 export class GenerativeTextChatClient extends BaseDiscordClient {
@@ -18,6 +21,7 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
     #discordClient: DiscordClient;
     #typingService: ITypingService;
     #replyService: IReplyService;
+    #helpService: IHelpService;
     #taskQueue: ITaskQueue;
 
     #context: Array<number> = [];
@@ -31,6 +35,7 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
         this.#discordClient = services.discordClient;
         this.#typingService = services.typingService;
         this.#replyService = services.replyService;
+        this.#helpService = services.helpService;
         this.#taskQueue = services.taskQueue;
 
         this.logger = new Logger(this.#environmentSettings.isProduction, 'GenerativeTextChatClient');
@@ -83,6 +88,14 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
         switch(interaction.customId) {
             case BotInteraction.ClearContext:
                 await this.#clearContext(interaction);
+                break;
+            case BotInteraction.Help:
+                const replies = splitText(this.#helpService.buildHelpArticle(), DiscordConstants.ContentMaxLength);
+
+                replies.forEach(async reply => {
+                    await interaction.reply(reply);
+                });
+
                 break;
             default:
                 this.logger(LogLevel.Warning, `An unknown interaction was passed: ${interaction.customId}.`);

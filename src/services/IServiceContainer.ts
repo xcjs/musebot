@@ -21,9 +21,9 @@ import { IUpscaleRenderTask } from './clients/images/tasks/IUpscaleRenderTask.js
 import { OllamaClient } from './clients/text/ollama/OllamaClient.js';
 import { IPromptResponseTask } from './clients/text/tasks/IPromptResponseTask.js';
 import { IFeatureService } from './features/IFeatureService.js';
+import { IHelpService } from './help/IHelpService.js';
 import { IEnvironmentSettings } from './IEnvironmentSettings.js';
 import { ITaskQueue } from './tasks/ITaskQueue.js';
-import { IHelpService } from './help/IHelpService.js';
 
 export interface IServiceContainer {
     // Singletons -------------------------------------------------------------/
