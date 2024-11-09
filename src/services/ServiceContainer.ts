@@ -35,6 +35,7 @@ import { RandomRenderTask as EdRandomRenderTask } from './clients/images/easy-di
 import { RetryRenderTask as EdRetryRenderTask } from './clients/images/easy-diffusion/tasks/RetryRenderTask.js';
 import { ShowSourceTask as EdShowSourceTask } from './clients/images/easy-diffusion/tasks/ShowSourceTask.js';
 import { UpscaleRenderTask as EdUpscaleRenderTask } from './clients/images/easy-diffusion/tasks/UpscaleRenderTask.js';
+import { ImageHelpService } from './clients/images/help/ImageHelpService.js';
 import { StableDiffusionApiType } from './clients/images/stable-diffusion/enums/StableDiffusionApiType.js';
 import { IAttachRenderTask } from './clients/images/tasks/IAttachRenderTask.js';
 import { IDecreaseGuidanceScaleRenderTask } from './clients/images/tasks/IDecreaseGuidanceScaleRenderTask.js';
@@ -49,11 +50,11 @@ import { IUpscaleRenderTask } from './clients/images/tasks/IUpscaleRenderTask.js
 import { OllamaClient } from './clients/text/ollama/OllamaClient.js';
 import { PromptResponseTask } from './clients/text/ollama/tasks/PromptResponseTask.js';
 import { IPromptResponseTask } from './clients/text/tasks/IPromptResponseTask.js';
+import { TextHelpService } from './clients/text/TextHelpService.js';
 import { EnvironmentSettings } from './EnvironmentSettings.js';
 import { SupportedFeature } from './features/enum/SupportedFeature.js';
 import { FeatureService } from './features/FeatureService.js';
 import { IFeatureService } from './features/IFeatureService.js';
-import { HelpService } from './help/HelpService.js';
 import { IHelpService } from './help/IHelpService.js';
 import { IEnvironmentSettings } from './IEnvironmentSettings.js';
 import { IServiceContainer } from './IServiceContainer.js';
@@ -129,8 +130,9 @@ export class ServiceContainer implements IServiceContainer {
         return new OllamaStreamingReplyService(this);
     }
 
+    #helpService: IHelpService;
     get helpService(): IHelpService {
-        return new HelpService(this);
+        return this.#helpService;
     }
 
     // Factories --------------------------------------------------------------/
@@ -321,9 +323,11 @@ export class ServiceContainer implements IServiceContainer {
 
         switch (this.#environmentSettings.botFunction) {
             case BotFunction.Images:
+                this.#helpService = new ImageHelpService(this);
                 this.#generativeChatClient = new GenerativeImageChatClient(this);
                 break;
             case BotFunction.Text:
+                this.#helpService = new TextHelpService(this);
                 this.#generativeChatClient = new GenerativeTextChatClient(this);
                 break;
         }

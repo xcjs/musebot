@@ -1,4 +1,4 @@
-import { Attachment, ButtonInteraction, Client as DiscordClient, Message, MessageType  } from 'discord.js';
+import { Attachment, ButtonInteraction, Client as DiscordClient, Message, MessageType, User  } from 'discord.js';
 
 import { ContentType } from '../../../../../enums/ContentType.js';
 import { JavaScriptType } from '../../../../../enums/JavaScriptType.js';
@@ -35,6 +35,10 @@ export abstract class BaseReplyService implements IReplyService {
 
     reply(): Promise<void> {
         throw 'The reply() implementation must be overridden.';
+    }
+
+    mention(user: User): string {
+        return `<@${user.id}>`;
     }
 
     getAttachmentsByType(interaction: Message | ButtonInteraction, contentTypes: Array<ContentType>): Array<Attachment> {
