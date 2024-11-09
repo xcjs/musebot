@@ -323,12 +323,12 @@ export class ServiceContainer implements IServiceContainer {
 
         switch (this.#environmentSettings.botFunction) {
             case BotFunction.Images:
-                this.#generativeChatClient = new GenerativeImageChatClient(this);
                 this.#helpService = new ImageHelpService(this);
+                this.#generativeChatClient = new GenerativeImageChatClient(this);
                 break;
             case BotFunction.Text:
-                this.#generativeChatClient = new GenerativeTextChatClient(this);
                 this.#helpService = new TextHelpService(this);
+                this.#generativeChatClient = new GenerativeTextChatClient(this);
                 break;
         }
     }
