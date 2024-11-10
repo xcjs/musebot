@@ -8,7 +8,7 @@ export interface IReplyService {
     reply(
         interaction: Message | ButtonInteraction,
         content: string | null,
-        additionalAttachments: Array<AttachmentBuilder>,
+        attachments: Array<AttachmentBuilder>,
         isEdit: boolean
     ): Promise<void>;
 

@@ -1,18 +1,25 @@
-import { Attachment, ButtonInteraction, Client as DiscordClient, Message, MessageType, User  } from 'discord.js';
+import { Attachment, AttachmentBuilder, ButtonInteraction, Client as DiscordClient, Message, MessageType, User  } from 'discord.js';
+import { Logger, LogLevel } from 'meklog';
 
 import { ContentType } from '../../../../../enums/ContentType.js';
 import { JavaScriptType } from '../../../../../enums/JavaScriptType.js';
+import { splitText } from '../../../../../utilities/string-utilities.js';
 import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { IReplyService } from '../../IReplyService.js';
+import { DiscordConstants } from '../enums/DiscordConstants.js';
 
 export class ReplyService implements IReplyService {
     #environmentSettings: IEnvironmentSettings;
     #discordClient: DiscordClient;
 
+    #logger;
+
     constructor(services: IServiceContainer) {
         this.#environmentSettings = services.environmentSettings;
         this.#discordClient = services.discordClient;
+
+        this.#logger = new Logger('ReplyService');
     }
 
     shouldReply(message: Message): boolean {
@@ -33,8 +40,33 @@ export class ReplyService implements IReplyService {
         return shouldReply;
     }
 
-    reply(): Promise<void> {
-        throw 'The reply() implementation must be overridden.';
+    async reply(
+        interaction: Message | ButtonInteraction,
+        content: string | null,
+        attachments: Array<AttachmentBuilder> = [],
+        isEdit: boolean = false,): Promise<void> {
+
+        const replyContents = splitText(content, DiscordConstants.ContentMaxLength);
+
+        replyContents.forEach(async (contentFragment, i) => {
+            const indexLength = i++;
+
+            if (!isEdit) {
+                await interaction.reply({
+                    content: contentFragment,
+                    files: replyContents.length === indexLength ? attachments : []
+                });
+            } else if (isEdit && interaction instanceof ButtonInteraction) {
+                await interaction.editReply({
+                    content: contentFragment,
+                    files: replyContents.length === indexLength ? attachments : []
+                });
+            } else {
+                this.#logger(LogLevel.Warning,
+                    `An interaction occurred that did not fit the reply criteria of either being an edited reply to a`
+                    + ` ${typeof ButtonInteraction} nor a direct reply to any type of interaction.`);
+            }
+        });
     }
 
     mention(user: User): string {
