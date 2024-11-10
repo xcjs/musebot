@@ -17,8 +17,9 @@ export class TextHelpService extends BaseHelpService implements IHelpService {
             + '\n\n'
             + 'Thanks for using Musebot! This instance of Musebot is configured as a large language model service.'
             + '\n\n'
-            + `You can interact with this chatbot by mentioning it with "${this.replyService.mention(this.discordClient.user)}" plus its name followed by the image you want it to generate.`
-            + 'Additionally, there are various button-based interactions you can use after interacting with the bot at least once: '
+            + 'You can interact with this chatbot by mentioning it with'
+            + ` ${this.replyService.mention(this.discordClient.user)} followed by the message you want it to reply to.`
+            + ' Additionally, there are various button-based interactions you can use after interacting with the bot at least once: '
             + '\n\n';
 
         const actionRows = new LargeLanguageModelActionRow(this.#services);

@@ -1,4 +1,4 @@
-import { ButtonInteraction, Client as DiscordClient, GatewayIntentBits, Message, Partials } from 'discord.js';
+import { AttachmentBuilder, ButtonInteraction, Client as DiscordClient, GatewayIntentBits, Message, Partials } from 'discord.js';
 
 import { BotFunction } from '../enums/BotFunction.js';
 import { Automatic1111ReplyService } from './clients/chat/discord/automatic1111/Automatic1111ReplyService.js';
@@ -9,10 +9,12 @@ import { GenerativeTextChatClient } from './clients/chat/discord/GenerativeTextC
 import { OllamaReplyService } from './clients/chat/discord/ollama/OllamaReplyService.js';
 import { OllamaStreamingReplyService } from './clients/chat/discord/ollama/OllamaStreamingReplyService.js';
 import { ReplyService } from './clients/chat/discord/replies/ReplyService.js';
+import { ReplyTask } from './clients/chat/discord/tasks/ReplyTask.js';
 import { TypingService } from './clients/chat/discord/TypingService.js';
 import { IGenerativeChatClient } from './clients/chat/IGenerativeChatClient.js';
 import { IReplyService } from './clients/chat/IReplyService.js';
 import { ITypingService } from './clients/chat/ITypingService.js';
+import { IReplyTask } from './clients/chat/tasks/IReplyTask.js';
 import { Automatic1111Client } from './clients/images/automatic1111/Automatic1111Client.js';
 import { AttachRenderTask as A1AttachRenderTask } from './clients/images/automatic1111/tasks/AttachRenderTask.js';
 import { DecreaseGuidanceScaleRenderTask as A1DecreaseGuidanceScaleRenderTask } from './clients/images/automatic1111/tasks/DecreaseGuidanceScaleRenderTask.js';
@@ -136,6 +138,14 @@ export class ServiceContainer implements IServiceContainer {
     }
 
     // Factories --------------------------------------------------------------/
+    getReplyTask(
+        interaction: Message | ButtonInteraction,
+        content: string | null,
+        attachments: Array<AttachmentBuilder> = [],
+        isEdit: boolean = false
+        ): IReplyTask {
+        return new ReplyTask(this, interaction, content, attachments, isEdit);
+    }
 
     getAttachRenderTask(
         interaction: ButtonInteraction | Message,
