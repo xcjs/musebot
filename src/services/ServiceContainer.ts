@@ -320,13 +320,16 @@ export class ServiceContainer implements IServiceContainer {
             intents: [
                 GatewayIntentBits.Guilds,
                 GatewayIntentBits.GuildMessages,
+                GatewayIntentBits.GuildMessageReactions,
                 GatewayIntentBits.GuildMembers,
                 GatewayIntentBits.DirectMessages,
                 GatewayIntentBits.MessageContent
             ],
             allowedMentions: { users: [], roles: [], repliedUser: false },
             partials: [
-                Partials.Channel
+                Partials.Message,
+                Partials.Channel,
+                Partials.Reaction
             ],
             shards: DiscordConstants.ShardCountAuto
         });
