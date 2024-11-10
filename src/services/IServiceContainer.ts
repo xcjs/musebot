@@ -1,4 +1,4 @@
-import { ButtonInteraction, Client as DiscordClient, Message } from 'discord.js';
+import { AttachmentBuilder, ButtonInteraction, Client as DiscordClient, Message } from 'discord.js';
 
 import { Automatic1111ReplyService } from './clients/chat/discord/automatic1111/Automatic1111ReplyService.js';
 import { EasyDiffusionReplyService } from './clients/chat/discord/easy-diffusion/EasyDiffusionReplyService.js';
@@ -6,6 +6,7 @@ import { OllamaReplyService } from './clients/chat/discord/ollama/OllamaReplySer
 import { OllamaStreamingReplyService } from './clients/chat/discord/ollama/OllamaStreamingReplyService.js';
 import { IReplyService } from './clients/chat/IReplyService.js';
 import { ITypingService } from './clients/chat/ITypingService.js';
+import { IReplyTask } from './clients/chat/tasks/IReplyTask.js';
 import { Automatic1111Client } from './clients/images/automatic1111/Automatic1111Client.js';
 import { EasyDiffusionClient } from './clients/images/easy-diffusion/EasyDiffusionClient.js';
 import { IAttachRenderTask } from './clients/images/tasks/IAttachRenderTask.js';
@@ -47,6 +48,11 @@ export interface IServiceContainer {
     helpService: IHelpService;
 
     // Factories --------------------------------------------------------------/
+    getReplyTask(
+        interaction: Message | ButtonInteraction,
+        content: string,
+        attachments: Array<AttachmentBuilder>,
+        isEdit: boolean): IReplyTask;
 
     getAttachRenderTask(
         interaction: ButtonInteraction | Message,

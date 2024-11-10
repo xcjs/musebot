@@ -44,7 +44,7 @@ export class ReplyService implements IReplyService {
         interaction: Message | ButtonInteraction,
         content: string | null,
         attachments: Array<AttachmentBuilder> = [],
-        isEdit: boolean = false,): Promise<void> {
+        isEdit: boolean = false): Promise<void> {
 
         const replyContents = splitText(content, DiscordConstants.ContentMaxLength);
 
