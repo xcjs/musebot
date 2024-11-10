@@ -3,9 +3,13 @@ export function splitText(text: string, lineLength: number): Array<string> {
 
     while(text.length > 0) {
         if(text.length > lineLength) {
-            const splitPosition = text.substring(0, lineLength).lastIndexOf(' ');
-            splitText.push(text.substring(0, splitPosition));
+            let splitPosition = text.substring(0, lineLength).lastIndexOf('\n');
 
+            if(splitPosition === -1) {
+                splitPosition = text.substring(0, lineLength).lastIndexOf(' ');
+            }
+
+            splitText.push(text.substring(0, splitPosition));
             text = text.substring(splitPosition);
         } else {
             splitText.push(text);
