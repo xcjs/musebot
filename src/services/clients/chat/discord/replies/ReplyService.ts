@@ -19,7 +19,7 @@ export class ReplyService implements IReplyService {
         this.#environmentSettings = services.environmentSettings;
         this.#discordClient = services.discordClient;
 
-        this.#logger = new Logger('ReplyService');
+        this.#logger = new Logger('ReplyService', this.#environmentSettings.isProduction);
     }
 
     shouldReply(message: Message): boolean {
