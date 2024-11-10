@@ -46,7 +46,7 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
         this.#discordClient.once(Events.ClientReady, (event) => this.#onClientReady.call(self, event));
         this.#discordClient.on(Events.MessageCreate, async (message) => await this.#onMessageCreate.call(self, message));
         this.#discordClient.on(Events.InteractionCreate, async (interaction) => await this.#onInteraction.call(self, interaction));
-        this.#discordClient.on(Events.MessageReactionAdd, async (reaction, user) => )
+        this.#discordClient.on(Events.MessageReactionAdd, async (reaction, user) => await this.#onMessageReactionAdd.call(self, reaction, user));
     }
 
     #onClientReady(): Promise<void> {
@@ -114,7 +114,7 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
         await this.#typingService.startTyping(interaction);
     }
 
-    async onMessageReactionAdd(reaction: MessageReaction, user: User): Promise<void> {
+    async #onMessageReactionAdd(reaction: MessageReaction, user: User): Promise<void> {
         if(reaction.partial) {
             try {
                 await reaction.fetch();
