@@ -50,16 +50,17 @@ export class ReplyService implements IReplyService {
 
         replyContents.forEach(async (contentFragment, i) => {
             const indexLength = i++;
+            const replyAttachments = replyContents.length === indexLength ? attachments : [];
 
             if (!isEdit) {
                 await interaction.reply({
                     content: contentFragment,
-                    files: replyContents.length === indexLength ? attachments : []
+                    files: replyAttachments
                 });
             } else if (isEdit && interaction instanceof ButtonInteraction) {
                 await interaction.editReply({
                     content: contentFragment,
-                    files: replyContents.length === indexLength ? attachments : []
+                    files: replyAttachments
                 });
             } else {
                 this.#logger(LogLevel.Warning,
