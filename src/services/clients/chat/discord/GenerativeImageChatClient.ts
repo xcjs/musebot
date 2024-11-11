@@ -62,7 +62,7 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
     async #onMessageCreate(message: Message): Promise<void> {
         this.logger(LogLevel.Info, `Discord message created. ${message.author.displayName} (${message.author.username}): "${message}"`);
 
-        if (!this.#replyService.shouldReply(message)) {
+        if (!this.#replyService.shouldReply(message, false)) {
             this.logger(LogLevel.Info, 'Reply should not be created - skipping reply.');
             return;
         }
@@ -125,7 +125,7 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
             }
         }
 
-        if (!this.#replyService.shouldReply(reaction.message as Message)) {
+        if (!this.#replyService.shouldReply(reaction.message as Message, true)) {
             this.logger(LogLevel.Info, 'Reply should not be created - skipping reply.');
             return;
         }

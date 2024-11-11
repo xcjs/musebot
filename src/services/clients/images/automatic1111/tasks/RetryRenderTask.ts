@@ -96,7 +96,7 @@ export class RetryRenderTask extends BaseTask implements IRetryRenderTask {
                         break;
                 }
 
-                request.prompt += ` ${this.#promptExtension}`;
+                request.prompt += `, ${this.#promptExtension.trim()}`;
                 content += ` as \`${request.prompt}\``;
             } else {
                 request.seed = -1;

@@ -16,6 +16,14 @@ import { IPromptResponseTask } from '../../tasks/IPromptResponseTask.js';
 import { OllamaClient } from '../OllamaClient.js';
 
 export class PromptResponseTask extends BaseTask implements IPromptResponseTask {
+    override get taskChannel(): string {
+        return `Ollama_${this.#ollamaClient.host}`;
+    }
+
+    override set onSuccess(callback: (context: Array<number>) => void) {
+        this.#onSuccess = callback;
+    }
+
     #services: IServiceContainer;
 
     #environmentSettings: IEnvironmentSettings;
@@ -33,14 +41,6 @@ export class PromptResponseTask extends BaseTask implements IPromptResponseTask 
     #logger;
 
     #onSuccess: (context: Array<number>) => void  = () => { };
-
-    override get taskChannel(): string {
-        return `Ollama_${this.#ollamaClient.host}`;
-    }
-
-    override set onSuccess(callback: (context: Array<number>) => void) {
-        this.#onSuccess = callback;
-    }
 
     constructor(
         services: IServiceContainer,

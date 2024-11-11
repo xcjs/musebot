@@ -2,7 +2,6 @@ import { Attachment, AttachmentBuilder, ButtonInteraction, Client as DiscordClie
 import { Logger, LogLevel } from 'meklog';
 
 import { ContentType } from '../../../../../enums/ContentType.js';
-import { JavaScriptType } from '../../../../../enums/JavaScriptType.js';
 import { splitText } from '../../../../../utilities/string-utilities.js';
 import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
@@ -22,22 +21,55 @@ export class ReplyService implements IReplyService {
         this.#logger = new Logger(this.#environmentSettings.isProduction, 'ReplyService');
     }
 
-    shouldReply(message: Message): boolean {
-        const shouldReply =
-            !message.system         // Not a system message.
-            && !!message.guild      // The message should be from a guild (server).
-            && message.type === MessageType.Default // The message is a default message type.
-            && !!message.author.id  // The message should have an author.
-            && !message.author.bot  // No messages by bots.
-            && !!message.mentions.members?.find(x => x.id === this.#discordClient.user?.id) // The message explicitly tags this bot.
-            && message.author.id !== this.#discordClient.user?.id // No messages by this bot.
-            && (
-                this.#environmentSettings.discordChannels.length === 0
-                || this.#environmentSettings.discordChannels.includes(message.channel.id)) // The channel is in the configured whitelist if there is one.
-            && typeof message.content === JavaScriptType.String  // Only respond to text-based messages.
-            && message.content.length > 0;                       // Only respond to messages with more than 0 characters.
+    shouldReply(message: Message, isReaction: boolean = false): boolean {
+        // The message is system message.
+        if(message.system) {
+            return false;
+        }
 
-        return shouldReply;
+        // The message isn't from a guild (server).
+        if(!message.guild) {
+            return false;
+        }
+
+        // The message is not a default message type and not a reaction reply.
+        if (message.type !== MessageType.Default && !isReaction) {
+            return false;
+        }
+
+        // The has no author.
+        if(!message.author.id) {
+            return false;
+        }
+
+        // No messages by bots unless it's a reaction reply.
+        if (message.author.bot && !isReaction) {
+            return false;
+        }
+
+        // The message doesn't explicitly tag this bot or isn't a reaction reply.
+        if (!message.mentions.members?.find(x => x.id === this.#discordClient.user?.id)
+            && !isReaction) {
+            return false;
+        }
+
+        // The bot can't reply to itself unless it's in response to a reaction.
+        if (message.author.id === this.#discordClient.user?.id && !isReaction) {
+            return false;
+        }
+
+        // The channel isn't in the configured whitelist if there is one.
+        if (this.#environmentSettings.discordChannels.length > 0
+            && !this.#environmentSettings.discordChannels.includes(message.channel.id)) {
+            return false;
+        }
+
+        // The message has no content and is not a reaction.
+        if (message.content.length === 0 && !isReaction) {
+            return false;
+        }
+
+        return true;
     }
 
     async reply(
