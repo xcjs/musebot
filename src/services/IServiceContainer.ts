@@ -1,4 +1,4 @@
-import { AttachmentBuilder, ButtonInteraction, Client as DiscordClient, Message } from 'discord.js';
+import { AttachmentBuilder, ButtonInteraction, Client as DiscordClient, Message, MessageReaction, User } from 'discord.js';
 
 import { Automatic1111ReplyService } from './clients/chat/discord/automatic1111/Automatic1111ReplyService.js';
 import { EasyDiffusionReplyService } from './clients/chat/discord/easy-diffusion/EasyDiffusionReplyService.js';
@@ -9,6 +9,7 @@ import { ITypingService } from './clients/chat/ITypingService.js';
 import { IReplyTask } from './clients/chat/tasks/IReplyTask.js';
 import { Automatic1111Client } from './clients/images/automatic1111/Automatic1111Client.js';
 import { EasyDiffusionClient } from './clients/images/easy-diffusion/EasyDiffusionClient.js';
+import { PromptExtensionType } from './clients/images/enums/PromptExtensionType.js';
 import { IAttachRenderTask } from './clients/images/tasks/IAttachRenderTask.js';
 import { IDecreaseGuidanceScaleRenderTask } from './clients/images/tasks/IDecreaseGuidanceScaleRenderTask.js';
 import { IExpandPromptTask } from './clients/images/tasks/IExpandPromptTask.js';
@@ -20,6 +21,7 @@ import { IRetryRenderTask } from './clients/images/tasks/IRetryRenderTask.js';
 import { IShowSourceTask } from './clients/images/tasks/IShowSourceTask.js';
 import { IUpscaleRenderTask } from './clients/images/tasks/IUpscaleRenderTask.js';
 import { OllamaClient } from './clients/text/ollama/OllamaClient.js';
+import { IEmojiResponseTask } from './clients/text/tasks/IEmojiResponseTask.js';
 import { IPromptResponseTask } from './clients/text/tasks/IPromptResponseTask.js';
 import { IFeatureService } from './features/IFeatureService.js';
 import { IHelpService } from './help/IHelpService.js';
@@ -66,8 +68,16 @@ export interface IServiceContainer {
     getJsonRenderTask(message: Message): IJsonRenderTask;
     getPromptRenderTask(message: Message): IPromptRenderTask;
     getRandomRenderTask(interaction: ButtonInteraction): IRandomRenderTask;
-    getRetryRenderTask(interaction: ButtonInteraction): IRetryRenderTask;
+
+    getRetryRenderTask(
+        interaction: Message | ButtonInteraction,
+        promptExtension: string | null,
+        promptExtensionType: PromptExtensionType | null,
+        userOverride: User): IRetryRenderTask;
+
     getShowSourceTask(interaction: ButtonInteraction): IShowSourceTask;
     getUpscaleRenderTask(interaction: ButtonInteraction): IUpscaleRenderTask;
+
     getPromptResponseTask(message: Message, context: Array<number>): IPromptResponseTask;
+    getEmojiResponseTask(reaction: MessageReaction, user: User, context: Array<number>): IEmojiResponseTask;
 }

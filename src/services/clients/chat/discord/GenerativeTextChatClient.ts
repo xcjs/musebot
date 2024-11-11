@@ -1,4 +1,4 @@
-import { ButtonInteraction, Client as DiscordClient, Events, Message } from 'discord.js';
+import { ButtonInteraction, Client as DiscordClient, Events, Message, MessageReaction, User } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
 import { BotInteraction } from '../../../../enums/BotInteraction.js';
@@ -48,6 +48,7 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
         this.#discordClient.once(Events.ClientReady, (event) => this.#onClientReady.call(self, event));
         this.#discordClient.on(Events.MessageCreate, async (message) => await this.#onMessageCreate.call(self, message));
         this.#discordClient.on(Events.InteractionCreate, async (interaction) => await this.#onInteraction.call(self, interaction));
+        this.#discordClient.on(Events.MessageReactionAdd, async (reaction, user) => await this.#onMessageReactionAdd.call(self, reaction, user));
     }
 
     #onClientReady(): Promise<void> {
@@ -106,4 +107,9 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
             this.logger(LogLevel.Error, 'An exception occurred while clearing the Ollama context.');
         }
      }
+
+    async #onMessageReactionAdd(reaction: MessageReaction, user: User): Promise<void> {
+        await this.#typingService.startTyping(reaction.message as Message);
+        this.#taskQueue.add(this.#services.getEmojiResponseTask(reaction, user, this.#context) as BaseTask);
+    }
 }

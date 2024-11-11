@@ -1,4 +1,4 @@
-export class IHttpExchange<RequestType, ResponseType> {
+export interface IHttpExchange<RequestType, ResponseType> {
     request: RequestType;
     response: ResponseType;
 }

@@ -1,4 +1,4 @@
-import { AttachmentBuilder, ButtonInteraction, Client as DiscordClient, GatewayIntentBits, Message, Partials } from 'discord.js';
+import { AttachmentBuilder, ButtonInteraction, Client as DiscordClient, GatewayIntentBits, Message, MessageReaction, Partials, User } from 'discord.js';
 
 import { BotFunction } from '../enums/BotFunction.js';
 import { Automatic1111ReplyService } from './clients/chat/discord/automatic1111/Automatic1111ReplyService.js';
@@ -37,6 +37,7 @@ import { RandomRenderTask as EdRandomRenderTask } from './clients/images/easy-di
 import { RetryRenderTask as EdRetryRenderTask } from './clients/images/easy-diffusion/tasks/RetryRenderTask.js';
 import { ShowSourceTask as EdShowSourceTask } from './clients/images/easy-diffusion/tasks/ShowSourceTask.js';
 import { UpscaleRenderTask as EdUpscaleRenderTask } from './clients/images/easy-diffusion/tasks/UpscaleRenderTask.js';
+import { PromptExtensionType } from './clients/images/enums/PromptExtensionType.js';
 import { ImageHelpService } from './clients/images/help/ImageHelpService.js';
 import { StableDiffusionApiType } from './clients/images/stable-diffusion/enums/StableDiffusionApiType.js';
 import { IAttachRenderTask } from './clients/images/tasks/IAttachRenderTask.js';
@@ -50,7 +51,9 @@ import { IRetryRenderTask } from './clients/images/tasks/IRetryRenderTask.js';
 import { IShowSourceTask } from './clients/images/tasks/IShowSourceTask.js';
 import { IUpscaleRenderTask } from './clients/images/tasks/IUpscaleRenderTask.js';
 import { OllamaClient } from './clients/text/ollama/OllamaClient.js';
+import { EmojiResponseTask } from './clients/text/ollama/tasks/EmojiResponseTask.js';
 import { PromptResponseTask } from './clients/text/ollama/tasks/PromptResponseTask.js';
+import { IEmojiResponseTask } from './clients/text/tasks/IEmojiResponseTask.js';
 import { IPromptResponseTask } from './clients/text/tasks/IPromptResponseTask.js';
 import { TextHelpService } from './clients/text/TextHelpService.js';
 import { EnvironmentSettings } from './EnvironmentSettings.js';
@@ -256,16 +259,21 @@ export class ServiceContainer implements IServiceContainer {
         }
     }
 
-    getRetryRenderTask(interaction: ButtonInteraction): IRetryRenderTask {
+    getRetryRenderTask(
+        interaction: Message | ButtonInteraction,
+        promptExtension: string = null,
+        promptExtensionType: PromptExtensionType | null,
+        userOverride: User | null = null
+    ): IRetryRenderTask {
         if (!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)) {
             throw this.#taskNotConfiguredError;
         }
 
         switch (this.#environmentSettings.stableDiffusionApiType) {
             case StableDiffusionApiType.Automatic1111:
-                return new A1RetryRenderTask(this, interaction);
+                return new A1RetryRenderTask(this, interaction, promptExtension, promptExtensionType, userOverride);
             case StableDiffusionApiType.EasyDiffusion:
-                return new EdRetryRenderTask(this, interaction);
+                return new EdRetryRenderTask(this, interaction, promptExtension, promptExtensionType, userOverride);
             default:
                 throw this.#taskNotConfiguredError;
         }
@@ -309,6 +317,14 @@ export class ServiceContainer implements IServiceContainer {
         return new PromptResponseTask(this, message, context);
     }
 
+    getEmojiResponseTask(reaction: MessageReaction, user: User, context: Array<number>): IEmojiResponseTask {
+        if(!this.featureService.hasFeature(SupportedFeature.TextGeneration)) {
+            throw this.#taskNotConfiguredError;
+        }
+
+        return new EmojiResponseTask(this, reaction, user, context);
+    }
+
     constructor() {
         // Singletons instantiated here.
         this.#environmentSettings = new EnvironmentSettings();
@@ -320,13 +336,16 @@ export class ServiceContainer implements IServiceContainer {
             intents: [
                 GatewayIntentBits.Guilds,
                 GatewayIntentBits.GuildMessages,
+                GatewayIntentBits.GuildMessageReactions,
                 GatewayIntentBits.GuildMembers,
                 GatewayIntentBits.DirectMessages,
                 GatewayIntentBits.MessageContent
             ],
             allowedMentions: { users: [], roles: [], repliedUser: false },
             partials: [
-                Partials.Channel
+                Partials.Message,
+                Partials.Channel,
+                Partials.Reaction
             ],
             shards: DiscordConstants.ShardCountAuto
         });

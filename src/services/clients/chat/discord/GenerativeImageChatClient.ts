@@ -1,4 +1,4 @@
-import { ButtonInteraction, Client as DiscordClient, Events, Message } from 'discord.js';
+import { ButtonInteraction, Client as DiscordClient, Events, Message, MessageReaction, User } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
 import { BotInteraction } from '../../../../enums/BotInteraction.js';
@@ -7,6 +7,7 @@ import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
 import { ITaskQueue } from '../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
+import { PromptExtensionType } from '../../images/enums/PromptExtensionType.js';
 import { IReplyService } from '../IReplyService.js';
 import { ITypingService } from '../ITypingService.js';
 import { BaseDiscordClient } from './BaseDiscordClient.js';
@@ -46,6 +47,7 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
         this.#discordClient.once(Events.ClientReady, (event) => this.#onClientReady.call(self, event));
         this.#discordClient.on(Events.MessageCreate, async (message) => await this.#onMessageCreate.call(self, message));
         this.#discordClient.on(Events.InteractionCreate, async (interaction) => await this.#onInteraction.call(self, interaction));
+        this.#discordClient.on(Events.MessageReactionAdd, async (reaction, user) => await this.#onMessageReactionAdd.call(self, reaction, user));
     }
 
     #onClientReady(): Promise<void> {
@@ -78,7 +80,7 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
 
         switch (interaction.customId) {
             case BotInteraction.Retry:
-                this.#taskQueue.add(this.#services.getRetryRenderTask(interaction) as BaseTask);
+                this.#taskQueue.add(this.#services.getRetryRenderTask(interaction, null, null, null) as BaseTask);
                 break;
             case BotInteraction.Upscale:
                 this.#taskQueue.add(this.#services.getUpscaleRenderTask(interaction) as BaseTask);
@@ -111,5 +113,24 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
         }
 
         await this.#typingService.startTyping(interaction);
+    }
+
+    async #onMessageReactionAdd(reaction: MessageReaction, user: User): Promise<void> {
+        if(reaction.partial) {
+            try {
+                reaction = await reaction.fetch();
+            } catch (error) {
+                this.logger(LogLevel.Error, `Something went wrong when fetching the MessageReaction:`, error);
+                return;
+            }
+        }
+
+        await this.#typingService.startTyping(reaction.message as Message);
+
+        this.#taskQueue.add(this.#services.getRetryRenderTask(
+            reaction.message as Message,
+            reaction.emoji.name,
+            PromptExtensionType.Emoji,
+            user) as BaseTask);
     }
 }
