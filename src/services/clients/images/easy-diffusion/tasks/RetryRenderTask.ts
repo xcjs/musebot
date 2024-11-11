@@ -1,4 +1,4 @@
-import { ButtonInteraction } from 'discord.js';
+import { ButtonInteraction, Message, User } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
 import { ContentType } from '../../../../../enums/ContentType.js';
@@ -20,7 +20,9 @@ export class RetryRenderTask extends BaseTask implements IRetryRenderTask {
     #easyDiffusionReplyService: EasyDiffusionReplyService;
     #replyService: IReplyService;
 
-    #interaction: ButtonInteraction;
+    #interaction: Message | ButtonInteraction;
+    #promptExtension: string | null;
+    #userOverride: User | null;
 
     #logger;
 
@@ -28,7 +30,11 @@ export class RetryRenderTask extends BaseTask implements IRetryRenderTask {
         return `EasyDiffusion_${this.#easyDiffusionClient.host}`;
     }
 
-    constructor(services: IServiceContainer, interaction: ButtonInteraction) {
+    constructor(
+        services: IServiceContainer,
+        interaction: Message | ButtonInteraction,
+        promptExtension: string | null = null,
+        userOverride: User | null = null) {
         super(services);
 
         this.#environmentSettings = services.environmentSettings;
@@ -37,6 +43,8 @@ export class RetryRenderTask extends BaseTask implements IRetryRenderTask {
         this.#replyService = services.replyService;
 
         this.#interaction = interaction;
+        this.#promptExtension = promptExtension;
+        this.#userOverride = userOverride;
 
         this.#logger = new Logger(this.#environmentSettings.isProduction, 'RetryRenderTask');
     }
@@ -53,10 +61,20 @@ export class RetryRenderTask extends BaseTask implements IRetryRenderTask {
         const imageAttachment = this.#replyService.getAttachmentsByType(this.#interaction, imageTypes)[0];
 
         let request: RenderRequest = null;
+        let content: string;
 
         if(imageAttachment?.description) {
             request = RenderRequest.fromJson(imageAttachment.description);
-            request.refreshSeed();
+            content =
+                `${this.#userOverride.id ? this.#replyService.mention(this.#userOverride) : this.#interaction.member}`
+                + ` re-rendered \`${request.prompt}\``.substring(0, DiscordConstants.ContentMaxLength);
+
+            if(this.#promptExtension !== null) {
+                request.prompt += ` ${this.#promptExtension}`;
+                content += ` as \`${request.prompt}\``;
+            } else {
+                request.refreshSeed();
+            }
         }
 
         const model = this.#environmentSettings.stableDiffusionModels.length > 0 ?
@@ -67,7 +85,9 @@ export class RetryRenderTask extends BaseTask implements IRetryRenderTask {
         request.use_stable_diffusion_model = model;
 
         const renderData = await this.#easyDiffusionReplyService.renderImage(request);
-        const content = `${this.#interaction.member} re-rendered \`${request.prompt}\``.substring(0, DiscordConstants.ContentMaxLength);
+
+        // const content = `${this.#interaction.member} re-rendered \`${request.prompt}\``.substring(0, DiscordConstants.ContentMaxLength);
+
         await this.#easyDiffusionReplyService.reply(this.#interaction, renderData, content);
     }
 

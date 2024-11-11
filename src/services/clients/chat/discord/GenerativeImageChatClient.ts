@@ -79,7 +79,7 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
 
         switch (interaction.customId) {
             case BotInteraction.Retry:
-                this.#taskQueue.add(this.#services.getRetryRenderTask(interaction) as BaseTask);
+                this.#taskQueue.add(this.#services.getRetryRenderTask(interaction, null, null) as BaseTask);
                 break;
             case BotInteraction.Upscale:
                 this.#taskQueue.add(this.#services.getUpscaleRenderTask(interaction) as BaseTask);
@@ -117,13 +117,18 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
     async #onMessageReactionAdd(reaction: MessageReaction, user: User): Promise<void> {
         if(reaction.partial) {
             try {
-                await reaction.fetch();
+                reaction = await reaction.fetch();
             } catch (error) {
-                this.logger(LogLevel.Error, 'Something went wrong when fetching the message:', error);
+                this.logger(LogLevel.Error, `Something went wrong when fetching the MessageReaction:`, error);
                 return;
             }
         }
 
+        await this.#typingService.startTyping(reaction.message as Message);
 
+        this.#taskQueue.add(this.#services.getRetryRenderTask(
+            reaction.message as Message,
+            reaction.emoji.name,
+            user) as BaseTask);
     }
 }

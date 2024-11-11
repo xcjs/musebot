@@ -1,4 +1,4 @@
-import { AttachmentBuilder, ButtonInteraction, Client as DiscordClient, Message } from 'discord.js';
+import { AttachmentBuilder, ButtonInteraction, Client as DiscordClient, Message, User } from 'discord.js';
 
 import { Automatic1111ReplyService } from './clients/chat/discord/automatic1111/Automatic1111ReplyService.js';
 import { EasyDiffusionReplyService } from './clients/chat/discord/easy-diffusion/EasyDiffusionReplyService.js';
@@ -66,7 +66,12 @@ export interface IServiceContainer {
     getJsonRenderTask(message: Message): IJsonRenderTask;
     getPromptRenderTask(message: Message): IPromptRenderTask;
     getRandomRenderTask(interaction: ButtonInteraction): IRandomRenderTask;
-    getRetryRenderTask(interaction: ButtonInteraction): IRetryRenderTask;
+
+    getRetryRenderTask(
+        interaction: Message | ButtonInteraction,
+        promptExtension: string | null,
+        userOverride: User): IRetryRenderTask;
+
     getShowSourceTask(interaction: ButtonInteraction): IShowSourceTask;
     getUpscaleRenderTask(interaction: ButtonInteraction): IUpscaleRenderTask;
     getPromptResponseTask(message: Message, context: Array<number>): IPromptResponseTask;
