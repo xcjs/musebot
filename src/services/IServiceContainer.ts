@@ -9,6 +9,7 @@ import { ITypingService } from './clients/chat/ITypingService.js';
 import { IReplyTask } from './clients/chat/tasks/IReplyTask.js';
 import { Automatic1111Client } from './clients/images/automatic1111/Automatic1111Client.js';
 import { EasyDiffusionClient } from './clients/images/easy-diffusion/EasyDiffusionClient.js';
+import { PromptExtensionType } from './clients/images/enums/PromptExtensionType.js';
 import { IAttachRenderTask } from './clients/images/tasks/IAttachRenderTask.js';
 import { IDecreaseGuidanceScaleRenderTask } from './clients/images/tasks/IDecreaseGuidanceScaleRenderTask.js';
 import { IExpandPromptTask } from './clients/images/tasks/IExpandPromptTask.js';
@@ -70,6 +71,7 @@ export interface IServiceContainer {
     getRetryRenderTask(
         interaction: Message | ButtonInteraction,
         promptExtension: string | null,
+        promptExtensionType: PromptExtensionType | null,
         userOverride: User): IRetryRenderTask;
 
     getShowSourceTask(interaction: ButtonInteraction): IShowSourceTask;

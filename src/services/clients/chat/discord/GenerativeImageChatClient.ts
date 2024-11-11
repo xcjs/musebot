@@ -7,6 +7,7 @@ import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
 import { ITaskQueue } from '../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
+import { PromptExtensionType } from '../../images/enums/PromptExtensionType.js';
 import { IReplyService } from '../IReplyService.js';
 import { ITypingService } from '../ITypingService.js';
 import { BaseDiscordClient } from './BaseDiscordClient.js';
@@ -79,7 +80,7 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
 
         switch (interaction.customId) {
             case BotInteraction.Retry:
-                this.#taskQueue.add(this.#services.getRetryRenderTask(interaction, null, null) as BaseTask);
+                this.#taskQueue.add(this.#services.getRetryRenderTask(interaction, null, null, null) as BaseTask);
                 break;
             case BotInteraction.Upscale:
                 this.#taskQueue.add(this.#services.getUpscaleRenderTask(interaction) as BaseTask);
@@ -129,6 +130,7 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
         this.#taskQueue.add(this.#services.getRetryRenderTask(
             reaction.message as Message,
             reaction.emoji.name,
+            PromptExtensionType.Emoji,
             user) as BaseTask);
     }
 }

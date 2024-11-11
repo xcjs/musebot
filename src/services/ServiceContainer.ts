@@ -37,6 +37,7 @@ import { RandomRenderTask as EdRandomRenderTask } from './clients/images/easy-di
 import { RetryRenderTask as EdRetryRenderTask } from './clients/images/easy-diffusion/tasks/RetryRenderTask.js';
 import { ShowSourceTask as EdShowSourceTask } from './clients/images/easy-diffusion/tasks/ShowSourceTask.js';
 import { UpscaleRenderTask as EdUpscaleRenderTask } from './clients/images/easy-diffusion/tasks/UpscaleRenderTask.js';
+import { PromptExtensionType } from './clients/images/enums/PromptExtensionType.js';
 import { ImageHelpService } from './clients/images/help/ImageHelpService.js';
 import { StableDiffusionApiType } from './clients/images/stable-diffusion/enums/StableDiffusionApiType.js';
 import { IAttachRenderTask } from './clients/images/tasks/IAttachRenderTask.js';
@@ -259,6 +260,7 @@ export class ServiceContainer implements IServiceContainer {
     getRetryRenderTask(
         interaction: Message | ButtonInteraction,
         promptExtension: string = null,
+        promptExtensionType: PromptExtensionType | null,
         userOverride: User | null = null
     ): IRetryRenderTask {
         if (!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)) {
@@ -267,9 +269,9 @@ export class ServiceContainer implements IServiceContainer {
 
         switch (this.#environmentSettings.stableDiffusionApiType) {
             case StableDiffusionApiType.Automatic1111:
-                return new A1RetryRenderTask(this, interaction, promptExtension, userOverride);
+                return new A1RetryRenderTask(this, interaction, promptExtension, promptExtensionType, userOverride);
             case StableDiffusionApiType.EasyDiffusion:
-                return new EdRetryRenderTask(this, interaction, promptExtension, userOverride);
+                return new EdRetryRenderTask(this, interaction, promptExtension, promptExtensionType, userOverride);
             default:
                 throw this.#taskNotConfiguredError;
         }
