@@ -1,10 +1,11 @@
-import { Client as DiscordClient, Message, MessageReaction, User } from 'discord.js';
+import { Message, MessageReaction, User } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../../../../features/IFeatureService.js';
 import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.js';
@@ -15,6 +16,14 @@ import { IEmojiResponseTask } from '../../tasks/IEmojiResponseTask.js';
 import { OllamaClient } from '../OllamaClient.js';
 
 export class EmojiResponseTask extends BaseTask implements IEmojiResponseTask {
+    override get taskChannel(): string {
+        return `Ollama_${this.#ollamaClient.host}`;
+    }
+
+    override set onSuccess(callback: (context: Array<number>) => void) {
+        this.#onSuccess = callback;
+    }
+
     #services: IServiceContainer;
 
     #environmentSettings: IEnvironmentSettings;
@@ -22,7 +31,6 @@ export class EmojiResponseTask extends BaseTask implements IEmojiResponseTask {
     #ollamaClient: OllamaClient;
     #ollamaReplyService: OllamaReplyService;
     #ollamaStreamingReplyService: OllamaStreamingReplyService;
-    #discordClient: DiscordClient;
     #replyService: IReplyService;
     #taskQueue: ITaskQueue;
 
@@ -32,9 +40,7 @@ export class EmojiResponseTask extends BaseTask implements IEmojiResponseTask {
 
     #logger;
 
-    override get taskChannel(): string {
-        return `Ollama_${this.#ollamaClient.host}`;
-    }
+    #onSuccess: (context: Array<number>) => void = () => { };
 
     constructor(
         services: IServiceContainer,
@@ -50,7 +56,6 @@ export class EmojiResponseTask extends BaseTask implements IEmojiResponseTask {
         this.#ollamaClient = services.ollamaClient;
         this.#ollamaReplyService = services.ollamaReplyService;
         this.#ollamaStreamingReplyService = services.ollamaStreamingReplyService;
-        this.#discordClient = services.discordClient;
         this.#replyService = services.replyService;
         this.#taskQueue = services.taskQueue;
 
@@ -78,6 +83,19 @@ export class EmojiResponseTask extends BaseTask implements IEmojiResponseTask {
             && replies.length > 0) {
             this.#attachImage(exchange.response.response, replies);
         }
+    }
+
+    override async postProcess(): Promise<void> {
+        switch (this.taskStatus) {
+            case TaskStatus.Dead:
+                await this.#replyService.replyWithError(this.#reaction.message as Message);
+                break;
+            case TaskStatus.Successful:
+                this.#onSuccess(this.#context);
+                break;
+        }
+
+        this.#ollamaStreamingReplyService.clearState();
     }
 
     async #processAsStream(formattedMessage: string, context: Array<number>): Promise<void> {

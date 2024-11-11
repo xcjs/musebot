@@ -3,7 +3,7 @@ import { Attachment, AttachmentBuilder, ButtonInteraction, Message, User } from 
 import { ContentType } from '../../../enums/ContentType.js';
 
 export interface IReplyService {
-    shouldReply(message: Message): boolean;
+    shouldReply(message: Message, isReaction: boolean): boolean;
 
     reply(
         interaction: Message | ButtonInteraction,
