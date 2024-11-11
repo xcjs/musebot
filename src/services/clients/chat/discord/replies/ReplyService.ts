@@ -69,6 +69,11 @@ export class ReplyService implements IReplyService {
             return false;
         }
 
+        // If the bot is replying to a reaction, it must be to this bot's message.
+        if(isReaction && message.author.id !== this.#discordClient.user?.id) {
+            return false;
+        }
+
         return true;
     }
 
