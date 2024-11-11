@@ -1,4 +1,4 @@
-import { AttachmentBuilder, ButtonInteraction, Client as DiscordClient, GatewayIntentBits, Message, Partials, User } from 'discord.js';
+import { AttachmentBuilder, ButtonInteraction, Client as DiscordClient, GatewayIntentBits, Message, MessageReaction, Partials, User } from 'discord.js';
 
 import { BotFunction } from '../enums/BotFunction.js';
 import { Automatic1111ReplyService } from './clients/chat/discord/automatic1111/Automatic1111ReplyService.js';
@@ -51,7 +51,9 @@ import { IRetryRenderTask } from './clients/images/tasks/IRetryRenderTask.js';
 import { IShowSourceTask } from './clients/images/tasks/IShowSourceTask.js';
 import { IUpscaleRenderTask } from './clients/images/tasks/IUpscaleRenderTask.js';
 import { OllamaClient } from './clients/text/ollama/OllamaClient.js';
+import { EmojiResponseTask } from './clients/text/ollama/tasks/EmojiResponseTask.js';
 import { PromptResponseTask } from './clients/text/ollama/tasks/PromptResponseTask.js';
+import { IEmojiResponseTask } from './clients/text/tasks/IEmojiResponseTask.js';
 import { IPromptResponseTask } from './clients/text/tasks/IPromptResponseTask.js';
 import { TextHelpService } from './clients/text/TextHelpService.js';
 import { EnvironmentSettings } from './EnvironmentSettings.js';
@@ -313,6 +315,14 @@ export class ServiceContainer implements IServiceContainer {
         }
 
         return new PromptResponseTask(this, message, context);
+    }
+
+    getEmojiResponseTask(reaction: MessageReaction, user: User, context: Array<number>): IEmojiResponseTask {
+        if(!this.featureService.hasFeature(SupportedFeature.TextGeneration)) {
+            throw this.#taskNotConfiguredError;
+        }
+
+        return new EmojiResponseTask(this, reaction, user, context);
     }
 
     constructor() {
