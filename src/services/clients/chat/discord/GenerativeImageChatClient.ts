@@ -125,6 +125,11 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
             }
         }
 
+        if (!this.#replyService.shouldReply(reaction.message as Message)) {
+            this.logger(LogLevel.Info, 'Reply should not be created - skipping reply.');
+            return;
+        }
+
         await this.#typingService.startTyping(reaction.message as Message);
 
         this.#taskQueue.add(this.#services.getRetryRenderTask(
