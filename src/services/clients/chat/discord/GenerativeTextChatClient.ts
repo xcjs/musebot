@@ -109,7 +109,22 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
      }
 
     async #onMessageReactionAdd(reaction: MessageReaction, user: User): Promise<void> {
+        if (reaction.partial) {
+            try {
+                reaction = await reaction.fetch();
+            } catch (error) {
+                this.logger(LogLevel.Error, `Something went wrong when fetching the MessageReaction:`, error);
+                return;
+            }
+        }
+
+        if (!this.#replyService.shouldReply(reaction.message as Message)) {
+            this.logger(LogLevel.Info, 'Reply should not be created - skipping reply.');
+            return;
+        }
+
         await this.#typingService.startTyping(reaction.message as Message);
+
         this.#taskQueue.add(this.#services.getEmojiResponseTask(reaction, user, this.#context) as BaseTask);
     }
 }

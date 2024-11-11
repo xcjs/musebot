@@ -62,15 +62,6 @@ export class EmojiResponseTask extends BaseTask implements IEmojiResponseTask {
     }
 
     override async process(): Promise<void> {
-        if (this.#reaction.partial) {
-            try {
-                this.#reaction = await this.#reaction.fetch();
-            } catch (error) {
-                this.#logger(LogLevel.Error, `Something went wrong when fetching the MessageReaction:`, error);
-                return;
-            }
-        }
-
         const prompt = `${this.#replyService.mention(this.#user)} reacted to your response with ${this.#reaction.emoji.name}.`
 
         if (this.#environmentSettings.ollamaStreamsResponse) {
