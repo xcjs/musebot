@@ -78,7 +78,7 @@ export class RetryRenderTask extends BaseTask implements IRetryRenderTask {
         if(imageAttachment?.description) {
             request = SerializableRenderRequest.fromJson(imageAttachment.description).toTxt2ImgOptionsRequest();
             content =
-                `${this.#userOverride?.id !== null ? this.#replyService.mention(this.#userOverride) : this.#interaction.member}`
+                `${this.#userOverride !== null ? this.#replyService.mention(this.#userOverride) : this.#interaction.member}`
                 + ` re-rendered \`${request.prompt}\``.substring(0, DiscordConstants.ContentMaxLength);
 
             if(this.#promptExtension !== null) {
