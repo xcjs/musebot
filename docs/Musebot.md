@@ -7,7 +7,7 @@ as entertainment or to aid in creative processes.
 
 Musebot currently supports the following generative AI solutions:
 
-* [EasyDiffusion](https://easydiffusion.github.io/)
+* [EasyDiffusion](https://easydiffusion.github.io/) - Deprecated, partial support for new features.
 * [Automatic1111/Stable Diffusion Web UI](https://github.com/AUTOMATIC1111/stable-diffusion-webui)
 * [Forge UI](https://github.com/lllyasviel/stable-diffusion-webui-forge)
 * [Ollama](https://ollama.com/)
