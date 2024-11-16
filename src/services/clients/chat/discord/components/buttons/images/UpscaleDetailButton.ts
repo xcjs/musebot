@@ -19,8 +19,7 @@ export class UpscaleDetailButton extends BaseComponent<ButtonBuilder> {
     }
 
     override get helpText(): string {
-        return 'Use machine learning to enlarge your detailed or realistic image.'
-            + ' This works best with photorealistic images or images that contain a lot of complex detail.';
+        return 'Use machine learning to enlarge a detailed or realistic image.';
     }
 
     constructor(services: IServiceContainer) {
