@@ -8,6 +8,7 @@ import { IReplyService } from './clients/chat/IReplyService.js';
 import { ITypingService } from './clients/chat/ITypingService.js';
 import { IReplyTask } from './clients/chat/tasks/IReplyTask.js';
 import { Automatic1111Client } from './clients/images/automatic1111/Automatic1111Client.js';
+import { Upscaler } from './clients/images/automatic1111/enums/Upscaler.js';
 import { EasyDiffusionClient } from './clients/images/easy-diffusion/EasyDiffusionClient.js';
 import { PromptExtensionType } from './clients/images/enums/PromptExtensionType.js';
 import { IAttachRenderTask } from './clients/images/tasks/IAttachRenderTask.js';
@@ -76,7 +77,7 @@ export interface IServiceContainer {
         userOverride: User): IRetryRenderTask;
 
     getShowSourceTask(interaction: ButtonInteraction): IShowSourceTask;
-    getUpscaleRenderTask(interaction: ButtonInteraction): IUpscaleRenderTask;
+    getUpscaleRenderTask(interaction: ButtonInteraction, upscaler: Upscaler): IUpscaleRenderTask;
 
     getPromptResponseTask(message: Message, context: Array<number>): IPromptResponseTask;
     getEmojiResponseTask(reaction: MessageReaction, user: User, context: Array<number>): IEmojiResponseTask;

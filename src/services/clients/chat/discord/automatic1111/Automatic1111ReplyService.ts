@@ -7,6 +7,7 @@ import { IHttpExchangeWithAttachedData } from '../../../../../models/IHttpExchan
 import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { Automatic1111Client } from '../../../images/automatic1111/Automatic1111Client.js';
+import { Upscaler } from '../../../images/automatic1111/enums/Upscaler.js';
 import { UpscalerRequestFactory } from '../../../images/automatic1111/factories/UpscalerRequestFactory.js';
 import { Txt2ImgOptionsRequest } from '../../../images/automatic1111/models/requests/Txt2ImgOptionsRequest.js';
 import { ExtraSingleImageResponse } from '../../../images/automatic1111/models/responses/ExtraSingleImageResponse.js';
@@ -45,10 +46,10 @@ export class Automatic1111ReplyService {
         return renderExchange;
     }
 
-    async upscaleImage(image: string): Promise<ExtraSingleImageResponse> {
+    async upscaleImage(image: string, upscaler: Upscaler): Promise<ExtraSingleImageResponse> {
         this.#logger(LogLevel.Info, 'Upscaling an image...');
 
-        const request = UpscalerRequestFactory.getFourTimesUpscaleSettings(image);
+        const request = UpscalerRequestFactory.getUpscaleSettings(image, upscaler);
         return await this.#automatic1111Client.upscaleImage(request);
     }
 

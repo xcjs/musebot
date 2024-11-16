@@ -21,8 +21,29 @@ export class UpscalerRequestFactory {
         }
     }
 
-    static getFourTimesUpscaleSettings(image: string): ExtraSingleImageRequest {
+    static getUpscaleSettings(image: string, upscaler: Upscaler) {
+        switch(upscaler) {
+            case Upscaler.R_ESRGAN4xPlus:
+                return UpscalerRequestFactory.getDetailedUpscaleSettings(image);
+            default:
+                const settings = UpscalerRequestFactory.getBaseSettings(image);
+
+                delete settings.upscaling_resize_w;
+                delete settings.upscaling_resize_h;
+
+                settings.show_extras_results = false;
+                settings.upscaling_resize = 4;
+                settings.upscaler_1 = upscaler;
+
+                return settings;
+        }
+    }
+
+    static getDetailedUpscaleSettings(image: string): ExtraSingleImageRequest {
         const settings = UpscalerRequestFactory.getBaseSettings(image);
+
+        delete settings.upscaling_resize_w;
+        delete settings.upscaling_resize_h;
 
         settings.show_extras_results = false;
         settings.upscaling_resize = 4;

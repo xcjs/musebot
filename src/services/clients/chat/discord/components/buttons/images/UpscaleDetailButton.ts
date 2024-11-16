@@ -5,9 +5,9 @@ import { SupportedFeature } from '../../../../../../features/enum/SupportedFeatu
 import { IServiceContainer } from '../../../../../../IServiceContainer.js';
 import { BaseComponent } from '../../BaseComponent.js';
 
-export class UpscaleButton extends BaseComponent<ButtonBuilder> {
+export class UpscaleDetailButton extends BaseComponent<ButtonBuilder> {
     override get label(): string {
-        return '🔍';
+        return '🔍📷';
     }
 
     override get isSupported(): boolean {
@@ -15,11 +15,12 @@ export class UpscaleButton extends BaseComponent<ButtonBuilder> {
     }
 
     override get title(): string {
-        return 'Upscale';
+        return 'Detail Upscale';
     }
 
     override get helpText(): string {
-        return 'Use machine learning to enlarge your image.';
+        return 'Use machine learning to enlarge your detailed or realistic image.'
+            + ' This works best with photorealistic images or images that contain a lot of complex detail.';
     }
 
     constructor(services: IServiceContainer) {
@@ -28,7 +29,7 @@ export class UpscaleButton extends BaseComponent<ButtonBuilder> {
 
     override build(): ButtonBuilder {
         return new ButtonBuilder()
-            .setCustomId(BotInteraction.Upscale)
+            .setCustomId(BotInteraction.UpscaleDetail)
             .setLabel(this.label)
             .setStyle(ButtonStyle.Secondary);
     }
