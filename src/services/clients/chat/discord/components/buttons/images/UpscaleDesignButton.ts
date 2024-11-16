@@ -19,7 +19,7 @@ export class UpscaleDesignButton extends BaseComponent<ButtonBuilder> {
     }
 
     override get helpText(): string {
-        return 'Use machine learning to enlarge an design or graphic based image.'
+        return 'Use machine learning to enlarge a design or graphic based image.'
             + ' This works best with images that use a limited color palette or have simple contours.';
     }
 
