@@ -12,7 +12,8 @@ import { GuidanceScalePlusButton } from '../buttons/images/GuidanceScalePlusButt
 import { RandomizeButton } from '../buttons/images/RandomizeButton.js';
 import { RetryButton } from '../buttons/images/RetryButton.js';
 import { ShowSourceButton } from '../buttons/images/ShowSourceButton.js';
-import { UpscaleButton } from '../buttons/images/UpscaleButton.js';
+import { UpscaleDesignButton } from '../buttons/images/UpscaleDesignButton.js';
+import { UpscaleDetailButton } from '../buttons/images/UpscaleDetailButton.js';
 
 export class StatefulImageGenerationActionRows extends BaseComponent<Array<ActionRowBuilder<ButtonBuilder>>> {
     #buttons: Array<BaseComponent<ButtonBuilder>> = [];
@@ -33,12 +34,13 @@ export class StatefulImageGenerationActionRows extends BaseComponent<Array<Actio
     override build(): Array<ActionRowBuilder<ButtonBuilder>> {
         this.#buttons = [
             new RetryButton(this.#services),
-            new ShowSourceButton(this.#services),
-            new UpscaleButton(this.#services),
+            new UpscaleDetailButton(this.#services),
+            new UpscaleDesignButton(this.#services),
             new GuidanceScaleMinusButton(this.#services, this.#renderRequest),
             new GuidanceScalePlusButton(this.#services, this.#renderRequest),
             new ExpandPromptButton(this.#services),
             new RandomizeButton(this.#services),
+            new ShowSourceButton(this.#services),
             new HelpButton(this.#services)
         ];
 

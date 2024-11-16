@@ -5,22 +5,22 @@ import { SupportedFeature } from '../../../../../../features/enum/SupportedFeatu
 import { IServiceContainer } from '../../../../../../IServiceContainer.js';
 import { BaseComponent } from '../../BaseComponent.js';
 
-export class ClearContextButton extends BaseComponent<ButtonBuilder> {
+export class UpscaleDesignButton extends BaseComponent<ButtonBuilder> {
     override get label(): string {
-        return '⠀🆑⠀';
+        return '🔍🎨';
     }
 
     override get isSupported(): boolean {
-        return this.featureService.hasFeature(SupportedFeature.TextGeneration);
+        return this.featureService.hasFeature(SupportedFeature.ImageGeneration);
     }
 
     override get title(): string {
-        return 'Clear Context';
+        return 'Design Upscale';
     }
 
     override get helpText(): string {
-        return 'Clears the conversational context, effectively making the bot forget everything in the discussion so far.'
-            + ' Responses may also complete faster afterward as large language model performance can be impacted by large contexts.';
+        return 'Use machine learning to enlarge an design or graphic based image.'
+            + ' This works best with images that use a limited color palette or have simple contours.';
     }
 
     constructor(services: IServiceContainer) {
@@ -29,7 +29,7 @@ export class ClearContextButton extends BaseComponent<ButtonBuilder> {
 
     override build(): ButtonBuilder {
         return new ButtonBuilder()
-            .setCustomId(BotInteraction.ClearContext)
+            .setCustomId(BotInteraction.UpscaleDesign)
             .setLabel(this.label)
             .setStyle(ButtonStyle.Secondary);
     }

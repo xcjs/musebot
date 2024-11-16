@@ -16,3 +16,7 @@ A debugging configuration is provided for Visual Studio Code.
 
 Additional documentation is available in the
 [end-user documentation](docs/Musebot.md).
+
+## End-user Documentation
+
+[End-user Documentation](docs/Musebot.md)

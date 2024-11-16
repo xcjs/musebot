@@ -11,6 +11,7 @@ import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.j
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 import { IUpscaleRenderTask } from '../../tasks/IUpscaleRenderTask.js';
+import { Upscaler } from '../enums/Upscaler.js';
 import { Txt2ImgOptionsRequest } from '../models/requests/Txt2ImgOptionsRequest.js';
 
 export class UpscaleRenderTask extends BaseTask implements IUpscaleRenderTask {
@@ -19,6 +20,7 @@ export class UpscaleRenderTask extends BaseTask implements IUpscaleRenderTask {
     #replyService: IReplyService;
 
     #interaction: ButtonInteraction;
+    #upscaler: Upscaler;
 
     #logger;
 
@@ -26,13 +28,18 @@ export class UpscaleRenderTask extends BaseTask implements IUpscaleRenderTask {
         return `Automatic1111_${this.#automatic1111ReplyService.host}`;
     }
 
-    constructor(services: IServiceContainer, interaction: ButtonInteraction) {
+    constructor(
+        services: IServiceContainer,
+        interaction: ButtonInteraction,
+        upscaler: Upscaler) {
         super(services);
 
         this.#environmentSettings = services.environmentSettings;
         this.#automatic1111ReplyService = services.automatic1111ReplyService;
         this.#replyService = services.replyService;
+
         this.#interaction = interaction;
+        this.#upscaler = upscaler;
 
         this.#logger = new Logger(this.#environmentSettings.isProduction, 'UpscaleRenderTask');
     }
@@ -52,7 +59,7 @@ export class UpscaleRenderTask extends BaseTask implements IUpscaleRenderTask {
         const request: Txt2ImgOptionsRequest = descriptionRequest.toTxt2ImgOptionsRequest();
 
         const renderData = await this.#automatic1111ReplyService.renderImage(request, descriptionRequest.model);
-        const upscaledData = await this.#automatic1111ReplyService.upscaleImage(renderData.exchange.response.images[0]);
+        const upscaledData = await this.#automatic1111ReplyService.upscaleImage(renderData.exchange.response.images[0], this.#upscaler);
 
         renderData.exchange.response.images = [upscaledData.image];
 

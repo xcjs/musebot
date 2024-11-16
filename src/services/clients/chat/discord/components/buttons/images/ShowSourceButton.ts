@@ -7,7 +7,7 @@ import { BaseComponent } from '../../BaseComponent.js';
 
 export class ShowSourceButton extends BaseComponent<ButtonBuilder> {
     override get label(): string {
-        return '{ }';
+        return '⠀{⠀}⠀';
     }
 
     override get isSupported(): boolean {
@@ -20,7 +20,7 @@ export class ShowSourceButton extends BaseComponent<ButtonBuilder> {
 
     override get helpText(): string {
         return 'Show JSON information used to render the image.'
-            + ' This message can be used to customize image renders when used as a prompt.'
+            + ' This message can be used to fully customize image renders when used as a prompt.'
             + ' _(Hint: use `-1` as the seed to use a random seed.)_'
             + ' Some prompts may be too large to save, so some actions may be hidden when this happens.';
     }

@@ -50,6 +50,7 @@
         "preparcel",
         "prestart",
         "progressbar",
+        "PSNR",
         "randn",
         "realesrgan",
         "RESRGAN",
@@ -57,6 +58,7 @@
         "sdapi",
         "sdxl",
         "subseed",
+        "Swin",
         "tensorboard",
         "tmax",
         "tmin",
@@ -66,6 +68,7 @@
         "unet",
         "Upscaled",
         "upscaler",
+        "upscalers",
         "upscaling",
         "webui",
         "xattention"

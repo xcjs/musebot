@@ -16,6 +16,7 @@ import { IReplyService } from './clients/chat/IReplyService.js';
 import { ITypingService } from './clients/chat/ITypingService.js';
 import { IReplyTask } from './clients/chat/tasks/IReplyTask.js';
 import { Automatic1111Client } from './clients/images/automatic1111/Automatic1111Client.js';
+import { Upscaler } from './clients/images/automatic1111/enums/Upscaler.js';
 import { AttachRenderTask as A1AttachRenderTask } from './clients/images/automatic1111/tasks/AttachRenderTask.js';
 import { DecreaseGuidanceScaleRenderTask as A1DecreaseGuidanceScaleRenderTask } from './clients/images/automatic1111/tasks/DecreaseGuidanceScaleRenderTask.js';
 import { ExpandPromptTask as A1ExpandPromptTask } from './clients/images/automatic1111/tasks/ExpandPromptTask.js';
@@ -294,14 +295,14 @@ export class ServiceContainer implements IServiceContainer {
         }
     }
 
-    getUpscaleRenderTask(interaction: ButtonInteraction): IUpscaleRenderTask {
+    getUpscaleRenderTask(interaction: ButtonInteraction, upscaler: Upscaler): IUpscaleRenderTask {
         if (!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)) {
             throw this.#taskNotConfiguredError;
         }
 
         switch (this.#environmentSettings.stableDiffusionApiType) {
             case StableDiffusionApiType.Automatic1111:
-                return new A1UpscaleRenderTask(this, interaction);
+                return new A1UpscaleRenderTask(this, interaction, upscaler);
             case StableDiffusionApiType.EasyDiffusion:
                 return new EdUpscaleRenderTask(this, interaction);
             default:
