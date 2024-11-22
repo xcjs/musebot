@@ -74,8 +74,8 @@ export class IncreaseGuidanceScaleRenderTask extends BaseTask implements IIncrea
         }
 
         const renderData = await this.#automatic1111Client.render(request, model);
-        const content = `The guidance scale was increased from ${cfgScaleValue
-            - this.#environmentSettings.stableDiffusionGuidanceScaleInterval} to ${cfgScaleValue} by ${this.#interaction.member}.`;
+        const content = `${this.#interaction.member} increased the guidance scale from ${cfgScaleValue
+            - this.#environmentSettings.stableDiffusionGuidanceScaleInterval} to ${cfgScaleValue}.`;
 
         await this.#automatic1111ReplyService.reply(this.#interaction, renderData, content);
     }

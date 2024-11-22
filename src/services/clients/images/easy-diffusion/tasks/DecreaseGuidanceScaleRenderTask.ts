@@ -65,8 +65,8 @@ export class DecreaseGuidanceScaleRenderTask extends BaseTask implements IDecrea
         this.#logger(LogLevel.Info, `Using ${model} as the selected EasyDiffusion model.`);
 
         const renderData = await this.#easyDiffusionReplyService.renderImage(request);
-        const content = `The guidance scale was decreased from ${request.guidance_scale
-            + this.#environmentSettings.stableDiffusionGuidanceScaleInterval} to ${request.guidance_scale} by ${this.#interaction.member}.`;
+        const content = `${this.#interaction.member} decreased the guidance scale from ${request.guidance_scale
+            + this.#environmentSettings.stableDiffusionGuidanceScaleInterval} to ${request.guidance_scale}.`;
 
         await this.#easyDiffusionReplyService.reply(this.#interaction, renderData, content);
     }
