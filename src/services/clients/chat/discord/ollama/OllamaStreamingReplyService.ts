@@ -23,24 +23,30 @@ export class OllamaStreamingReplyService {
         this.#logger = new Logger(this.#environmentSettings.isProduction, 'OllamaStreamingReplyService');
     }
 
-    async reply(message: Message, responseBatch: string, done: boolean): Promise<Array<Message>> {
+    async reply(
+        message: Message,
+        responseBatch: string,
+        done: boolean,
+        prependedText: string = ''): Promise<Array<Message>> {
         this.#logger(LogLevel.Info, 'Sending a streaming Discord reply...');
 
         const components = done ? new LargeLanguageModelActionRow(this.#services).build() : null;
 
-        if(this.#currentReply() == null && responseBatch.length <= DiscordConstants.ContentMaxLength) {
+        const contentText = `${prependedText} ${responseBatch}`;
+
+        if (this.#currentReply() == null && contentText.length <= DiscordConstants.ContentMaxLength) {
             this.#replies.push(await message.reply({
-                content: responseBatch,
+                content: contentText,
                 components
             }));
-        } else if(this.#currentReply().content.length + responseBatch.length <= DiscordConstants.ContentMaxLength) {
+        } else if (this.#currentReply().content.length + contentText.length <= DiscordConstants.ContentMaxLength) {
             await this.#currentReply().edit({
-                content: `${this.#currentReply().content}${responseBatch}`,
+                content: `${this.#currentReply().content}${contentText}`,
                 components
             });
         }
         else {
-            const responseBatches = splitText(responseBatch, DiscordConstants.ContentMaxLength);
+            const responseBatches = splitText(contentText, DiscordConstants.ContentMaxLength);
 
             for(const response in responseBatches) {
                 this.#replies.push(await message.reply({

@@ -41,6 +41,8 @@ Deploy:
 
 Build (Nexe):
   stage: build
+  only:
+    - main
   image: node:lts
   tags:
     - docker

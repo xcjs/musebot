@@ -67,7 +67,8 @@ export class EmojiResponseTask extends BaseTask implements IEmojiResponseTask {
     }
 
     override async process(): Promise<void> {
-        const prompt = `${this.#replyService.mention(this.#user)} reacted to your response with ${this.#reaction.emoji.name}.`
+        const mention = this.#replyService.mention(this.#user);
+        const prompt = `${mention} reacted to your response with ${this.#reaction.emoji.name}.`
 
         if (this.#environmentSettings.ollamaStreamsResponse) {
             await this.#processAsStream(prompt, this.#context);
@@ -77,7 +78,7 @@ export class EmojiResponseTask extends BaseTask implements IEmojiResponseTask {
         const exchange = await this.#ollamaClient.sendMessage(prompt, this.#context);
         this.#context = exchange.response.context;
 
-        const replies = await this.#ollamaReplyService.reply(this.#reaction.message as Message, exchange);
+        const replies = await this.#ollamaReplyService.reply(this.#reaction.message as Message, exchange, mention);
 
         if (this.#featureService.hasFeature(SupportedFeature.ImagesAndText)
             && replies.length > 0) {

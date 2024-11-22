@@ -24,8 +24,11 @@ export class OllamaReplyService {
         this.#logger = new Logger(this.#environmentSettings.isProduction, 'OllamaReplyService');
     }
 
-    async reply(message: Message, exchange: IHttpExchange<GenerateRequest, GenerateResponse>): Promise<Array<Message>> {
-        const responses = splitText(exchange.response.response, DiscordConstants.ContentMaxLength);
+    async reply(
+        message: Message,
+        exchange: IHttpExchange<GenerateRequest, GenerateResponse>,
+        prependedText: string = ''): Promise<Array<Message>> {
+        const responses = splitText(`${prependedText} ${exchange.response.response}`, DiscordConstants.ContentMaxLength);
         const replies: Array<Message> = [];
 
         this.#logger(LogLevel.Info, `Replying with ${responses.length} messages.`);
