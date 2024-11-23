@@ -9,12 +9,12 @@
   "type": "module",
   "pkg": {
     "targets": [
-      "node20-linux-amd64",
-      "node20-win-amd64",
-      "node20-linux-arm64",
-      "node20-linux-armv7",
-      "node20-linux-armv6",
-      "node20-macos-amd64"
+      "node22-linux-x64",
+      "node22-win-x64",
+      "node22-linux-arm64",
+      "node22-linux-armv7",
+      "node22-macos-x64",
+      "node22-macos-arm64"
     ],
     "outputPath": "build/pkg"
   },
