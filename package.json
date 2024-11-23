@@ -4,21 +4,32 @@
   "description": "A Discord bot that connects to various generative AI APIs.",
   "private": "true",
   "license": "ISC",
-  "main": "dist/musebot.cjs",
+  "bin": "build/parcel/musebot.cjs",
+  "main": "build/parcel/musebot.cjs",
   "type": "module",
+  "pkg": {
+    "targets": [
+      "node20-linux-amd64",
+      "node20-win-amd64",
+      "node20-linux-arm64",
+      "node20-linux-armv7",
+      "node20-linux-armv6",
+      "node20-macos-amd64"
+    ],
+    "outputPath": "build/pkg"
+  },
   "scripts": {
     "prestart": "npm run parcel",
     "start": "node .",
     "start:only": "node .",
     "build": "tsc",
     "preparcel": "npm run build",
-    "parcel": "parcel build build/src/app.js",
+    "parcel": "parcel build build/tsc/src/app.js",
     "dev": "tsc -w",
     "prebuild:bin": "npm run parcel",
-    "build:bin": "npm run parcel && npx pkg dist/musebot.cjs",
+    "build:bin": "npx pkg .",
     "lint": "eslint .",
-    "lint:fix": "eslint --fix .",
-    "clean": "mkdir -p .parcel-cache/ bin/ build/ dist/ && rm -r .parcel-cache/ bin/ build/ dist/"
+    "lint:fix": "eslint --fix ."
   },
   "dependencies": {
     "@yao-pkg/pkg": "^6.1.1",

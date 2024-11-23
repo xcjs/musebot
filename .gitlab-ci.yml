@@ -39,10 +39,8 @@ Deploy:
     - docker build -t $CI_REGISTRY/xcjs/musebot:latest .
     - docker push $CI_REGISTRY/xcjs/musebot:latest
 
-Build (Nexe):
+Build:
   stage: build
-  only:
-    - main
   image: node:lts
   tags:
     - docker
@@ -50,11 +48,12 @@ Build (Nexe):
     - npm install
   script:
     - npm run build:bin
-    - cp -f .env.example bin/.env
-    - cp -f logo.jpg bin/logo.jpg
-    - cp -rf docs/ bin/docs/
+    - cp -f .env.example build/pkg/.env
+    - cp -rf docs/ build/pkg/docs/
+    - cp -f logo.jpg build/pkg/logo.jpg
+    - cp -f musebot.ico build/pkg/musebot.ico
   artifacts:
     name: musebot_linux_amd64
     paths:
-      - bin/
+      - build/pkg/
     expire_in: 1 week
