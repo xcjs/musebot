@@ -1,26 +1,35 @@
 {
   "name": "musebot",
-  "version": "5.7.2",
+  "version": "5.7.4",
   "description": "A Discord bot that connects to various generative AI APIs.",
   "private": "true",
   "license": "ISC",
-  "main": "dist/musebot.cjs",
+  "bin": "build/parcel/musebot.cjs",
+  "main": "build/parcel/musebot.cjs",
   "type": "module",
+  "pkg": {
+    "targets": [
+      "node22-linux-x64",
+      "node22-win-x64",
+      "node22-macos-x64"
+    ],
+    "outputPath": "build/pkg"
+  },
   "scripts": {
     "prestart": "npm run parcel",
     "start": "node .",
     "start:only": "node .",
     "build": "tsc",
     "preparcel": "npm run build",
-    "parcel": "parcel build build/src/app.js",
+    "parcel": "parcel build build/tsc/src/app.js",
     "dev": "tsc -w",
     "prebuild:bin": "npm run parcel",
-    "build:bin": "npx nexe -b --python /usr/bin/python3 -o bin/musebot dist/musebot.cjs",
+    "build:bin": "npx pkg .",
     "lint": "eslint .",
-    "lint:fix": "eslint --fix .",
-    "clean": "mkdir -p .parcel-cache/ bin/ build/ dist/ && rm -r .parcel-cache/ bin/ build/ dist/"
+    "lint:fix": "eslint --fix ."
   },
   "dependencies": {
+    "@yao-pkg/pkg": "^6.1.1",
     "discord.js": "14.16.1",
     "dotenv": "^16.3.1",
     "meklog": "^1.0.2",
@@ -32,7 +41,6 @@
     "eslint": "^8.57.0",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "globals": "^15.6.0",
-    "nexe": "^4.0.0-rc.6",
     "typescript-eslint": "^7.14.1"
   }
 }

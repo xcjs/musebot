@@ -25,6 +25,8 @@ Musebot currently supports the following operating systems and architectures:
 | Operating System | Architectures |
 | ---------------- | --------------|
 | Linux            | x86_64        |
+| Windows          | x86_64        |
+| Mac OS X         | x86_64        |
 
 ## Linux
 
