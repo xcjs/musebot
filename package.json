@@ -18,9 +18,11 @@
     "build:bin": "npx nexe -b --python /usr/bin/python3 -o bin/musebot dist/musebot.cjs",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "clean": "mkdir -p .parcel-cache/ bin/ build/ dist/ && rm -r .parcel-cache/ bin/ build/ dist/"
+    "clean": "mkdir -p .parcel-cache/ bin/ build/ dist/ && rm -r .parcel-cache/ bin/ build/ dist/",
+    "pkg": "npm run parcel && npx pkg dist/musebot.cjs"
   },
   "dependencies": {
+    "@yao-pkg/pkg": "^6.1.1",
     "discord.js": "14.16.1",
     "dotenv": "^16.3.1",
     "meklog": "^1.0.2",
