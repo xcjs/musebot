@@ -15,11 +15,10 @@
     "parcel": "parcel build build/src/app.js",
     "dev": "tsc -w",
     "prebuild:bin": "npm run parcel",
-    "build:bin": "npx nexe -b --python /usr/bin/python3 -o bin/musebot dist/musebot.cjs",
+    "build:bin": "npm run parcel && npx pkg dist/musebot.cjs",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "clean": "mkdir -p .parcel-cache/ bin/ build/ dist/ && rm -r .parcel-cache/ bin/ build/ dist/",
-    "pkg": "npm run parcel && npx pkg dist/musebot.cjs"
+    "clean": "mkdir -p .parcel-cache/ bin/ build/ dist/ && rm -r .parcel-cache/ bin/ build/ dist/"
   },
   "dependencies": {
     "@yao-pkg/pkg": "^6.1.1",
@@ -34,7 +33,6 @@
     "eslint": "^8.57.0",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "globals": "^15.6.0",
-    "nexe": "^4.0.0-rc.6",
     "typescript-eslint": "^7.14.1"
   }
 }
