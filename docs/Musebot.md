@@ -7,9 +7,11 @@ as entertainment or to aid in creative processes.
 
 Musebot currently supports the following generative AI solutions:
 
+* [Automatic1111/Stable Diffusion Web UI](https://github.com/AUTOMATIC1111/stable-diffusion-webui)  - Deprecated, partial support for new features.
 * [EasyDiffusion](https://easydiffusion.github.io/) - Deprecated, partial support for new features.
-* [Automatic1111/Stable Diffusion Web UI](https://github.com/AUTOMATIC1111/stable-diffusion-webui)
-* [Forge UI](https://github.com/lllyasviel/stable-diffusion-webui-forge)
+* [Comfy UI](https://www.comfy.org/)
+* [Forge UI](https://github.com/lllyasviel/stable-diffusion-webui-forge)  - Deprecated, partial support for new features.
+* [Swarm UI](https://github.com/Stability-AI/StableSwarmUI)
 * [Ollama](https://ollama.com/)
 
 Please refer to the respective documentation provided by these projects for
@@ -20,13 +22,14 @@ installation and configuration.
 Musebot is provided as a single-file application with no external dependencies
 except for those built into your operating system.
 
-Musebot currently supports the following operating systems and architectures:
+Musebot currently supports the following operating systems and architectures.
+Your download should include an application for each supported configuration:
 
-| Operating System | Architectures |
-| ---------------- | --------------|
-| Linux            | x86_64        |
-| Windows          | x86_64        |
-| Mac OS X         | x86_64        |
+| Operating System | Architectures | File Name                |
+| ---------------- | ------------- | ------------------------ |
+| Linux            | x86_64        | `musebot-linux-x86_64`   |
+| Windows          | x86_64        | `musebot-win-x86_64.exe` |
+| Mac OS X         | x86_64        | `musebot-macos-x86_64`   |
 
 ## Linux
 
