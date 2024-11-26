@@ -10,9 +10,9 @@ export class SerializableRenderRequest {
     seed: number;
     width: number;
     height: number;
-    sampler: SamplingMethod;
-    scheduler: ScheduleType;
-    distilledCfgScale: number;
+    sampler: string;
+    scheduler: string;
+    distilledCfgScale: number | null;
     cfgScale: number;
     steps: number;
 
@@ -31,9 +31,9 @@ export class SerializableRenderRequest {
         options.seed = this.seed;
         options.width = this.width;
         options.height = this.height;
-        options.sampler_index = this.sampler;
-        options.sampler_name = this.sampler;
-        options.scheduler = this.scheduler;
+        options.sampler_index = this.sampler as SamplingMethod;
+        options.sampler_name = this.sampler as SamplingMethod;
+        options.scheduler = this.scheduler as ScheduleType;
         options.distilled_cfg_scale = this.distilledCfgScale;
         options.cfg_scale = this.cfgScale;
         options.steps = this.steps;
