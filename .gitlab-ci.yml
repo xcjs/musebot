@@ -1,11 +1,12 @@
 stages:
-  - lint
-  - transpile
-  - deploy
-  - build
+  - Lint
+  - Transpile
+  - Deploy
+  - Build
+  - Post Build
 
 Lint:
-  stage: lint
+  stage: Lint
   image: node:lts
   tags:
     - docker
@@ -15,7 +16,7 @@ Lint:
     - npm run lint
 
 Transpile:
-  stage: transpile
+  stage: Transpile
   image: node:lts
   tags:
     - docker
@@ -25,7 +26,7 @@ Transpile:
     - npm run parcel
 
 Deploy:
-  stage: deploy
+  stage: Deploy
   image: docker:stable
   services:
     - docker:stable-dind
@@ -40,7 +41,7 @@ Deploy:
     - docker push $CI_REGISTRY/xcjs/musebot:latest
 
 Build:
-  stage: build
+  stage: Post Build
   image: node:lts
   tags:
     - docker
