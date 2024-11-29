@@ -29,6 +29,7 @@
     "lint:fix": "eslint --fix ."
   },
   "dependencies": {
+    "@saintno/comfyui-sdk": "^0.2.29",
     "@yao-pkg/pkg": "^6.1.1",
     "discord.js": "14.16.1",
     "dotenv": "^16.3.1",
