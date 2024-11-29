@@ -1,3 +1,5 @@
+import { Interaction } from 'discord.js';
+
 import { BaseHelpService } from '../../help/BaseHelpService.js';
 import { IHelpService } from '../../help/IHelpService.js';
 import { IServiceContainer } from '../../IServiceContainer.js';
@@ -12,8 +14,8 @@ export class TextHelpService extends BaseHelpService implements IHelpService {
         this.#services = services;
     }
 
-    buildHelpArticle(): string {
-        let helpArticle: string = '# Musebot Help'
+    buildHelpArticle(interaction: Interaction): string {
+        let helpArticle: string = `# Musebot Help for ${interaction.user}`
             + '\n\n'
             + 'Thanks for using Musebot! This instance of Musebot is configured as a large language model service.'
             + '\n\n'
