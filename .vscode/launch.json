@@ -10,7 +10,7 @@
       "name": "Debug",
       "program": "${workspaceFolder}/src/app.ts",
       "preLaunchTask": "npm: build",
-      "outFiles": ["${workspaceFolder}/build/js/src/**/*.js"]
+      "outFiles": ["${workspaceFolder}/build/tsc/src/**/*.js"]
     }
   ]
 }
