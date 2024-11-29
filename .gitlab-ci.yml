@@ -61,3 +61,17 @@ Build:
     paths:
       - build/pkg/
     expire_in: 1 week
+
+Set Windows Icon:
+  stage: build
+  tags:
+    - rcedit
+    - shell
+    - windows
+  script:
+    - rcedit build/pkg/musebot-win-x86_64.exe --set-icon build/pkg/musebot.ico
+  artifacts:
+    name: musebot
+    paths:
+      - build/pkg/
+    expire_in: 1 week
