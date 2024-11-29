@@ -1,3 +1,5 @@
+import { Interaction } from 'discord.js';
+
 export interface IHelpService {
-    buildHelpArticle(): string;
+    buildHelpArticle(interaction: Interaction): string;
 }

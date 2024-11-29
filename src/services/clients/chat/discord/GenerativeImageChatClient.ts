@@ -107,7 +107,7 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
             case BotInteraction.Help:
                 this.#taskQueue.add(this.#services.getReplyTask(
                     interaction,
-                    this.#helpService.buildHelpArticle(),
+                    this.#helpService.buildHelpArticle(interaction),
                     [],
                     true) as BaseTask);
                 break;
