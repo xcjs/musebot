@@ -4,18 +4,25 @@ import { BaseHelpService } from '../../help/BaseHelpService.js';
 import { IHelpService } from '../../help/IHelpService.js';
 import { IServiceContainer } from '../../IServiceContainer.js';
 import { LargeLanguageModelActionRow } from '../chat/discord/components/buttonRows/LargeLanguageModelActionRow.js';
+import { IReplyService } from '../chat/IReplyService.js';
 
 export class TextHelpService extends BaseHelpService implements IHelpService {
     #services: IServiceContainer;
+
+    #replyService: IReplyService;
 
     constructor(services: IServiceContainer) {
         super(services);
 
         this.#services = services;
+
+        this.#replyService = services.replyService;
     }
 
     buildHelpArticle(interaction: Interaction): string {
-        let helpArticle: string = `# Musebot Help for ${interaction.user}`
+        let helpArticle: string = this.#replyService.mention(interaction.user)
+            + '\n\n'
+            + `# Musebot Help`
             + '\n\n'
             + 'Thanks for using Musebot! This instance of Musebot is configured as a large language model service.'
             + '\n\n'
