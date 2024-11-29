@@ -41,7 +41,7 @@ Deploy:
     - docker push $CI_REGISTRY/xcjs/musebot:latest
 
 Build:
-  stage: Post Build
+  stage: Build
   image: node:lts
   tags:
     - docker
@@ -64,7 +64,7 @@ Build:
     expire_in: 1 week
 
 Set Windows Icon:
-  stage: build
+  stage: Post Build
   tags:
     - rcedit
     - shell
