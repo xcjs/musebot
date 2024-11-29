@@ -3,7 +3,6 @@ stages:
   - Transpile
   - Deploy
   - Build
-  - Post Build
 
 Lint:
   stage: Lint
@@ -57,20 +56,6 @@ Build:
     - mv build/pkg/musebot-linux build/pkg/musebot-linux-x86_64
     - mv build/pkg/musebot-macos build/pkg/musebot-macos-x86_64
     - mv build/pkg/musebot-win.exe build/pkg/musebot-win-x86_64.exe
-  artifacts:
-    name: musebot
-    paths:
-      - build/pkg/
-    expire_in: 1 week
-
-Set Windows Icon:
-  stage: Post Build
-  tags:
-    - rcedit
-    - shell
-    - windows
-  script:
-    - rcedit build/pkg/musebot-win-x86_64.exe --set-icon build/pkg/musebot.ico
   artifacts:
     name: musebot
     paths:
