@@ -50,6 +50,7 @@ Build:
     - npm run build:bin
     - cp -f .env.example build/pkg/.env
     - cp -rf docs/ build/pkg/docs/
+    - cp -f LICENSE.md build/pkg/LICENSE.txt
     - cp -f logo.jpg build/pkg/musebot.jpg
     - cp -f logo.png build/pkg/musebot.png
     - cp -f musebot.ico build/pkg/musebot.ico
