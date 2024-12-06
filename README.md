@@ -14,5 +14,7 @@ Discord.
 
 A debugging configuration is provided for Visual Studio Code.
 
+## End User Documentation
+
 Additional documentation is available in the
-[end-user documentation](docs/Musebot.md).
+[end user documentation](docs/Musebot.md).
