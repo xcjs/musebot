@@ -64,10 +64,21 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         this.errorMessage = process.env.MUSEBOT_ERROR_MESSAGE?.trim() || this.errorMessage;
 
         this.stableDiffusionApiType = process.env.MUSEBOT_STABLE_DIFFUSION_API_TYPE?.trim() as StableDiffusionApiType;
-        this.stableDiffusionHosts = process.env.MUSEBOT_STABLE_DIFFUSION_HOSTS?.trim().split(',').map(url => new URL(url)) || [];
+
+        const stableDiffusionHosts = process.env.MUSEBOT_STABLE_DIFFUSION_HOSTS?.trim();
+
+        if (stableDiffusionHosts !== null && stableDiffusionHosts.length > 0) {
+            this.stableDiffusionHosts = stableDiffusionHosts.split(',').map(url => new URL(url)) || [];
+        }
+
         this.stableDiffusionModels = process.env.MUSEBOT_STABLE_DIFFUSION_MODELS?.trim().split(',').filter(x => x.length > 0) || [];
 
-        this.ollamaHosts = process.env.MUSEBOT_OLLAMA_HOSTS?.trim().split(',').map(url => new URL(url)) || [];
+        const ollamaHosts = process.env.MUSEBOT_OLLAMA_HOSTS?.trim();
+
+        if(ollamaHosts !== null && ollamaHosts.length > 0) {
+            this.ollamaHosts = ollamaHosts.split(',').map(url => new URL(url)) || [];
+        }
+
         this.ollamaModels = process.env.MUSEBOT_OLLAMA_MODELS?.trim().split(',').filter(x => x.length > 0) || [];
         this.ollamaSystemPrompt = process.env.MUSEBOT_OLLAMA_SYSTEM_PROMPT?.trim() || '';
         this.ollamaStreamsResponse = (process.env.MUSEBOT_OLLAMA_STREAMS_RESPONSE?.trim().toLowerCase() === true.toString());
