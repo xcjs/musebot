@@ -58,21 +58,37 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         this.taskRetryDelayMilliseconds = process.env.MUSEBOT_TASK_QUEUE_RETRY_DELAY_MS ? parseInt(process.env.MUSEBOT_TASK_QUEUE_RETRY_DELAY_MS) : 1000;
 
         this.discordToken = process.env.MUSEBOT_DISCORD_TOKEN?.trim() || '';
-        this.discordChannels = process.env.MUSEBOT_DISCORD_CHANNELS?.trim().split(',') || [];
+
+        const discordChannels = process.env.MUSEBOT_DISCORD_CHANNELS?.trim();
+
+        if(discordChannels !== null && discordChannels.length > 0) {
+            this.discordChannels = discordChannels.trim().split(',') || [];
+        }
 
         this.botRequiresMention = (process.env.MUSEBOT_REQUIRES_MENTION?.trim().toLowerCase() === true.toString());
         this.errorMessage = process.env.MUSEBOT_ERROR_MESSAGE?.trim() || this.errorMessage;
 
         this.stableDiffusionApiType = process.env.MUSEBOT_STABLE_DIFFUSION_API_TYPE?.trim() as StableDiffusionApiType;
-        this.stableDiffusionHosts = process.env.MUSEBOT_STABLE_DIFFUSION_HOSTS?.trim().split(',').map(url => new URL(url)) || [];
+
+        const stableDiffusionHosts = process.env.MUSEBOT_STABLE_DIFFUSION_HOSTS?.trim();
+
+        if (stableDiffusionHosts !== null && stableDiffusionHosts.length > 0) {
+            this.stableDiffusionHosts = stableDiffusionHosts.split(',').map(url => new URL(url)) || [];
+        }
+
         this.stableDiffusionModels = process.env.MUSEBOT_STABLE_DIFFUSION_MODELS?.trim().split(',').filter(x => x.length > 0) || [];
 
-        this.ollamaHosts = process.env.MUSEBOT_OLLAMA_HOSTS?.trim().split(',').map(url => new URL(url)) || [];
+        const ollamaHosts = process.env.MUSEBOT_OLLAMA_HOSTS?.trim();
+
+        if(ollamaHosts !== null && ollamaHosts.length > 0) {
+            this.ollamaHosts = ollamaHosts.split(',').map(url => new URL(url)) || [];
+        }
+
         this.ollamaModels = process.env.MUSEBOT_OLLAMA_MODELS?.trim().split(',').filter(x => x.length > 0) || [];
         this.ollamaSystemPrompt = process.env.MUSEBOT_OLLAMA_SYSTEM_PROMPT?.trim() || '';
         this.ollamaStreamsResponse = (process.env.MUSEBOT_OLLAMA_STREAMS_RESPONSE?.trim().toLowerCase() === true.toString());
 
-        this.stableDiffusionOllamaPrompts = process.env.MUSEBOT_EASY_DIFFUSION_OLLAMA_PROMPTS?.split('|') || this.stableDiffusionOllamaPrompts;
+        this.stableDiffusionOllamaPrompts = process.env.MUSEBOT_STABLE_DIFFUSION_OLLAMA_PROMPTS?.split('|') || this.stableDiffusionOllamaPrompts;
 
         this.#logger = new Logger(this.isProduction, 'EnvironmentSettings');
 
@@ -94,7 +110,7 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         this.#logger(LogLevel.Info, `MUSEBOT_OLLAMA_HOSTS: ${this.ollamaHosts.join(', ')}`);
         this.#logger(LogLevel.Info, `MUSEBOT_OLLAMA_MODELS: ${this.ollamaModels.join(', ')}`);
         this.#logger(LogLevel.Info, `MUSEBOT_OLLAMA_SYSTEM_PROMPT: ${this.ollamaSystemPrompt}`);
-        this.#logger(LogLevel.Info, `MUSEBOT_EASY_DIFFUSION_OLLAMA_PROMPTS: ${this.stableDiffusionOllamaPrompts.join(' | ')}`);
+        this.#logger(LogLevel.Info, `MUSEBOT_STABLE_DIFFUSION_OLLAMA_PROMPTS: ${this.stableDiffusionOllamaPrompts.join(' | ')}`);
     }
 
     #validate(): void {
@@ -102,15 +118,15 @@ export class EnvironmentSettings implements IEnvironmentSettings {
             throw new Error(`EASY_DIFFUSION_DISCORD_BOT_TOKEN requires a value.`);
         }
 
-        if(this.stableDiffusionHosts.length === 0) {
+        if(this.botFunction === BotFunction.Images && this.stableDiffusionHosts.length === 0) {
             throw new Error(`MUSEBOT_EASY_DIFFUSION_HOSTS requires at least one value.`);
         }
 
         if(this.stableDiffusionModels.length === 0) {
-            this.#logger(LogLevel.Info, 'MUSEBOT_EASY_DIFFUSION_MODELS had no value - a random model will be selected per render.');
+            this.#logger(LogLevel.Info, 'MUSEBOT_STABLE_DIFFUSION_MODELS had no value - a random model will be selected per render.');
         }
 
-        if(this.ollamaHosts.length === 0) {
+        if(this.botFunction === BotFunction.Text && this.ollamaHosts.length === 0) {
             throw new Error(`MUSEBOT_OLLAMA_HOSTS requires at least one value.`);
         }
 

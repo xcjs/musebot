@@ -24,53 +24,63 @@ export class ReplyService implements IReplyService {
     shouldReply(message: Message, isReaction: boolean = false): boolean {
         // The message is system message.
         if(message.system) {
+            this.#logger(LogLevel.Info, 'Not replying to a system message.');
             return false;
         }
 
         // The message isn't from a guild (server).
         if(!message.guild) {
+            this.#logger(LogLevel.Info, 'Not replying to a non-guild message.');
             return false;
         }
 
         // The message is not a default message type and not a reaction reply.
         if (message.type !== MessageType.Default && !isReaction) {
+            this.#logger(LogLevel.Info, 'Not replying to a non-default or non-reaction message.');
             return false;
         }
 
         // The has no author.
         if(!message.author.id) {
+            this.#logger(LogLevel.Info, 'Not replying to a message without an author.');
             return false;
         }
 
         // No messages by bots unless it's a reaction reply.
         if (message.author.bot && !isReaction) {
+            this.#logger(LogLevel.Info, 'Not replying to any other bots/apps.');
             return false;
         }
 
         // The message doesn't explicitly tag this bot or isn't a reaction reply.
         if (!message.mentions.members?.find(x => x.id === this.#discordClient.user?.id)
             && !isReaction) {
+            this.#logger(LogLevel.Info, 'Not replying to a message that doesn\'t mention or react this bot.');
             return false;
         }
 
         // The bot can't reply to itself unless it's in response to a reaction.
         if (message.author.id === this.#discordClient.user?.id && !isReaction) {
+            this.#logger(LogLevel.Info, 'Not replying to a myself.');
             return false;
         }
 
         // The channel isn't in the configured whitelist if there is one.
         if (this.#environmentSettings.discordChannels.length > 0
             && !this.#environmentSettings.discordChannels.includes(message.channel.id)) {
+            this.#logger(LogLevel.Info, 'Not replying to a message in a channel outside my allowed channels.');
             return false;
         }
 
         // The message has no content and is not a reaction.
         if (message.content.length === 0 && !isReaction) {
+            this.#logger(LogLevel.Info, 'Not replying to a message with no content.');
             return false;
         }
 
         // If the bot is replying to a reaction, it must be to this bot's message.
         if(isReaction && message.author.id !== this.#discordClient.user?.id) {
+            this.#logger(LogLevel.Info, 'Not replying to a reaction not on my message.');
             return false;
         }
 
