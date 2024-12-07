@@ -83,7 +83,7 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         this.ollamaSystemPrompt = process.env.MUSEBOT_OLLAMA_SYSTEM_PROMPT?.trim() || '';
         this.ollamaStreamsResponse = (process.env.MUSEBOT_OLLAMA_STREAMS_RESPONSE?.trim().toLowerCase() === true.toString());
 
-        this.stableDiffusionOllamaPrompts = process.env.MUSEBOT_EASY_DIFFUSION_OLLAMA_PROMPTS?.split('|') || this.stableDiffusionOllamaPrompts;
+        this.stableDiffusionOllamaPrompts = process.env.MUSEBOT_STABLE_DIFFUSION_OLLAMA_PROMPTS?.split('|') || this.stableDiffusionOllamaPrompts;
 
         this.#logger = new Logger(this.isProduction, 'EnvironmentSettings');
 
@@ -105,7 +105,7 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         this.#logger(LogLevel.Info, `MUSEBOT_OLLAMA_HOSTS: ${this.ollamaHosts.join(', ')}`);
         this.#logger(LogLevel.Info, `MUSEBOT_OLLAMA_MODELS: ${this.ollamaModels.join(', ')}`);
         this.#logger(LogLevel.Info, `MUSEBOT_OLLAMA_SYSTEM_PROMPT: ${this.ollamaSystemPrompt}`);
-        this.#logger(LogLevel.Info, `MUSEBOT_EASY_DIFFUSION_OLLAMA_PROMPTS: ${this.stableDiffusionOllamaPrompts.join(' | ')}`);
+        this.#logger(LogLevel.Info, `MUSEBOT_STABLE_DIFFUSION_OLLAMA_PROMPTS: ${this.stableDiffusionOllamaPrompts.join(' | ')}`);
     }
 
     #validate(): void {
@@ -113,15 +113,15 @@ export class EnvironmentSettings implements IEnvironmentSettings {
             throw new Error(`EASY_DIFFUSION_DISCORD_BOT_TOKEN requires a value.`);
         }
 
-        if(this.stableDiffusionHosts.length === 0) {
+        if(this.botFunction === BotFunction.Images && this.stableDiffusionHosts.length === 0) {
             throw new Error(`MUSEBOT_EASY_DIFFUSION_HOSTS requires at least one value.`);
         }
 
         if(this.stableDiffusionModels.length === 0) {
-            this.#logger(LogLevel.Info, 'MUSEBOT_EASY_DIFFUSION_MODELS had no value - a random model will be selected per render.');
+            this.#logger(LogLevel.Info, 'MUSEBOT_STABLE_DIFFUSION_MODELS had no value - a random model will be selected per render.');
         }
 
-        if(this.ollamaHosts.length === 0) {
+        if(this.botFunction === BotFunction.Text && this.ollamaHosts.length === 0) {
             throw new Error(`MUSEBOT_OLLAMA_HOSTS requires at least one value.`);
         }
 
