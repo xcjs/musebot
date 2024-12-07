@@ -36,7 +36,7 @@ export class ReplyService implements IReplyService {
 
         // The message is not a default message type and not a reaction reply.
         if (message.type !== MessageType.Default && !isReaction) {
-            this.#logger(LogLevel.Info, 'Not replying to a non-default or reaction message.');
+            this.#logger(LogLevel.Info, 'Not replying to a non-default or non-reaction message.');
             return false;
         }
 
@@ -48,14 +48,14 @@ export class ReplyService implements IReplyService {
 
         // No messages by bots unless it's a reaction reply.
         if (message.author.bot && !isReaction) {
-            this.#logger(LogLevel.Info, 'Not replying to any other bots.');
+            this.#logger(LogLevel.Info, 'Not replying to any other bots/apps.');
             return false;
         }
 
         // The message doesn't explicitly tag this bot or isn't a reaction reply.
         if (!message.mentions.members?.find(x => x.id === this.#discordClient.user?.id)
             && !isReaction) {
-            this.#logger(LogLevel.Info, 'Not replying to a message from a member outside the guild.');
+            this.#logger(LogLevel.Info, 'Not replying to a message that doesn\'t mention or react this bot.');
             return false;
         }
 
