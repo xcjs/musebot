@@ -36,6 +36,7 @@ export class EnvironmentSettings implements IEnvironmentSettings {
     stableDiffusionOllamaPrompts: Array<string> = ['Describe something or someone with extraordinary detail.'];
 
     botRequiresMention: boolean = true;
+    botResponseRate: number = 100;
     errorMessage: string = 'An error occurred while generating a response. Please try again later.';
 
     #logger;
@@ -66,6 +67,11 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         }
 
         this.botRequiresMention = (process.env.MUSEBOT_REQUIRES_MENTION?.trim().toLowerCase() === true.toString());
+
+        const responseRate = parseInt(process.env.MUSEBOT_RESPONSE_RATE);
+
+        this.botResponseRate = !isNaN(responseRate) && responseRate > 0 && responseRate <=100 ? responseRate : this.botResponseRate;
+
         this.errorMessage = process.env.MUSEBOT_ERROR_MESSAGE?.trim() || this.errorMessage;
 
         this.stableDiffusionApiType = process.env.MUSEBOT_STABLE_DIFFUSION_API_TYPE?.trim() as StableDiffusionApiType;
@@ -104,6 +110,7 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         this.#logger(LogLevel.Info, `MUSEBOT_FUNCTION: ${this.botFunction}`);
         this.#logger(LogLevel.Info, `MUSEBOT_DISCORD_CHANNELS: ${this.discordChannels.join(', ')}`);
         this.#logger(LogLevel.Info, `MUSEBOT_REQUIRES_MENTION: ${this.botRequiresMention}`);
+        this.#logger(LogLevel.Info, `MUSEBOT_RESPONSE_RATE: ${this.botResponseRate}`);
         this.#logger(LogLevel.Info, `MUSEBOT_STABLE_DIFFUSION_API_TYPE: ${this.stableDiffusionApiType}`);
         this.#logger(LogLevel.Info, `MUSEBOT_STABLE_DIFFUSION_HOSTS: ${this.stableDiffusionHosts.join(', ')}`);
         this.#logger(LogLevel.Info, `MUSEBOT_STABLE_DIFFUSION_MODELS: ${this.stableDiffusionModels.join(', ')}`);
