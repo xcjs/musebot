@@ -10,7 +10,7 @@ import { OllamaReplyService } from './clients/chat/discord/ollama/OllamaReplySer
 import { OllamaStreamingReplyService } from './clients/chat/discord/ollama/OllamaStreamingReplyService.js';
 import { ReplyService } from './clients/chat/discord/replies/ReplyService.js';
 import { ReplyTask } from './clients/chat/discord/tasks/ReplyTask.js';
-import { TypingService } from './clients/chat/discord/TypingService.js';
+import { TypingService } from './clients/chat/discord/services/TypingService.js';
 import { IGenerativeChatClient } from './clients/chat/IGenerativeChatClient.js';
 import { IReplyService } from './clients/chat/IReplyService.js';
 import { ITypingService } from './clients/chat/ITypingService.js';
