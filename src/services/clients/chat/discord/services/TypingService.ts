@@ -63,11 +63,11 @@ export class TypingService implements ITypingService {
 
         const channelTypingIndicator = this.#typingIntervals.find(x => x.channelId === this.#interaction.channelId);
 
-        if(channelTypingIndicator === undefined) {
+        if (channelTypingIndicator === undefined || channelTypingIndicator.typingInterval === null) {
             return;
         }
 
-        if (this.#taskQueue.isActive || channelTypingIndicator.typingInterval === null) {
+        if (this.#taskQueue.isActive) {
             return;
         }
 
