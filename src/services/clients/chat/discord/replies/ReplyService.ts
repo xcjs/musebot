@@ -63,10 +63,13 @@ export class ReplyService implements IReplyService {
 
         // The bot doesn't require a mention and doesn't fall within the
         // response rate, except for reactions.
+        const generatedResponseRate = getRandomInt(1, 100);
+
         if ((!this.#environmentSettings.botRequiresMention
-            && getRandomInt(1, 100) > this.#environmentSettings.botResponseRate)
+            && generatedResponseRate > this.#environmentSettings.botResponseRate)
                 && !isReaction) {
-            this.#logger(LogLevel.Info, 'Not replying to a message outside the response rate.');
+            this.#logger(LogLevel.Info, `Not replying to a message outside the response rate (${generatedResponseRate} > ${this.#environmentSettings.botResponseRate}).`);
+            return false;
         }
 
         // The bot can't reply to itself unless it's in response to a reaction.
