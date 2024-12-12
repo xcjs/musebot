@@ -29,6 +29,7 @@ export interface IEnvironmentSettings {
     stableDiffusionOllamaPrompts: Array<string>;
 
     botRequiresMention: boolean;
+    botResponseRate: number;
     errorMessage: string;
 
     isProduction: boolean;

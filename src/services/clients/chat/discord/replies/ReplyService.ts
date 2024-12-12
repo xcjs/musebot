@@ -2,6 +2,7 @@ import { Attachment, AttachmentBuilder, ButtonInteraction, Client as DiscordClie
 import { Logger, LogLevel } from 'meklog';
 
 import { ContentType } from '../../../../../enums/ContentType.js';
+import { getRandomInt } from '../../../../../utilities/random-utilities.js';
 import { splitText } from '../../../../../utilities/string-utilities.js';
 import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
@@ -52,11 +53,20 @@ export class ReplyService implements IReplyService {
             return false;
         }
 
-        // The message doesn't explicitly tag this bot or isn't a reaction reply.
-        if (!message.mentions.members?.find(x => x.id === this.#discordClient.user?.id)
+        // The bot requires a mention and isn't a reaction reply.
+        if ((this.#environmentSettings.botRequiresMention &&
+            !message.mentions.members?.find(x => x.id === this.#discordClient.user?.id))
             && !isReaction) {
-            this.#logger(LogLevel.Info, 'Not replying to a message that doesn\'t mention or react this bot.');
+            this.#logger(LogLevel.Info, 'Not replying to a message that doesn\'t mention or react to this bot.');
             return false;
+        }
+
+        // The bot doesn't require a mention and doesn't fall within the
+        // response rate, except for reactions.
+        if ((!this.#environmentSettings.botRequiresMention
+            && getRandomInt(1, 100) > this.#environmentSettings.botResponseRate)
+                && !isReaction) {
+            this.#logger(LogLevel.Info, 'Not replying to a message outside the response rate.');
         }
 
         // The bot can't reply to itself unless it's in response to a reaction.
@@ -68,7 +78,7 @@ export class ReplyService implements IReplyService {
         // The channel isn't in the configured whitelist if there is one.
         if (this.#environmentSettings.discordChannels.length > 0
             && !this.#environmentSettings.discordChannels.includes(message.channel.id)) {
-            this.#logger(LogLevel.Info, 'Not replying to a message in a channel outside my allowed channels.');
+            this.#logger(LogLevel.Info, 'Not replying to a message in a channel outside this bot\'s allowed channels.');
             return false;
         }
 
