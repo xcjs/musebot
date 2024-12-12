@@ -62,11 +62,13 @@ export class ReplyService implements IReplyService {
         }
 
         // The bot doesn't require a mention and doesn't fall within the
-        // response rate, except for reactions.
+        // response rate, except for reactions. It should still always reply
+        // to a direct mention.
         const generatedResponseRate = getRandomInt(1, 100);
 
         if ((!this.#environmentSettings.botRequiresMention
             && generatedResponseRate > this.#environmentSettings.botResponseRate)
+            && !message.mentions.members?.find(x => x.id === this.#discordClient.user?.id)
                 && !isReaction) {
             this.#logger(LogLevel.Info, `Not replying to a message outside the response rate (${generatedResponseRate} > ${this.#environmentSettings.botResponseRate}).`);
             return false;
