@@ -1,5 +1,5 @@
 import { BaseGuildTextChannel, ButtonInteraction, Message } from 'discord.js';
-import {Logger, LogLevel } from 'meklog';
+import { Logger, LogLevel } from 'meklog';
 
 import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
