@@ -30,10 +30,7 @@ export class TypingService implements ITypingService {
 
         let channelTypingIndicator = this.#typingIntervals.find(x => x.channelId === interaction.channelId);
 
-        if (channelTypingIndicator !== undefined) {
-            this.#logger(LogLevel.Info, `The indicator for channel #${interaction.channelId} is already typing - returning.`);
-            return;
-        } else {
+        if(channelTypingIndicator === undefined) {
             this.#logger(LogLevel.Info, `No typing indicator for channel #${interaction.channelId} was found - creating a new one.`);
 
             channelTypingIndicator = {
