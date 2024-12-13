@@ -73,7 +73,6 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
         promptResponseTask.onSuccess = (context: Array<number>) => { this.#context = context; };
 
         this.#taskQueue.add(promptResponseTask);
-
         await this.#typingService.startTyping(message);
     }
 
@@ -121,10 +120,11 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
             return;
         }
 
-        await this.#typingService.startTyping(reaction.message as Message);
-
         const emojiResponseTask = this.#services.getEmojiResponseTask(reaction, user, this.#context);
         this.#taskQueue.add(emojiResponseTask as BaseTask);
+
+        await this.#typingService.startTyping(reaction.message as Message);
+
         emojiResponseTask.onSuccess = (context: Array<number>) => { this.#context = context; };
     }
 }
