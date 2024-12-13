@@ -32,8 +32,11 @@ export class TypingService implements ITypingService {
 
         if (channelTypingIndicator !== undefined
             && channelTypingIndicator.typingInterval !== null) {
+            this.#logger(LogLevel.Info, `The indicator for channel #${interaction.channelId} is already typing - returning.`);
             return;
         } else {
+            this.#logger(LogLevel.Info, `No typing indicator for channel #${interaction.channelId} was found - creating a new one.`);
+
             channelTypingIndicator = {
                 channelId: interaction.channelId,
                 typingInterval: null
@@ -58,16 +61,19 @@ export class TypingService implements ITypingService {
 
     #stopTyping(): void {
         if(this.#interaction === null) {
+            this.#logger(LogLevel.Warn, 'Cannot stop a typing indicator with no matching interaction.');
             return;
         }
 
         const channelTypingIndicator = this.#typingIntervals.find(x => x.channelId === this.#interaction.channelId);
 
         if (channelTypingIndicator === undefined || channelTypingIndicator.typingInterval === null) {
+            this.#logger(LogLevel.Warn, 'Cannot stop a typing indicator with no matching interval.');
             return;
         }
 
         if (this.#taskQueue.isActive) {
+            this.#logger(LogLevel.Warn, 'Cannot stop a typing indicator while the task queue is active.');
             return;
         }
 
