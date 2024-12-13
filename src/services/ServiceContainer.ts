@@ -9,8 +9,8 @@ import { GenerativeTextChatClient } from './clients/chat/discord/GenerativeTextC
 import { OllamaReplyService } from './clients/chat/discord/ollama/OllamaReplyService.js';
 import { OllamaStreamingReplyService } from './clients/chat/discord/ollama/OllamaStreamingReplyService.js';
 import { ReplyService } from './clients/chat/discord/replies/ReplyService.js';
+import { TypingService } from './clients/chat/discord/services/TypingService.js';
 import { ReplyTask } from './clients/chat/discord/tasks/ReplyTask.js';
-import { TypingService } from './clients/chat/discord/TypingService.js';
 import { IGenerativeChatClient } from './clients/chat/IGenerativeChatClient.js';
 import { IReplyService } from './clients/chat/IReplyService.js';
 import { ITypingService } from './clients/chat/ITypingService.js';

@@ -23,7 +23,7 @@ export class FeatureService implements IFeatureService {
     }
 
     #determineSupportedFeatures() {
-        if (this.#environmentSettings.stableDiffusionHosts.length) {
+        if (this.#environmentSettings.stableDiffusionHosts.length > 0) {
             this.#supportedFeatures.push(SupportedFeature.ImageGeneration);
         }
 

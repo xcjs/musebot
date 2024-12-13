@@ -1,8 +1,9 @@
-.env
+.env*
 .parcel-cache/
 bin/
 build/
 dist/
 node_modules/
 *.js
-workflows/*.json
+workflows/
+*.bak
