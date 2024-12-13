@@ -1,4 +1,4 @@
-.env
+.env*
 .parcel-cache/
 bin/
 build/
