@@ -16,7 +16,7 @@ export class TypingService implements ITypingService {
     #interaction: Message | ButtonInteraction | null = null;
 
     #sendTypingIntervalMilliseconds = 1000;
-    #typingIntervals: Array<IChannelTypingIndicator> = [];
+    #typingIndicators: Array<IChannelTypingIndicator> = [];
 
     constructor(services: IServiceContainer) {
         this.#environmentSettings = services.environmentSettings;
@@ -28,12 +28,9 @@ export class TypingService implements ITypingService {
     async startTyping(interaction: Message | ButtonInteraction): Promise<void> {
         this.#interaction = interaction;
 
-        let channelTypingIndicator = this.#typingIntervals.find(x => x.channelId === interaction.channelId);
+        let channelTypingIndicator = this.#typingIndicators.find(x => x.channelId === interaction.channelId);
 
-        if (channelTypingIndicator !== undefined) {
-            this.#logger(LogLevel.Info, `The indicator for channel #${interaction.channelId} is already typing - returning.`);
-            return;
-        } else {
+        if(channelTypingIndicator === undefined) {
             this.#logger(LogLevel.Info, `No typing indicator for channel #${interaction.channelId} was found - creating a new one.`);
 
             channelTypingIndicator = {
@@ -41,7 +38,7 @@ export class TypingService implements ITypingService {
                 typingInterval: null
             };
 
-            this.#typingIntervals.push(channelTypingIndicator);
+            this.#typingIndicators.push(channelTypingIndicator);
         }
 
         if(channelTypingIndicator.typingInterval !== null) {
@@ -69,7 +66,7 @@ export class TypingService implements ITypingService {
             return;
         }
 
-        const channelTypingIndicator = this.#typingIntervals.find(x => x.channelId === this.#interaction.channelId);
+        const channelTypingIndicator = this.#typingIndicators.find(x => x.channelId === this.#interaction.channelId);
 
         if (channelTypingIndicator === undefined || channelTypingIndicator.typingInterval === null) {
             this.#logger(LogLevel.Warning, 'Cannot stop a typing indicator with no matching interval.');
