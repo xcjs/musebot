@@ -2,6 +2,7 @@ import { AttachmentBuilder, ButtonInteraction, Client as DiscordClient, GatewayI
 
 import { BotFunction } from '../enums/BotFunction.js';
 import { Automatic1111ReplyService } from './clients/chat/discord/automatic1111/Automatic1111ReplyService.js';
+import { ComfyUiReplyService } from './clients/chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { EasyDiffusionReplyService } from './clients/chat/discord/easy-diffusion/EasyDiffusionReplyService.js';
 import { DiscordConstants } from './clients/chat/discord/enums/DiscordConstants.js';
 import { GenerativeImageChatClient } from './clients/chat/discord/GenerativeImageChatClient.js';
@@ -27,6 +28,8 @@ import { RandomRenderTask as A1RandomRenderTask } from './clients/images/automat
 import { RetryRenderTask as A1RetryRenderTask } from './clients/images/automatic1111/tasks/RetryRenderTask.js';
 import { ShowSourceTask as A1ShowSourceTask } from './clients/images/automatic1111/tasks/ShowSourceTask.js';
 import { UpscaleRenderTask as A1UpscaleRenderTask } from './clients/images/automatic1111/tasks/UpscaleRenderTask.js';
+import { ComfyUiClient } from './clients/images/comfy-ui/ComfyUiClient.js';
+import { PromptRenderTask } from './clients/images/comfy-ui/tasks/PromptRenderTask.js';
 import { EasyDiffusionClient } from './clients/images/easy-diffusion/EasyDiffusionClient.js';
 import { AttachRenderTask as EdAttachRenderTask } from './clients/images/easy-diffusion/tasks/AttachRenderTask.js';
 import { DecreaseGuidanceScaleRenderTask as EdDecreaseGuidanceScaleRenderTask } from './clients/images/easy-diffusion/tasks/DecreaseGuidanceScaleRenderTask.js';
@@ -114,6 +117,14 @@ export class ServiceContainer implements IServiceContainer {
 
     get automatic1111ReplyService(): Automatic1111ReplyService {
         return new Automatic1111ReplyService(this);
+    }
+
+    get comfyUiClient(): ComfyUiClient {
+        return new ComfyUiClient(this);
+    }
+
+    get comfyUiReplyService(): ComfyUiReplyService {
+        return new ComfyUiReplyService(this);
     }
 
     get easyDiffusionClient(): EasyDiffusionClient {
@@ -238,6 +249,8 @@ export class ServiceContainer implements IServiceContainer {
         switch (this.#environmentSettings.stableDiffusionApiType) {
             case StableDiffusionApiType.Automatic1111:
                 return new A1PromptRenderTask(this, message);
+                case StableDiffusionApiType.ComfyUI:
+                    return new PromptRenderTask(this, message);
             case StableDiffusionApiType.EasyDiffusion:
                 return new EdPromptRenderTask(this, message);
             default:

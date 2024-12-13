@@ -23,7 +23,7 @@ export class EasyDiffusionReplyService {
 
     #logger;
 
-    get host() {
+    get host(): URL {
         return this.#easyDiffusionClient.host;
     }
 

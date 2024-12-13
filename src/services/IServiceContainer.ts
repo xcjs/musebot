@@ -1,6 +1,7 @@
 import { AttachmentBuilder, ButtonInteraction, Client as DiscordClient, Message, MessageReaction, User } from 'discord.js';
 
 import { Automatic1111ReplyService } from './clients/chat/discord/automatic1111/Automatic1111ReplyService.js';
+import { ComfyUiReplyService } from './clients/chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { EasyDiffusionReplyService } from './clients/chat/discord/easy-diffusion/EasyDiffusionReplyService.js';
 import { OllamaReplyService } from './clients/chat/discord/ollama/OllamaReplyService.js';
 import { OllamaStreamingReplyService } from './clients/chat/discord/ollama/OllamaStreamingReplyService.js';
@@ -9,6 +10,7 @@ import { ITypingService } from './clients/chat/ITypingService.js';
 import { IReplyTask } from './clients/chat/tasks/IReplyTask.js';
 import { Automatic1111Client } from './clients/images/automatic1111/Automatic1111Client.js';
 import { Upscaler } from './clients/images/automatic1111/enums/Upscaler.js';
+import { ComfyUiClient } from './clients/images/comfy-ui/ComfyUiClient.js';
 import { EasyDiffusionClient } from './clients/images/easy-diffusion/EasyDiffusionClient.js';
 import { PromptExtensionType } from './clients/images/enums/PromptExtensionType.js';
 import { IAttachRenderTask } from './clients/images/tasks/IAttachRenderTask.js';
@@ -43,6 +45,8 @@ export interface IServiceContainer {
     replyService: IReplyService;
     automatic1111Client: Automatic1111Client;
     automatic1111ReplyService: Automatic1111ReplyService;
+    comfyUiClient: ComfyUiClient;
+    comfyUiReplyService: ComfyUiReplyService;
     easyDiffusionClient: EasyDiffusionClient;
     easyDiffusionReplyService: EasyDiffusionReplyService;
     ollamaClient: OllamaClient;
