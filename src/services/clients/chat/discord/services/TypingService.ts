@@ -30,8 +30,7 @@ export class TypingService implements ITypingService {
 
         let channelTypingIndicator = this.#typingIntervals.find(x => x.channelId === interaction.channelId);
 
-        if (channelTypingIndicator !== undefined
-            && channelTypingIndicator.typingInterval !== null) {
+        if (channelTypingIndicator !== undefined) {
             this.#logger(LogLevel.Info, `The indicator for channel #${interaction.channelId} is already typing - returning.`);
             return;
         } else {
@@ -43,6 +42,11 @@ export class TypingService implements ITypingService {
             };
 
             this.#typingIntervals.push(channelTypingIndicator);
+        }
+
+        if(channelTypingIndicator.typingInterval !== null) {
+            this.#logger(LogLevel.Warning, 'Cannot start a typing indicator that is already running.');
+            return;
         }
 
         try {
