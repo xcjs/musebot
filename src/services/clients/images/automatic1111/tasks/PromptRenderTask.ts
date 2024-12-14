@@ -52,8 +52,10 @@ export class PromptRenderTask extends BaseTask implements IPromptRenderTask {
 
     override async process(): Promise<void> {
         const prompt = this.#message.type === MessageType.Reply
-            ? `${(await this.#getOriginalPromptMessage())} ${this.#message.content}`.trim()
+            ? `${((await this.#getAllAntecedentPrompts()).join(' '))} ${this.#message.content}`.trim()
             : this.#filterBotMentions(this.#message.content).trim();
+
+        console.log(LogLevel.Info, `Preparing to render an image for the prompt: ${prompt}`);
 
         if(prompt.charAt(0) === '{') {
             this.#taskQueue.add(new JsonRenderTask(
@@ -85,25 +87,20 @@ export class PromptRenderTask extends BaseTask implements IPromptRenderTask {
         return messageContent.replaceAll(botMention, '').trim();
     }
 
-    async #getOriginalPromptMessage(): Promise<string> {
-        if(this.#message.type !== MessageType.Reply || this.#message.reference === null) {
-            return '';
-        }
+    async #getAllAntecedentPrompts(): Promise<Array<string>> {
+        const prompts: Array<string> = [];
+        let currentMessage = this.#message;
 
-        let repliedMessage = await this.#message.fetchReference();
-        let content: string | null = null;
+        while(currentMessage.reference !== null) {
+            const antecedentMessage = await currentMessage.fetchReference();
 
-        while(content === null || content.length === 0) {
-            content = this.#filterBotMentions(repliedMessage?.content?.trim() || '');
-
-            if(repliedMessage.reference !== null
-                && (content === null || content.length === 0)) {
-                repliedMessage = await repliedMessage.fetchReference();
-            } else {
-                break;
+            if(antecedentMessage.content !== null && antecedentMessage.content.length > 0) {
+                prompts.push(this.#filterBotMentions(antecedentMessage.content.trim()));
             }
+
+            currentMessage = antecedentMessage;
         }
 
-        return content || '';
+        return prompts.reverse();
     }
 }
