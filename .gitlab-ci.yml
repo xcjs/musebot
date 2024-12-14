@@ -2,7 +2,7 @@ stages:
   - Lint
   - Transpile
   - Build
-  - Deploy
+  - Publish
 
 Lint:
   stage: Lint
@@ -62,8 +62,8 @@ Build Distributable:
       - build/pkg/
     expire_in: 1 week
 
-Deploy:
-  stage: Deploy
+Publish Docker Image:
+  stage: Publish
   image: docker:stable
   services:
     - docker:stable-dind
