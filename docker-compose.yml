@@ -1,5 +1,3 @@
-version: '3'
-
 services:
   musebot:
     container_name: musebot

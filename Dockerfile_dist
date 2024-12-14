@@ -1,0 +1,9 @@
+FROM scratch
+
+RUN mkdir /app
+WORKDIR /app
+
+COPY ./musebot-linux-x86_64 ./musebot
+COPY ./LICENSE.txt ./LICENSE.txt
+
+CMD ["./musebot"]
