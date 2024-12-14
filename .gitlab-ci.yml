@@ -1,6 +1,5 @@
 stages:
   - Lint
-  - Transpile
   - Build
   - Publish
 
@@ -13,16 +12,6 @@ Lint:
     - npm install
   script:
     - npm run lint
-
-Transpile:
-  stage: Transpile
-  image: node:lts
-  tags:
-    - docker
-  before_script:
-    - npm install
-  script:
-    - npm run parcel
 
 Build Docker Image:
   stage: Build
