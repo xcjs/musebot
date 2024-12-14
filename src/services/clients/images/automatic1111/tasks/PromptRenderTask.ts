@@ -1,4 +1,4 @@
-import { Client as DiscordClient, Message } from 'discord.js';
+import { Client as DiscordClient, Message, MessageType } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
 import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
@@ -51,8 +51,9 @@ export class PromptRenderTask extends BaseTask implements IPromptRenderTask {
     }
 
     override async process(): Promise<void> {
-        const botMention = this.#message.mentions.members.find(x => x.id === this.#discordClient.user?.id)?.toString() || '';
-        const prompt = this.#message.content.replaceAll(botMention, '').trim();
+        const prompt = this.#message.type === MessageType.Reply
+            ? `${(await this.#getOriginalPromptMessage())} ${this.#message.content}`.trim()
+            : this.#filterBotMentions(this.#message.content).trim();
 
         if(prompt.charAt(0) === '{') {
             this.#taskQueue.add(new JsonRenderTask(
@@ -77,5 +78,32 @@ export class PromptRenderTask extends BaseTask implements IPromptRenderTask {
         if(this.taskStatus === TaskStatus.Dead) {
             await this.#replyService.replyWithError(this.#message);
         }
+    }
+
+    #filterBotMentions(messageContent: string | null): string {
+        const botMention = this.#message.mentions.members.find(x => x.id === this.#discordClient.user?.id)?.toString() || '';
+        return messageContent.replaceAll(botMention, '').trim();
+    }
+
+    async #getOriginalPromptMessage(): Promise<string> {
+        if(this.#message.type !== MessageType.Reply || this.#message.reference === null) {
+            return '';
+        }
+
+        let repliedMessage = await this.#message.fetchReference();
+        let content: string | null = null;
+
+        while(content === null || content.length === 0) {
+            content = this.#filterBotMentions(repliedMessage?.content?.trim() || '');
+
+            if(repliedMessage.reference !== null
+                && (content === null || content.length === 0)) {
+                repliedMessage = await repliedMessage.fetchReference();
+            } else {
+                break;
+            }
+        }
+
+        return content || '';
     }
 }

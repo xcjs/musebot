@@ -1,7 +1,6 @@
 import { Attachment, AttachmentBuilder, ButtonInteraction, Client as DiscordClient, Message, MessageType, User  } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { BotFunction } from '../../../../../enums/BotFunction.js';
 import { ContentType } from '../../../../../enums/ContentType.js';
 import { getRandomInt } from '../../../../../utilities/random-utilities.js';
 import { splitText } from '../../../../../utilities/string-utilities.js';
@@ -39,7 +38,7 @@ export class ReplyService implements IReplyService {
         // The message is not a default message type and not a reaction reply
         // unless it's a reply to an LLM.
         if (message.type !== MessageType.Default
-            && (this.#environmentSettings.botFunction !== BotFunction.Text && message.type !== MessageType.Reply)
+            && message.type !== MessageType.Reply
             && !isReaction) {
             this.#logger(LogLevel.Info, 'Not replying to a non-default or non-reaction message.');
             return false;
