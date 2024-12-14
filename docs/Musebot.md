@@ -24,23 +24,64 @@ Musebot currently supports the following operating systems and architectures:
 
 | Operating System | Architectures |
 | ---------------- | --------------|
+| Docker           | x86_64        |
 | Linux            | x86_64        |
-| Windows          | x86_64        |
 | Mac OS X         | x86_64        |
+| Windows          | x86_64        |
 
-## Linux
+### Docker
+
+1. Extract musebot wherever fits your use case or environment.
+2. Configure Musebot using the provided `.env` file and place it in the same
+   directory as the Musebot executable. The `.env` file is documented to explain
+   the use case of each provided environment variable.
+3. A `docker-compose.yml` file is provided to help get you started. Feel free to
+   modify it to fit your needs. Ensure that all required files are in the same
+   directory as the compose file:
+
+   * `.env`
+   * `docker-compose.yml`
+   * `Dockerfile`
+   * `musebot-linux-x86_64`
+   * `LICENSE.txt`
+4. Using the extracted directory as your working directory, run
+   `docker compose up -d`.
+
+### Linux
 
 1. Extract musebot wherever fits your use case or environment.
 2. Ensure that musebot is set as executable.
 
-   `chmod +x musebot`
-3. Rename `.env.example` to `.env`.
-4. Configure Musebot using the provided `.env` file and place it in the same
+   `chmod +x musebot-linux-x86_64`
+3. Configure Musebot using the provided `.env` file and place it in the same
    directory as the Musebot executable. The `.env` file is documented to explain
    the use case of each provided environment variable.
-5. Continue to Bot Registration.
+4. Continue to Bot Registration.
+5. Execute `./musebot-linux-x86_64`
 
-## Bot Registration
+### Mac OS X
+
+1. Extract musebot wherever fits your use case or environment.
+2. Ensure that musebot is set as executable.
+
+   `musebot-macos-x86_64`
+3. Configure Musebot using the provided `.env` file and place it in the same
+   directory as the Musebot executable. The `.env` file is documented to explain
+   the use case of each provided environment variable.
+4. Continue to Bot Registration.
+5. Execute `./musebot-macos-x86_64`
+
+### Windows
+
+1. Extract musebot wherever fits your use case or environment.
+2. Configure Musebot using the provided `.env` file and place it in the same
+   directory as the Musebot executable. The `.env` file is documented to explain
+   the use case of each provided environment variable.
+3. Continue to Bot Registration.
+4. Execute `./musebot-windows-x86_64.exe` from the Command Prompt or Powershell.
+   Double-clicking on it may work.
+
+### Bot Registration
 
 Before starting Musebot, ensure that you've registered an application with
 Discord.
@@ -77,7 +118,7 @@ Discord.
 18. Click the `Reset Token` button. This will create or reset your token. This
     is required for the `MUSEBOT_DISCORD_TOKEN` environment variable.
 
-## Lookup Discord Channel IDs
+### Lookup Discord Channel IDs
 
 If you decide to restrict Musebot to a single or subset of channels, follow
 these steps:
@@ -85,15 +126,3 @@ these steps:
 1. In Discord, go to `User Settings` » `Advanced` » `Enable Developer Mode`.
 2. Right click on a channel for Musebot to use and click `Copy Channel ID`.
 3. Add the channel ID(s) to the `MUSEBOT_DISCORD_CHANNELS` environment variable.
-
-## Start Musebot
-
-1. After installation and registration are complete, open a terminal and
-   run `./musebot`.
-2. If you wish to run Musebot as a system service, there are several
-   recommendations:
-
-   * Add Musebot to a Docker container.
-   * Or create a systemd service for Musebot.
-
-   Additional runtime options may be provided at a later date.
