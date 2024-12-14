@@ -78,7 +78,7 @@ Musebot currently supports the following operating systems and architectures:
    directory as the Musebot executable. The `.env` file is documented to explain
    the use case of each provided environment variable.
 3. Continue to Bot Registration.
-4. Execute `./musebot-windows-x86_64.exe` from the Command Prompt or Powershell.
+4. Execute `./musebot-win-x86_64.exe` from the Command Prompt or Powershell.
    Double-clicking on it may work.
 
 ### Bot Registration
