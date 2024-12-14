@@ -34,7 +34,7 @@ Build Docker Image:
   tags:
     - docker
   script:
-    - docker build -t $CI_REGISTRY/xcjs/musebot:build ./Dockerfile
+    - docker build -t $CI_REGISTRY/xcjs/musebot:build .
 
 Build Distributable:
   stage: Build
