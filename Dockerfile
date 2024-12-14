@@ -8,7 +8,7 @@ USER node
 
 FROM scratch
 
-COPY --from=builder /home/node/app/build/pkg/musebot-linux /musebot
-COPY --from=builder /home/node/app/LICENSE.md /LICENSE.txt
+COPY --from=builder /home/node/app/build/pkg/musebot-linux /app/musebot
+COPY --from=builder /home/node/app/LICENSE.md /app/LICENSE.txt
 
-CMD ["/musebot"]
+CMD ["/app/musebot"]
