@@ -6,7 +6,7 @@ RUN npm install && npm run build:bin
 
 USER node
 
-FROM scratch
+FROM debian:stable
 
 COPY --from=builder /home/node/app/build/pkg/musebot-linux /app/musebot
 COPY --from=builder /home/node/app/LICENSE.md /app/LICENSE.txt
