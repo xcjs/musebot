@@ -113,17 +113,21 @@ export class ReplyService implements IReplyService {
         const replyContents = splitText(content?.trim() || '', DiscordConstants.ContentMaxLength);
 
         replyContents.forEach(async (contentFragment, i) => {
-            const indexLength = i++;
-            const replyAttachments = replyContents.length === indexLength ? attachments : [];
+            const replyAttachments = i + 1 === replyContents.length ? attachments : [];
 
             if (interaction instanceof Message) {
                 await interaction.reply({
-                    content: contentFragment,
+                    content: contentFragment.trim(),
                     files: replyAttachments
                 });
-            } else if (interaction instanceof ButtonInteraction) {
+            } else if (interaction instanceof ButtonInteraction && i === 0) {
                 await interaction.editReply({
-                    content: contentFragment,
+                    content: contentFragment.trim(),
+                    files: replyAttachments
+                });
+            } else if (interaction instanceof ButtonInteraction && i > 0) {
+                await interaction.followUp({
+                    content: contentFragment.trim(),
                     files: replyAttachments
                 });
             } else {
