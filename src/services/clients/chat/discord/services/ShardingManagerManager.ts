@@ -1,4 +1,4 @@
-import { Events,ShardingManager } from 'discord.js';
+import { Events, Shard, ShardingManager } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
 import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
@@ -22,8 +22,8 @@ export class ShardingManagerManager {
         this.#registerEvents();
     }
 
-    spawn() {
-        this.#shardingManager.spawn();
+    async spawn() {
+        await this.#shardingManager.spawn();
     }
 
     #registerEvents() {
@@ -33,11 +33,11 @@ export class ShardingManagerManager {
         this.#shardingManager.on(DiscordEvent.ShardCreate, (shard) => this.#onShardCreate.call(self, shard));
     }
 
-    #onShardCreate(shard) {
+    async #onShardCreate(shard: Shard): Promise<void> {
         this.#logger(LogLevel.Info, `Shard #${shard.id} created.`);
 
-        shard.once(Events.ClientReady, () => {
-            shard.send({
+        shard.once(Events.ClientReady, async () => {
+            await shard.send({
                 shardID: shard.id,
                 logger: this.#logger.data
             });
