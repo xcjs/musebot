@@ -56,7 +56,7 @@ import { EmojiResponseTask } from './clients/text/ollama/tasks/EmojiResponseTask
 import { PromptResponseTask } from './clients/text/ollama/tasks/PromptResponseTask.js';
 import { IEmojiResponseTask } from './clients/text/tasks/IEmojiResponseTask.js';
 import { IPromptResponseTask } from './clients/text/tasks/IPromptResponseTask.js';
-import { TextHelpService } from './clients/text/TextHelpService.js';
+import { TextHelpService } from './clients/text/help/TextHelpService.js';
 import { EnvironmentSettings } from './EnvironmentSettings.js';
 import { SupportedFeature } from './features/enum/SupportedFeature.js';
 import { FeatureService } from './features/FeatureService.js';
