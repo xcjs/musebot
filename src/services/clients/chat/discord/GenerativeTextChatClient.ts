@@ -10,7 +10,6 @@ import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { IReplyService } from '../IReplyService.js';
 import { ITypingService } from '../ITypingService.js';
 import { BaseDiscordClient } from './BaseDiscordClient.js';
-import { DiscordPresenceStatus } from './enums/DiscordPresenceStatus.js';
 
 export class GenerativeTextChatClient extends BaseDiscordClient {
     #services: IServiceContainer;
@@ -45,19 +44,10 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this;
 
-        this.#discordClient.once(Events.ClientReady, (event) => this.#onClientReady.call(self, event));
+        this.#discordClient.once(Events.ClientReady, (event) => this.onClientReady.call(self, event));
         this.#discordClient.on(Events.MessageCreate, async (message) => await this.#onMessageCreate.call(self, message));
         this.#discordClient.on(Events.InteractionCreate, async (interaction) => await this.#onInteraction.call(self, interaction));
         this.#discordClient.on(Events.MessageReactionAdd, async (reaction, user) => await this.#onMessageReactionAdd.call(self, reaction, user));
-    }
-
-    #onClientReady(): Promise<void> {
-        if (this.#discordClient.user === null) {
-            return;
-        }
-
-        this.logger(LogLevel.Info, 'Client is ready.');
-        this.#discordClient.user.setPresence({ activities: [], status: DiscordPresenceStatus.Online });
     }
 
     async #onMessageCreate(message: Message): Promise<void> {
