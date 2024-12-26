@@ -20,11 +20,11 @@ export class ImageHelpService extends BaseHelpService implements IHelpService {
     }
 
     buildHelpArticle(interaction: Interaction): string {
-        let helpArticle: string = this.#replyService.mention(interaction.user)
+        let helpArticle =
+            + '# Musebot Help'
             + '\n\n'
-            + `# Musebot Help`
-            + '\n\n'
-            + 'Thanks for using Musebot! This instance of Musebot is configured as an image generation service.'
+            + `Thanks for using Musebot, ${this.#replyService.mention(interaction.user)}! This instance of Musebot is configured as an image generation service.`
+            + ' For more information on Musebot or to test the latest version of it, visit the [XCJS Discord](https://discord.gg/qZMzFA8Apd).'
             + '\n\n'
             + `You can interact with this chatbot by mentioning it with ${this.replyService.mention(this.discordClient.user)} followed by a description of the image you want to generate.`
             + ' Additionally, there are various button-based interactions you can use to adjust the image generated after interacting with the bot at least once: '
