@@ -54,8 +54,7 @@ export interface IServiceContainer {
     getReplyTask(
         interaction: Message | ButtonInteraction,
         content: string,
-        attachments: Array<AttachmentBuilder>,
-        isEdit: boolean): IReplyTask;
+        attachments: Array<AttachmentBuilder>): IReplyTask;
 
     getAttachRenderTask(
         interaction: ButtonInteraction | Message,

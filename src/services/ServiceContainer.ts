@@ -145,10 +145,9 @@ export class ServiceContainer implements IServiceContainer {
     getReplyTask(
         interaction: Message | ButtonInteraction,
         content: string | null,
-        attachments: Array<AttachmentBuilder> = [],
-        isEdit: boolean = false
+        attachments: Array<AttachmentBuilder> = []
         ): IReplyTask {
-        return new ReplyTask(this, interaction, content, attachments, isEdit);
+        return new ReplyTask(this, interaction, content, attachments);
     }
 
     getAttachRenderTask(

@@ -101,8 +101,7 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
                 this.#taskQueue.add(this.#services.getReplyTask(
                     interaction,
                     this.#helpService.buildHelpArticle(interaction),
-                    [],
-                    true) as BaseTask);
+                    []) as BaseTask);
                 break;
             default:
                 this.logger(LogLevel.Warning, `An unknown interaction was passed: ${interaction.customId}.`);
