@@ -85,7 +85,11 @@ export class TypingService implements ITypingService {
 
     async #onTypingInterval(message: Message | ButtonInteraction): Promise<void> {
         if(this.#taskQueue.isActive && message.channel instanceof BaseGuildTextChannel) {
-            await message.channel.sendTyping();
+            try {
+                await message.channel.sendTyping();
+            } catch(error) {
+                this.#logger(LogLevel.Error, 'An error occurred while setting the typing indicator. This error can be ignored if the bot is functioning normally.');
+            }
         } else {
             this.#stopTyping();
         }
