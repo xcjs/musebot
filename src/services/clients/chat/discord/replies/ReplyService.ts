@@ -111,7 +111,7 @@ export class ReplyService implements IReplyService {
         attachments: Array<AttachmentBuilder> = [],
         isEdit: boolean = false): Promise<void> {
 
-        const replyContents = splitText(content, DiscordConstants.ContentMaxLength);
+        const replyContents = splitText(content?.trim() || '', DiscordConstants.ContentMaxLength);
 
         replyContents.forEach(async (contentFragment, i) => {
             const indexLength = i++;
