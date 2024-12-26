@@ -76,7 +76,11 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
     async #onInteraction(interaction: ButtonInteraction): Promise<void> {
         this.logger(LogLevel.Info, `Beginning interaction response to custom action ${interaction.customId}...`);
 
-        await interaction.deferReply();
+        try {
+            await interaction.deferReply();
+        } catch (error) {
+            this.logger(LogLevel.Error, `Something went wrong while deferring a reply: ${error}. Ignore this error if the bot is functioning normally.`);
+        }
 
         switch (interaction.customId) {
             case BotInteraction.Retry:
@@ -123,7 +127,7 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
             try {
                 reaction = await reaction.fetch();
             } catch (error) {
-                this.logger(LogLevel.Error, `Something went wrong when fetching the MessageReaction:`, error);
+                this.logger(LogLevel.Error, `Something went wrong when fetching the MessageReaction: ${error}.`);
                 return;
             }
         }
