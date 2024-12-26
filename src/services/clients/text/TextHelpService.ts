@@ -20,11 +20,10 @@ export class TextHelpService extends BaseHelpService implements IHelpService {
     }
 
     buildHelpArticle(interaction: Interaction): string {
-        let helpArticle: string = this.#replyService.mention(interaction.user)
+        let helpArticle = '# Musebot Help'
             + '\n\n'
-            + `# Musebot Help`
-            + '\n\n'
-            + 'Thanks for using Musebot! This instance of Musebot is configured as a large language model service.'
+            + `Thanks for using Musebot, ${this.#replyService.mention(interaction.user)}! This instance of Musebot is configured as a large language model service.`
+            + ' For more information on Musebot or to test the latest version of it, visit the [XCJS Discord](https://discord.gg/qZMzFA8Apd).'
             + '\n\n'
             + 'You can interact with this chatbot by mentioning it with'
             + ` ${this.replyService.mention(this.discordClient.user)} followed by the message you want it to reply to.`

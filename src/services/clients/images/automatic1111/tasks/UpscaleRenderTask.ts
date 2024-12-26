@@ -63,7 +63,9 @@ export class UpscaleRenderTask extends BaseTask implements IUpscaleRenderTask {
 
         renderData.exchange.response.images = [upscaledData.image];
 
-        const content = `${this.#interaction.member} upscaled \`${request.prompt}\``.substring(0, DiscordConstants.ContentMaxLength);
+        const content = `${this.#interaction.member} upscaled \`${request.prompt}\` using the \`${this.#upscaler}\` upscaler.`
+            .substring(0, DiscordConstants.ContentMaxLength);
+
         await this.#automatic1111ReplyService.reply(this.#interaction, renderData, content);
     }
 

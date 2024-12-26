@@ -108,21 +108,20 @@ export class ReplyService implements IReplyService {
     async reply(
         interaction: Message | ButtonInteraction,
         content: string | null,
-        attachments: Array<AttachmentBuilder> = [],
-        isEdit: boolean = false): Promise<void> {
-
-        const replyContents = splitText(content, DiscordConstants.ContentMaxLength);
+        attachments: Array<AttachmentBuilder> = []
+    ): Promise<void> {
+        const replyContents = splitText(content?.trim() || '', DiscordConstants.ContentMaxLength);
 
         replyContents.forEach(async (contentFragment, i) => {
             const indexLength = i++;
             const replyAttachments = replyContents.length === indexLength ? attachments : [];
 
-            if (!isEdit) {
+            if (interaction instanceof Message) {
                 await interaction.reply({
                     content: contentFragment,
                     files: replyAttachments
                 });
-            } else if (isEdit && interaction instanceof ButtonInteraction) {
+            } else if (interaction instanceof ButtonInteraction) {
                 await interaction.editReply({
                     content: contentFragment,
                     files: replyAttachments

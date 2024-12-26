@@ -56,7 +56,7 @@ export class Automatic1111Client {
                 data: model
             };
         } catch(error) {
-            this.#logger(LogLevel.Info, error);
+            this.#logger(LogLevel.Error, `Failed to render an image: ${error}`);
             throw error;
         }
     }
@@ -112,7 +112,7 @@ export class Automatic1111Client {
                 body: JSON.stringify(options)
             });
         } catch(error) {
-            this.#logger(LogLevel.Info, error);
+            this.#logger(LogLevel.Error, `Failed setting an image generation model: ${error}`);
             throw error;
         }
     }

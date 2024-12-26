@@ -94,7 +94,7 @@ export class Txt2ImgOptionsFactory {
         options.sampler_name = SamplingMethod.Euler_a;
         options.sampler_index = SamplingMethod.Euler_a;
         options.scheduler = ScheduleType.Karras;
-        options.steps = 25;
+        options.steps = 20;
         options.height = 1024;
         options.width = 1024;
         options.distilled_cfg_scale = 0;

@@ -3,23 +3,37 @@ import { Logger, LogLevel } from 'meklog';
 
 import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
+import { ITaskQueue } from '../../../tasks/ITaskQueue.js';
 import { IGenerativeChatClient } from '../IGenerativeChatClient.js';
+import { DiscordPresenceStatus } from './enums/DiscordPresenceStatus.js';
+import { LoginTask } from './tasks/LoginTask.js';
 
 export class BaseDiscordClient implements IGenerativeChatClient {
+    #services: IServiceContainer;
     #environmentSettings: IEnvironmentSettings;
-    #discordClient: DiscordClient;
+    #taskQueue: ITaskQueue;
 
-    protected logger;
+    protected logger: Logger;
 
     constructor(services: IServiceContainer) {
+        this.#services = services;
         this.#environmentSettings = services.environmentSettings;
-        this.#discordClient = services.discordClient;
+        this.#taskQueue = services.taskQueue;
 
-        this.logger = new Logger(this.#environmentSettings.isProduction, 'BaseDiscordClient');
+        this.logger = new Logger(this.#environmentSettings.isProduction, BaseDiscordClient.name);
     }
 
     async login(): Promise<void> {
-        this.logger(LogLevel.Info, 'Performing client login...');
-        await this.#discordClient.login(this.#environmentSettings.discordToken);
+        this.logger(LogLevel.Info, 'Starting client login task...');
+        this.#taskQueue.add(new LoginTask(this.#services));
+    }
+
+    onClientReady(discordClient: DiscordClient): Promise<void> {
+        if (discordClient.user === null) {
+            return;
+        }
+
+        this.logger(LogLevel.Info, 'Client is ready.');
+        discordClient.user.setPresence({ activities: [], status: DiscordPresenceStatus.Online });
     }
 }
