@@ -20,8 +20,7 @@ export class TextHelpService extends BaseHelpService implements IHelpService {
     }
 
     buildHelpArticle(interaction: Interaction): string {
-        let helpArticle: string =
-            + '# Musebot Help'
+        let helpArticle = '# Musebot Help'
             + '\n\n'
             + `Thanks for using Musebot, ${this.#replyService.mention(interaction.user)}! This instance of Musebot is configured as a large language model service.`
             + ' For more information on Musebot or to test the latest version of it, visit the [XCJS Discord](https://discord.gg/qZMzFA8Apd).'

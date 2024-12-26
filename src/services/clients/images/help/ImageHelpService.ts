@@ -20,8 +20,7 @@ export class ImageHelpService extends BaseHelpService implements IHelpService {
     }
 
     buildHelpArticle(interaction: Interaction): string {
-        let helpArticle =
-            + '# Musebot Help'
+        let helpArticle = '# Musebot Help'
             + '\n\n'
             + `Thanks for using Musebot, ${this.#replyService.mention(interaction.user)}! This instance of Musebot is configured as an image generation service.`
             + ' For more information on Musebot or to test the latest version of it, visit the [XCJS Discord](https://discord.gg/qZMzFA8Apd).'
