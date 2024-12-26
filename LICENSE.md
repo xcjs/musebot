@@ -1,5 +1,5 @@
 
-# XCJS SOFTWARE LICENSE AGREEMENT 1.0
+# XCJS SOFTWARE LICENSE AGREEMENT 1.1
 
 This Software License Agreement ("Agreement") is made and entered into as of the
 date of purchase ("Effective Date") by and between XCJS, LLC,
@@ -23,7 +23,8 @@ hereby acknowledged, the parties agree as follows:
 2. Grant of License:
 
    Subject to the terms and conditions of this Agreement, Licensor hereby grants
-   to Licensee a no license to use the Software.
+   to Licensee a license to use the Software for legally permissible purposes in
+   the region or locality the Licensee is subject to.
 3. Distribution:
 
    The Software may not be distributed to third or other parties.
