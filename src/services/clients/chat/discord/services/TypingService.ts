@@ -22,7 +22,7 @@ export class TypingService implements ITypingService {
         this.#environmentSettings = services.environmentSettings;
         this.#taskQueue = services.taskQueue;
 
-        this.#logger = new Logger(this.#environmentSettings.isProduction, 'TypingService');
+        this.#logger = new Logger(this.#environmentSettings.isProduction, TypingService.name);
     }
 
     async startTyping(interaction: Message | ButtonInteraction): Promise<void> {
