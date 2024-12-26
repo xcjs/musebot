@@ -82,7 +82,11 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
                 await this.#clearContext(interaction);
                 break;
             case BotInteraction.Help:
-                await interaction.editReply(this.#helpService.buildHelpArticle(interaction));
+                this.#taskQueue.add(this.#services.getReplyTask(
+                    interaction,
+                    this.#helpService.buildHelpArticle(interaction),
+                    [],
+                    true) as BaseTask);
                 break;
             default:
                 this.logger(LogLevel.Warning, `An unknown interaction was passed: ${interaction.customId}.`);
