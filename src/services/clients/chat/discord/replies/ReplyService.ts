@@ -35,8 +35,11 @@ export class ReplyService implements IReplyService {
             return false;
         }
 
-        // The message is not a default message type and not a reaction reply.
-        if (message.type !== MessageType.Default && !isReaction) {
+        // The message is not a default message type and not a reaction reply
+        // unless it's a reply to an LLM.
+        if (message.type !== MessageType.Default
+            && message.type !== MessageType.Reply
+            && !isReaction) {
             this.#logger(LogLevel.Info, 'Not replying to a non-default or non-reaction message.');
             return false;
         }
@@ -105,23 +108,26 @@ export class ReplyService implements IReplyService {
     async reply(
         interaction: Message | ButtonInteraction,
         content: string | null,
-        attachments: Array<AttachmentBuilder> = [],
-        isEdit: boolean = false): Promise<void> {
-
-        const replyContents = splitText(content, DiscordConstants.ContentMaxLength);
+        attachments: Array<AttachmentBuilder> = []
+    ): Promise<void> {
+        const replyContents = splitText(content?.trim() || '', DiscordConstants.ContentMaxLength);
 
         replyContents.forEach(async (contentFragment, i) => {
-            const indexLength = i++;
-            const replyAttachments = replyContents.length === indexLength ? attachments : [];
+            const replyAttachments = i + 1 === replyContents.length ? attachments : [];
 
-            if (!isEdit) {
+            if (interaction instanceof Message) {
                 await interaction.reply({
-                    content: contentFragment,
+                    content: contentFragment.trim(),
                     files: replyAttachments
                 });
-            } else if (isEdit && interaction instanceof ButtonInteraction) {
+            } else if (interaction instanceof ButtonInteraction && i === 0) {
                 await interaction.editReply({
-                    content: contentFragment,
+                    content: contentFragment.trim(),
+                    files: replyAttachments
+                });
+            } else if (interaction instanceof ButtonInteraction && i > 0) {
+                await interaction.followUp({
+                    content: contentFragment.trim(),
                     files: replyAttachments
                 });
             } else {

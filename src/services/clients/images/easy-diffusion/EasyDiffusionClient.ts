@@ -57,7 +57,7 @@ export class EasyDiffusionClient {
                 response: await response.json() as IRenderResponse
             };
         } catch(error) {
-            this.#logger(LogLevel.Info, error);
+            this.#logger(LogLevel.Error, `Failed to render an image: ${error}`);
             throw error;
         }
     }

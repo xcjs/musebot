@@ -1,0 +1,6 @@
+FROM debian:stable
+
+COPY ./musebot-linux-x86_64 /app/musebot
+COPY ./LICENSE.txt /app/LICENSE.txt
+
+CMD ["/app/musebot"]

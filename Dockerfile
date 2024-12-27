@@ -1,9 +1,14 @@
-FROM node:lts
+FROM node:lts AS builder
 
 WORKDIR /home/node/app
 COPY . .
-RUN npm install --omit dev && npm run parcel
+RUN npm install && npm run build:bin
 
 USER node
 
-CMD ["npm", "run", "start:only"]
+FROM debian:stable
+
+COPY --from=builder /home/node/app/build/pkg/musebot-linux /app/musebot
+COPY --from=builder /home/node/app/LICENSE.md /app/LICENSE.txt
+
+CMD ["/app/musebot"]

@@ -1,9 +1,16 @@
-.env*
-.parcel-cache/
-bin/
-build/
-dist/
-node_modules/
-*.js
-workflows/
+# Backup Files
 *.bak
+
+# Build Files
+build/
+*.js
+
+# Caches
+.parcel-cache/
+
+# Configuration Files
+.env*
+workflows/
+
+# Package Management
+node_modules/

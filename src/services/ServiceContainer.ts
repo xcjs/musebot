@@ -54,12 +54,12 @@ import { IRandomRenderTask } from './clients/images/tasks/IRandomRenderTask.js';
 import { IRetryRenderTask } from './clients/images/tasks/IRetryRenderTask.js';
 import { IShowSourceTask } from './clients/images/tasks/IShowSourceTask.js';
 import { IUpscaleRenderTask } from './clients/images/tasks/IUpscaleRenderTask.js';
+import { TextHelpService } from './clients/text/help/TextHelpService.js';
 import { OllamaClient } from './clients/text/ollama/OllamaClient.js';
 import { EmojiResponseTask } from './clients/text/ollama/tasks/EmojiResponseTask.js';
 import { PromptResponseTask } from './clients/text/ollama/tasks/PromptResponseTask.js';
 import { IEmojiResponseTask } from './clients/text/tasks/IEmojiResponseTask.js';
 import { IPromptResponseTask } from './clients/text/tasks/IPromptResponseTask.js';
-import { TextHelpService } from './clients/text/TextHelpService.js';
 import { EnvironmentSettings } from './EnvironmentSettings.js';
 import { SupportedFeature } from './features/enum/SupportedFeature.js';
 import { FeatureService } from './features/FeatureService.js';
@@ -156,10 +156,9 @@ export class ServiceContainer implements IServiceContainer {
     getReplyTask(
         interaction: Message | ButtonInteraction,
         content: string | null,
-        attachments: Array<AttachmentBuilder> = [],
-        isEdit: boolean = false
+        attachments: Array<AttachmentBuilder> = []
         ): IReplyTask {
-        return new ReplyTask(this, interaction, content, attachments, isEdit);
+        return new ReplyTask(this, interaction, content, attachments);
     }
 
     getAttachRenderTask(

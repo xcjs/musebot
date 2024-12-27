@@ -22,7 +22,7 @@ export class TypingService implements ITypingService {
         this.#environmentSettings = services.environmentSettings;
         this.#taskQueue = services.taskQueue;
 
-        this.#logger = new Logger(this.#environmentSettings.isProduction, 'TypingService');
+        this.#logger = new Logger(this.#environmentSettings.isProduction, TypingService.name);
     }
 
     async startTyping(interaction: Message | ButtonInteraction): Promise<void> {
@@ -85,7 +85,11 @@ export class TypingService implements ITypingService {
 
     async #onTypingInterval(message: Message | ButtonInteraction): Promise<void> {
         if(this.#taskQueue.isActive && message.channel instanceof BaseGuildTextChannel) {
-            await message.channel.sendTyping();
+            try {
+                await message.channel.sendTyping();
+            } catch(error) {
+                this.#logger(LogLevel.Error, `Something went wrong while setting the typing indicator: ${error}. Ignore this error if the bot is functioning normally.`);
+            }
         } else {
             this.#stopTyping();
         }
