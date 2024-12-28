@@ -24,12 +24,13 @@ export class ComfyUiClient {
         this.#logger = Logger(this.#environmentSettings.isProduction, 'ComfyUiClient');
 
         this.#host = getRandomArrayEntry(this.#environmentSettings.stableDiffusionHosts);
-        this.#client = new ComfyUIClient(this.#host.toString(), 'Musebot Development');
+
+        const comfyHost = `${this.#host.host}${this.#host.pathname}`;
+        this.#client = new ComfyUIClient(comfyHost, 'Musebot Development');
 
         this.#logger(LogLevel.Info, `Selected host: ${this.#host}`);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async render(): Promise<ImagesResponse> {
         await this.#client.connect();
 

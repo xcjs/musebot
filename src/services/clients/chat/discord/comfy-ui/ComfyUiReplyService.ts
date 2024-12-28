@@ -1,4 +1,3 @@
-import * as toBuffer from 'blob-to-buffer';
 import { ImagesResponse } from 'comfy-ui-client';
 import { AttachmentBuilder, BaseMessageOptions, ButtonInteraction, Message } from 'discord.js';
 import { Logger } from 'meklog';
@@ -52,8 +51,8 @@ export class ComfyUiReplyService {
         additionalAttachments: Array<AttachmentBuilder> | null = null,
         isEdit: boolean = false): Promise<void> {
 
-        const image = toBuffer(renderData['13'][0].blob);
-        const filename = renderData['13'][0].image.filename;
+        const image = Buffer.from(await renderData['11'][0].blob.arrayBuffer());
+        const filename = renderData['11'][0].image.filename;
 
         const imageAttachment = new AttachmentBuilder(image, {
             name: `${filename}.png`
