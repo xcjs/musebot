@@ -1,3 +1,5 @@
+import * as toBuffer from 'blob-to-buffer';
+import { ImagesResponse } from 'comfy-ui-client';
 import { AttachmentBuilder, BaseMessageOptions, ButtonInteraction, Message } from 'discord.js';
 import { Logger } from 'meklog';
 
@@ -30,7 +32,7 @@ export class ComfyUiReplyService {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async renderImage(): Promise<Record<'images', any>> {
+    async renderImage(): Promise<ImagesResponse> {
         // this.#logger(LogLevel.Info, `Render prompt: ${request.prompt}`);
 
         return await this.#comfyUiClient.render();
@@ -45,13 +47,16 @@ export class ComfyUiReplyService {
 
     async reply(interaction: Message | ButtonInteraction,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        renderData: Record<'images', any>,
+        renderData: ImagesResponse,
         content: string | null = null,
         additionalAttachments: Array<AttachmentBuilder> | null = null,
         isEdit: boolean = false): Promise<void> {
 
-        const imageAttachment = new AttachmentBuilder(renderData.images, {
-            name: `${renderData}.png`
+        const image = toBuffer(renderData['13'][0].blob);
+        const filename = renderData['13'][0].image.filename;
+
+        const imageAttachment = new AttachmentBuilder(image, {
+            name: `${filename}.png`
         });
 
         let files: Array<AttachmentBuilder> = [imageAttachment];

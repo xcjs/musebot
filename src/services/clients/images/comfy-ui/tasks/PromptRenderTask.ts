@@ -51,8 +51,8 @@ export class PromptRenderTask extends BaseTask implements IPromptRenderTask {
         // const botMention = this.#message.mentions.members.find(x => x.id === this.#discordClient.user?.id)?.toString() || '';
         // const prompt = this.#message.content.replaceAll(botMention, '').trim();
 
-        const renderData = await this.#comfyUiClient.render();
-        await this.#comfyUiReplyService.reply(this.#message, renderData);
+        const images = await this.#comfyUiClient.render();
+        await this.#comfyUiReplyService.reply(this.#message, images);
     }
 
     override async postProcess(): Promise<void> {

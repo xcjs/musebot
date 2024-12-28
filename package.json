@@ -30,14 +30,18 @@
   },
   "dependencies": {
     "@saintno/comfyui-sdk": "^0.2.29",
+    "@stable-canvas/comfyui-client": "^1.4.1",
     "@yao-pkg/pkg": "^6.1.1",
+    "blob-to-buffer": "^1.2.9",
+    "comfy-ui-client": "^0.1.2",
     "discord.js": "14.16.1",
     "dotenv": "^16.3.1",
     "meklog": "^1.0.2",
     "mustache": "^4.2.0",
     "ollama": "^0.5.2",
     "parcel": "^2.12.0",
-    "typescript": "^5.5.2"
+    "typescript": "^5.5.2",
+    "ws": "^8.18.0"
   },
   "devDependencies": {
     "eslint": "^8.57.0",

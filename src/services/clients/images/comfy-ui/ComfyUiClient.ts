@@ -1,7 +1,7 @@
-import { CallWrapper, ComfyApi, PromptBuilder } from "@saintno/comfyui-sdk";
+import { ComfyUIClient, ImagesResponse } from 'comfy-ui-client';
 import { Logger, LogLevel } from 'meklog';
 
-import workflow from '../../../../../workflows/txt2img-flux.json' with { type: 'json'};
+import workflow from '../../../../../workflows/txt2img-dreamshaper.json' with { type: 'json'};
 import { getRandomArrayEntry } from '../../../../utilities/random-utilities.js';
 import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
@@ -16,7 +16,7 @@ export class ComfyUiClient {
     #logger;
 
     #host: URL;
-    #client: ComfyApi;
+    #client: ComfyUIClient;
 
     constructor(services: IServiceContainer) {
         this.#environmentSettings = services.environmentSettings;
@@ -24,32 +24,19 @@ export class ComfyUiClient {
         this.#logger = Logger(this.#environmentSettings.isProduction, 'ComfyUiClient');
 
         this.#host = getRandomArrayEntry(this.#environmentSettings.stableDiffusionHosts);
-        this.#client = new ComfyApi(this.#host.toString());
+        this.#client = new ComfyUIClient(this.#host.toString(), 'Musebot Development');
 
         this.#logger(LogLevel.Info, `Selected host: ${this.#host}`);
-
-        this.#client.on('log', (ev) => this.#logger(LogLevel.Info, ev.detail));
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async render(): Promise<Record<'images', any>> {
-        await this.#client.init().waitForReady();
+    async render(): Promise<ImagesResponse> {
+        await this.#client.connect();
 
-        const promptBuilder = new PromptBuilder(workflow, [], ['images'])
-            .setOutputNode('images', '110');
+        const images = await this.#client.getImages(workflow);
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const promise = new Promise<Record<'images', any>>((resolve, reject) => {
-            new CallWrapper(this.#client, promptBuilder)
-                .onFinished((response) => {
-                    resolve(response)
-                })
-                .onFailed((error) => {
-                    reject(error);
-                })
-                .run();
-        });
+        await this.#client.disconnect();
 
-        return promise;
+        return images;
     }
 }
