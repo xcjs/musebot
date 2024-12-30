@@ -32,7 +32,7 @@ export class WorkflowService implements IWorkflowService {
     public constructor(services: IServiceContainer) {
         this.#environmentSettings = services.environmentSettings;
 
-        this.#logger = new Logger(this.#environmentSettings.isProduction, WorkflowService.name);
+        this.#logger = new Logger(this.#environmentSettings.isProduction, 'WorkflowService');
     }
 
     async loadWorkflows(): Promise<void> {

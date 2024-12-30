@@ -29,7 +29,7 @@ export class ComfyUiReplyService {
         this.#environmentSettings = services.environmentSettings;
         this.#comfyUiClient = services.comfyUiClient;
 
-        this.#logger = new Logger(this.#environmentSettings.isProduction, ComfyUiReplyService.name);
+        this.#logger = new Logger(this.#environmentSettings.isProduction, 'ComfyUiReplyService');
     }
 
     async renderImage(prompt: Prompt): Promise<ImagesResponse> {

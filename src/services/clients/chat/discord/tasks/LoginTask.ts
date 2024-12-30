@@ -29,7 +29,7 @@ export class LoginTask extends BaseTask {
         this.#discordClient = services.discordClient;
         this.#taskQueue = services.taskQueue;
 
-        this.logger = new Logger(this.#environmentSettings.isProduction, LoginTask.name);
+        this.logger = new Logger(this.#environmentSettings.isProduction, 'LoginTask');
     }
 
     async process(): Promise<void> {

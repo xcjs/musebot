@@ -39,7 +39,7 @@ export class PromptRenderTask extends BaseTask implements IPromptRenderTask {
         this.#replyService = services.replyService;
         this.#message = message;
 
-        this.#logger = new Logger(services.environmentSettings.isProduction, PromptRenderTask.name);
+        this.#logger = new Logger(services.environmentSettings.isProduction, 'PromptRenderTask');
     }
 
     override async process(): Promise<void> {
