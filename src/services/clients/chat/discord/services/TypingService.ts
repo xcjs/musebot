@@ -42,7 +42,7 @@ export class TypingService implements ITypingService {
         }
 
         if(channelTypingIndicator.typingInterval !== null) {
-            this.#logger(LogLevel.Warning, 'Cannot start a typing indicator that is already running.');
+            this.#logger(LogLevel.Info, 'This channel already has a typing indicator - skipping.');
             return;
         }
 
