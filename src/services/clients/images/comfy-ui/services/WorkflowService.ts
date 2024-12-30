@@ -50,7 +50,14 @@ export class WorkflowService implements IWorkflowService {
                 const workflowDir = path.join(workflowPathBase, workflowType);
 
                 this.#logger(LogLevel.Info, `Checking if the ${workflowType} directory exists...`);
-                await fs.access(workflowDir);
+
+                try {
+                    await fs.access(workflowDir);
+                } catch {
+                    this.#logger(LogLevel.Warning, `Could not access ${workflowDir}.`
+                        + ` This is fine if if you don't need ${workflowType} workflows.`);
+                    continue;
+                }
 
                 this.#logger(LogLevel.Info, `Reading the directory contents of ${workflowType}...`);
                 const directoryContents = await fs.readdir(workflowDir, { withFileTypes: true });
