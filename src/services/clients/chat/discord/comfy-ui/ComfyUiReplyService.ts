@@ -1,13 +1,15 @@
-import { ImagesResponse } from 'comfy-ui-client';
+import { ImagesResponse, Prompt } from 'comfy-ui-client';
 import { AttachmentBuilder, BaseMessageOptions, ButtonInteraction, Message } from 'discord.js';
 import { Logger } from 'meklog';
 
 import { MAX_FILE_NAME_LENGTH } from '../../../../../constants/FileConstants.js';
+import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { Txt2ImgOptionsRequest } from '../../../images/automatic1111/models/requests/Txt2ImgOptionsRequest.js';
 import { ComfyUiClient } from '../../../images/comfy-ui/ComfyUiClient.js';
 import { SerializableRenderRequest } from '../../../images/stable-diffusion/models/SerializableRenderRequest.js';
+import { DiscordConstants } from '../enums/DiscordConstants.js';
 
 export class ComfyUiReplyService {
     #services: IServiceContainer;
@@ -27,41 +29,46 @@ export class ComfyUiReplyService {
         this.#environmentSettings = services.environmentSettings;
         this.#comfyUiClient = services.comfyUiClient;
 
-        this.#logger = new Logger(this.#environmentSettings.isProduction, 'ComfyUiReplyService');
+        this.#logger = new Logger(this.#environmentSettings.isProduction, ComfyUiReplyService.name);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async renderImage(): Promise<ImagesResponse> {
-        // this.#logger(LogLevel.Info, `Render prompt: ${request.prompt}`);
-
-        return await this.#comfyUiClient.render();
+    async renderImage(prompt: Prompt): Promise<ImagesResponse> {
+        return await this.#comfyUiClient.render(prompt);
     }
-
-    // async upscaleImage(image: string, upscaler: Upscaler): Promise<ExtraSingleImageResponse> {
-    //     this.#logger(LogLevel.Info, 'Upscaling an image...');
-
-    //     const request = UpscalerRequestFactory.getUpscaleSettings(image, upscaler);
-    //     return await this.#automatic1111Client.upscaleImage(request);
-    // }
 
     async reply(interaction: Message | ButtonInteraction,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        renderData: ImagesResponse,
+        renderExchange: IHttpExchange<SerializableRenderRequest, ImagesResponse>,
         content: string | null = null,
         additionalAttachments: Array<AttachmentBuilder> | null = null,
         isEdit: boolean = false): Promise<void> {
 
-        const image = Buffer.from(await renderData['11'][0].blob.arrayBuffer());
-        const filename = renderData['11'][0].image.filename;
+        const description = JSON.stringify(renderExchange.request);
+        const imageAttachments: Array<AttachmentBuilder> = [];
 
-        const imageAttachment = new AttachmentBuilder(image, {
-            name: `${filename}.png`
-        });
 
-        let files: Array<AttachmentBuilder> = [imageAttachment];
+        for(const imageResponse of Object.values(renderExchange.response)) {
+            for (const imageContainer of imageResponse) {
+                const image = Buffer.from(await imageContainer.blob.arrayBuffer());
+                const filename = this.getFileNameFromPrompt(renderExchange.request);
+                const extension = imageContainer.image.filename.substring(
+                    imageContainer.image.filename.lastIndexOf('.'),
+                    imageContainer.image.filename.length);
+
+                imageAttachments.push(new AttachmentBuilder(
+                    image, {
+                        name: `${filename}${extension}`,
+                        description: description.length <= DiscordConstants.ImageDescriptionMaxLength
+                            ? description
+                            : null
+                    }
+                ));
+            }
+        }
+
+        let files = imageAttachments;
 
         if (additionalAttachments) {
-            files = files.concat(additionalAttachments);
+            files = imageAttachments.concat(additionalAttachments);
         }
 
         const reply: BaseMessageOptions = {

@@ -1,4 +1,4 @@
-export function getRandomInt(minValue, maxValue) {
+export function getRandomInt(minValue: number, maxValue: number): number {
     const minCeiled = Math.ceil(minValue);
     // Add one to maxSeedValue since this excludes the ceiling value.
     const maxFloored = Math.floor(maxValue + 1);

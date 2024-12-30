@@ -11,6 +11,7 @@ import { IReplyTask } from './clients/chat/tasks/IReplyTask.js';
 import { Automatic1111Client } from './clients/images/automatic1111/Automatic1111Client.js';
 import { Upscaler } from './clients/images/automatic1111/enums/Upscaler.js';
 import { ComfyUiClient } from './clients/images/comfy-ui/ComfyUiClient.js';
+import { IWorkflowService } from './clients/images/comfy-ui/services/IWorkflowService.js';
 import { EasyDiffusionClient } from './clients/images/easy-diffusion/EasyDiffusionClient.js';
 import { PromptExtensionType } from './clients/images/enums/PromptExtensionType.js';
 import { IAttachRenderTask } from './clients/images/tasks/IAttachRenderTask.js';
@@ -39,6 +40,7 @@ export interface IServiceContainer {
     taskQueue: ITaskQueue;
     typingService: ITypingService;
     discordClient: DiscordClient;
+    workflowService: IWorkflowService;
 
     // Transitives ------------------------------------------------------------/
 

@@ -1,7 +1,9 @@
+import { getRandomInt } from '../../../../../utilities/random-utilities.js';
 import { SamplingMethod } from '../../automatic1111/enums/SamplingMethod.js';
 import { ScheduleType } from '../../automatic1111/enums/ScheduleType.js';
 import { Txt2ImgOptionsFactory } from '../../automatic1111/factories/Txt2ImgOptionsFactory.js';
 import { Txt2ImgOptionsRequest } from '../../automatic1111/models/requests/Txt2ImgOptionsRequest.js';
+import { maxSeed } from '../constants/constants.js';
 
 export class SerializableRenderRequest {
     prompt: string;
@@ -18,6 +20,10 @@ export class SerializableRenderRequest {
 
     constructor() {
 
+    }
+
+    refreshSeed(): void {
+        this.seed = getRandomInt(0, maxSeed);
     }
 
     toString(): string {

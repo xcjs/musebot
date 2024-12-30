@@ -1,7 +1,6 @@
-import { ComfyUIClient, ImagesResponse } from 'comfy-ui-client';
+import { ComfyUIClient, ImagesResponse, Prompt } from 'comfy-ui-client';
 import { Logger, LogLevel } from 'meklog';
 
-import workflow from '../../../../../workflows/txt2img-dreamshaper.json' with { type: 'json'};
 import { getRandomArrayEntry } from '../../../../utilities/random-utilities.js';
 import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
@@ -26,15 +25,18 @@ export class ComfyUiClient {
         this.#host = getRandomArrayEntry(this.#environmentSettings.stableDiffusionHosts);
 
         const comfyHost = `${this.#host.host}${this.#host.pathname}`;
-        this.#client = new ComfyUIClient(comfyHost, 'Musebot Development');
+        this.#client = new ComfyUIClient(comfyHost, 'Musebot');
 
         this.#logger(LogLevel.Info, `Selected host: ${this.#host}`);
     }
 
-    async render(): Promise<ImagesResponse> {
+    async render(prompt: Prompt): Promise<ImagesResponse> {
+        this.#logger(LogLevel.Info, 'Rendering a workflow...', JSON.stringify(prompt));
+
         await this.#client.connect();
 
-        const images = await this.#client.getImages(workflow);
+        delete prompt.$musebotDefaults;
+        const images = await this.#client.getImages(prompt);
 
         await this.#client.disconnect();
 

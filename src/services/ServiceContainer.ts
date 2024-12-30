@@ -29,6 +29,8 @@ import { RetryRenderTask as A1RetryRenderTask } from './clients/images/automatic
 import { ShowSourceTask as A1ShowSourceTask } from './clients/images/automatic1111/tasks/ShowSourceTask.js';
 import { UpscaleRenderTask as A1UpscaleRenderTask } from './clients/images/automatic1111/tasks/UpscaleRenderTask.js';
 import { ComfyUiClient } from './clients/images/comfy-ui/ComfyUiClient.js';
+import { IWorkflowService } from './clients/images/comfy-ui/services/IWorkflowService.js';
+import { WorkflowService } from './clients/images/comfy-ui/services/WorkflowService.js';
 import { PromptRenderTask } from './clients/images/comfy-ui/tasks/PromptRenderTask.js';
 import { EasyDiffusionClient } from './clients/images/easy-diffusion/EasyDiffusionClient.js';
 import { AttachRenderTask as EdAttachRenderTask } from './clients/images/easy-diffusion/tasks/AttachRenderTask.js';
@@ -103,6 +105,11 @@ export class ServiceContainer implements IServiceContainer {
     #generativeChatClient: IGenerativeChatClient;
     get generativeChatClient(): IGenerativeChatClient {
         return this.#generativeChatClient;
+    }
+
+    #workflowService: IWorkflowService;
+    get workflowService(): IWorkflowService {
+        return this.#workflowService;
     }
 
     // Transitives ------------------------------------------------------------/
@@ -248,7 +255,7 @@ export class ServiceContainer implements IServiceContainer {
         switch (this.#environmentSettings.stableDiffusionApiType) {
             case StableDiffusionApiType.Automatic1111:
                 return new A1PromptRenderTask(this, message);
-                case StableDiffusionApiType.ComfyUI:
+            case StableDiffusionApiType.ComfyUI:
                     return new PromptRenderTask(this, message);
             case StableDiffusionApiType.EasyDiffusion:
                 return new EdPromptRenderTask(this, message);
@@ -344,6 +351,7 @@ export class ServiceContainer implements IServiceContainer {
         this.#featureService = new FeatureService(this);
         this.#taskQueue = new TaskQueue(this);
         this.#typingService = new TypingService(this);
+        this.#workflowService = new WorkflowService(this);
 
         this.#discordClient = new DiscordClient({
             intents: [
