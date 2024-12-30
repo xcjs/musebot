@@ -66,7 +66,7 @@ export class SerializableRenderRequest {
         instancedRequest.height = request.height;
         instancedRequest.sampler = request.sampler;
         instancedRequest.scheduler = request.scheduler;
-        instancedRequest.distilledCfgScale = request.distilledCfgScale;
+        instancedRequest.distilledCfgScale = request.distilledCfgScale || null;
         instancedRequest.cfgScale = request.cfgScale;
         instancedRequest.steps = request.steps;
         instancedRequest.num = request.num || 1;
