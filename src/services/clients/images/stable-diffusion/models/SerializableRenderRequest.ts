@@ -17,6 +17,7 @@ export class SerializableRenderRequest {
     distilledCfgScale: number | null;
     cfgScale: number;
     steps: number;
+    num: number = 1;
 
     constructor() {
 
@@ -68,6 +69,7 @@ export class SerializableRenderRequest {
         instancedRequest.distilledCfgScale = request.distilledCfgScale;
         instancedRequest.cfgScale = request.cfgScale;
         instancedRequest.steps = request.steps;
+        instancedRequest.num = request.num || 1;
 
         return instancedRequest;
     }

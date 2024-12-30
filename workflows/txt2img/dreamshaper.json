@@ -10,7 +10,8 @@
     "scheduler": "simple",
     "distilledCfgScale": null,
     "cfgScale": 7,
-    "steps": 20
+    "steps": 20,
+    "num": 1
   },
   "4": {
     "inputs": {
@@ -25,7 +26,7 @@
     "inputs": {
       "width": "{{ width }}",
       "height": "{{ height }}",
-      "batch_size": 1
+      "batch_size": "{{ num }}"
     },
     "class_type": "EmptyLatentImage",
     "_meta": {

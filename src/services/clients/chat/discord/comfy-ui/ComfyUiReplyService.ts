@@ -50,9 +50,20 @@ export class ComfyUiReplyService {
             for (const imageContainer of imageResponse) {
                 const image = Buffer.from(await imageContainer.blob.arrayBuffer());
                 const filename = this.getFileNameFromPrompt(renderExchange.request);
-                const extension = imageContainer.image.filename.substring(
-                    imageContainer.image.filename.lastIndexOf('.'),
-                    imageContainer.image.filename.length);
+
+                let extension = '';
+
+                if (imageContainer.image.filename !== undefined) {
+                    extension = imageContainer.image.filename.substring(
+                        imageContainer.image.filename.lastIndexOf('.'),
+                        imageContainer.image.filename.length);
+                } else if(imageContainer.image['content-type'] !== undefined) {
+                    const contentType: string = imageContainer.image['content-type'];
+                    extension = `.${contentType.substring(contentType.lastIndexOf('/') + 1, contentType.length)}`;
+                } else {
+                    // If all else fails, it's most likely a PNG image.
+                    extension = '.png';
+                }
 
                 imageAttachments.push(new AttachmentBuilder(
                     image, {
