@@ -1,4 +1,17 @@
 {
+  "$musebotDefaults": {
+    "prompt": "",
+    "promptNegative": "",
+    "model": "",
+    "seed": -1,
+    "width": 1024,
+    "height": 1024,
+    "sampler": "euler",
+    "scheduler": "simple",
+    "cfgScale": 3.5,
+    "steps": 20,
+    "num": 1
+  },
   "4": {
     "inputs": {
       "unet_name": "Flux.1/Dev/flux1-dev-Q8_0.gguf"
@@ -10,9 +23,9 @@
   },
   "5": {
     "inputs": {
-      "width": 1024,
-      "height": 1024,
-      "batch_size": 1
+      "width": "{{ width }}",
+      "height": "{{ height }}",
+      "batch_size": "{{ num }}"
     },
     "class_type": "EmptySD3LatentImage",
     "_meta": {
@@ -21,17 +34,14 @@
   },
   "6": {
     "inputs": {
-      "steps": 20,
-      "prompt": "",
+      "steps": "{{ steps }}",
+      "prompt": "{{ steps }}",
       "width": 1536,
       "height": 1536,
-      "target_width": 1024,
-      "target_height": 1024,
-      "guidance": 3.5,
-      "clip": [
-        "100",
-        0
-      ]
+      "target_width": "{{ width }}",
+      "target_height": "{{ height }}",
+      "guidance": "{{ cfgScale }}",
+      "clip": ["100", 0]
     },
     "class_type": "SwarmClipTextEncodeAdvanced",
     "_meta": {
@@ -46,11 +56,8 @@
       "height": 832,
       "target_width": 1024,
       "target_height": 1024,
-      "guidance": 3.5,
-      "clip": [
-        "100",
-        0
-      ]
+      "guidance": "{{ cfgScale }}",
+      "clip": ["100", 0]
     },
     "class_type": "SwarmClipTextEncodeAdvanced",
     "_meta": {
@@ -59,14 +66,8 @@
   },
   "8": {
     "inputs": {
-      "samples": [
-        "10",
-        0
-      ],
-      "vae": [
-        "101",
-        0
-      ]
+      "samples": ["10", 0],
+      "vae": ["101", 0]
     },
     "class_type": "VAEDecode",
     "_meta": {
@@ -75,11 +76,11 @@
   },
   "10": {
     "inputs": {
-      "noise_seed": 925949438,
-      "steps": 20,
+      "noise_seed": "{{ seed }}",
+      "steps": "{{ steps }}",
       "cfg": 1,
-      "sampler_name": "euler",
-      "scheduler": "simple",
+      "sampler_name": "{{ sampler }}",
+      "scheduler": "{{ scheduler }}",
       "start_at_step": 0,
       "end_at_step": 10000,
       "var_seed": 0,
@@ -92,22 +93,10 @@
       "previews": "default",
       "tile_sample": false,
       "tile_size": 1024,
-      "model": [
-        "4",
-        0
-      ],
-      "positive": [
-        "6",
-        0
-      ],
-      "negative": [
-        "7",
-        0
-      ],
-      "latent_image": [
-        "5",
-        0
-      ]
+      "model": ["4", 0],
+      "positive": ["6", 0],
+      "negative": ["7", 0],
+      "latent_image": ["5", 0]
     },
     "class_type": "SwarmKSampler",
     "_meta": {
@@ -136,10 +125,7 @@
   },
   "102": {
     "inputs": {
-      "value": [
-        "8",
-        0
-      ]
+      "value": ["8", 0]
     },
     "class_type": "UnloadAllModels",
     "_meta": {
@@ -149,10 +135,7 @@
   "103": {
     "inputs": {
       "filename_prefix": "Musebot_Flux_Q8",
-      "images": [
-        "102",
-        0
-      ]
+      "images": ["102", 0]
     },
     "class_type": "SaveImage",
     "_meta": {

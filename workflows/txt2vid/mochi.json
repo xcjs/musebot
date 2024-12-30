@@ -1,4 +1,17 @@
 {
+  "$musebotDefaults": {
+    "prompt": "",
+    "promptNegative": "",
+    "model": "",
+    "seed": -1,
+    "width": 848,
+    "height": 480,
+    "sampler": "euler",
+    "scheduler": "simple",
+    "cfgScale": 7,
+    "steps": 20,
+    "num": 1
+  },
   "4": {
     "inputs": {
       "ckpt_name": "Mochi/mochi_preview_fp8_scaled.safetensors"
@@ -13,7 +26,7 @@
       "width": 848,
       "height": 480,
       "length": 25,
-      "batch_size": 1
+      "batch_size": "{{ num }}"
     },
     "class_type": "EmptyMochiLatentVideo",
     "_meta": {
@@ -22,11 +35,8 @@
   },
   "6": {
     "inputs": {
-      "text": "",
-      "clip": [
-        "4",
-        1
-      ]
+      "text": "{{ prompt }}",
+      "clip": ["4", 1]
     },
     "class_type": "CLIPTextEncode",
     "_meta": {
@@ -35,11 +45,8 @@
   },
   "7": {
     "inputs": {
-      "text": "",
-      "clip": [
-        "4",
-        1
-      ]
+      "text": "{{ promptNegative }}",
+      "clip": ["4", 1]
     },
     "class_type": "CLIPTextEncode",
     "_meta": {
@@ -48,14 +55,8 @@
   },
   "8": {
     "inputs": {
-      "samples": [
-        "10",
-        0
-      ],
-      "vae": [
-        "4",
-        2
-      ]
+      "samples": ["10", 0],
+      "vae": ["4", 2]
     },
     "class_type": "VAEDecode",
     "_meta": {
@@ -64,11 +65,11 @@
   },
   "10": {
     "inputs": {
-      "noise_seed": 1278116809,
-      "steps": 20,
-      "cfg": 7,
-      "sampler_name": "euler",
-      "scheduler": "normal",
+      "noise_seed": "{{ seed }}",
+      "steps": "{{ seed }}",
+      "cfg": "{{ cfgScale }}",
+      "sampler_name": "{{ sampler }}",
+      "scheduler": "{{ scheduler }}",
       "start_at_step": 0,
       "end_at_step": 10000,
       "var_seed": 0,
@@ -81,22 +82,10 @@
       "previews": "animate",
       "tile_sample": false,
       "tile_size": 848,
-      "model": [
-        "4",
-        0
-      ],
-      "positive": [
-        "6",
-        0
-      ],
-      "negative": [
-        "7",
-        0
-      ],
-      "latent_image": [
-        "5",
-        0
-      ]
+      "model": ["4", 0],
+      "positive": ["6", 0],
+      "negative": ["7", 0],
+      "latent_image": ["5", 0]
     },
     "class_type": "SwarmKSampler",
     "_meta": {
@@ -110,10 +99,7 @@
       "lossless": true,
       "quality": 95,
       "method": "default",
-      "images": [
-        "12",
-        0
-      ]
+      "images": ["12", 0]
     },
     "class_type": "SaveAnimatedWEBP",
     "_meta": {
@@ -122,10 +108,7 @@
   },
   "12": {
     "inputs": {
-      "value": [
-        "8",
-        0
-      ]
+      "value": ["8", 0]
     },
     "class_type": "UnloadAllModels",
     "_meta": {

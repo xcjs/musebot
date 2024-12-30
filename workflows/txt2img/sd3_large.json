@@ -1,4 +1,17 @@
 {
+  "$musebotDefaults": {
+    "prompt": "",
+    "promptNegative": "",
+    "model": "",
+    "seed": -1,
+    "width": 1024,
+    "height": 1024,
+    "sampler": "dpmpp_2m",
+    "scheduler": "sgm_uniform",
+    "cfgScale": 7,
+    "steps": 20,
+    "num": 1
+  },
   "4": {
     "inputs": {
       "ckpt_name": "SD3.5/sd3.5_large.safetensors"
@@ -10,9 +23,9 @@
   },
   "5": {
     "inputs": {
-      "width": 1024,
-      "height": 1024,
-      "batch_size": 1
+      "width": "{{ width }}",
+      "height": "{{ height }}",
+      "batch_size": "{{ num }}"
     },
     "class_type": "EmptySD3LatentImage",
     "_meta": {
@@ -21,11 +34,8 @@
   },
   "6": {
     "inputs": {
-      "text": "",
-      "clip": [
-        "101",
-        0
-      ]
+      "text": "{{ prompt }}",
+      "clip": ["101", 0]
     },
     "class_type": "CLIPTextEncode",
     "_meta": {
@@ -34,11 +44,8 @@
   },
   "7": {
     "inputs": {
-      "text": "",
-      "clip": [
-        "101",
-        0
-      ]
+      "text": "{{ promptNegative }}",
+      "clip": ["101", 0]
     },
     "class_type": "CLIPTextEncode",
     "_meta": {
@@ -47,14 +54,8 @@
   },
   "8": {
     "inputs": {
-      "samples": [
-        "10",
-        0
-      ],
-      "vae": [
-        "4",
-        2
-      ]
+      "samples": ["10", 0],
+      "vae": ["4", 2]
     },
     "class_type": "VAEDecode",
     "_meta": {
@@ -63,11 +64,11 @@
   },
   "10": {
     "inputs": {
-      "noise_seed": 917601599,
-      "steps": 20,
-      "cfg": 7,
-      "sampler_name": "dpmpp_2m",
-      "scheduler": "sgm_uniform",
+      "noise_seed": "{{ seed }}",
+      "steps": "{{ steps }}",
+      "cfg": "{{ cfgScale }}",
+      "sampler_name": "{{ sampler }}",
+      "scheduler": "{{ scheduler }}",
       "start_at_step": 0,
       "end_at_step": 10000,
       "var_seed": 0,
@@ -80,22 +81,10 @@
       "previews": "default",
       "tile_sample": false,
       "tile_size": 1024,
-      "model": [
-        "100",
-        0
-      ],
-      "positive": [
-        "6",
-        0
-      ],
-      "negative": [
-        "102",
-        0
-      ],
-      "latent_image": [
-        "5",
-        0
-      ]
+      "model": ["100", 0],
+      "positive": ["6", 0],
+      "negative": ["102", 0],
+      "latent_image": ["5", 0]
     },
     "class_type": "SwarmKSampler",
     "_meta": {
@@ -105,10 +94,7 @@
   "100": {
     "inputs": {
       "shift": 3,
-      "model": [
-        "4",
-        0
-      ]
+      "model": ["4", 0]
     },
     "class_type": "ModelSamplingSD3",
     "_meta": {
@@ -128,10 +114,7 @@
   },
   "102": {
     "inputs": {
-      "conditioning": [
-        "7",
-        0
-      ]
+      "conditioning": ["7", 0]
     },
     "class_type": "ConditioningZeroOut",
     "_meta": {
@@ -140,10 +123,7 @@
   },
   "103": {
     "inputs": {
-      "value": [
-        "8",
-        0
-      ]
+      "value": ["8", 0]
     },
     "class_type": "UnloadAllModels",
     "_meta": {
@@ -153,10 +133,7 @@
   "104": {
     "inputs": {
       "filename_prefix": "Musebot_SD3_Large",
-      "images": [
-        "103",
-        0
-      ]
+      "images": ["103", 0]
     },
     "class_type": "SaveImage",
     "_meta": {

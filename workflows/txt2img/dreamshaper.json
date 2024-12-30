@@ -8,7 +8,6 @@
     "height": 1024,
     "sampler": "euler",
     "scheduler": "simple",
-    "distilledCfgScale": null,
     "cfgScale": 7,
     "steps": 20,
     "num": 1

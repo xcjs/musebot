@@ -1,4 +1,17 @@
 {
+  "$musebotDefaults": {
+    "prompt": "",
+    "promptNegative": "",
+    "model": "",
+    "seed": -1,
+    "width": 1024,
+    "height": 1024,
+    "sampler": "euler",
+    "scheduler": "simple",
+    "cfgScale": 7,
+    "steps": 20,
+    "num": 1
+  },
   "4": {
     "inputs": {
       "ckpt_name": "SDXL-Turbo/General/dreamshaperXL_v21TurboDPMSDE.safetensors"
@@ -10,9 +23,9 @@
   },
   "5": {
     "inputs": {
-      "width": 1024,
-      "height": 1024,
-      "batch_size": 1
+      "width": "{{ width }}",
+      "height": "{{ height }}",
+      "batch_size": "{{ num }}"
     },
     "class_type": "EmptyLatentImage",
     "_meta": {
@@ -21,11 +34,8 @@
   },
   "6": {
     "inputs": {
-      "text": "",
-      "clip": [
-        "4",
-        1
-      ]
+      "text": "{{ prompt }}",
+      "clip": ["4", 1]
     },
     "class_type": "CLIPTextEncode",
     "_meta": {
@@ -34,11 +44,8 @@
   },
   "7": {
     "inputs": {
-      "text": "a blueprint diagram of a plane flying",
-      "clip": [
-        "4",
-        1
-      ]
+      "text": "{{ promptNegative }}",
+      "clip": ["4", 1]
     },
     "class_type": "CLIPTextEncode",
     "_meta": {
@@ -47,14 +54,8 @@
   },
   "8": {
     "inputs": {
-      "samples": [
-        "10",
-        0
-      ],
-      "vae": [
-        "4",
-        2
-      ]
+      "samples": ["10", 0],
+      "vae": ["4", 2]
     },
     "class_type": "VAEDecode",
     "_meta": {
@@ -63,11 +64,11 @@
   },
   "10": {
     "inputs": {
-      "noise_seed": 1641627937,
-      "steps": 20,
-      "cfg": 7,
-      "sampler_name": "euler",
-      "scheduler": "simple",
+      "noise_seed": "{{ seed }}",
+      "steps": "{{ steps }}",
+      "cfg": "{{ cfgScale }}",
+      "sampler_name": "{{ sampler }}",
+      "scheduler": "{{ scheduler }}",
       "start_at_step": 0,
       "end_at_step": 10000,
       "var_seed": 0,
@@ -80,22 +81,10 @@
       "previews": "default",
       "tile_sample": false,
       "tile_size": 1024,
-      "model": [
-        "4",
-        0
-      ],
-      "positive": [
-        "6",
-        0
-      ],
-      "negative": [
-        "100",
-        0
-      ],
-      "latent_image": [
-        "5",
-        0
-      ]
+      "model": ["4", 0],
+      "positive": ["6", 0],
+      "negative": ["100", 0],
+      "latent_image": ["5", 0]
     },
     "class_type": "SwarmKSampler",
     "_meta": {
@@ -104,10 +93,7 @@
   },
   "100": {
     "inputs": {
-      "conditioning": [
-        "7",
-        0
-      ]
+      "conditioning": ["7", 0]
     },
     "class_type": "ConditioningZeroOut",
     "_meta": {
@@ -126,10 +112,7 @@
   "102": {
     "inputs": {
       "min_cfg": 1,
-      "model": [
-        "101",
-        0
-      ]
+      "model": ["101", 0]
     },
     "class_type": "VideoLinearCFGGuidance",
     "_meta": {
@@ -144,18 +127,9 @@
       "motion_bucket_id": 127,
       "fps": 6,
       "augmentation_level": 0,
-      "clip_vision": [
-        "101",
-        1
-      ],
-      "init_image": [
-        "8",
-        0
-      ],
-      "vae": [
-        "101",
-        2
-      ]
+      "clip_vision": ["101", 1],
+      "init_image": ["8", 0],
+      "vae": ["101", 2]
     },
     "class_type": "SVD_img2vid_Conditioning",
     "_meta": {
@@ -164,11 +138,11 @@
   },
   "104": {
     "inputs": {
-      "noise_seed": 1641627979,
+      "noise_seed": "{{ seed }}",
       "steps": 40,
       "cfg": 2.5,
-      "sampler_name": "euler",
-      "scheduler": "simple",
+      "sampler_name": "{{ sampler }}",
+      "scheduler": "{{ scheduler }}",
       "start_at_step": 0,
       "end_at_step": 10000,
       "var_seed": 0,
@@ -181,22 +155,10 @@
       "previews": "animate",
       "tile_sample": false,
       "tile_size": 1024,
-      "model": [
-        "102",
-        0
-      ],
-      "positive": [
-        "103",
-        0
-      ],
-      "negative": [
-        "103",
-        1
-      ],
-      "latent_image": [
-        "103",
-        2
-      ]
+      "model": ["102", 0],
+      "positive": ["103", 0],
+      "negative": ["103", 1],
+      "latent_image": ["103", 2]
     },
     "class_type": "SwarmKSampler",
     "_meta": {
@@ -205,14 +167,8 @@
   },
   "105": {
     "inputs": {
-      "samples": [
-        "104",
-        0
-      ],
-      "vae": [
-        "101",
-        2
-      ]
+      "samples": ["104", 0],
+      "vae": ["101", 2]
     },
     "class_type": "VAEDecode",
     "_meta": {
@@ -226,10 +182,7 @@
       "lossless": true,
       "quality": 95,
       "method": "default",
-      "images": [
-        "108",
-        0
-      ]
+      "images": ["108", 0]
     },
     "class_type": "SaveAnimatedWEBP",
     "_meta": {
@@ -238,10 +191,7 @@
   },
   "108": {
     "inputs": {
-      "value": [
-        "105",
-        0
-      ]
+      "value": ["105", 0]
     },
     "class_type": "UnloadAllModels",
     "_meta": {
