@@ -24,7 +24,12 @@ export class ComfyUiClient {
 
         this.#host = getRandomArrayEntry(this.#environmentSettings.stableDiffusionHosts);
 
-        const comfyHost = `${this.#host.host}${this.#host.pathname}`;
+        let comfyHost = `${this.#host.host}${this.#host.pathname}`;
+
+        if(comfyHost.endsWith('/')) {
+            comfyHost = comfyHost.substring(0, comfyHost.length - 1);
+        }
+
         this.#client = new ComfyUIClient(comfyHost, 'Musebot');
 
         this.#logger(LogLevel.Info, `Selected host: ${this.#host}`);
