@@ -35,7 +35,7 @@
   "6": {
     "inputs": {
       "steps": "{{ steps }}",
-      "prompt": "{{ steps }}",
+      "prompt": "{{ prompt }}",
       "width": 1536,
       "height": 1536,
       "target_width": "{{ width }}",
@@ -54,8 +54,8 @@
       "prompt": "",
       "width": 832,
       "height": 832,
-      "target_width": 1024,
-      "target_height": 1024,
+      "target_width": "{{ width }}",
+      "target_height": "{{ height }}",
       "guidance": "{{ cfgScale }}",
       "clip": ["100", 0]
     },
