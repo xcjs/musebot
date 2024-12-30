@@ -80,7 +80,13 @@ export class WorkflowService implements IWorkflowService {
     getWorkflowDefaults(workflow: IWorkflow): SerializableRenderRequest {
         try {
             const renderRequestObj = (JSON.parse(workflow.workflowString) as IWorkflowDefaults).$musebotDefaults as SerializableRenderRequest;
-            return SerializableRenderRequest.fromSerializableRenderRequest(renderRequestObj);
+
+            // Not every template will contain defaults.
+            if(renderRequestObj !== null && renderRequestObj !== undefined) {
+                return SerializableRenderRequest.fromSerializableRenderRequest(renderRequestObj);
+            } else {
+                return new SerializableRenderRequest;
+            }
         } catch (error) {
             this.#logger(LogLevel.Error,
                 `Failed to fetch the workflow defaults for ${workflow.name}.`

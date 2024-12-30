@@ -3,4 +3,5 @@ export enum WorkflowType {
     Img2vid = 'img2vid',
     Txt2img = 'txt2img',
     Txt2vid = 'txt2vid',
+    Upscaler = 'img2img/upscalers'
 }
