@@ -36,8 +36,8 @@
     "inputs": {
       "steps": "{{ steps }}",
       "prompt": "{{ prompt }}",
-      "width": 1536,
-      "height": 1536,
+      "width": "{{ width }}",
+      "height": "{{ height }}",
       "target_width": "{{ width }}",
       "target_height": "{{ height }}",
       "guidance": "{{ cfgScale }}",
@@ -52,8 +52,8 @@
     "inputs": {
       "steps": 20,
       "prompt": "",
-      "width": 832,
-      "height": 832,
+      "width": "{{ width }}",
+      "height": "{{ height }}",
       "target_width": "{{ width }}",
       "target_height": "{{ height }}",
       "guidance": "{{ cfgScale }}",
