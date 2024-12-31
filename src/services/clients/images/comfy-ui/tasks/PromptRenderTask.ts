@@ -1,5 +1,5 @@
 import { Client as DiscordClient, Message } from 'discord.js';
-import { Logger } from 'meklog';
+import { Logger, LogLevel } from 'meklog';
 
 import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
@@ -43,6 +43,8 @@ export class PromptRenderTask extends BaseTask implements IPromptRenderTask {
     }
 
     override async process(): Promise<void> {
+        this.#logger(LogLevel.Info, 'Processing a PromptRenderTask...');
+
         const botMention = this.#message.mentions.members.find(x => x.id === this.#discordClient.user?.id)?.toString() || '';
         const prompt = this.#message.content.replaceAll(botMention, '').trim();
 
