@@ -12,7 +12,7 @@ import { ComfyUiClient } from '../ComfyUiClient.js';
 import { WorkflowType } from '../enums/WorkflowType.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
 
-export class PromptRenderTask extends BaseTask implements IPromptRenderTask {
+export class ComfyUiPromptRenderTask extends BaseTask implements IPromptRenderTask {
     #discordClient: DiscordClient;
     #workflowService: IWorkflowService;
     #comfyUiClient: ComfyUiClient;
@@ -39,11 +39,11 @@ export class PromptRenderTask extends BaseTask implements IPromptRenderTask {
         this.#replyService = services.replyService;
         this.#message = message;
 
-        this.#logger = new Logger(services.environmentSettings.isProduction, 'PromptRenderTask');
+        this.#logger = new Logger(services.environmentSettings.isProduction, 'ComfyUiPromptRenderTask');
     }
 
     override async process(): Promise<void> {
-        this.#logger(LogLevel.Info, 'Processing a PromptRenderTask...');
+        this.#logger(LogLevel.Info, 'Processing a ComfyUiPromptRenderTask...');
 
         const botMention = this.#message.mentions.members.find(x => x.id === this.#discordClient.user?.id)?.toString() || '';
         const prompt = this.#message.content.replaceAll(botMention, '').trim();

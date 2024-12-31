@@ -31,7 +31,7 @@ import { UpscaleRenderTask as A1UpscaleRenderTask } from './clients/images/autom
 import { ComfyUiClient } from './clients/images/comfy-ui/ComfyUiClient.js';
 import { IWorkflowService } from './clients/images/comfy-ui/services/IWorkflowService.js';
 import { WorkflowService } from './clients/images/comfy-ui/services/WorkflowService.js';
-import { PromptRenderTask } from './clients/images/comfy-ui/tasks/PromptRenderTask.js';
+import { ComfyUiPromptRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiPromptRenderTask.js';
 import { EasyDiffusionClient } from './clients/images/easy-diffusion/EasyDiffusionClient.js';
 import { AttachRenderTask as EdAttachRenderTask } from './clients/images/easy-diffusion/tasks/AttachRenderTask.js';
 import { DecreaseGuidanceScaleRenderTask as EdDecreaseGuidanceScaleRenderTask } from './clients/images/easy-diffusion/tasks/DecreaseGuidanceScaleRenderTask.js';
@@ -256,7 +256,7 @@ export class ServiceContainer implements IServiceContainer {
             case StableDiffusionApiType.Automatic1111:
                 return new A1PromptRenderTask(this, message);
             case StableDiffusionApiType.ComfyUI:
-                    return new PromptRenderTask(this, message);
+                return new ComfyUiPromptRenderTask(this, message);
             case StableDiffusionApiType.EasyDiffusion:
                 return new EdPromptRenderTask(this, message);
             default:
