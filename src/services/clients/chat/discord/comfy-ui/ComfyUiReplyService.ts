@@ -45,7 +45,6 @@ export class ComfyUiReplyService {
         const description = JSON.stringify(renderExchange.request);
         const imageAttachments: Array<AttachmentBuilder> = [];
 
-
         for(const imageResponse of Object.values(renderExchange.response)) {
             for (const imageContainer of imageResponse) {
                 const image = Buffer.from(await imageContainer.blob.arrayBuffer());
