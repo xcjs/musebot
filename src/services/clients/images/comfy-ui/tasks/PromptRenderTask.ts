@@ -48,7 +48,9 @@ export class PromptRenderTask extends BaseTask implements IPromptRenderTask {
 
         await this.#workflowService.loadWorkflows();
 
-        const workflows = this.#workflowService.workflows.filter(x => x.type === WorkflowType.Txt2img);
+        const workflows = this.#workflowService.workflows.filter(x =>
+            x.type === WorkflowType.Txt2img
+            || x.type === WorkflowType.Txt2vid);
         const selectedWorkflow = getRandomArrayEntry(workflows);
 
         const renderRequest = this.#workflowService.getWorkflowDefaults(selectedWorkflow);

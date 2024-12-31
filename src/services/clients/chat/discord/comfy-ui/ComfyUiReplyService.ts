@@ -1,6 +1,6 @@
 import { ImagesResponse, Prompt } from 'comfy-ui-client';
 import { AttachmentBuilder, BaseMessageOptions, ButtonInteraction, Message } from 'discord.js';
-import { Logger } from 'meklog';
+import { Logger, LogLevel } from 'meklog';
 
 import { MAX_FILE_NAME_LENGTH } from '../../../../../constants/FileConstants.js';
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
@@ -9,6 +9,8 @@ import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { Txt2ImgOptionsRequest } from '../../../images/automatic1111/models/requests/Txt2ImgOptionsRequest.js';
 import { ComfyUiClient } from '../../../images/comfy-ui/ComfyUiClient.js';
 import { SerializableRenderRequest } from '../../../images/stable-diffusion/models/SerializableRenderRequest.js';
+import { StatefulImageGenerationActionRows } from '../components/buttonRows/StatefulImageGenerationActionRows.js';
+import { StatelessImageGenerationActionRow } from '../components/buttonRows/StatelessImageGenerationActionRow.js';
 import { DiscordConstants } from '../enums/DiscordConstants.js';
 
 export class ComfyUiReplyService {
@@ -43,7 +45,11 @@ export class ComfyUiReplyService {
         isEdit: boolean = false): Promise<void> {
 
         const description = JSON.stringify(renderExchange.request);
+        const isStatefulResponse = description.length <= DiscordConstants.ImageDescriptionMaxLength;
+
         const imageAttachments: Array<AttachmentBuilder> = [];
+
+        this.#logger(LogLevel.Info, `Attaching render(s):`, description);
 
         for(const imageResponse of Object.values(renderExchange.response)) {
             for (const imageContainer of imageResponse) {
@@ -67,9 +73,10 @@ export class ComfyUiReplyService {
                 imageAttachments.push(new AttachmentBuilder(
                     image, {
                         name: `${filename}${extension}`,
-                        description: description.length <= DiscordConstants.ImageDescriptionMaxLength
+                        description: isStatefulResponse
                             ? description
-                            : null
+                            : null,
+
                     }
                 ));
             }
@@ -83,7 +90,10 @@ export class ComfyUiReplyService {
 
         const reply: BaseMessageOptions = {
             content,
-            files
+            files,
+            components: isStatefulResponse ?
+                new StatefulImageGenerationActionRows(this.#services, renderExchange.request).build() :
+                new StatelessImageGenerationActionRow(this.#services).build()
         };
 
         if (interaction instanceof Message) {

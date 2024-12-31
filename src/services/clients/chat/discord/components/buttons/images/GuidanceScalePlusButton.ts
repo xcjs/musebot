@@ -8,6 +8,7 @@ import { StableDiffusionGuidanceScaleLimit } from '../../../../../images/automat
 import { Txt2ImgOptionsRequest } from '../../../../../images/automatic1111/models/requests/Txt2ImgOptionsRequest.js';
 import { EasyDiffusionGuidanceScaleLimit } from '../../../../../images/easy-diffusion/enums/EasyDiffusionGuidanceScaleLimit.js';
 import { RenderRequest } from '../../../../../images/easy-diffusion/models/requests/RenderRequest.js';
+import { SerializableRenderRequest } from '../../../../../images/stable-diffusion/models/SerializableRenderRequest.js';
 import { BaseComponent } from '../../BaseComponent.js';
 
 export class GuidanceScalePlusButton extends BaseComponent<ButtonBuilder> {
@@ -28,6 +29,10 @@ export class GuidanceScalePlusButton extends BaseComponent<ButtonBuilder> {
             isSupported = isSupported
                 && this.#renderRequest.guidance_scale - this.#environmentSettings.stableDiffusionGuidanceScaleInterval
                     <= EasyDiffusionGuidanceScaleLimit.Max
+        } else if (this.#renderRequest instanceof SerializableRenderRequest) {
+            isSupported = isSupported
+                && this.#renderRequest.cfgScale - this.#environmentSettings.stableDiffusionGuidanceScaleInterval
+                    <= StableDiffusionGuidanceScaleLimit.Max
         } else {
             isSupported = isSupported
                 && this.#renderRequest.cfg_scale - this.#environmentSettings.stableDiffusionGuidanceScaleInterval
@@ -47,9 +52,9 @@ export class GuidanceScalePlusButton extends BaseComponent<ButtonBuilder> {
     }
 
     #environmentSettings: IEnvironmentSettings;
-    #renderRequest: RenderRequest | Txt2ImgOptionsRequest;
+    #renderRequest: SerializableRenderRequest | RenderRequest | Txt2ImgOptionsRequest;
 
-    constructor(services: IServiceContainer, renderRequest: RenderRequest | Txt2ImgOptionsRequest | null) {
+    constructor(services: IServiceContainer, renderRequest: SerializableRenderRequest | RenderRequest | Txt2ImgOptionsRequest | null) {
         super(services);
         this.#environmentSettings = services.environmentSettings;
         this.#renderRequest = renderRequest;
