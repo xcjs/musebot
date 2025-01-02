@@ -67,7 +67,7 @@ export class ComfyUiAttachRenderTask extends BaseTask implements IAttachRenderTa
         this.#logger(LogLevel.Info, `Using ${workflow.name} as the selected workflow.`);
 
         const renderRequest = this.#workflowService.getWorkflowDefaults(workflow);
-        renderRequest.prompt = this.#prompt;
+        renderRequest.prompt = this.#prompt.trim();
         renderRequest.refreshSeed();
 
         const prompt = this.#workflowService.renderWorkflow(workflow, renderRequest);
