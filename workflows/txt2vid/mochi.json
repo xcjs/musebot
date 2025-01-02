@@ -66,7 +66,7 @@
   "10": {
     "inputs": {
       "noise_seed": "{{ seed }}",
-      "steps": "{{ seed }}",
+      "steps": "{{ steps }}",
       "cfg": "{{ cfgScale }}",
       "sampler_name": "{{ sampler }}",
       "scheduler": "{{ scheduler }}",
