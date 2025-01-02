@@ -107,6 +107,9 @@ export class WorkflowService implements IWorkflowService {
     renderWorkflow(workflow: IWorkflow, renderRequest: SerializableRenderRequest): Prompt {
         this.#logger(LogLevel.Info, `Rendering workflow template ${workflow.name}`);
 
+        // JSON cannot have actual new lines in strings.
+        renderRequest.prompt = renderRequest.prompt.replaceAll('\n', '\\n');
+
         const templateString = mustache.default.render(workflow.workflowString, renderRequest);
         return JSON.parse(templateString) as Prompt;
     }
