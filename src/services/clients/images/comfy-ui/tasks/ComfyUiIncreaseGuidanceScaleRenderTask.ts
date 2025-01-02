@@ -3,7 +3,6 @@ import { ButtonInteraction } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
 import { ContentType } from '../../../../../enums/ContentType.js';
-import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
 import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
@@ -62,27 +61,22 @@ export class ComfyUiIncreaseGuidanceScaleRenderTask extends BaseTask implements 
             return;
         }
 
-        const imageAsBase64Attachments = await this.#replyService.getAttachedImagesAsBase64(this.#interaction);
-
-        const workflow = getRandomArrayEntry(this.#workflowService.workflows);
-        this.#logger(LogLevel.Info, `Using ${workflow} as the selected workflow.`);
-
         let renderRequest: SerializableRenderRequest;
         let cfgScaleValue: number;
         let imagesResponses: Array<ImagesResponse>;
-        let i = 0;
 
-        for (const imageAsBase64 in imageAsBase64Attachments) {
-            renderRequest = SerializableRenderRequest.fromJson(imageAttachments[i].description);
-            renderRequest.prompt = imageAsBase64;
+        for (const imageAttachment of imageAttachments) {
+            renderRequest = SerializableRenderRequest.fromJson(imageAttachment.description);
+            const workflow = this.#workflowService.workflows.find(x => x.name === renderRequest.model);
+
+            this.#logger(LogLevel.Info, `Using ${workflow} as the selected workflow.`);
+
             renderRequest.cfgScale += this.#environmentSettings.stableDiffusionGuidanceScaleInterval;
-
             cfgScaleValue = renderRequest.cfgScale;
 
             const prompt = this.#workflowService.renderWorkflow(workflow, renderRequest);
 
             imagesResponses.push(await this.#comfyUiClient.render(prompt));
-            i++;
         }
 
         const imagesResponse = this.#comfyUiReplyService.flattenMultipleImagesResponses(imagesResponses);
