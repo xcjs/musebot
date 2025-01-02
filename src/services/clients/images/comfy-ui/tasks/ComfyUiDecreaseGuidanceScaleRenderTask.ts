@@ -63,7 +63,7 @@ export class ComfyUiDecreaseGuidanceScaleRenderTask extends BaseTask implements 
 
         let renderRequest: SerializableRenderRequest;
         let cfgScaleValue: number;
-        let imagesResponses: Array<ImagesResponse>;
+        const imagesResponses: Array<ImagesResponse> = [];
 
         for (const imageAttachment of imageAttachments) {
             renderRequest = SerializableRenderRequest.fromJson(imageAttachment.description);
