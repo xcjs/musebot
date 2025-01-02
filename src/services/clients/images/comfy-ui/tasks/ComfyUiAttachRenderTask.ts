@@ -64,7 +64,7 @@ export class ComfyUiAttachRenderTask extends BaseTask implements IAttachRenderTa
 
         const workflow = getRandomArrayEntry(workflows);
 
-        this.#logger(LogLevel.Info, `Using ${workflow.name} as the selected image generation model.`);
+        this.#logger(LogLevel.Info, `Using ${workflow.name} as the selected workflow.`);
 
         const renderRequest = this.#workflowService.getWorkflowDefaults(workflow);
         renderRequest.prompt = this.#prompt;
