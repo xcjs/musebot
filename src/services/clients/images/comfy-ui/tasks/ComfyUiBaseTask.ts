@@ -1,12 +1,8 @@
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { IWorkflow } from '../models/IWorkflow.js';
 
-export class BaseTask {
+export class ComfyUiBaseTask {
     constructor(services: IServiceContainer) {
-
-    }
-
-    getRandomWorkflow(workflowTypes: Array<IWorkflow>): IWorkflow {
 
     }
 }
