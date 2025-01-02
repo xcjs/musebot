@@ -113,12 +113,19 @@ export class ComfyUiRetryRenderTask extends BaseTask implements IRetryRenderTask
         }
 
         const workflows = this.#workflowService.workflows.filter(x =>
-                   x.type === WorkflowType.Txt2img
-                   || x.type === WorkflowType.Txt2vid);
+            x.type === WorkflowType.Txt2img
+            || x.type === WorkflowType.Txt2vid);
 
         const workflow = getRandomArrayEntry(workflows);
 
         this.#logger(LogLevel.Info, `Using ${workflow.name} as the selected workflow.`);
+
+        // Normalize render request to use settings best for the newly selected
+        // workflow.
+
+        const defaultRequest = this.#workflowService.getWorkflowDefaults(workflow);
+        defaultRequest.prompt = renderRequest.prompt;
+        renderRequest = defaultRequest;
 
         const workflowPrompt = this.#workflowService.renderWorkflow(workflow, renderRequest);
         const images = await this.#comfyUiClient.render(workflowPrompt);
