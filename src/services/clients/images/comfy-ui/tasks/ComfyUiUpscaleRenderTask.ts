@@ -83,7 +83,7 @@ export class ComfyUiUpscaleRenderTask extends BaseTask implements IUpscaleRender
                 this.#logger(LogLevel.Error, `The ${this.#interaction.customId} workflow doesn't exist.`
                     + ` Make sure that ${WorkflowType.Upscaler}/design.json and ${WorkflowType.Upscaler}/detail.json`
                     + ` exist and accept a Base64 encoded image string in the prompt field.`
-                )
+                );
 
                 await this.#replyService.replyWithError(this.#interaction);
             }
