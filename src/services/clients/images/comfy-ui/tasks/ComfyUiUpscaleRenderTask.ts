@@ -3,7 +3,6 @@ import { ButtonInteraction } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
 import { BotInteraction } from '../../../../../enums/BotInteraction.js';
-import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
 import { ContentType } from '../../../../../enums/ContentType.js';
 import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
@@ -69,21 +68,19 @@ export class ComfyUiUpscaleRenderTask extends BaseTask implements IUpscaleRender
 
         await this.#workflowService.loadWorkflows();
 
-        for(const attachment of imageAttachments) {
-            const imageResponse = await fetch(attachment.url);
-            const imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
-            const imageAsBase64 = imageBuffer.toString(BufferEncoding.Base64);
+        const imagesAsBase64 = await this.#replyService.getAttachedImagesAsBase64(this.#interaction);
 
+        for(const imageAsBase64 in imagesAsBase64) {
             const upscalingWorkflows = this.#workflowService.workflows.filter(x => x.type === WorkflowType.Upscaler);
             let workflow: IWorkflow;
 
-            if(this.#interaction.customId === BotInteraction.UpscaleDetail) {
+            if (this.#interaction.customId === BotInteraction.UpscaleDetail) {
                 workflow = upscalingWorkflows.find(x => x.name.toLowerCase().includes('detail'));
             } else {
                 workflow = upscalingWorkflows.find(x => x.name.toLowerCase().includes('design'));
             }
 
-            if(workflow === undefined) {
+            if (workflow === undefined) {
                 this.#logger(LogLevel.Error, `The ${this.#interaction.customId} workflow doesn't exist.`
                     + ` Make sure that ${WorkflowType.Upscaler}/design.json and ${WorkflowType.Upscaler}/detail.json`
                     + ` exist and accept a Base64 encoded image string in the prompt field.`
