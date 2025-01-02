@@ -6,16 +6,18 @@ import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
-import { Automatic1111ReplyService } from '../../../chat/discord/automatic1111/Automatic1111ReplyService.js';
+import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { IAttachRenderTask } from '../../tasks/IAttachRenderTask.js';
-import { Automatic1111Client } from '../Automatic1111Client.js';
-import { Txt2ImgOptionsFactory } from '../factories/Txt2ImgOptionsFactory.js';
+import { ComfyUiClient } from '../ComfyUiClient.js';
+import { WorkflowType } from '../enums/WorkflowType.js';
+import { IWorkflowService } from '../services/IWorkflowService.js';
 
 export class ComfyUiAttachRenderTask extends BaseTask implements IAttachRenderTask {
     #environmentSettings: IEnvironmentSettings;
-    #automatic1111Client: Automatic1111Client;
-    #automatic1111ReplyService: Automatic1111ReplyService;
+    #workflowService: IWorkflowService;
+    #comfyUiClient: ComfyUiClient;
+    #comfyUiReplyService: ComfyUiReplyService;
     #replyService: IReplyService;
     #prompt: string;
     #content: string | null;
@@ -26,7 +28,7 @@ export class ComfyUiAttachRenderTask extends BaseTask implements IAttachRenderTa
     #logger;
 
     override get taskChannel(): string {
-        return `Automatic1111_${this.#automatic1111Client.host}`;
+        return `ComfyUi_${this.#comfyUiClient.host}`;
     }
 
     constructor(
@@ -38,8 +40,9 @@ export class ComfyUiAttachRenderTask extends BaseTask implements IAttachRenderTa
         super(services);
 
         this.#environmentSettings = services.environmentSettings;
-        this.#automatic1111Client = services.automatic1111Client;
-        this.#automatic1111ReplyService = services.automatic1111ReplyService;
+        this.#workflowService = services.workflowService;
+        this.#comfyUiClient = services.comfyUiClient;
+        this.#comfyUiReplyService = services.comfyUiReplyService;
         this.#replyService = services.replyService;
 
         this.#interaction = interaction;
@@ -53,19 +56,32 @@ export class ComfyUiAttachRenderTask extends BaseTask implements IAttachRenderTa
     override async process(): Promise<void> {
         this.#logger(LogLevel.Info, 'Processing a ComfyUiAttachRenderTask...');
 
-        const model = this.#environmentSettings.stableDiffusionModels.length > 0 ?
-            getRandomArrayEntry(this.#environmentSettings.stableDiffusionModels) :
-            getRandomArrayEntry(await this.#automatic1111Client.getModels()).title.split(' ')[0];
+        await this.#workflowService.loadWorkflows();
 
-        this.#logger(LogLevel.Info, `Using ${model} as the selected image generation model.`);
+        const workflows = this.#workflowService.workflows.filter(x =>
+            x.type === WorkflowType.Txt2img
+            || x.type === WorkflowType.Txt2vid);
 
-        const request = Txt2ImgOptionsFactory.getCurrentModelSettings(model, this.#prompt)
-        const renderData = await this.#automatic1111ReplyService.renderImage(request, model);
+        const workflow = getRandomArrayEntry(workflows);
+
+        this.#logger(LogLevel.Info, `Using ${workflow.name} as the selected image generation model.`);
+
+        const renderRequest = this.#workflowService.getWorkflowDefaults(workflow);
+        renderRequest.prompt = this.#prompt;
+        renderRequest.refreshSeed();
+
+        const prompt = this.#workflowService.renderWorkflow(workflow, renderRequest);
+        const imagesResponse = await this.#comfyUiClient.render(prompt);
+
+        const exchange = {
+            request: renderRequest,
+            response: imagesResponse
+        };
 
         if(this.#interaction instanceof ButtonInteraction || this.#isEdit) {
-            await this.#automatic1111ReplyService.reply(this.#interaction, renderData, this.#content, null, true);
+            await this.#comfyUiReplyService.reply(this.#interaction, exchange, this.#content, null, true);
         } else {
-            await this.#automatic1111ReplyService.reply(this.#interaction, renderData, this.#content);
+            await this.#comfyUiReplyService.reply(this.#interaction, exchange, this.#content);
         }
     }
 
