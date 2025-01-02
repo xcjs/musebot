@@ -89,10 +89,12 @@ export class ComfyUiUpscaleRenderTask extends BaseTask implements IUpscaleRender
             }
 
             const renderRequest = new SerializableRenderRequest();
-            renderRequest.prompt = imageAsBase64;
+            renderRequest.prompt = `${imageAsBase64}=`;
 
             const prompt = this.#workflowService.renderWorkflow(workflow, renderRequest);
-            imagesResponses.push(await this.#comfyUiClient.render(prompt));
+            const imagesResponse = await this.#comfyUiClient.render(prompt);
+
+            imagesResponses.push(imagesResponse);
         }
 
         const imagesResponse = this.#comfyUiReplyService.flattenMultipleImagesResponses(imagesResponses);
