@@ -310,7 +310,7 @@ export class ServiceContainer implements IServiceContainer {
         switch (this.#environmentSettings.stableDiffusionApiType) {
             case StableDiffusionApiType.Automatic1111:
                 return new A1RetryRenderTask(this, interaction, promptExtension, promptExtensionType, userOverride);
-            case StableDiffusionApiType.EasyDiffusion:
+            case StableDiffusionApiType.ComfyUI:
                 return new ComfyUiRetryRenderTask(this, interaction, promptExtension, promptExtensionType, userOverride);
             case StableDiffusionApiType.EasyDiffusion:
                 return new EdRetryRenderTask(this, interaction, promptExtension, promptExtensionType, userOverride);
