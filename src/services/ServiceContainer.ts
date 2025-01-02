@@ -239,7 +239,7 @@ export class ServiceContainer implements IServiceContainer {
         switch (this.#environmentSettings.stableDiffusionApiType) {
             case StableDiffusionApiType.Automatic1111:
                 return new A1IncreaseGuidanceScaleRenderTask(this, interaction);
-            case StableDiffusionApiType.EasyDiffusion:
+            case StableDiffusionApiType.ComfyUI:
                 return new ComfyUiIncreaseGuidanceScaleRenderTask(this, interaction);
             case StableDiffusionApiType.EasyDiffusion:
                 return new EdIncreaseGuidanceScaleRenderTask(this, interaction);
