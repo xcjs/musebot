@@ -1,45 +1,50 @@
+import { ImagesResponse } from 'comfy-ui-client';
 import { ButtonInteraction } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
+import { BotInteraction } from '../../../../../enums/BotInteraction.js';
+import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
 import { ContentType } from '../../../../../enums/ContentType.js';
 import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
-import { Automatic1111ReplyService } from '../../../chat/discord/automatic1111/Automatic1111ReplyService.js';
-import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.js';
+import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 import { IUpscaleRenderTask } from '../../tasks/IUpscaleRenderTask.js';
-import { Upscaler } from '../enums/Upscaler.js';
-import { Txt2ImgOptionsRequest } from '../models/requests/Txt2ImgOptionsRequest.js';
+import { ComfyUiClient } from '../ComfyUiClient.js';
+import { WorkflowType } from '../enums/WorkflowType.js';
+import { IWorkflow } from '../models/IWorkflow.js';
+import { IWorkflowService } from '../services/IWorkflowService.js';
 
 export class ComfyUiUpscaleRenderTask extends BaseTask implements IUpscaleRenderTask {
     #environmentSettings: IEnvironmentSettings;
-    #automatic1111ReplyService: Automatic1111ReplyService;
+    #workflowService: IWorkflowService;
+    #comfyUiClient: ComfyUiClient;
+    #comfyUiReplyService: ComfyUiReplyService;
     #replyService: IReplyService;
 
     #interaction: ButtonInteraction;
-    #upscaler: Upscaler;
 
     #logger;
 
     override get taskChannel(): string {
-        return `Automatic1111_${this.#automatic1111ReplyService.host}`;
+        return `ComfyUi_${this.#comfyUiReplyService.host}`;
     }
 
     constructor(
         services: IServiceContainer,
-        interaction: ButtonInteraction,
-        upscaler: Upscaler) {
+        interaction: ButtonInteraction) {
         super(services);
 
         this.#environmentSettings = services.environmentSettings;
-        this.#automatic1111ReplyService = services.automatic1111ReplyService;
+        this.#workflowService = services.workflowService;
+        this.#comfyUiClient = services.comfyUiClient;
+        this.#comfyUiReplyService = services.comfyUiReplyService;
         this.#replyService = services.replyService;
 
         this.#interaction = interaction;
-        this.#upscaler = upscaler;
 
         this.#logger = new Logger(this.#environmentSettings.isProduction, 'ComfyUiUpscaleRenderTask');
     }
@@ -53,20 +58,63 @@ export class ComfyUiUpscaleRenderTask extends BaseTask implements IUpscaleRender
             ContentType.Png
         ];
 
-        const imageAttachment = this.#replyService.getAttachmentsByType(this.#interaction, imageTypes)[0];
+        const imageAttachments = this.#replyService.getAttachmentsByType(this.#interaction, imageTypes);
+        const imagesResponses: Array<ImagesResponse> = [];
 
-        const descriptionRequest = SerializableRenderRequest.fromJson(imageAttachment.description);
-        const request: Txt2ImgOptionsRequest = descriptionRequest.toTxt2ImgOptionsRequest();
+        if(imageAttachments.length === 0) {
+            await this.#replyService.replyWithError(this.#interaction);
+        }
 
-        const renderData = await this.#automatic1111ReplyService.renderImage(request, descriptionRequest.model);
-        const upscaledData = await this.#automatic1111ReplyService.upscaleImage(renderData.exchange.response.images[0], this.#upscaler);
+        const originalRenderRequest = SerializableRenderRequest.fromJson(imageAttachments[0].description);
 
-        renderData.exchange.response.images = [upscaledData.image];
+        await this.#workflowService.loadWorkflows();
 
-        const content = `${this.#interaction.member} upscaled \`${request.prompt}\` using the \`${this.#upscaler}\` upscaler.`
-            .substring(0, DiscordConstants.ContentMaxLength);
+        for(const attachment of imageAttachments) {
+            const imageResponse = await fetch(attachment.url);
+            const imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
+            const imageAsBase64 = imageBuffer.toString(BufferEncoding.Base64);
 
-        await this.#automatic1111ReplyService.reply(this.#interaction, renderData, content);
+            const upscalingWorkflows = this.#workflowService.workflows.filter(x => x.type === WorkflowType.Upscaler);
+            let workflow: IWorkflow;
+
+            if(this.#interaction.customId === BotInteraction.UpscaleDetail) {
+                workflow = upscalingWorkflows.find(x => x.name.toLowerCase().includes('detail'));
+            } else {
+                workflow = upscalingWorkflows.find(x => x.name.toLowerCase().includes('design'));
+            }
+
+            if(workflow === undefined) {
+                this.#logger(LogLevel.Error, `The ${this.#interaction.customId} workflow doesn't exist.`
+                    + ` Make sure that ${WorkflowType.Upscaler}/design.json and ${WorkflowType.Upscaler}/detail.json`
+                    + ` exist and accept a Base64 encoded image string in the prompt field.`
+                )
+
+                await this.#replyService.replyWithError(this.#interaction);
+            }
+
+            const renderRequest = new SerializableRenderRequest();
+            renderRequest.prompt = imageAsBase64;
+
+            const prompt = this.#workflowService.renderWorkflow(workflow, renderRequest);
+            imagesResponses.push(await this.#comfyUiClient.render(prompt));
+        }
+
+        const imagesResponse: ImagesResponse = {};
+
+        for(const imageResponse in imagesResponses) {
+            for (const [key, value] of Object.entries(imagesResponses)) {
+                if(imageResponse[key] === undefined) {
+                    imageResponse[key] = [];
+                }
+
+                imageResponse[key] = value;
+            }
+        }
+
+        await this.#comfyUiReplyService.reply(this.#interaction, {
+            request: originalRenderRequest,
+            response: imagesResponse
+        });
     }
 
     override async postProcess(): Promise<void> {
