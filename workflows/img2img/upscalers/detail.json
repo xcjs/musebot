@@ -45,17 +45,30 @@
       "title": "Load Image (Base64)"
     }
   },
-  "105": {
+  "106": {
     "inputs": {
-      "format": "PNG",
+      "bit_depth": "8bit",
       "images": [
         "103",
         0
       ]
     },
-    "class_type": "ETN_SendImageWebSocket",
+    "class_type": "SwarmSaveImageWS",
     "_meta": {
-      "title": "Send Image (WebSocket)"
+      "title": "SwarmSaveImageWS"
+    }
+  },
+  "107": {
+    "inputs": {
+      "filename_prefix": "Musebot_Upscale_Detail",
+      "images": [
+        "103",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
     }
   }
 }
