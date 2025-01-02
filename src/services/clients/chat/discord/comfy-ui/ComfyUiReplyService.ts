@@ -111,4 +111,20 @@ export class ComfyUiReplyService {
     getFileNameFromPrompt(renderRequest: Txt2ImgOptionsRequest | SerializableRenderRequest): string {
         return `${renderRequest.seed}_${renderRequest.prompt}`.substring(0, MAX_FILE_NAME_LENGTH);
     }
+
+    flattenMultipleImagesResponses(imagesResponses: Array<ImagesResponse>): ImagesResponse {
+        const imagesResponse: ImagesResponse = { };
+
+        for (const imageResponse in imagesResponses) {
+            for (const [key, value] of Object.entries(imagesResponses)) {
+                if (imageResponse[key] === undefined) {
+                    imageResponse[key] = [];
+                }
+
+                imageResponse[key] = value;
+            }
+        }
+
+        return imagesResponse;
+    }
 }
