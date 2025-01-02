@@ -76,15 +76,15 @@ export class ComfyUiRetryRenderTask extends BaseTask implements IRetryRenderTask
 
         const imageAttachment = this.#replyService.getAttachmentsByType(this.#interaction, imageTypes)[0];
 
-        let renderRequest: SerializableRenderRequest = null;
-        let content: string;
-
         if (imageAttachment.description !== null && imageAttachment.description.length === 0) {
             this.#logger(LogLevel.Warning, 'No attachments with descriptions were found - exiting the task.');
             return;
         }
 
         await this.#workflowService.loadWorkflows();
+
+        let renderRequest: SerializableRenderRequest = null;
+        let content: string;
 
         renderRequest = SerializableRenderRequest.fromJson(imageAttachment.description);
         content =
