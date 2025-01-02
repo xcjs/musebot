@@ -54,16 +54,16 @@ export class ComfyUiPromptRenderTask extends BaseTask implements IPromptRenderTa
             x.type === WorkflowType.Txt2img
             || x.type === WorkflowType.Txt2vid);
 
-        const selectedWorkflow = getRandomArrayEntry(workflows);
+        const workflow = getRandomArrayEntry(workflows);
 
-        this.#logger(LogLevel.Info, `Using ${selectedWorkflow} as the selected workflow.`);
+        this.#logger(LogLevel.Info, `Using ${workflow.name} as the selected workflow.`);
 
-        const renderRequest = this.#workflowService.getWorkflowDefaults(selectedWorkflow);
-        renderRequest.model = selectedWorkflow.name;
+        const renderRequest = this.#workflowService.getWorkflowDefaults(workflow);
+        renderRequest.model = workflow.name;
         renderRequest.prompt = prompt;
         renderRequest.refreshSeed();
 
-        const workflowPrompt = this.#workflowService.renderWorkflow(selectedWorkflow, renderRequest);
+        const workflowPrompt = this.#workflowService.renderWorkflow(workflow, renderRequest);
 
         const images = await this.#comfyUiClient.render(workflowPrompt);
         await this.#comfyUiReplyService.reply(this.#message, {
