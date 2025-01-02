@@ -125,6 +125,7 @@ export class ComfyUiRetryRenderTask extends BaseTask implements IRetryRenderTask
 
         const defaultRequest = this.#workflowService.getWorkflowDefaults(workflow);
         defaultRequest.prompt = renderRequest.prompt;
+        defaultRequest.seed = renderRequest.seed;
         renderRequest = defaultRequest;
 
         const workflowPrompt = this.#workflowService.renderWorkflow(workflow, renderRequest);
