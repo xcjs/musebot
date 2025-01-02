@@ -56,12 +56,13 @@ export class ComfyUiIncreaseGuidanceScaleRenderTask extends BaseTask implements 
         ];
 
         const imageAttachments = this.#replyService.getAttachmentsByType(this.#interaction, imageTypes);
-        const imageAsBase64Attachments = await this.#replyService.getAttachedImagesAsBase64(this.#interaction);
 
-        if (imageAsBase64Attachments.length == 0) {
+        if (imageAttachments.length == 0) {
             this.#logger(LogLevel.Warning, 'No attachments were found - exiting the task.');
             return;
         }
+
+        const imageAsBase64Attachments = await this.#replyService.getAttachedImagesAsBase64(this.#interaction);
 
         const workflow = getRandomArrayEntry(this.#workflowService.workflows);
         this.#logger(LogLevel.Info, `Using ${workflow} as the selected workflow.`);
