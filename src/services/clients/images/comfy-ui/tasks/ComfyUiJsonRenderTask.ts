@@ -5,15 +5,20 @@ import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
-import { Automatic1111ReplyService } from '../../../chat/discord/automatic1111/Automatic1111ReplyService.js';
+import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 import { IJsonRenderTask } from '../../tasks/IJsonRenderTask.js';
+import { ComfyUiClient } from '../ComfyUiClient.js';
+import { WorkflowType } from '../enums/WorkflowType.js';
+import { IWorkflowService } from '../services/IWorkflowService.js';
 
 export class ComfyUiJsonRenderTask extends BaseTask implements IJsonRenderTask {
     #environmentSettings: IEnvironmentSettings;
     #discordClient: DiscordClient;
-    #automatic1111ReplyService: Automatic1111ReplyService;
+    #workflowService: IWorkflowService;
+    #comfyUiClient: ComfyUiClient;
+    #comfyUiReplyService: ComfyUiReplyService;
     #replyService: IReplyService;
 
     #message: Message;
@@ -21,7 +26,7 @@ export class ComfyUiJsonRenderTask extends BaseTask implements IJsonRenderTask {
     #logger;
 
     override get taskChannel(): string {
-        return `Automatic1111_${this.#automatic1111ReplyService.host}`;
+        return `ComfyUi_${this.#comfyUiClient.host}`;
     }
 
     constructor(
@@ -31,7 +36,8 @@ export class ComfyUiJsonRenderTask extends BaseTask implements IJsonRenderTask {
 
         this.#environmentSettings = services.environmentSettings;
         this.#discordClient = services.discordClient;
-        this.#automatic1111ReplyService = services.automatic1111ReplyService;
+        this.#workflowService = services.workflowService;
+        this.#comfyUiReplyService = services.comfyUiReplyService;
         this.#replyService = services.replyService;
         this.#message = message;
 
@@ -39,22 +45,41 @@ export class ComfyUiJsonRenderTask extends BaseTask implements IJsonRenderTask {
     }
 
     override async process(): Promise<void> {
-        this.#logger(LogLevel.Info, 'Processing a JsonRenderTask...');
+        this.#logger(LogLevel.Info, 'Processing a ComfyUiJsonRenderTask...');
 
         const botMention = this.#message.mentions.members.find(x => x.id === this.#discordClient.user?.id)?.toString() || '';
         const prompt = this.#message.content.replaceAll(botMention, '').trim();
 
-        let request: SerializableRenderRequest;
+        let renderRequest: SerializableRenderRequest;
 
         try {
-            request = SerializableRenderRequest.fromJson(prompt);
+            renderRequest = SerializableRenderRequest.fromJson(prompt);
         } catch {
            await this.#message.reply('You call that JSON? My grandmother could knit better JSON.');
            return;
         }
 
-        const renderData = await this.#automatic1111ReplyService.renderImage(request.toTxt2ImgOptionsRequest(), request.model);
-        await this.#automatic1111ReplyService.reply(this.#message, renderData);
+        await this.#workflowService.loadWorkflows();
+
+        const workflows = this.#workflowService.workflows.filter(x =>
+            x.type === WorkflowType.Txt2img
+            || x.type === WorkflowType.Txt2vid);
+
+        const workflow = workflows.find(x => x.name === renderRequest.model);
+
+        if(renderRequest.seed === -1) {
+            renderRequest.refreshSeed();
+        }
+
+        const workflowPrompt = this.#workflowService.renderWorkflow(workflow, renderRequest);
+        const imagesResponse = await this.#comfyUiClient.render(workflowPrompt);
+
+        const exchange = {
+            request: renderRequest,
+            response: imagesResponse
+        };
+
+        await this.#comfyUiReplyService.reply(this.#message, exchange);
     }
 
     override async postProcess(): Promise<void> {
