@@ -114,7 +114,9 @@ export class ReplyService implements IReplyService {
     ): Promise<void> {
         const replyContents = splitText(content?.trim() || '', DiscordConstants.ContentMaxLength);
 
-        replyContents.forEach(async (contentFragment, i) => {
+        let i = 0;
+
+        for (const contentFragment of replyContents) {
             const replyAttachments = i + 1 === replyContents.length ? attachments : [];
 
             if (interaction instanceof Message) {
@@ -137,7 +139,9 @@ export class ReplyService implements IReplyService {
                     `An interaction occurred that did not fit the reply criteria of either being an edited reply to a`
                     + ` ${typeof ButtonInteraction} nor a direct reply to any type of interaction.`);
             }
-        });
+
+            i++;
+        }
     }
 
     mention(user: User): string {
