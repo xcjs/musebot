@@ -9,21 +9,23 @@ import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
-import { Automatic1111ReplyService } from '../../../chat/discord/automatic1111/Automatic1111ReplyService.js';
+import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { OllamaClient } from '../../../text/ollama/OllamaClient.js';
 import { PromptExtensionType } from '../../enums/PromptExtensionType.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 import { IRetryRenderTask } from '../../tasks/IRetryRenderTask.js';
-import { Automatic1111Client } from '../Automatic1111Client.js';
-import { Txt2ImgOptionsRequest } from '../models/requests/Txt2ImgOptionsRequest.js';
+import { ComfyUiClient } from '../ComfyUiClient.js';
+import { WorkflowType } from '../enums/WorkflowType.js';
+import { IWorkflowService } from '../services/IWorkflowService.js';
 
 export class ComfyUiRetryRenderTask extends BaseTask implements IRetryRenderTask {
     #environmentSettings: IEnvironmentSettings;
     #featureService: IFeatureService;
-    #automatic1111Client: Automatic1111Client;
-    #automatic1111ReplyService: Automatic1111ReplyService;
+    #workflowService: IWorkflowService;
+    #comfyUiClient: ComfyUiClient;
+    #comfyUiReplyService: ComfyUiReplyService;
     #replyService: IReplyService;
     #ollamaClient: OllamaClient;
 
@@ -35,7 +37,7 @@ export class ComfyUiRetryRenderTask extends BaseTask implements IRetryRenderTask
     #logger;
 
     override get taskChannel(): string {
-        return `Automatic1111_${this.#automatic1111Client.host}`;
+        return `ComfyUi_${this.#comfyUiClient.host}`;
     }
 
     constructor(
@@ -47,9 +49,11 @@ export class ComfyUiRetryRenderTask extends BaseTask implements IRetryRenderTask
         super(services);
 
         this.#environmentSettings = services.environmentSettings;
+
         this.#featureService = services.featureService;
-        this.#automatic1111Client = services.automatic1111Client;
-        this.#automatic1111ReplyService = services.automatic1111ReplyService;
+        this.#workflowService = services.workflowService;
+        this.#comfyUiClient = services.comfyUiClient;
+        this.#comfyUiReplyService = services.comfyUiReplyService;
         this.#replyService = services.replyService;
         this.#ollamaClient = services.ollamaClient;
 
@@ -72,14 +76,14 @@ export class ComfyUiRetryRenderTask extends BaseTask implements IRetryRenderTask
 
         const imageAttachment = this.#replyService.getAttachmentsByType(this.#interaction, imageTypes)[0];
 
-        let request: Txt2ImgOptionsRequest = null;
+        let renderRequest: SerializableRenderRequest = null;
         let content: string;
 
         if(imageAttachment?.description) {
-            request = SerializableRenderRequest.fromJson(imageAttachment.description).toTxt2ImgOptionsRequest();
+            renderRequest = SerializableRenderRequest.fromJson(imageAttachment.description);
             content =
                 `${this.#userOverride !== null ? this.#replyService.mention(this.#userOverride) : this.#interaction.member}`
-                + ` re-rendered \`${request.prompt}\``.substring(0, DiscordConstants.ContentMaxLength);
+                + ` re-rendered \`${renderRequest.prompt}\``.substring(0, DiscordConstants.ContentMaxLength);
 
             if(this.#promptExtension !== null) {
                 switch(this.#promptExtensionType) {
@@ -96,22 +100,28 @@ export class ComfyUiRetryRenderTask extends BaseTask implements IRetryRenderTask
                         break;
                 }
 
-                request.prompt += `, ${this.#promptExtension.trim()}`;
-                content += ` as \`${request.prompt}\``;
+                renderRequest.prompt += `, ${this.#promptExtension.trim()}`;
+                content += ` as \`${renderRequest.prompt}\``;
             } else {
-                request.seed = -1;
+                renderRequest.refreshSeed();
             }
         }
 
-        const model = this.#environmentSettings.stableDiffusionModels.length > 0 ?
-            getRandomArrayEntry(this.#environmentSettings.stableDiffusionModels) :
-            getRandomArrayEntry(await this.#automatic1111Client.getModels()).title.split(' ')[0];
+        const workflows = this.#workflowService.workflows.filter(x =>
+                   x.type === WorkflowType.Txt2img
+                   || x.type === WorkflowType.Txt2vid);
 
-        this.#logger(LogLevel.Info, `Using ${model} as the selected image generation model.`);
+        const selectedWorkflow = getRandomArrayEntry(workflows);
 
-        const renderData = await this.#automatic1111Client.render(request, model);
+        this.#logger(LogLevel.Info, `Using ${selectedWorkflow} as the selected workflow.`);
 
-        await this.#automatic1111ReplyService.reply(this.#interaction, renderData, content);
+        const workflowPrompt = this.#workflowService.renderWorkflow(selectedWorkflow, renderRequest);
+        const images = await this.#comfyUiClient.render(workflowPrompt);
+
+        await this.#comfyUiReplyService.reply(this.#interaction, {
+            request: renderRequest,
+            response: images
+        }, content);
     }
 
     override async postProcess(): Promise<void> {
