@@ -7,15 +7,18 @@ import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
-import { Automatic1111ReplyService } from '../../../chat/discord/automatic1111/Automatic1111ReplyService.js';
+import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 import { IDecreaseGuidanceScaleRenderTask } from '../../tasks/IDecreaseGuidanceScaleRenderTask.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
+import { IWorkflowService } from '../services/IWorkflowService.js';
+
 export class ComfyUiDecreaseGuidanceScaleRenderTask extends BaseTask implements IDecreaseGuidanceScaleRenderTask {
     #environmentSettings: IEnvironmentSettings;
+    #workflowService: IWorkflowService;
     #comfyUiClient: ComfyUiClient;
-    #automatic1111ReplyService: Automatic1111ReplyService;
+    #comfyUiReplyService: ComfyUiReplyService;
     #replyService: IReplyService;
 
     #interaction: ButtonInteraction;
@@ -32,8 +35,9 @@ export class ComfyUiDecreaseGuidanceScaleRenderTask extends BaseTask implements 
         super(services);
 
         this.#environmentSettings = services.environmentSettings;
-        this.#automatic1111Client = services.automatic1111Client;
-        this.#automatic1111ReplyService = services.automatic1111ReplyService;
+        this.#workflowService = services.workflowService;
+        this.#comfyUiClient = services.comfyUiClient;
+        this.#comfyUiReplyService = services.comfyUiReplyService;
         this.#replyService = services.replyService;
         this.#interaction = interaction;
 
@@ -51,32 +55,28 @@ export class ComfyUiDecreaseGuidanceScaleRenderTask extends BaseTask implements 
 
         const imageAttachment = this.#replyService.getAttachmentsByType(this.#interaction, imageTypes)[0];
 
-        const model = this.#environmentSettings.stableDiffusionModels.length > 0 ?
-            getRandomArrayEntry(this.#environmentSettings.stableDiffusionModels) :
-            getRandomArrayEntry(await this.#automatic1111Client.getModels()).title.split(' ')[0];
+        await this.#workflowService.loadWorkflows();
 
-        this.#logger(LogLevel.Info, `Using ${model} as the selected image generation model.`);
+        const workflow = getRandomArrayEntry(this.#workflowService.workflows);
 
-        let request: Txt2ImgOptionsRequest = null;
-        let cfgScaleValue = 0;
+        this.#logger(LogLevel.Info, `Using ${workflow} as the selected workflow.`);
 
-        if (imageAttachment?.description) {
-            request = SerializableRenderRequest.fromJson(imageAttachment.description).toTxt2ImgOptionsRequest();
+        const renderRequest = SerializableRenderRequest.fromJson(imageAttachment.description);
 
-            if (model.toLocaleLowerCase().startsWith('flux')) {
-                request.distilled_cfg_scale -= this.#environmentSettings.stableDiffusionGuidanceScaleInterval;
-                cfgScaleValue = request.distilled_cfg_scale;
-            } else {
-                request.cfg_scale -= this.#environmentSettings.stableDiffusionGuidanceScaleInterval;
-                cfgScaleValue = request.cfg_scale;
-            }
-        }
+        renderRequest.cfgScale -= this.#environmentSettings.stableDiffusionGuidanceScaleInterval;
+        const cfgScaleValue = renderRequest.cfgScale;
 
-        const renderData = await this.#automatic1111Client.render(request, model);
+        const prompt = this.#workflowService.renderWorkflow(workflow, renderRequest);
+
+        const imagesResponse = await this.#comfyUiClient.render(prompt);
+
         const content = `${this.#interaction.member} decreased the guidance scale from ${cfgScaleValue
             + this.#environmentSettings.stableDiffusionGuidanceScaleInterval} to ${cfgScaleValue}.`;
 
-        await this.#automatic1111ReplyService.reply(this.#interaction, renderData, content);
+        await this.#comfyUiReplyService.reply(this.#interaction, {
+            request: renderRequest,
+            response: imagesResponse
+        }, content);
     }
 
     override async postProcess(): Promise<void> {
