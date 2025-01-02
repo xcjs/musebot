@@ -79,32 +79,37 @@ export class ComfyUiRetryRenderTask extends BaseTask implements IRetryRenderTask
         let renderRequest: SerializableRenderRequest = null;
         let content: string;
 
-        if(imageAttachment?.description) {
-            renderRequest = SerializableRenderRequest.fromJson(imageAttachment.description);
-            content =
-                `${this.#userOverride !== null ? this.#replyService.mention(this.#userOverride) : this.#interaction.member}`
-                + ` re-rendered \`${renderRequest.prompt}\``.substring(0, DiscordConstants.ContentMaxLength);
+        if (imageAttachment.description !== null && imageAttachment.description.length === 0) {
+            this.#logger(LogLevel.Warning, 'No attachments with descriptions were found - exiting the task.');
+            return;
+        }
 
-            if(this.#promptExtension !== null) {
-                switch(this.#promptExtensionType) {
-                    case PromptExtensionType.Emoji:
-                        if(this.#featureService.hasFeature(SupportedFeature.ImagesAndText)) {
-                            this.#logger(LogLevel.Info,
-                                `This bot supports both image and text features, so the provided emoji reaction will be converted to a string.`);
+        await this.#workflowService.loadWorkflows();
 
-                            const exchange = await this.#ollamaClient.sendMessage(`Tell me the name of the following emoji in as few words as possible: ${this.#promptExtension}.`, []);
+        renderRequest = SerializableRenderRequest.fromJson(imageAttachment.description);
+        content =
+            `${this.#userOverride !== null ? this.#replyService.mention(this.#userOverride) : this.#interaction.member}`
+            + ` re-rendered \`${renderRequest.prompt}\``.substring(0, DiscordConstants.ContentMaxLength);
 
-                            this.#logger(LogLevel.Info, `The LLM responded with ${exchange.response.response} as the converted text.`);
-                            this.#promptExtension = exchange.response.response;
-                        }
-                        break;
-                }
+        if(this.#promptExtension !== null) {
+            switch(this.#promptExtensionType) {
+                case PromptExtensionType.Emoji:
+                    if(this.#featureService.hasFeature(SupportedFeature.ImagesAndText)) {
+                        this.#logger(LogLevel.Info,
+                            `This bot supports both image and text features, so the provided emoji reaction will be converted to a string.`);
 
-                renderRequest.prompt += `, ${this.#promptExtension.trim()}`;
-                content += ` as \`${renderRequest.prompt}\``;
-            } else {
-                renderRequest.refreshSeed();
+                        const exchange = await this.#ollamaClient.sendMessage(`Tell me the name of the following emoji in as few words as possible: ${this.#promptExtension}.`, []);
+
+                        this.#logger(LogLevel.Info, `The LLM responded with ${exchange.response.response} as the converted text.`);
+                        this.#promptExtension = exchange.response.response;
+                    }
+                    break;
             }
+
+            renderRequest.prompt += `, ${this.#promptExtension.trim()}`;
+            content += ` as \`${renderRequest.prompt}\``;
+        } else {
+            renderRequest.refreshSeed();
         }
 
         const workflows = this.#workflowService.workflows.filter(x =>
