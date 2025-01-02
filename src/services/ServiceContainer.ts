@@ -31,7 +31,15 @@ import { UpscaleRenderTask as A1UpscaleRenderTask } from './clients/images/autom
 import { ComfyUiClient } from './clients/images/comfy-ui/ComfyUiClient.js';
 import { IWorkflowService } from './clients/images/comfy-ui/services/IWorkflowService.js';
 import { WorkflowService } from './clients/images/comfy-ui/services/WorkflowService.js';
+import { ComfyUiAttachRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiAttachRenderTask.js';
+import { ComfyUiDecreaseGuidanceScaleRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiDecreaseGuidanceScaleRenderTask.js';
+import { ComfyUiExpandPromptTask } from './clients/images/comfy-ui/tasks/ComfyUiExpandPromptTask.js';
+import { ComfyUiIncreaseGuidanceScaleRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiIncreaseGuidanceScaleRenderTask.js';
 import { ComfyUiPromptRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiPromptRenderTask.js';
+import { ComfyUiRandomRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiRandomRenderTask.js';
+import { ComfyUiRetryRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiRetryRenderTask.js';
+import { ComfyUiShowSourceTask } from './clients/images/comfy-ui/tasks/ComfyUiShowSourceTask.js';
+import { ComfyUiUpscaleRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiUpscaleRenderTask.js';
 import { EasyDiffusionClient } from './clients/images/easy-diffusion/EasyDiffusionClient.js';
 import { AttachRenderTask as EdAttachRenderTask } from './clients/images/easy-diffusion/tasks/AttachRenderTask.js';
 import { DecreaseGuidanceScaleRenderTask as EdDecreaseGuidanceScaleRenderTask } from './clients/images/easy-diffusion/tasks/DecreaseGuidanceScaleRenderTask.js';
@@ -180,6 +188,8 @@ export class ServiceContainer implements IServiceContainer {
         switch (this.#environmentSettings.stableDiffusionApiType) {
             case StableDiffusionApiType.Automatic1111:
                 return new A1AttachRenderTask(this, interaction, prompt, content, isEdit);
+            case StableDiffusionApiType.ComfyUI:
+                return new ComfyUiAttachRenderTask(this, interaction, prompt, content, isEdit);
             case StableDiffusionApiType.EasyDiffusion:
                 return new EdAttachRenderTask(this, interaction, prompt, content, isEdit);
             default:
@@ -195,6 +205,8 @@ export class ServiceContainer implements IServiceContainer {
         switch (this.#environmentSettings.stableDiffusionApiType) {
             case StableDiffusionApiType.Automatic1111:
                 return new A1DecreaseGuidanceScaleRenderTask(this, interaction);
+            case StableDiffusionApiType.ComfyUI:
+                return new ComfyUiDecreaseGuidanceScaleRenderTask(this, interaction);
             case StableDiffusionApiType.EasyDiffusion:
                 return new EdDecreaseGuidanceScaleRenderTask(this, interaction);
             default:
@@ -210,6 +222,8 @@ export class ServiceContainer implements IServiceContainer {
         switch (this.#environmentSettings.stableDiffusionApiType) {
             case StableDiffusionApiType.Automatic1111:
                 return new A1ExpandPromptTask(this, interaction);
+            case StableDiffusionApiType.ComfyUI:
+                return new ComfyUiExpandPromptTask(this, interaction);
             case StableDiffusionApiType.EasyDiffusion:
                 return new EdExpandPromptTask(this, interaction);
             default:
@@ -225,6 +239,8 @@ export class ServiceContainer implements IServiceContainer {
         switch (this.#environmentSettings.stableDiffusionApiType) {
             case StableDiffusionApiType.Automatic1111:
                 return new A1IncreaseGuidanceScaleRenderTask(this, interaction);
+            case StableDiffusionApiType.EasyDiffusion:
+                return new ComfyUiIncreaseGuidanceScaleRenderTask(this, interaction);
             case StableDiffusionApiType.EasyDiffusion:
                 return new EdIncreaseGuidanceScaleRenderTask(this, interaction);
             default:
@@ -272,6 +288,8 @@ export class ServiceContainer implements IServiceContainer {
         switch (this.#environmentSettings.stableDiffusionApiType) {
             case StableDiffusionApiType.Automatic1111:
                 return new A1RandomRenderTask(this, interaction);
+            case StableDiffusionApiType.ComfyUI:
+                return new ComfyUiRandomRenderTask(this, interaction);
             case StableDiffusionApiType.EasyDiffusion:
                 return new EdRandomRenderTask(this, interaction);
             default:
@@ -293,6 +311,8 @@ export class ServiceContainer implements IServiceContainer {
             case StableDiffusionApiType.Automatic1111:
                 return new A1RetryRenderTask(this, interaction, promptExtension, promptExtensionType, userOverride);
             case StableDiffusionApiType.EasyDiffusion:
+                return new ComfyUiRetryRenderTask(this, interaction, promptExtension, promptExtensionType, userOverride);
+            case StableDiffusionApiType.EasyDiffusion:
                 return new EdRetryRenderTask(this, interaction, promptExtension, promptExtensionType, userOverride);
             default:
                 throw this.#taskNotConfiguredError;
@@ -307,6 +327,8 @@ export class ServiceContainer implements IServiceContainer {
         switch (this.#environmentSettings.stableDiffusionApiType) {
             case StableDiffusionApiType.Automatic1111:
                 return new A1ShowSourceTask(this, interaction);
+            case StableDiffusionApiType.ComfyUI:
+                return new ComfyUiShowSourceTask(this, interaction);
             case StableDiffusionApiType.EasyDiffusion:
                 return new EdShowSourceTask(this, interaction);
             default:
@@ -322,6 +344,8 @@ export class ServiceContainer implements IServiceContainer {
         switch (this.#environmentSettings.stableDiffusionApiType) {
             case StableDiffusionApiType.Automatic1111:
                 return new A1UpscaleRenderTask(this, interaction, upscaler);
+            case StableDiffusionApiType.ComfyUI:
+                return new ComfyUiUpscaleRenderTask(this, interaction);
             case StableDiffusionApiType.EasyDiffusion:
                 return new EdUpscaleRenderTask(this, interaction);
             default:
