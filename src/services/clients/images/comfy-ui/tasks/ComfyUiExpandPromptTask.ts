@@ -11,7 +11,7 @@ import { IReplyService } from '../../../chat/IReplyService.js';
 import { OllamaClient } from '../../../text/ollama/OllamaClient.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 import { IExpandPromptTask } from '../../tasks/IExpandPromptTask.js';
-import { AttachRenderTask } from './ComfyUiAttachRenderTask.js';
+import { ComfyUiAttachRenderTask } from './ComfyUiAttachRenderTask.js';
 
 export class ComfyUiExpandPromptTask extends BaseTask implements IExpandPromptTask {
     #services: IServiceContainer;
@@ -55,8 +55,14 @@ export class ComfyUiExpandPromptTask extends BaseTask implements IExpandPromptTa
             ContentType.Png
         ];
 
-        const imageAttachment = this.#replyService.getAttachmentsByType(this.#interaction, imageTypes)[0];
-        const originalRequest = SerializableRenderRequest.fromJson(imageAttachment.description);
+        const imageAttachments = this.#replyService.getAttachmentsByType(this.#interaction, imageTypes);
+
+        if (imageAttachments.length == 0) {
+            this.#logger(LogLevel.Warning, 'No attachments were found - exiting the task.');
+            return;
+        }
+
+        const originalRequest = SerializableRenderRequest.fromJson(imageAttachments[0].description);
 
         const prompt = `The following is a prompt used to generate an image - expand it with meticulous detail so it can be rendered better: ${originalRequest.prompt}`;
         this.#logger(LogLevel.Info, `Calling Ollama with "${prompt}" to get an expanded prompt.`);
@@ -65,7 +71,7 @@ export class ComfyUiExpandPromptTask extends BaseTask implements IExpandPromptTa
 
         const content = `${this.#interaction.member} expanded the detail in the prompt: \`${originalRequest.prompt}\``;
 
-        this.#taskQueue.add(new AttachRenderTask(
+        this.#taskQueue.add(new ComfyUiAttachRenderTask(
             this.#services,
             this.#interaction,
             exchange.response.response,
