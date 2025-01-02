@@ -115,13 +115,13 @@ export class ComfyUiReplyService {
     flattenMultipleImagesResponses(imagesResponses: Array<ImagesResponse>): ImagesResponse {
         const imagesResponse: ImagesResponse = { };
 
-        for (const imageResponse in imagesResponses) {
-            for (const [key, value] of Object.entries(imagesResponses)) {
+        for (const imageResponse of imagesResponses) {
+            for (const [key, value] of Object.entries(imageResponse)) {
                 if (imageResponse[key] === undefined) {
                     imageResponse[key] = [];
                 }
 
-                imageResponse[key] = value;
+                imagesResponse[key] = value;
             }
         }
 
