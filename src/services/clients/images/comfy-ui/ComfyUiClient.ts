@@ -36,7 +36,7 @@ export class ComfyUiClient {
     }
 
     async render(prompt: Prompt): Promise<ImagesResponse> {
-        this.#logger(LogLevel.Info, 'Rendering a workflow...', JSON.stringify(prompt));
+        this.#logger(LogLevel.Info, 'Sending workflow to ComfyUI:', JSON.stringify(prompt));
 
         await this.#client.connect();
 
