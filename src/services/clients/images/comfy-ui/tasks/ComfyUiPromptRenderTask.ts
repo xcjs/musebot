@@ -53,7 +53,10 @@ export class ComfyUiPromptRenderTask extends BaseTask implements IPromptRenderTa
         const workflows = this.#workflowService.workflows.filter(x =>
             x.type === WorkflowType.Txt2img
             || x.type === WorkflowType.Txt2vid);
+
         const selectedWorkflow = getRandomArrayEntry(workflows);
+
+        this.#logger(LogLevel.Info, `Using ${selectedWorkflow} as the selected workflow.`);
 
         const renderRequest = this.#workflowService.getWorkflowDefaults(selectedWorkflow);
         renderRequest.model = selectedWorkflow.name;
