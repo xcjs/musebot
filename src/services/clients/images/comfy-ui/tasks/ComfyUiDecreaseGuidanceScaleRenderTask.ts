@@ -1,3 +1,4 @@
+import { ImagesResponse } from 'comfy-ui-client';
 import { ButtonInteraction } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
@@ -39,6 +40,7 @@ export class ComfyUiDecreaseGuidanceScaleRenderTask extends BaseTask implements 
         this.#comfyUiClient = services.comfyUiClient;
         this.#comfyUiReplyService = services.comfyUiReplyService;
         this.#replyService = services.replyService;
+
         this.#interaction = interaction;
 
         this.#logger = new Logger(services.environmentSettings.isProduction, 'ComfyUiDecreaseGuidanceScaleRenderTask');
@@ -47,28 +49,44 @@ export class ComfyUiDecreaseGuidanceScaleRenderTask extends BaseTask implements 
     override async process(): Promise<void> {
         this.#logger(LogLevel.Info, 'Processing a ComfyUiDecreaseGuidanceScaleRenderTask...');
 
+        await this.#workflowService.loadWorkflows();
+
         const imageTypes = [
             ContentType.Jpeg,
             ContentType.Jpg,
             ContentType.Png
         ];
 
-        const imageAttachment = this.#replyService.getAttachmentsByType(this.#interaction, imageTypes)[0];
+        const imageAttachments = this.#replyService.getAttachmentsByType(this.#interaction, imageTypes);
+        const imageAsBase64Attachments = await this.#replyService.getAttachedImagesAsBase64(this.#interaction);
 
-        await this.#workflowService.loadWorkflows();
+        if (imageAsBase64Attachments.length == 0) {
+            this.#logger(LogLevel.Warning, 'No attachments were found - exiting the task.');
+            return;
+        }
 
         const workflow = getRandomArrayEntry(this.#workflowService.workflows);
-
         this.#logger(LogLevel.Info, `Using ${workflow} as the selected workflow.`);
 
-        const renderRequest = SerializableRenderRequest.fromJson(imageAttachment.description);
+        let renderRequest: SerializableRenderRequest;
+        let cfgScaleValue: number;
+        let imagesResponses: Array<ImagesResponse>;
+        let i = 0;
 
-        renderRequest.cfgScale -= this.#environmentSettings.stableDiffusionGuidanceScaleInterval;
-        const cfgScaleValue = renderRequest.cfgScale;
+        for (const imageAsBase64 in imageAsBase64Attachments) {
+            renderRequest = SerializableRenderRequest.fromJson(imageAttachments[i].description);
+            renderRequest.prompt = imageAsBase64;
+            renderRequest.cfgScale -= this.#environmentSettings.stableDiffusionGuidanceScaleInterval;
 
-        const prompt = this.#workflowService.renderWorkflow(workflow, renderRequest);
+            cfgScaleValue = renderRequest.cfgScale;
 
-        const imagesResponse = await this.#comfyUiClient.render(prompt);
+            const prompt = this.#workflowService.renderWorkflow(workflow, renderRequest);
+
+            imagesResponses.push(await this.#comfyUiClient.render(prompt));
+            i++;
+        }
+
+        const imagesResponse = this.#comfyUiReplyService.flattenMultipleImagesResponses(imagesResponses);
 
         const content = `${this.#interaction.member} decreased the guidance scale from ${cfgScaleValue
             + this.#environmentSettings.stableDiffusionGuidanceScaleInterval} to ${cfgScaleValue}.`;

@@ -51,6 +51,8 @@ export class ComfyUiUpscaleRenderTask extends BaseTask implements IUpscaleRender
     override async process(): Promise<void> {
         this.#logger(LogLevel.Info, 'Processing a ComfyUiUpscaleRenderTask...');
 
+        await this.#workflowService.loadWorkflows();
+
         const imageTypes = [
             ContentType.Jpeg,
             ContentType.Jpg,
@@ -65,9 +67,6 @@ export class ComfyUiUpscaleRenderTask extends BaseTask implements IUpscaleRender
         }
 
         const originalRenderRequest = SerializableRenderRequest.fromJson(imageAttachments[0].description);
-
-        await this.#workflowService.loadWorkflows();
-
         const imagesAsBase64 = await this.#replyService.getAttachedImagesAsBase64(this.#interaction);
 
         for(const imageAsBase64 in imagesAsBase64) {
@@ -96,17 +95,7 @@ export class ComfyUiUpscaleRenderTask extends BaseTask implements IUpscaleRender
             imagesResponses.push(await this.#comfyUiClient.render(prompt));
         }
 
-        const imagesResponse: ImagesResponse = {};
-
-        for(const imageResponse in imagesResponses) {
-            for (const [key, value] of Object.entries(imagesResponses)) {
-                if(imageResponse[key] === undefined) {
-                    imageResponse[key] = [];
-                }
-
-                imageResponse[key] = value;
-            }
-        }
+        const imagesResponse = this.#comfyUiReplyService.flattenMultipleImagesResponses(imagesResponses);
 
         await this.#comfyUiReplyService.reply(this.#interaction, {
             request: originalRenderRequest,

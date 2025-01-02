@@ -1,3 +1,4 @@
+import { ImagesResponse } from 'comfy-ui-client';
 import { ButtonInteraction } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
@@ -7,17 +8,18 @@ import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
-import { Automatic1111ReplyService } from '../../../chat/discord/automatic1111/Automatic1111ReplyService.js';
+import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 import { IIncreaseGuidanceScaleRenderTask } from '../../tasks/IIncreaseGuidanceScaleRenderTask.js';
-import { Automatic1111Client } from '../Automatic1111Client.js';
-import { Txt2ImgOptionsRequest } from '../models/requests/Txt2ImgOptionsRequest.js';
+import { ComfyUiClient } from '../ComfyUiClient.js';
+import { IWorkflowService } from '../services/IWorkflowService.js';
 
 export class ComfyUiIncreaseGuidanceScaleRenderTask extends BaseTask implements IIncreaseGuidanceScaleRenderTask {
     #environmentSettings: IEnvironmentSettings;
-    #automatic1111Client: Automatic1111Client;
-    #automatic1111ReplyService: Automatic1111ReplyService;
+    #workflowService: IWorkflowService;
+    #comfyUiClient: ComfyUiClient;
+    #comfyUiReplyService: ComfyUiReplyService;
     #replyService: IReplyService;
 
     #interaction: ButtonInteraction;
@@ -25,15 +27,16 @@ export class ComfyUiIncreaseGuidanceScaleRenderTask extends BaseTask implements 
     #logger;
 
     override get taskChannel(): string {
-        return `Automatic1111_${this.#automatic1111Client.host}`;
+        return `ComfyUi_${this.#comfyUiClient.host}`;
     }
 
     constructor(services: IServiceContainer, interaction: ButtonInteraction) {
         super(services);
 
         this.#environmentSettings = services.environmentSettings;
-        this.#automatic1111Client = services.automatic1111Client;
-        this.#automatic1111ReplyService = services.automatic1111ReplyService;
+        this.#workflowService = services.workflowService;
+        this.#comfyUiClient = services.comfyUiClient;
+        this.#comfyUiReplyService = services.comfyUiReplyService;
         this.#replyService = services.replyService;
 
         this.#interaction = interaction;
@@ -44,40 +47,52 @@ export class ComfyUiIncreaseGuidanceScaleRenderTask extends BaseTask implements 
     override async process(): Promise<void> {
         this.#logger(LogLevel.Info, 'Processing an ComfyUiIncreaseGuidanceScaleRenderTask...');
 
+        await this.#workflowService.loadWorkflows();
+
         const imageTypes = [
             ContentType.Jpeg,
             ContentType.Jpg,
             ContentType.Png
         ];
 
-        const imageAttachment = this.#replyService.getAttachmentsByType(this.#interaction, imageTypes)[0];
+        const imageAttachments = this.#replyService.getAttachmentsByType(this.#interaction, imageTypes);
+        const imageAsBase64Attachments = await this.#replyService.getAttachedImagesAsBase64(this.#interaction);
 
-        const model = this.#environmentSettings.stableDiffusionModels.length > 0 ?
-            getRandomArrayEntry(this.#environmentSettings.stableDiffusionModels) :
-            getRandomArrayEntry(await this.#automatic1111Client.getModels()).title.split(' ')[0];
-
-        this.#logger(LogLevel.Info, `Using ${model} as the selected EasyDiffusion model.`);
-
-        let request: Txt2ImgOptionsRequest = null;
-        let cfgScaleValue = 0;
-
-        if (imageAttachment?.description) {
-            request = SerializableRenderRequest.fromJson(imageAttachment.description).toTxt2ImgOptionsRequest();
-
-            if(model.toLocaleLowerCase().startsWith('flux')) {
-                request.distilled_cfg_scale += this.#environmentSettings.stableDiffusionGuidanceScaleInterval;
-                cfgScaleValue = request.distilled_cfg_scale;
-            } else {
-                request.cfg_scale += this.#environmentSettings.stableDiffusionGuidanceScaleInterval;
-                cfgScaleValue = request.cfg_scale;
-            }
+        if (imageAsBase64Attachments.length == 0) {
+            this.#logger(LogLevel.Warning, 'No attachments were found - exiting the task.');
+            return;
         }
 
-        const renderData = await this.#automatic1111Client.render(request, model);
+        const workflow = getRandomArrayEntry(this.#workflowService.workflows);
+        this.#logger(LogLevel.Info, `Using ${workflow} as the selected workflow.`);
+
+        let renderRequest: SerializableRenderRequest;
+        let cfgScaleValue: number;
+        let imagesResponses: Array<ImagesResponse>;
+        let i = 0;
+
+        for (const imageAsBase64 in imageAsBase64Attachments) {
+            renderRequest = SerializableRenderRequest.fromJson(imageAttachments[i].description);
+            renderRequest.prompt = imageAsBase64;
+            renderRequest.cfgScale += this.#environmentSettings.stableDiffusionGuidanceScaleInterval;
+
+            cfgScaleValue = renderRequest.cfgScale;
+
+            const prompt = this.#workflowService.renderWorkflow(workflow, renderRequest);
+
+            imagesResponses.push(await this.#comfyUiClient.render(prompt));
+            i++;
+        }
+
+        const imagesResponse = this.#comfyUiReplyService.flattenMultipleImagesResponses(imagesResponses);
+
         const content = `${this.#interaction.member} increased the guidance scale from ${cfgScaleValue
             - this.#environmentSettings.stableDiffusionGuidanceScaleInterval} to ${cfgScaleValue}.`;
 
-        await this.#automatic1111ReplyService.reply(this.#interaction, renderData, content);
+        await this.#comfyUiReplyService.reply(this.#interaction, {
+            request: renderRequest,
+            response: imagesResponse
+        }, content);
     }
 
     override async postProcess(): Promise<void> {
