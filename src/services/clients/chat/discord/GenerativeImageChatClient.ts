@@ -35,7 +35,7 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
         this.#helpService = services.helpService;
         this.#taskQueue = services.taskQueue;
 
-        this.logger = new Logger(this.#environmentSettings.isProduction, GenerativeImageChatClient.name);
+        this.logger = new Logger(this.#environmentSettings.isProduction, 'GenerativeImageChatClient');
 
         this.#registerEvents();
     }

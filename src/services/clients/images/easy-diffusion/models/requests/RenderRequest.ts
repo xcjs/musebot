@@ -1,4 +1,5 @@
 import { getRandomInt } from '../../../../../../utilities/random-utilities.js';
+import { maxSeed } from '../../../stable-diffusion/constants/constants.js';
 import { VRamUsageLevel } from '../../enums/VRamUsageLevel.js';
 
 export class RenderRequest {
@@ -42,12 +43,12 @@ export class RenderRequest {
         return JSON.stringify(this);
     }
 
-    refreshSeed() {
-        this.seed = this.#getRandomSeed();
+    refreshSeed(): void {
+        this.seed = getRandomInt(0, maxSeed);
     }
 
     #getRandomSeed(): number {
-        return getRandomInt(0, 4294967295);
+        return
     }
 
     static fromJson(renderRequestJson: string): RenderRequest {

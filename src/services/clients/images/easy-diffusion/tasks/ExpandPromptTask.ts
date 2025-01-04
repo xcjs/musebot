@@ -1,7 +1,6 @@
 import { ButtonInteraction } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { ContentType } from '../../../../../enums/ContentType.js';
 import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
@@ -47,13 +46,7 @@ export class ExpandPromptTask extends BaseTask implements IExpandPromptTask {
     override async process(): Promise<void> {
         this.#logger(LogLevel.Info, 'Processing a ExpandPromptTask.');
 
-        const imageTypes = [
-            ContentType.Jpeg,
-            ContentType.Jpg,
-            ContentType.Png
-        ];
-
-        const imageAttachment = this.#replyService.getAttachmentsByType(this.#interaction, imageTypes)[0];
+        const imageAttachment = this.#replyService.getImageAttachments(this.#interaction)[0];
         const originalRequest = RenderRequest.fromJson(imageAttachment.description);
 
         const prompt = `The following is a prompt used to generate an image - expand it with meticulous detail so it can be rendered better: ${originalRequest.prompt}`;

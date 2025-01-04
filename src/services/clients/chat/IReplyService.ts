@@ -17,4 +17,8 @@ export interface IReplyService {
     replyWithError(interaction: Message | ButtonInteraction): Promise<void>;
 
     getAttachmentsByType(interaction: Message | ButtonInteraction, contentTypes: Array<ContentType>): Array<Attachment>;
+
+    getImageAttachments(interaction: Message | ButtonInteraction): Array<Attachment>;
+
+    getAttachedImagesAsBase64(interaction: Message | ButtonInteraction): Promise<Array<string>>;
 }

@@ -1,6 +1,7 @@
 import { Attachment, AttachmentBuilder, ButtonInteraction, Client as DiscordClient, Message, MessageType, User  } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
+import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
 import { ContentType } from '../../../../../enums/ContentType.js';
 import { getRandomInt } from '../../../../../utilities/random-utilities.js';
 import { splitText } from '../../../../../utilities/string-utilities.js';
@@ -73,7 +74,8 @@ export class ReplyService implements IReplyService {
             && generatedResponseRate > this.#environmentSettings.botResponseRate)
             && !message.mentions.members?.find(x => x.id === this.#discordClient.user?.id)
                 && !isReaction) {
-            this.#logger(LogLevel.Info, `Not replying to a message outside the response rate (${generatedResponseRate} > ${this.#environmentSettings.botResponseRate}).`);
+            this.#logger(LogLevel.Info, `Not replying to a message outside the response rate` +
+                ` (${generatedResponseRate} > ${this.#environmentSettings.botResponseRate}).`);
             return false;
         }
 
@@ -112,7 +114,9 @@ export class ReplyService implements IReplyService {
     ): Promise<void> {
         const replyContents = splitText(content?.trim() || '', DiscordConstants.ContentMaxLength);
 
-        replyContents.forEach(async (contentFragment, i) => {
+        let i = 0;
+
+        for (const contentFragment of replyContents) {
             const replyAttachments = i + 1 === replyContents.length ? attachments : [];
 
             if (interaction instanceof Message) {
@@ -135,7 +139,9 @@ export class ReplyService implements IReplyService {
                     `An interaction occurred that did not fit the reply criteria of either being an edited reply to a`
                     + ` ${typeof ButtonInteraction} nor a direct reply to any type of interaction.`);
             }
-        });
+
+            i++;
+        }
     }
 
     mention(user: User): string {
@@ -143,6 +149,8 @@ export class ReplyService implements IReplyService {
     }
 
     getAttachmentsByType(interaction: Message | ButtonInteraction, contentTypes: Array<ContentType>): Array<Attachment> {
+        this.#logger(LogLevel.Info, 'Looking for attachments of the following types on a message:', contentTypes);
+
         let attachments: Array<Attachment>;
 
         if (interaction instanceof Message) {
@@ -156,6 +164,34 @@ export class ReplyService implements IReplyService {
                 .find(contentTypeValue => contentTypeValue === attachment.contentType)));
 
         return matchingAttachments;
+    }
+
+    getImageAttachments(interaction: Message | ButtonInteraction): Array<Attachment> {
+        const imageTypes = [
+            ContentType.Jpeg,
+            ContentType.Jpg,
+            ContentType.Png,
+            ContentType.WebP
+        ];
+
+        return this.getAttachmentsByType(interaction, imageTypes);
+    }
+
+    async getAttachedImagesAsBase64(interaction: Message | ButtonInteraction): Promise<Array<string>> {
+        const imageAttachments = this.getImageAttachments(interaction);
+        const imagesAsBase64: Array<string> = [];
+
+        if(imageAttachments.length === 0) {
+            return imagesAsBase64;
+        }
+
+        for (const attachment of imageAttachments) {
+            const imageResponse = await fetch(attachment.url);
+            const imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
+            imagesAsBase64.push(imageBuffer.toString(BufferEncoding.Base64));
+        }
+
+        return imagesAsBase64;
     }
 
     async replyWithError(interaction: Message | ButtonInteraction): Promise<void> {

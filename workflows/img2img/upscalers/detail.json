@@ -1,0 +1,92 @@
+{
+  "27": {
+    "inputs": {
+      "model_name": "RealESRGAN_x4plus.pth"
+    },
+    "class_type": "UpscaleModelLoader",
+    "_meta": {
+      "title": "Load Upscale Model"
+    }
+  },
+  "28": {
+    "inputs": {
+      "upscale_model": [
+        "27",
+        0
+      ],
+      "image": [
+        "109",
+        0
+      ]
+    },
+    "class_type": "ImageUpscaleWithModel",
+    "_meta": {
+      "title": "Upscale Image (using Model)"
+    }
+  },
+  "103": {
+    "inputs": {
+      "value": [
+        "28",
+        0
+      ]
+    },
+    "class_type": "UnloadAllModels",
+    "_meta": {
+      "title": "UnloadAllModels"
+    }
+  },
+  "104": {
+    "inputs": {
+      "image": "{{{ prompt }}}"
+    },
+    "class_type": "ETN_LoadImageBase64",
+    "_meta": {
+      "title": "Load Image (Base64)"
+    }
+  },
+  "106": {
+    "inputs": {
+      "bit_depth": "8bit",
+      "images": [
+        "103",
+        0
+      ]
+    },
+    "class_type": "SwarmSaveImageWS",
+    "_meta": {
+      "title": "SwarmSaveImageWS"
+    }
+  },
+  "107": {
+    "inputs": {
+      "filename_prefix": "Musebot_Upscale_Detail",
+      "images": [
+        "103",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
+    }
+  },
+  "109": {
+    "inputs": {
+      "width": 1024,
+      "height": 1024,
+      "upscale_method": "bicubic",
+      "keep_proportion": true,
+      "divisible_by": 2,
+      "crop": "disabled",
+      "image": [
+        "104",
+        0
+      ]
+    },
+    "class_type": "ImageResizeKJ",
+    "_meta": {
+      "title": "Resize Image"
+    }
+  }
+}

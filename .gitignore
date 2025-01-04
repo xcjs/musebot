@@ -10,7 +10,6 @@ build/
 
 # Configuration Files
 .env*
-workflows/
 
 # Package Management
 node_modules/

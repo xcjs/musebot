@@ -1,7 +1,9 @@
+import { getRandomInt } from '../../../../../utilities/random-utilities.js';
 import { SamplingMethod } from '../../automatic1111/enums/SamplingMethod.js';
 import { ScheduleType } from '../../automatic1111/enums/ScheduleType.js';
 import { Txt2ImgOptionsFactory } from '../../automatic1111/factories/Txt2ImgOptionsFactory.js';
 import { Txt2ImgOptionsRequest } from '../../automatic1111/models/requests/Txt2ImgOptionsRequest.js';
+import { maxSeed } from '../constants/constants.js';
 
 export class SerializableRenderRequest {
     prompt: string;
@@ -10,14 +12,19 @@ export class SerializableRenderRequest {
     seed: number;
     width: number;
     height: number;
-    sampler: SamplingMethod;
-    scheduler: ScheduleType;
-    distilledCfgScale: number;
+    sampler: string;
+    scheduler: string;
+    distilledCfgScale: number | null;
     cfgScale: number;
     steps: number;
+    num: number = 1;
 
     constructor() {
 
+    }
+
+    refreshSeed(): void {
+        this.seed = getRandomInt(0, maxSeed);
     }
 
     toString(): string {
@@ -31,9 +38,9 @@ export class SerializableRenderRequest {
         options.seed = this.seed;
         options.width = this.width;
         options.height = this.height;
-        options.sampler_index = this.sampler;
-        options.sampler_name = this.sampler;
-        options.scheduler = this.scheduler;
+        options.sampler_index = this.sampler as SamplingMethod;
+        options.sampler_name = this.sampler as SamplingMethod;
+        options.scheduler = this.scheduler as ScheduleType;
         options.distilled_cfg_scale = this.distilledCfgScale;
         options.cfg_scale = this.cfgScale;
         options.steps = this.steps;
@@ -59,9 +66,10 @@ export class SerializableRenderRequest {
         instancedRequest.height = request.height;
         instancedRequest.sampler = request.sampler;
         instancedRequest.scheduler = request.scheduler;
-        instancedRequest.distilledCfgScale = request.distilledCfgScale;
+        instancedRequest.distilledCfgScale = request.distilledCfgScale || null;
         instancedRequest.cfgScale = request.cfgScale;
         instancedRequest.steps = request.steps;
+        instancedRequest.num = request.num || 1;
 
         return instancedRequest;
     }

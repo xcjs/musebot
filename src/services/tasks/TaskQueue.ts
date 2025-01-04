@@ -52,7 +52,7 @@ export class TaskQueue implements ITaskQueue {
 
         while(tasks.length > 0) {
             this.#logger(LogLevel.Info, `Processing the task queue with ${this.#channels.length} channel(s) and`
-                + ` ${this.#channels.map((channel, i, channels) => channels.length)
+                + ` ${this.#channels.map((channel) => channel.queue.length)
                     .reduce((previousValue, currentValue) => previousValue + currentValue)}`
                 + ` task(s).`);
 

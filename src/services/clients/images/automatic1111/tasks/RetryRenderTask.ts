@@ -1,7 +1,6 @@
 import { ButtonInteraction, Message, User } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { ContentType } from '../../../../../enums/ContentType.js';
 import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../../../../features/IFeatureService.js';
@@ -64,13 +63,7 @@ export class RetryRenderTask extends BaseTask implements IRetryRenderTask {
     override async process(): Promise<void> {
         this.#logger(LogLevel.Info, 'Processing a RetryRenderTask.');
 
-        const imageTypes = [
-            ContentType.Jpeg,
-            ContentType.Jpg,
-            ContentType.Png
-        ];
-
-        const imageAttachment = this.#replyService.getAttachmentsByType(this.#interaction, imageTypes)[0];
+        const imageAttachment = this.#replyService.getImageAttachments(this.#interaction)[0];
 
         let request: Txt2ImgOptionsRequest = null;
         let content: string;

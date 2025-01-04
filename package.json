@@ -1,6 +1,6 @@
 {
   "name": "musebot",
-  "version": "5.7.28",
+  "version": "6.0.0",
   "description": "A Discord bot that connects to various generative AI APIs.",
   "private": "true",
   "license": "ISC",
@@ -30,9 +30,11 @@
   },
   "dependencies": {
     "@yao-pkg/pkg": "^6.1.1",
+    "comfy-ui-client": "^0.1.2",
     "discord.js": "14.16.1",
     "dotenv": "^16.3.1",
     "meklog": "^1.0.2",
+    "mustache": "^4.2.0",
     "ollama": "^0.5.2",
     "parcel": "^2.12.0",
     "typescript": "^5.5.2"

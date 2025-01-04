@@ -25,7 +25,7 @@ export class Automatic1111ReplyService {
 
     #logger;
 
-    get host() {
+    get host(): URL {
         return this.#automatic1111Client.host;
     }
 

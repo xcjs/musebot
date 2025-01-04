@@ -22,7 +22,7 @@ export class TypingService implements ITypingService {
         this.#environmentSettings = services.environmentSettings;
         this.#taskQueue = services.taskQueue;
 
-        this.#logger = new Logger(this.#environmentSettings.isProduction, TypingService.name);
+        this.#logger = new Logger(this.#environmentSettings.isProduction, 'TypingService');
     }
 
     async startTyping(interaction: Message | ButtonInteraction): Promise<void> {
@@ -42,7 +42,7 @@ export class TypingService implements ITypingService {
         }
 
         if(channelTypingIndicator.typingInterval !== null) {
-            this.#logger(LogLevel.Warning, 'Cannot start a typing indicator that is already running.');
+            this.#logger(LogLevel.Info, 'This channel already has a typing indicator - skipping.');
             return;
         }
 

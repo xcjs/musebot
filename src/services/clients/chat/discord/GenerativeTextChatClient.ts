@@ -35,7 +35,7 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
         this.#helpService = services.helpService;
         this.#taskQueue = services.taskQueue;
 
-        this.logger = new Logger(this.#environmentSettings.isProduction, GenerativeTextChatClient.name);
+        this.logger = new Logger(this.#environmentSettings.isProduction, 'GenerativeTextChatClient');
 
         this.#registerEvents();
     }
