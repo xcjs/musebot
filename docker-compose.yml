@@ -4,3 +4,5 @@ services:
     build: .
     env_file: .env
     restart: unless-stopped
+    volumes:
+      - ./workflows:/app/musebot/workflows
