@@ -23,9 +23,9 @@
   },
   "5": {
     "inputs": {
-      "width": "{{ width }}",
-      "height": "{{ height }}",
-      "batch_size": "{{ num }}"
+      "width": "{{{ width }}}",
+      "height": "{{{ height }}}",
+      "batch_size": "{{{ num }}}"
     },
     "class_type": "EmptyLatentImage",
     "_meta": {
@@ -34,7 +34,7 @@
   },
   "6": {
     "inputs": {
-      "text": "{{ prompt }}",
+      "text": "{{{ prompt }}}",
       "clip": ["4", 1]
     },
     "class_type": "CLIPTextEncode",
@@ -44,7 +44,7 @@
   },
   "7": {
     "inputs": {
-      "text": "{{ promptNegative }}",
+      "text": "{{{ promptNegative }}}",
       "clip": ["4", 1]
     },
     "class_type": "CLIPTextEncode",
@@ -64,11 +64,11 @@
   },
   "10": {
     "inputs": {
-      "noise_seed": "{{ seed }}",
-      "steps": "{{ steps }}",
-      "cfg": "{{ cfgScale }}",
-      "sampler_name": "{{ sampler }}",
-      "scheduler": "{{ scheduler }}",
+      "noise_seed": "{{{ seed }}}",
+      "steps": "{{{ steps }}}",
+      "cfg": "{{{ cfgScale }}}",
+      "sampler_name": "{{{ sampler }}}",
+      "scheduler": "{{{ scheduler }}}",
       "start_at_step": 0,
       "end_at_step": 10000,
       "var_seed": 0,
@@ -138,11 +138,11 @@
   },
   "104": {
     "inputs": {
-      "noise_seed": "{{ seed }}",
+      "noise_seed": "{{{ seed }}}",
       "steps": 40,
       "cfg": 2.5,
-      "sampler_name": "{{ sampler }}",
-      "scheduler": "{{ scheduler }}",
+      "sampler_name": "{{{ sampler }}}",
+      "scheduler": "{{{ scheduler }}}",
       "start_at_step": 0,
       "end_at_step": 10000,
       "var_seed": 0,
@@ -196,6 +196,16 @@
     "class_type": "UnloadAllModels",
     "_meta": {
       "title": "UnloadAllModels"
+    }
+  },
+  "109": {
+    "inputs": {
+      "filename_prefix": "Musebot_Dreamshaper",
+      "images": ["8", 0]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
     }
   }
 }
