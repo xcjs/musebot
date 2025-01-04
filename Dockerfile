@@ -8,7 +8,11 @@ USER node
 
 FROM debian:stable
 
-COPY --from=builder /home/node/app/build/pkg/musebot-linux /app/musebot
-COPY --from=builder /home/node/app/LICENSE.md /app/LICENSE.txt
+RUN mkdir /app
 
-CMD ["/app/musebot"]
+WORKDIR /app
+
+COPY --from=builder /home/node/app/build/pkg/musebot-linux musebot
+COPY --from=builder /home/node/app/LICENSE.md LICENSE.txt
+
+CMD ["./musebot"]

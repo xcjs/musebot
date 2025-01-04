@@ -5,4 +5,4 @@ services:
     env_file: .env
     restart: unless-stopped
     volumes:
-      - ./workflows:/app/musebot/workflows
+      - ./workflows:/app/workflows
