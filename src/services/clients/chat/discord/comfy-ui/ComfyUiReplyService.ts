@@ -6,7 +6,6 @@ import { MAX_FILE_NAME_LENGTH } from '../../../../../constants/FileConstants.js'
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
-import { Txt2ImgOptionsRequest } from '../../../images/automatic1111/models/requests/Txt2ImgOptionsRequest.js';
 import { ComfyUiClient } from '../../../images/comfy-ui/ComfyUiClient.js';
 import { SerializableRenderRequest } from '../../../images/stable-diffusion/models/SerializableRenderRequest.js';
 import { StatefulImageGenerationActionRows } from '../components/buttonRows/StatefulImageGenerationActionRows.js';
