@@ -38,13 +38,7 @@ export class ShowSourceTask extends BaseTask implements IShowSourceTask {
     }
 
     override async process(): Promise<void> {
-        const imageTypes = [
-            ContentType.Jpeg,
-            ContentType.Jpg,
-            ContentType.Png
-        ];
-
-        const imageAttachment = this.#replyService.getAttachmentsByType(this.#interaction, imageTypes)[0];
+        const imageAttachment = this.#replyService.getImageAttachments(this.#interaction)[0];
         const jsonRequest = imageAttachment.description;
         const renderRequest = RenderRequest.fromJson(jsonRequest);
 

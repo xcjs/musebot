@@ -1,7 +1,6 @@
 import { ButtonInteraction } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { ContentType } from '../../../../../enums/ContentType.js';
 import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
 import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
@@ -43,13 +42,7 @@ export class DecreaseGuidanceScaleRenderTask extends BaseTask implements IDecrea
     override async process(): Promise<void> {
         this.#logger(LogLevel.Info, 'Processing a DecreaseGuidanceScaleRenderTask.');
 
-        const imageTypes = [
-            ContentType.Jpeg,
-            ContentType.Jpg,
-            ContentType.Png
-        ];
-
-        const imageAttachment = this.#replyService.getAttachmentsByType(this.#interaction, imageTypes)[0];
+        const imageAttachment = this.#replyService.getImageAttachments(this.#interaction)[0];
 
         let request: RenderRequest = null;
 

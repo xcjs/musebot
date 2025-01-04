@@ -2,7 +2,6 @@ import { ImagesResponse } from 'comfy-ui-client';
 import { ButtonInteraction, Message, User } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { ContentType } from '../../../../../enums/ContentType.js';
 import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../../../../features/IFeatureService.js';
@@ -69,14 +68,7 @@ export class ComfyUiRetryRenderTask extends BaseTask implements IRetryRenderTask
     override async process(): Promise<void> {
         this.#logger(LogLevel.Info, 'Processing a ComfyUiRetryRenderTask...');
 
-        const imageTypes = [
-            ContentType.Jpeg,
-            ContentType.Jpg,
-            ContentType.Png,
-            ContentType.WebP
-        ];
-
-        const imageAttachments = this.#replyService.getAttachmentsByType(this.#interaction, imageTypes);
+        const imageAttachments = this.#replyService.getImageAttachments(this.#interaction);
 
         if (imageAttachments.length === 0) {
             this.#logger(LogLevel.Warning, 'No attachments were found - exiting the task.');

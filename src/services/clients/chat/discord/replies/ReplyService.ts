@@ -166,14 +166,19 @@ export class ReplyService implements IReplyService {
         return matchingAttachments;
     }
 
-    async getAttachedImagesAsBase64(interaction: Message | ButtonInteraction): Promise<Array<string>> {
+    getImageAttachments(interaction: Message | ButtonInteraction): Array<Attachment> {
         const imageTypes = [
             ContentType.Jpeg,
             ContentType.Jpg,
-            ContentType.Png
+            ContentType.Png,
+            ContentType.WebP
         ];
 
-        const imageAttachments = this.getAttachmentsByType(interaction, imageTypes);
+        return this.getAttachmentsByType(interaction, imageTypes);
+    }
+
+    async getAttachedImagesAsBase64(interaction: Message | ButtonInteraction): Promise<Array<string>> {
+        const imageAttachments = this.getImageAttachments(interaction);
         const imagesAsBase64: Array<string> = [];
 
         if(imageAttachments.length === 0) {

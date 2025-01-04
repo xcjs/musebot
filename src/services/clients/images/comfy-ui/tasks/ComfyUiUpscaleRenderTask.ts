@@ -3,7 +3,6 @@ import { ButtonInteraction } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
 import { BotInteraction } from '../../../../../enums/BotInteraction.js';
-import { ContentType } from '../../../../../enums/ContentType.js';
 import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
@@ -53,13 +52,7 @@ export class ComfyUiUpscaleRenderTask extends BaseTask implements IUpscaleRender
 
         await this.#workflowService.loadWorkflows();
 
-        const imageTypes = [
-            ContentType.Jpeg,
-            ContentType.Jpg,
-            ContentType.Png
-        ];
-
-        const imageAttachments = this.#replyService.getAttachmentsByType(this.#interaction, imageTypes);
+        const imageAttachments = this.#replyService.getImageAttachments(this.#interaction);
         const imagesResponses: Array<ImagesResponse> = [];
 
         if(imageAttachments.length === 0) {

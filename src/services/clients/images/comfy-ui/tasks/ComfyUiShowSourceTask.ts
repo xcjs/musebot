@@ -2,7 +2,6 @@ import { AttachmentBuilder, ButtonInteraction } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
 import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
-import { ContentType } from '../../../../../enums/ContentType.js';
 import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
@@ -42,13 +41,7 @@ export class ComfyUiShowSourceTask extends BaseTask implements IShowSourceTask {
     override async process(): Promise<void> {
         this.#logger(LogLevel.Info, 'Processing a ComfyUiShowSourceTask...');
 
-        const imageTypes = [
-            ContentType.Jpeg,
-            ContentType.Jpg,
-            ContentType.Png
-        ];
-
-        const imageAttachments = this.#replyService.getAttachmentsByType(this.#interaction, imageTypes);
+        const imageAttachments = this.#replyService.getImageAttachments(this.#interaction);
         let messageContent: string;
         const jsonAttachments: AttachmentBuilder[] = [];
 

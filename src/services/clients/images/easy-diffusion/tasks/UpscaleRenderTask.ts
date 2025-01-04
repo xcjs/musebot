@@ -41,13 +41,7 @@ export class UpscaleRenderTask extends BaseTask implements IUpscaleRenderTask {
     override async process(): Promise<void> {
         this.#logger(LogLevel.Info, 'Processing an UpscaleRenderTask.');
 
-        const imageTypes = [
-            ContentType.Jpeg,
-            ContentType.Jpg,
-            ContentType.Png
-        ];
-
-        const imageAttachment = this.#replyService.getAttachmentsByType(this.#interaction, imageTypes)[0];
+        const imageAttachment = this.#replyService.getImageAttachments(this.#interaction)[0];
 
         let request: RenderRequest = null;
 

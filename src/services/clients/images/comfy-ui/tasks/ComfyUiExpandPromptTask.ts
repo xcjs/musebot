@@ -1,7 +1,6 @@
 import { ButtonInteraction } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { ContentType } from '../../../../../enums/ContentType.js';
 import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
@@ -49,13 +48,7 @@ export class ComfyUiExpandPromptTask extends BaseTask implements IExpandPromptTa
     override async process(): Promise<void> {
         this.#logger(LogLevel.Info, 'Processing a ComfyUiExpandPromptTask...');
 
-        const imageTypes = [
-            ContentType.Jpeg,
-            ContentType.Jpg,
-            ContentType.Png
-        ];
-
-        const imageAttachments = this.#replyService.getAttachmentsByType(this.#interaction, imageTypes);
+        const imageAttachments = this.#replyService.getImageAttachments(this.#interaction);
 
         if (imageAttachments.length == 0) {
             this.#logger(LogLevel.Warning, 'No attachments were found - exiting the task.');

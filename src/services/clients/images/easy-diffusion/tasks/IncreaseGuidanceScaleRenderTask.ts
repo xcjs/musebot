@@ -43,13 +43,7 @@ export class IncreaseGuidanceScaleRenderTask extends BaseTask implements IIncrea
     override async process(): Promise<void> {
         this.#logger(LogLevel.Info, 'Processing a IncreaseGuidanceScaleRenderTask.');
 
-        const imageTypes = [
-            ContentType.Jpeg,
-            ContentType.Jpg,
-            ContentType.Png
-        ];
-
-        const imageAttachment = this.#replyService.getAttachmentsByType(this.#interaction, imageTypes)[0];
+        const imageAttachment = this.#replyService.getImageAttachments(this.#interaction)[0];
 
         let request: RenderRequest = null;
 

@@ -2,7 +2,6 @@ import { AttachmentBuilder, ButtonInteraction } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
 import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
-import { ContentType } from '../../../../../enums/ContentType.js';
 import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
@@ -40,13 +39,7 @@ export class ShowSourceTask extends BaseTask implements IShowSourceTask {
     }
 
     override async process(): Promise<void> {
-        const imageTypes = [
-            ContentType.Jpeg,
-            ContentType.Jpg,
-            ContentType.Png
-        ];
-
-        const imageAttachment = this.#replyService.getAttachmentsByType(this.#interaction, imageTypes)[0];
+        const imageAttachment = this.#replyService.getImageAttachments(this.#interaction)[0];
         const jsonRequest = imageAttachment.description;
         const renderRequest = SerializableRenderRequest.fromJson(jsonRequest);
 

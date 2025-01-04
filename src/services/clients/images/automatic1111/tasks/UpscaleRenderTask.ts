@@ -1,7 +1,6 @@
 import { ButtonInteraction } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { ContentType } from '../../../../../enums/ContentType.js';
 import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
@@ -47,13 +46,7 @@ export class UpscaleRenderTask extends BaseTask implements IUpscaleRenderTask {
     override async process(): Promise<void> {
         this.#logger(LogLevel.Info, 'Processing an UpscaleRenderTask.');
 
-        const imageTypes = [
-            ContentType.Jpeg,
-            ContentType.Jpg,
-            ContentType.Png
-        ];
-
-        const imageAttachment = this.#replyService.getAttachmentsByType(this.#interaction, imageTypes)[0];
+        const imageAttachment = this.#replyService.getImageAttachments(this.#interaction)[0];
 
         const descriptionRequest = SerializableRenderRequest.fromJson(imageAttachment.description);
         const request: Txt2ImgOptionsRequest = descriptionRequest.toTxt2ImgOptionsRequest();
