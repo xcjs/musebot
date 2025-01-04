@@ -108,7 +108,7 @@ export class ComfyUiReplyService {
         }
     }
 
-    getFileNameFromPrompt(renderRequest: Txt2ImgOptionsRequest | SerializableRenderRequest): string {
+    getFileNameFromPrompt(renderRequest: SerializableRenderRequest): string {
         return `${renderRequest.seed}_${renderRequest.prompt}`.substring(0, MAX_FILE_NAME_LENGTH);
     }
 
