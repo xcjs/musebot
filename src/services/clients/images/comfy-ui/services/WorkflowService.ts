@@ -109,6 +109,7 @@ export class WorkflowService implements IWorkflowService {
 
         // JSON cannot have actual new lines in strings.
         renderRequest.prompt = renderRequest.prompt.replaceAll('\n', '\\n');
+        renderRequest.prompt = renderRequest.prompt.replaceAll('"', '\"');
 
         const templateString = mustache.default.render(workflow.workflowString, renderRequest);
         return JSON.parse(templateString) as Prompt;
