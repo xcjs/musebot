@@ -1,3 +1,4 @@
+import { ImagesResponse } from 'comfy-ui-client';
 import { ButtonInteraction, Message, User } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
@@ -71,13 +72,14 @@ export class ComfyUiRetryRenderTask extends BaseTask implements IRetryRenderTask
         const imageTypes = [
             ContentType.Jpeg,
             ContentType.Jpg,
-            ContentType.Png
+            ContentType.Png,
+            ContentType.WebP
         ];
 
-        const imageAttachment = this.#replyService.getAttachmentsByType(this.#interaction, imageTypes)[0];
+        const imageAttachments = this.#replyService.getAttachmentsByType(this.#interaction, imageTypes);
 
-        if (imageAttachment.description !== null && imageAttachment.description.length === 0) {
-            this.#logger(LogLevel.Warning, 'No attachments with descriptions were found - exiting the task.');
+        if (imageAttachments.length === 0) {
+            this.#logger(LogLevel.Warning, 'No attachments were found - exiting the task.');
             return;
         }
 
@@ -85,55 +87,60 @@ export class ComfyUiRetryRenderTask extends BaseTask implements IRetryRenderTask
 
         let renderRequest: SerializableRenderRequest = null;
         let content: string;
+        const imagesResponses: Array<ImagesResponse> = [];
 
-        renderRequest = SerializableRenderRequest.fromJson(imageAttachment.description);
-        content =
-            `${this.#userOverride !== null ? this.#replyService.mention(this.#userOverride) : this.#interaction.member}`
-            + ` re-rendered \`${renderRequest.prompt}\``.substring(0, DiscordConstants.ContentMaxLength);
+        for (const imageAttachment of imageAttachments) {
+            renderRequest = SerializableRenderRequest.fromJson(imageAttachment.description);
+            content =
+                `${this.#userOverride !== null ? this.#replyService.mention(this.#userOverride) : this.#interaction.member}`
+                + ` re-rendered \`${renderRequest.prompt}\``.substring(0, DiscordConstants.ContentMaxLength);
 
-        if(this.#promptExtension !== null) {
-            switch(this.#promptExtensionType) {
-                case PromptExtensionType.Emoji:
-                    if(this.#featureService.hasFeature(SupportedFeature.ImagesAndText)) {
-                        this.#logger(LogLevel.Info,
-                            `This bot supports both image and text features, so the provided emoji reaction will be converted to a string.`);
+            if (this.#promptExtension !== null) {
+                switch (this.#promptExtensionType) {
+                    case PromptExtensionType.Emoji:
+                        if (this.#featureService.hasFeature(SupportedFeature.ImagesAndText)) {
+                            this.#logger(LogLevel.Info,
+                                `This bot supports both image and text features, so the provided emoji reaction will be converted to a string.`);
 
-                        const exchange = await this.#ollamaClient.sendMessage(`Tell me the name of the following emoji in as few words as possible: ${this.#promptExtension}.`, []);
+                            const exchange = await this.#ollamaClient.sendMessage(`Tell me the name of the following emoji in as few words as possible: ${this.#promptExtension}.`, []);
 
-                        this.#logger(LogLevel.Info, `The LLM responded with ${exchange.response.response} as the converted text.`);
-                        this.#promptExtension = exchange.response.response;
-                    }
-                    break;
+                            this.#logger(LogLevel.Info, `The LLM responded with ${exchange.response.response} as the converted text.`);
+                            this.#promptExtension = exchange.response.response;
+                        }
+                        break;
+                }
+
+                renderRequest.prompt += `, ${this.#promptExtension.trim()}`;
+                content += ` as \`${renderRequest.prompt}\``;
+            } else {
+                renderRequest.refreshSeed();
             }
 
-            renderRequest.prompt += `, ${this.#promptExtension.trim()}`;
-            content += ` as \`${renderRequest.prompt}\``;
-        } else {
-            renderRequest.refreshSeed();
+            const workflows = this.#workflowService.workflows.filter(x =>
+                x.type === WorkflowType.Txt2img
+                || x.type === WorkflowType.Txt2vid);
+
+            const workflow = getRandomArrayEntry(workflows);
+
+            this.#logger(LogLevel.Info, `Using ${workflow.name} as the selected workflow.`);
+
+            // Normalize render request to use settings best for the newly selected
+            // workflow.
+
+            const defaultRequest = this.#workflowService.getWorkflowDefaults(workflow);
+            defaultRequest.prompt = renderRequest.prompt;
+            defaultRequest.seed = renderRequest.seed;
+            renderRequest = defaultRequest;
+
+            const workflowPrompt = this.#workflowService.renderWorkflow(workflow, renderRequest);
+            imagesResponses.push(await this.#comfyUiClient.render(workflowPrompt));
         }
 
-        const workflows = this.#workflowService.workflows.filter(x =>
-            x.type === WorkflowType.Txt2img
-            || x.type === WorkflowType.Txt2vid);
-
-        const workflow = getRandomArrayEntry(workflows);
-
-        this.#logger(LogLevel.Info, `Using ${workflow.name} as the selected workflow.`);
-
-        // Normalize render request to use settings best for the newly selected
-        // workflow.
-
-        const defaultRequest = this.#workflowService.getWorkflowDefaults(workflow);
-        defaultRequest.prompt = renderRequest.prompt;
-        defaultRequest.seed = renderRequest.seed;
-        renderRequest = defaultRequest;
-
-        const workflowPrompt = this.#workflowService.renderWorkflow(workflow, renderRequest);
-        const images = await this.#comfyUiClient.render(workflowPrompt);
+        const imagesResponse = this.#comfyUiReplyService.flattenMultipleImagesResponses(imagesResponses);
 
         await this.#comfyUiReplyService.reply(this.#interaction, {
             request: renderRequest,
-            response: images
+            response: imagesResponse
         }, content);
     }
 
