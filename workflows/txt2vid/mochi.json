@@ -23,10 +23,10 @@
   },
   "5": {
     "inputs": {
-      "width": "{{ width }}",
-      "height": "{{ height }}",
+      "width": "{{{ width }}}",
+      "height": "{{{ height }}}",
       "length": 25,
-      "batch_size": "{{ num }}"
+      "batch_size": "{{{ num }}}"
     },
     "class_type": "EmptyMochiLatentVideo",
     "_meta": {
@@ -35,7 +35,7 @@
   },
   "6": {
     "inputs": {
-      "text": "{{ prompt }}",
+      "text": "{{{ prompt }}}",
       "clip": ["4", 1]
     },
     "class_type": "CLIPTextEncode",
@@ -45,7 +45,7 @@
   },
   "7": {
     "inputs": {
-      "text": "{{ promptNegative }}",
+      "text": "{{{ promptNegative }}}",
       "clip": ["4", 1]
     },
     "class_type": "CLIPTextEncode",
@@ -65,11 +65,11 @@
   },
   "10": {
     "inputs": {
-      "noise_seed": "{{ seed }}",
-      "steps": "{{ steps }}",
-      "cfg": "{{ cfgScale }}",
-      "sampler_name": "{{ sampler }}",
-      "scheduler": "{{ scheduler }}",
+      "noise_seed": "{{{ seed }}}",
+      "steps": "{{{ steps }}}",
+      "cfg": "{{{ cfgScale }}}",
+      "sampler_name": "{{{ sampler }}}",
+      "scheduler": "{{{ scheduler }}}",
       "start_at_step": 0,
       "end_at_step": 10000,
       "var_seed": 0,

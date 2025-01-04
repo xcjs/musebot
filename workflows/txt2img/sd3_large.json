@@ -23,9 +23,9 @@
   },
   "5": {
     "inputs": {
-      "width": "{{ width }}",
-      "height": "{{ height }}",
-      "batch_size": "{{ num }}"
+      "width": "{{{ width }}}",
+      "height": "{{{ height }}}",
+      "batch_size": "{{{ num }}}"
     },
     "class_type": "EmptySD3LatentImage",
     "_meta": {
@@ -34,7 +34,7 @@
   },
   "6": {
     "inputs": {
-      "text": "{{ prompt }}",
+      "text": "{{{ prompt }}}",
       "clip": ["101", 0]
     },
     "class_type": "CLIPTextEncode",
@@ -44,7 +44,7 @@
   },
   "7": {
     "inputs": {
-      "text": "{{ promptNegative }}",
+      "text": "{{{ promptNegative }}}",
       "clip": ["101", 0]
     },
     "class_type": "CLIPTextEncode",
@@ -64,11 +64,11 @@
   },
   "10": {
     "inputs": {
-      "noise_seed": "{{ seed }}",
-      "steps": "{{ steps }}",
-      "cfg": "{{ cfgScale }}",
-      "sampler_name": "{{ sampler }}",
-      "scheduler": "{{ scheduler }}",
+      "noise_seed": "{{{ seed }}}",
+      "steps": "{{{ steps }}}",
+      "cfg": "{{{ cfgScale }}}",
+      "sampler_name": "{{{ sampler }}}",
+      "scheduler": "{{{ scheduler }}}",
       "start_at_step": 0,
       "end_at_step": 10000,
       "var_seed": 0,
