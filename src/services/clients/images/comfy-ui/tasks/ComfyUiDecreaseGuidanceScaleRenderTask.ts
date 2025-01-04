@@ -45,14 +45,14 @@ export class ComfyUiDecreaseGuidanceScaleRenderTask extends BaseTask implements 
     override async process(): Promise<void> {
         this.#logger(LogLevel.Info, 'Processing a ComfyUiDecreaseGuidanceScaleRenderTask...');
 
-        await this.#workflowService.loadWorkflows();
-
         const imageAttachments = this.#replyService.getImageAttachments(this.#interaction);
 
         if (imageAttachments.length == 0) {
             this.#logger(LogLevel.Warning, 'No attachments were found - exiting the task.');
             return;
         }
+
+        await this.#workflowService.loadWorkflows();
 
         let renderRequest: SerializableRenderRequest;
         let cfgScaleValue: number;
