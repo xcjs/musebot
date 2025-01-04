@@ -1,23 +1,28 @@
-import { Client as DiscordClient, Message } from 'discord.js';
+import { Client as DiscordClient, Message, MessageType } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
 import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
+import { TaskQueue } from '../../../../tasks/TaskQueue.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { IPromptRenderTask } from '../../tasks/IPromptRenderTask.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
 import { WorkflowType } from '../enums/WorkflowType.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
+import { ComfyUiJsonRenderTask } from './ComfyUiJsonRenderTask.js';
 
 export class ComfyUiPromptRenderTask extends BaseTask implements IPromptRenderTask {
+    #services: IServiceContainer;
+
     #discordClient: DiscordClient;
     #workflowService: IWorkflowService;
     #comfyUiClient: ComfyUiClient;
     #comfyUiReplyService: ComfyUiReplyService;
     #replyService: IReplyService;
+    #taskQueue: TaskQueue;
 
     #message: Message;
 
@@ -32,6 +37,8 @@ export class ComfyUiPromptRenderTask extends BaseTask implements IPromptRenderTa
         message: Message) {
         super(services);
 
+        this.#services = services;
+
         this.#discordClient = services.discordClient;
         this.#workflowService = services.workflowService;
         this.#comfyUiClient = services.comfyUiClient;
@@ -45,8 +52,16 @@ export class ComfyUiPromptRenderTask extends BaseTask implements IPromptRenderTa
     override async process(): Promise<void> {
         this.#logger(LogLevel.Info, 'Processing a ComfyUiPromptRenderTask...');
 
-        const botMention = this.#message.mentions.members.find(x => x.id === this.#discordClient.user?.id)?.toString() || '';
-        const prompt = this.#message.content.replaceAll(botMention, '').trim();
+        const prompt = this.#message.type === MessageType.Reply
+                    ? `${((await this.#getAllAntecedentPrompts()).join(' '))} ${this.#message.content}`.trim()
+                    : this.#filterBotMentions(this.#message.content).trim();
+
+        if(prompt.charAt(0) === '{') {
+            this.#taskQueue.add(new ComfyUiJsonRenderTask(
+                this.#services,
+                this.#message));
+            return;
+        }
 
         await this.#workflowService.loadWorkflows();
 
@@ -75,5 +90,27 @@ export class ComfyUiPromptRenderTask extends BaseTask implements IPromptRenderTa
         if(this.taskStatus === TaskStatus.Dead) {
             await this.#replyService.replyWithError(this.#message);
         }
+    }
+
+    #filterBotMentions(messageContent: string | null): string {
+        const botMention = this.#message.mentions.members.find(x => x.id === this.#discordClient.user?.id)?.toString() || '';
+        return messageContent.replaceAll(botMention, '').trim();
+    }
+
+    async #getAllAntecedentPrompts(): Promise<Array<string>> {
+        const prompts: Array<string> = [];
+        let currentMessage = this.#message;
+
+        while (currentMessage.reference !== null) {
+            const antecedentMessage = await currentMessage.fetchReference();
+
+            if (antecedentMessage.content !== null && antecedentMessage.content.length > 0) {
+                prompts.push(this.#filterBotMentions(antecedentMessage.content.trim()));
+            }
+
+            currentMessage = antecedentMessage;
+        }
+
+        return prompts.reverse();
     }
 }
