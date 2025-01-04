@@ -108,9 +108,8 @@ export class WorkflowService implements IWorkflowService {
         this.#logger(LogLevel.Info, `Rendering workflow template ${workflow.name}`);
 
         // Filter characters that will break the JSON encoding.
-        renderRequest.prompt = renderRequest.prompt.replaceAll('\\', '\\\\');
-        renderRequest.prompt = renderRequest.prompt.replaceAll('"', '\"');
-        renderRequest.prompt = renderRequest.prompt.replaceAll('\n', '\\n');
+        renderRequest.prompt = JSON.stringify(renderRequest.prompt.substring(1, renderRequest.prompt.length + 1));
+        renderRequest.promptNegative = JSON.stringify(renderRequest.promptNegative.substring(1, renderRequest.promptNegative.length + 1));
 
         const templateString = mustache.default.render(workflow.workflowString, renderRequest);
         return JSON.parse(templateString) as Prompt;
