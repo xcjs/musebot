@@ -93,6 +93,10 @@ export class ComfyUiPromptRenderTask extends BaseTask implements IPromptRenderTa
     }
 
     #filterBotMentions(messageContent: string | null): string {
+        if(messageContent === null) {
+            return '';
+        }
+
         const botMention = this.#message.mentions.members.find(x => x.id === this.#discordClient.user?.id)?.toString() || '';
         return messageContent.replaceAll(botMention, '').trim();
     }
