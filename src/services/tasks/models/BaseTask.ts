@@ -36,7 +36,7 @@ export abstract class BaseTask {
             this.#taskStatus = taskStatus;
         }
 
-        this.#logger(LogLevel.Info, `Setting taskStatus of task ${this.#createdTime} to ${taskStatus}.`);
+        this.#logger(LogLevel.Info, `Setting taskStatus of task ${this.id} to ${taskStatus}.`);
     }
 
     get taskChannel(): string {
