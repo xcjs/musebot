@@ -36,7 +36,8 @@ export abstract class ComfyUiBaseTask extends BaseTask {
     override async postProcess(): Promise<void> {
         if(this.taskStatus === TaskStatus.Successful) {
             const taskDurationSeconds = this.#dateToUnixSeconds(new Date()) - this.#dateToUnixSeconds(this.createdTime);
-            const newTimeoutMs = taskDurationSeconds * 2 * 1000;
+            const currentTimeoutMs = this.#environmentSettings.taskTimeoutMilliseconds;
+            const newTimeoutMs = Math.floor(currentTimeoutMs + (taskDurationSeconds * 2 * 1000) / 2);
 
             this.#environmentSettings.taskTimeoutMilliseconds = newTimeoutMs;
 
