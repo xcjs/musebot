@@ -12,7 +12,7 @@ export interface IEnvironmentSettings {
 
     maxTaskAttempts: number;
     taskRetryDelayMilliseconds: number;
-    taskTimeoutSeconds: number;
+    taskTimeoutMilliseconds: number;
 
     discordToken: string;
     discordChannels: Array<string>;

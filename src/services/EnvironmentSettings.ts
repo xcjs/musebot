@@ -19,7 +19,11 @@ export class EnvironmentSettings implements IEnvironmentSettings {
 
     maxTaskAttempts: number = 10;
     taskRetryDelayMilliseconds: number = 1000;
-    taskTimeoutSeconds: number = 1800;
+
+    #taskTimeoutSeconds: number = 1800;
+    get taskTimeoutMilliseconds(): number {
+        return this.#taskTimeoutSeconds * 1000;
+    }
 
     discordToken: string;
     discordChannels: Array<string> = [];
@@ -58,6 +62,7 @@ export class EnvironmentSettings implements IEnvironmentSettings {
 
         this.maxTaskAttempts = process.env.MUSEBOT_TASK_QUEUE_MAX_ATTEMPTS ? parseInt(process.env.MUSEBOT_TASK_QUEUE_MAX_ATTEMPTS) : this.maxTaskAttempts;
         this.taskRetryDelayMilliseconds = process.env.MUSEBOT_TASK_QUEUE_RETRY_DELAY_MS ? parseInt(process.env.MUSEBOT_TASK_QUEUE_RETRY_DELAY_MS) : this.taskRetryDelayMilliseconds;
+        this.#taskTimeoutSeconds = process.env.MUSEBOT_TASK_QUEUE_TASK_TIMEOUT_SECONDS ? parseInt(process.env.MUSEBOT_TASK_QUEUE_TASK_TIMEOUT_SECONDS) : this.#taskTimeoutSeconds;
 
         this.discordToken = process.env.MUSEBOT_DISCORD_TOKEN?.trim() || '';
 
@@ -122,7 +127,7 @@ export class EnvironmentSettings implements IEnvironmentSettings {
 
         this.#logger(LogLevel.Info, `MUSEBOT_TASK_QUEUE_MAX_ATTEMPTS`, this.maxTaskAttempts);
         this.#logger(LogLevel.Info, `MUSEBOT_TASK_QUEUE_RETRY_DELAY_MS`, this.taskRetryDelayMilliseconds);
-        this.#logger(LogLevel.Info, `MUSEBOT_TASK_QUEUE_TASK_TIMEOUT_SECONDS`, this.taskTimeoutSeconds);
+        this.#logger(LogLevel.Info, `MUSEBOT_TASK_QUEUE_TASK_TIMEOUT_SECONDS`, this.#taskTimeoutSeconds);
 
         this.#logger(LogLevel.Info, `MUSEBOT_FUNCTION: ${this.botFunction}`);
 
