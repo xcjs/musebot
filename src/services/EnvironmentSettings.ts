@@ -17,8 +17,9 @@ export class EnvironmentSettings implements IEnvironmentSettings {
 
     botFunction: BotFunction;
 
-    maxTaskAttempts: number;
-    taskRetryDelayMilliseconds: number;
+    maxTaskAttempts: number = 10;
+    taskRetryDelayMilliseconds: number = 1000;
+    taskTimeoutSeconds: number = 1800;
 
     discordToken: string;
     discordChannels: Array<string> = [];
@@ -55,8 +56,8 @@ export class EnvironmentSettings implements IEnvironmentSettings {
 
         this.botFunction = process.env.MUSEBOT_FUNCTION.trim() as BotFunction;
 
-        this.maxTaskAttempts = process.env.MUSEBOT_TASK_QUEUE_MAX_ATTEMPTS ? parseInt(process.env.MUSEBOT_TASK_QUEUE_MAX_ATTEMPTS) : 10;
-        this.taskRetryDelayMilliseconds = process.env.MUSEBOT_TASK_QUEUE_RETRY_DELAY_MS ? parseInt(process.env.MUSEBOT_TASK_QUEUE_RETRY_DELAY_MS) : 1000;
+        this.maxTaskAttempts = process.env.MUSEBOT_TASK_QUEUE_MAX_ATTEMPTS ? parseInt(process.env.MUSEBOT_TASK_QUEUE_MAX_ATTEMPTS) : this.maxTaskAttempts;
+        this.taskRetryDelayMilliseconds = process.env.MUSEBOT_TASK_QUEUE_RETRY_DELAY_MS ? parseInt(process.env.MUSEBOT_TASK_QUEUE_RETRY_DELAY_MS) : this.taskRetryDelayMilliseconds;
 
         this.discordToken = process.env.MUSEBOT_DISCORD_TOKEN?.trim() || '';
 
@@ -116,17 +117,29 @@ export class EnvironmentSettings implements IEnvironmentSettings {
     #logConfiguration(): void {
         this.#logger(LogLevel.Info, `Package Name: ${this.packageName}`);
         this.#logger(LogLevel.Info, `Package Version: ${this.version}`);
+
         this.#logger(LogLevel.Info, `NODE_ENV: ${this.nodeEnvironment}`);
+
+        this.#logger(LogLevel.Info, `MUSEBOT_TASK_QUEUE_MAX_ATTEMPTS`, this.maxTaskAttempts);
+        this.#logger(LogLevel.Info, `MUSEBOT_TASK_QUEUE_RETRY_DELAY_MS`, this.taskRetryDelayMilliseconds);
+        this.#logger(LogLevel.Info, `MUSEBOT_TASK_QUEUE_TASK_TIMEOUT_SECONDS`, this.taskTimeoutSeconds);
+
         this.#logger(LogLevel.Info, `MUSEBOT_FUNCTION: ${this.botFunction}`);
+
         this.#logger(LogLevel.Info, `MUSEBOT_DISCORD_CHANNELS: ${this.discordChannels.join(', ')}`);
         this.#logger(LogLevel.Info, `MUSEBOT_REQUIRES_MENTION: ${this.botRequiresMention}`);
         this.#logger(LogLevel.Info, `MUSEBOT_RESPONSE_RATE: ${this.botResponseRate}`);
+        this.#logger(LogLevel.Info, `MUSEBOT_ERROR_MESSAGE: ${this.errorMessage}`);
+
         this.#logger(LogLevel.Info, `MUSEBOT_STABLE_DIFFUSION_API_TYPE: ${this.stableDiffusionApiType}`);
         this.#logger(LogLevel.Info, `MUSEBOT_STABLE_DIFFUSION_HOSTS: ${this.stableDiffusionHosts.join(', ')}`);
         this.#logger(LogLevel.Info, `MUSEBOT_STABLE_DIFFUSION_MODELS: ${this.stableDiffusionModels.join(', ')}`);
+
         this.#logger(LogLevel.Info, `MUSEBOT_OLLAMA_HOSTS: ${this.ollamaHosts.join(', ')}`);
         this.#logger(LogLevel.Info, `MUSEBOT_OLLAMA_MODELS: ${this.ollamaModels.join(', ')}`);
         this.#logger(LogLevel.Info, `MUSEBOT_OLLAMA_SYSTEM_PROMPT: ${this.ollamaSystemPrompt}`);
+        this.#logger(LogLevel.Info, `MUSEBOT_OLLAMA_STREAMS_RESPONSE: ${this.ollamaStreamsResponse}`);
+
         this.#logger(LogLevel.Info, `MUSEBOT_STABLE_DIFFUSION_OLLAMA_PROMPTS: ${this.stableDiffusionOllamaPrompts.join(' | ')}`);
     }
 
@@ -136,7 +149,7 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         }
 
         if(this.botFunction === BotFunction.Images && this.stableDiffusionHosts.length === 0) {
-            throw new Error(`MUSEBOT_EASY_DIFFUSION_HOSTS requires at least one value.`);
+            throw new Error(`MUSEBOT_STABLE_DIFFUSION_HOSTS requires at least one value.`);
         }
 
         if(this.stableDiffusionModels.length === 0) {
