@@ -4,7 +4,6 @@ import { Logger, LogLevel } from 'meklog';
 import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
-import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { TaskQueue } from '../../../../tasks/TaskQueue.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
@@ -12,9 +11,10 @@ import { IPromptRenderTask } from '../../tasks/IPromptRenderTask.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
 import { WorkflowType } from '../enums/WorkflowType.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
+import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 import { ComfyUiJsonRenderTask } from './ComfyUiJsonRenderTask.js';
 
-export class ComfyUiPromptRenderTask extends BaseTask implements IPromptRenderTask {
+export class ComfyUiPromptRenderTask extends ComfyUiBaseTask implements IPromptRenderTask {
     #services: IServiceContainer;
 
     #discordClient: DiscordClient;
@@ -50,6 +50,8 @@ export class ComfyUiPromptRenderTask extends BaseTask implements IPromptRenderTa
     }
 
     override async process(): Promise<void> {
+        await super.process();
+
         this.#logger(LogLevel.Info, 'Processing a ComfyUiPromptRenderTask...');
 
         const prompt = this.#message.type === MessageType.Reply
@@ -87,6 +89,8 @@ export class ComfyUiPromptRenderTask extends BaseTask implements IPromptRenderTa
     }
 
     override async postProcess(): Promise<void> {
+        await super.postProcess();
+
         if(this.taskStatus === TaskStatus.Dead) {
             await this.#replyService.replyWithError(this.#message);
         }

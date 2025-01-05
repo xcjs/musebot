@@ -49,6 +49,12 @@ export class ComfyUiClient {
     }
 
     async disconnect(): Promise<void> {
-        await this.#client.disconnect();
+        try {
+            await this.#client.interrupt();
+        } catch {
+
+        } finally {
+            await this.#client.disconnect();
+        }
     }
 }
