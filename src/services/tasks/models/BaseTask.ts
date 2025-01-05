@@ -1,3 +1,5 @@
+import { randomUUID, UUID } from 'node:crypto';
+
 import { Logger, LogLevel } from 'meklog';
 
 import { IEnvironmentSettings } from '../../IEnvironmentSettings.js';
@@ -5,26 +7,12 @@ import { IServiceContainer } from '../../IServiceContainer.js';
 import { TaskStatus } from '../enums/TaskStatus.js';
 
 export abstract class BaseTask {
-    #environmentSettings: IEnvironmentSettings;
-    #logger;
-
-    #taskStatus: TaskStatus = TaskStatus.Idle;
-    #numAttempts = 0;
-    #maxAttempts = 0;
-    #createdTime: Date;
-    #delayUntil: Date;
-
-    constructor(services: IServiceContainer) {
-        this.#environmentSettings = services.environmentSettings;
-
-        this.#logger = new Logger(this.#environmentSettings.isProduction, 'BaseTask');
-
-        this.#maxAttempts = services.environmentSettings.maxTaskAttempts;
-        this.#createdTime = new Date();
+    get id(): UUID {
+        return this.#id;
     }
 
     get taskStatus(): TaskStatus {
-        if(this.#taskStatus === TaskStatus.Delayed
+        if (this.#taskStatus === TaskStatus.Delayed
             && Date.now() >= this.#delayUntil.getTime()) {
             this.#taskStatus = TaskStatus.Failed;
         }
@@ -33,7 +21,7 @@ export abstract class BaseTask {
     }
 
     set taskStatus(taskStatus: TaskStatus) {
-        if(taskStatus === TaskStatus.Failed) {
+        if (taskStatus === TaskStatus.Failed) {
             this.#numAttempts++;
 
             if (this.#numAttempts >= this.#maxAttempts) {
@@ -42,7 +30,7 @@ export abstract class BaseTask {
                 this.#taskStatus = TaskStatus.Delayed;
                 this.#delayUntil = new Date(Date.now() + this.#environmentSettings.taskRetryDelayMilliseconds);
 
-                this.#logger(LogLevel.Info, `Delaying task ${this.#createdTime} until ${this.#delayUntil}.`)
+                this.#logger(LogLevel.Info, `Delaying task ${this.#id} until ${this.#delayUntil}.`)
             }
         } else {
             this.#taskStatus = taskStatus;
@@ -64,6 +52,26 @@ export abstract class BaseTask {
     }
 
     set onSuccess(callback: (context: Array<number>) => void) { }
+
+    #environmentSettings: IEnvironmentSettings;
+    #logger;
+
+    #id: UUID;
+    #taskStatus: TaskStatus = TaskStatus.Idle;
+    #numAttempts = 0;
+    #maxAttempts = 0;
+    #createdTime: Date;
+    #delayUntil: Date;
+
+    constructor(services: IServiceContainer) {
+        this.#environmentSettings = services.environmentSettings;
+
+        this.#logger = new Logger(this.#environmentSettings.isProduction, 'BaseTask');
+
+        this.#id = randomUUID();
+        this.#createdTime = new Date();
+        this.#maxAttempts = services.environmentSettings.maxTaskAttempts;
+    }
 
     process(): Promise<void> {
         return Promise.reject('The base process() method must be overridden.');
