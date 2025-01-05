@@ -51,10 +51,12 @@ export class TaskQueue implements ITaskQueue {
         let tasks = this.#getNextTasks();
 
         while(tasks.length > 0) {
-            this.#logger(LogLevel.Info, `Processing the task queue with ${this.#channels.length} channel(s) and`
-                + ` ${this.#channels.map((channel) => channel.queue.length)
-                    .reduce((accumulator, value) => accumulator + value)}`
-                + ` task(s).`);
+            const numChannels = this.#channels.length;
+            const numTasks = this.#channels.map((channel) => channel.queue.length)
+                .reduce((accumulator, value) => accumulator + value);
+
+            this.#logger(LogLevel.Info,
+                `Processing the task queue with ${numChannels} channel(s) and ${numTasks} task(s).`);
 
             try {
                 const processPromises = tasks
