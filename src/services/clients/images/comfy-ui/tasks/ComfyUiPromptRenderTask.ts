@@ -53,8 +53,8 @@ export class ComfyUiPromptRenderTask extends BaseTask implements IPromptRenderTa
         this.#logger(LogLevel.Info, 'Processing a ComfyUiPromptRenderTask...');
 
         const prompt = this.#message.type === MessageType.Reply
-                    ? `${((await this.#getAllAntecedentPrompts()).join(' '))} ${this.#message.content}`.trim()
-                    : this.#filterBotMentions(this.#message.content).trim();
+            ? `${((await this.#getAllAntecedentPrompts()).join(' '))} ${this.#message.content}`.trim()
+            : this.#filterBotMentions(this.#message.content).trim();
 
         if(prompt.charAt(0) === '{') {
             this.#taskQueue.add(new ComfyUiJsonRenderTask(
