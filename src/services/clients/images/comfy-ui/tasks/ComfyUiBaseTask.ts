@@ -24,6 +24,8 @@ export abstract class ComfyUiBaseTask extends BaseTask {
     }
 
     override async process(): Promise<void> {
+        await super.process();
+
         const timeoutMs = this.#environmentSettings.taskTimeoutMilliseconds;
 
         this.#logger(LogLevel.Info, `Registering task timeout of ${timeoutMs}ms.`);
@@ -35,8 +37,10 @@ export abstract class ComfyUiBaseTask extends BaseTask {
     }
 
     override async postProcess(): Promise<void> {
+        await super.postProcess();
+
         if(this.taskStatus === TaskStatus.Successful) {
-            const taskDurationSeconds = this.#dateToUnixSeconds(new Date()) - this.#dateToUnixSeconds(this.createdTime);
+            const taskDurationSeconds = this.#dateToUnixSeconds(new Date()) - this.#dateToUnixSeconds(this.startedTime);
             const currentTimeoutMs = this.#environmentSettings.taskTimeoutMilliseconds;
             const newTimeoutMs = Math.floor(currentTimeoutMs + (taskDurationSeconds * 2 * 1000) / 2);
 

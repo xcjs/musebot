@@ -51,6 +51,10 @@ export abstract class BaseTask {
         return this.#createdTime;
     }
 
+    get startedTime(): Date {
+        return this.#startedTime;
+    }
+
     set onSuccess(callback: (context: Array<number>) => void) { }
 
     #environmentSettings: IEnvironmentSettings;
@@ -61,6 +65,7 @@ export abstract class BaseTask {
     #numAttempts = 0;
     #maxAttempts = 0;
     #createdTime: Date;
+    #startedTime: Date;
     #delayUntil: Date;
 
     constructor(services: IServiceContainer) {
@@ -73,11 +78,13 @@ export abstract class BaseTask {
         this.#maxAttempts = services.environmentSettings.maxTaskAttempts;
     }
 
-    process(): Promise<void> {
-        return Promise.reject('The base process() method must be overridden.');
+    async process(): Promise<void> {
+        this.#startedTime = new Date();
+
+        this.#logger(LogLevel.Info, `Starting task ${this.#id} at ${this.startedTime}`);
     }
 
-    postProcess(): Promise<void> {
-        return Promise.reject('The base postProcess() method must be overridden.');
+    async postProcess(): Promise<void> {
+
     }
 }
