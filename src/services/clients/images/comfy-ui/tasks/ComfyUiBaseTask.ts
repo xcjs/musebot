@@ -30,6 +30,7 @@ export abstract class ComfyUiBaseTask extends BaseTask {
 
         setTimeout(() => {
             this.taskStatus = TaskStatus.Failed;
+            throw(`Task ${this.id} has taken too long and has been marked as failed.`);
         }, timeoutMs);
     }
 
