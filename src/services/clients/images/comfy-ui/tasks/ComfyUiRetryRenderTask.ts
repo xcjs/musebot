@@ -77,8 +77,6 @@ export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRen
             return;
         }
 
-        await this.#workflowService.loadWorkflows();
-
         let renderRequest: SerializableRenderRequest = null;
         let content: string;
         const imagesResponses: Array<ImagesResponse> = [];

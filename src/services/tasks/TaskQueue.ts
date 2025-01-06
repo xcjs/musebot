@@ -68,6 +68,20 @@ export class TaskQueue implements ITaskQueue {
                         return x.process();
                     });
 
+                setTimeout(() => {
+                    const stuckTasks = tasks.filter(x => x.taskStatus === TaskStatus.Busy);
+
+                    stuckTasks.forEach((stuckTask) => {
+                        this.#logger(LogLevel.Warning, `Task ${stuckTask.id} appears to be stuck - resetting the task.` );
+                        stuckTask.taskStatus = TaskStatus.Idle;
+                    });
+
+                    if(stuckTasks.length > 0) {
+                        this.#logger(LogLevel.Warning, 'Recursively restarting the task queue...');
+                        this.#processQueue();
+                    }
+                }, this.#environmentSettings.taskTimeoutMilliseconds);
+
                 const processPromisesResults = await Promise.allSettled(processPromises);
 
                 const postProcessingPromises = processPromisesResults.map((promise, i) => {
