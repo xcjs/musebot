@@ -25,10 +25,6 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         return this.#taskTimeoutSeconds * 1000;
     }
 
-    set taskTimeoutMilliseconds(timeout: number) {
-        this.#taskTimeoutSeconds = Math.floor(timeout / 1000);
-    }
-
     discordToken: string;
     discordChannels: Array<string> = [];
 
