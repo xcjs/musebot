@@ -52,8 +52,6 @@ export class ComfyUiUpscaleRenderTask extends ComfyUiBaseTask implements IUpscal
 
         this.#logger(LogLevel.Info, 'Processing a ComfyUiUpscaleRenderTask...');
 
-        await this.#workflowService.loadWorkflows();
-
         const imageAttachments = this.#replyService.getImageAttachments(this.#interaction);
         const imagesResponses: Array<ImagesResponse> = [];
 

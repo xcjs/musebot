@@ -65,8 +65,6 @@ export class ComfyUiPromptRenderTask extends ComfyUiBaseTask implements IPromptR
             return;
         }
 
-        await this.#workflowService.loadWorkflows();
-
         const workflows = this.#workflowService.workflows.filter(x =>
             x.type === WorkflowType.Txt2img
             || x.type === WorkflowType.Txt2vid);

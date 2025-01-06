@@ -53,8 +53,6 @@ export class ComfyUiRandomRenderTask extends ComfyUiBaseTask implements IRandomR
     override async process(): Promise<void> {
         this.#logger(LogLevel.Info, 'Processing a ComfyUiRandomRenderTask...');
 
-        await this.#workflowService.loadWorkflows();
-
         const workflows = this.#workflowService.workflows.filter(x =>
             x.type === WorkflowType.Txt2img
             || x.type === WorkflowType.Txt2vid);

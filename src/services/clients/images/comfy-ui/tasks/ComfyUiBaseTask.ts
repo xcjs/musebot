@@ -5,11 +5,13 @@ import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
+import { IWorkflowService } from '../services/IWorkflowService.js';
 
 export abstract class ComfyUiBaseTask extends BaseTask {
     comfyUiClient: ComfyUiClient;
 
     #environmentSettings: IEnvironmentSettings;
+    #workflowService: IWorkflowService;
 
     #logger;
 
@@ -19,21 +21,14 @@ export abstract class ComfyUiBaseTask extends BaseTask {
         this.comfyUiClient = services.comfyUiClient;
 
         this.#environmentSettings = services.environmentSettings;
+        this.#workflowService.loadWorkflows();
 
         this.#logger = new Logger(this.#environmentSettings.isProduction, 'ComfyUiBaseTask');
     }
 
     override async process(): Promise<void> {
         await super.process();
-
-        const timeoutMs = this.#environmentSettings.taskTimeoutMilliseconds;
-
-        this.#logger(LogLevel.Info, `Registering task timeout of ${timeoutMs}ms.`);
-
-        setTimeout(() => {
-            this.taskStatus = TaskStatus.Failed;
-            throw(`Task ${this.id} has taken too long and has been marked as failed.`);
-        }, timeoutMs);
+        await this.#workflowService.loadWorkflows();
     }
 
     override async postProcess(): Promise<void> {

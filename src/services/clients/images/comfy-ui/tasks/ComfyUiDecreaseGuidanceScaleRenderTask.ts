@@ -54,8 +54,6 @@ export class ComfyUiDecreaseGuidanceScaleRenderTask extends ComfyUiBaseTask impl
             return;
         }
 
-        await this.#workflowService.loadWorkflows();
-
         let renderRequest: SerializableRenderRequest;
         let cfgScaleValue: number;
         const imagesResponses: Array<ImagesResponse> = [];

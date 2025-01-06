@@ -58,8 +58,6 @@ export class ComfyUiAttachRenderTask extends ComfyUiBaseTask implements IAttachR
 
         this.#logger(LogLevel.Info, 'Processing a ComfyUiAttachRenderTask...');
 
-        await this.#workflowService.loadWorkflows();
-
         const workflows = this.#workflowService.workflows.filter(x =>
             x.type === WorkflowType.Txt2img
             || x.type === WorkflowType.Txt2vid);
