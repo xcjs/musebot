@@ -42,7 +42,9 @@ export class TaskQueue implements ITaskQueue {
             taskChannel = this.#channels.find(x => x.name === task.taskChannel);
         }
 
-        taskChannel.queue.push(task);
+        if(taskChannel.queue.find(x => x.id === task.id) === undefined) {
+            taskChannel.queue.push(task);
+        }
 
         this.#processQueue();
     }
