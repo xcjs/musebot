@@ -55,10 +55,15 @@ export class TaskChannel {
             .sort(this.#compareByDate);
 
         const nonFailedTasks = incompleteTasks.filter(
-            x => x.taskStatus !== TaskStatus.Failed)
+            x => x.taskStatus !== TaskStatus.Failed && x.taskStatus !== TaskStatus.Delayed)
             .sort(this.#compareByDate);
 
-        this.#queue = nonFailedTasks.concat(failedTasks);
+        this.#queue = [];
+        this.#queue = nonFailedTasks.concat(failedTasks).filter((task) => {
+            if(this.#queue.find(x => x.id === task.id) === undefined) {
+                return task;
+            }
+        });
     }
 
     #compareByDate(a: BaseTask, b: BaseTask): number {
