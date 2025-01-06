@@ -25,7 +25,7 @@
     "inputs": {
       "width": "{{{ width }}}",
       "height": "{{{ height }}}",
-      "length": 25,
+      "length": 19,
       "batch_size": "{{{ num }}}"
     },
     "class_type": "EmptyMochiLatentVideo",
