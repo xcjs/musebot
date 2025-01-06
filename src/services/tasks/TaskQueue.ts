@@ -31,7 +31,7 @@ export class TaskQueue implements ITaskQueue {
     }
 
     async add(task: BaseTask): Promise<void> {
-        this.#logger(LogLevel.Info, `Adding a task to the ${task.taskChannel} queue.`);
+        this.#logger(LogLevel.Info, `Adding task ${task.id} to the ${task.taskChannel} queue.`);
 
         let taskChannel: TaskChannel;
 
@@ -42,7 +42,9 @@ export class TaskQueue implements ITaskQueue {
             taskChannel = this.#channels.find(x => x.name === task.taskChannel);
         }
 
-        taskChannel.queue.push(task);
+        if(taskChannel.queue.find(x => x.id === task.id) === undefined) {
+            taskChannel.queue.push(task);
+        }
 
         this.#processQueue();
     }
@@ -51,10 +53,12 @@ export class TaskQueue implements ITaskQueue {
         let tasks = this.#getNextTasks();
 
         while(tasks.length > 0) {
-            this.#logger(LogLevel.Info, `Processing the task queue with ${this.#channels.length} channel(s) and`
-                + ` ${this.#channels.map((channel) => channel.queue.length)
-                    .reduce((previousValue, currentValue) => previousValue + currentValue)}`
-                + ` task(s).`);
+            const numChannels = this.#channels.length;
+            const numTasks = this.#channels.map((channel) => channel.queue.length)
+                .reduce((accumulator, value) => accumulator + value);
+
+            this.#logger(LogLevel.Info,
+                `Processing the task queue with ${numChannels} channel(s) and ${numTasks} task(s).`);
 
             try {
                 const processPromises = tasks
@@ -76,7 +80,7 @@ export class TaskQueue implements ITaskQueue {
 
                     if(promise.status === PromisedSettledResultStatus.Rejected) {
                         task.taskStatus = TaskStatus.Failed;
-                        this.#logger(LogLevel.Error, `A task was rejected ${task.numAttempts} time(s): ${promise.reason}`);
+                        this.#logger(LogLevel.Error, `Task ${task.id} was rejected ${task.numAttempts} time(s): ${promise.reason}`);
 
                         if(task.numAttempts === this.#environmentSettings.maxTaskAttempts) {
                             return task.postProcess();
@@ -101,6 +105,10 @@ export class TaskQueue implements ITaskQueue {
         const tasks = this.#channels
             .filter(channel => channel.queue.length > 0 && !channel.isActive)
             .map(channel => channel.queue[0]);
+
+        tasks.forEach((task) => {
+            this.#logger(LogLevel.Info, `Adding task ${task.id} to the queue from ${task.taskChannel}`);
+        });
 
         this.#isActive = this.#channels.filter(channel => channel.hasTasks).length > 0;
 

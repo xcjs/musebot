@@ -5,15 +5,15 @@ import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.j
 import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
-import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { IAttachRenderTask } from '../../tasks/IAttachRenderTask.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
 import { WorkflowType } from '../enums/WorkflowType.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
+import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 
-export class ComfyUiAttachRenderTask extends BaseTask implements IAttachRenderTask {
+export class ComfyUiAttachRenderTask extends ComfyUiBaseTask implements IAttachRenderTask {
     #environmentSettings: IEnvironmentSettings;
     #workflowService: IWorkflowService;
     #comfyUiClient: ComfyUiClient;
@@ -54,6 +54,8 @@ export class ComfyUiAttachRenderTask extends BaseTask implements IAttachRenderTa
     }
 
     override async process(): Promise<void> {
+        await super.process();
+
         this.#logger(LogLevel.Info, 'Processing a ComfyUiAttachRenderTask...');
 
         await this.#workflowService.loadWorkflows();
@@ -86,6 +88,8 @@ export class ComfyUiAttachRenderTask extends BaseTask implements IAttachRenderTa
     }
 
     override async postProcess(): Promise<void> {
+        await super.postProcess();
+
         if(this.taskStatus === TaskStatus.Dead) {
             await this.#replyService.replyWithError(this.#interaction);
         }

@@ -47,4 +47,14 @@ export class ComfyUiClient {
 
         return images;
     }
+
+    async disconnect(): Promise<void> {
+        try {
+            await this.#client.interrupt();
+        } catch {
+
+        } finally {
+            await this.#client.disconnect();
+        }
+    }
 }

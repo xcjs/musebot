@@ -5,15 +5,15 @@ import { Logger, LogLevel } from 'meklog';
 import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
-import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 import { IDecreaseGuidanceScaleRenderTask } from '../../tasks/IDecreaseGuidanceScaleRenderTask.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
+import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 
-export class ComfyUiDecreaseGuidanceScaleRenderTask extends BaseTask implements IDecreaseGuidanceScaleRenderTask {
+export class ComfyUiDecreaseGuidanceScaleRenderTask extends ComfyUiBaseTask implements IDecreaseGuidanceScaleRenderTask {
     #environmentSettings: IEnvironmentSettings;
     #workflowService: IWorkflowService;
     #comfyUiClient: ComfyUiClient;
@@ -43,6 +43,8 @@ export class ComfyUiDecreaseGuidanceScaleRenderTask extends BaseTask implements 
     }
 
     override async process(): Promise<void> {
+        await super.process();
+
         this.#logger(LogLevel.Info, 'Processing a ComfyUiDecreaseGuidanceScaleRenderTask...');
 
         const imageAttachments = this.#replyService.getImageAttachments(this.#interaction);
@@ -84,6 +86,8 @@ export class ComfyUiDecreaseGuidanceScaleRenderTask extends BaseTask implements 
     }
 
     override async postProcess(): Promise<void> {
+        await super.postProcess();
+
         if (this.taskStatus === TaskStatus.Dead) {
             await this.#replyService.replyWithError(this.#interaction);
         }

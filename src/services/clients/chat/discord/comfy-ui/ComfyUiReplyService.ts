@@ -8,6 +8,7 @@ import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { ComfyUiClient } from '../../../images/comfy-ui/ComfyUiClient.js';
 import { SerializableRenderRequest } from '../../../images/stable-diffusion/models/SerializableRenderRequest.js';
+import { IReplyService } from '../../IReplyService.js';
 import { StatefulImageGenerationActionRows } from '../components/buttonRows/StatefulImageGenerationActionRows.js';
 import { StatelessImageGenerationActionRow } from '../components/buttonRows/StatelessImageGenerationActionRow.js';
 import { DiscordConstants } from '../enums/DiscordConstants.js';
@@ -17,6 +18,7 @@ export class ComfyUiReplyService {
 
     #environmentSettings: IEnvironmentSettings;
     #comfyUiClient: ComfyUiClient;
+    #replyService: IReplyService;
 
     #logger;
 
@@ -29,6 +31,7 @@ export class ComfyUiReplyService {
 
         this.#environmentSettings = services.environmentSettings;
         this.#comfyUiClient = services.comfyUiClient;
+        this.#replyService = services.replyService;
 
         this.#logger = new Logger(this.#environmentSettings.isProduction, 'ComfyUiReplyService');
     }
@@ -50,7 +53,12 @@ export class ComfyUiReplyService {
 
         this.#logger(LogLevel.Info, `Attaching render(s):`, description);
 
-        for(const imageResponse of Object.values(renderExchange.response)) {
+        if (Object.values(renderExchange.response).length === 0) {
+            this.#logger(LogLevel.Error, 'A reply was created with no attachments.');
+            return await this.#replyService.replyWithError(interaction);
+        }
+
+        for (const imageResponse of Object.values(renderExchange.response)) {
             for (const imageContainer of imageResponse) {
                 const image = Buffer.from(await imageContainer.blob.arrayBuffer());
                 const filename = this.getFileNameFromPrompt(renderExchange.request);
