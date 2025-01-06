@@ -129,9 +129,9 @@ export class EnvironmentSettings implements IEnvironmentSettings {
 
         this.#logger(LogLevel.Info, `NODE_ENV: ${this.nodeEnvironment}`);
 
-        this.#logger(LogLevel.Info, `MUSEBOT_TASK_QUEUE_MAX_ATTEMPTS`, this.maxTaskAttempts);
-        this.#logger(LogLevel.Info, `MUSEBOT_TASK_QUEUE_RETRY_DELAY_MS`, this.taskRetryDelayMilliseconds);
-        this.#logger(LogLevel.Info, `MUSEBOT_TASK_QUEUE_TASK_TIMEOUT_SECONDS`, this.#taskTimeoutSeconds);
+        this.#logger(LogLevel.Info, `MUSEBOT_TASK_QUEUE_MAX_ATTEMPTS ${this.maxTaskAttempts}`);
+        this.#logger(LogLevel.Info, `MUSEBOT_TASK_QUEUE_RETRY_DELAY_MS: ${this.taskRetryDelayMilliseconds}`);
+        this.#logger(LogLevel.Info, `MUSEBOT_TASK_QUEUE_TASK_TIMEOUT_SECONDS: ${this.#taskTimeoutSeconds}`);
 
         this.#logger(LogLevel.Info, `MUSEBOT_FUNCTION: ${this.botFunction}`);
 
