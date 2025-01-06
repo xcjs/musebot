@@ -5,14 +5,14 @@ import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
-import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { OllamaClient } from '../../../text/ollama/OllamaClient.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 import { IExpandPromptTask } from '../../tasks/IExpandPromptTask.js';
 import { ComfyUiAttachRenderTask } from './ComfyUiAttachRenderTask.js';
+import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 
-export class ComfyUiExpandPromptTask extends BaseTask implements IExpandPromptTask {
+export class ComfyUiExpandPromptTask extends ComfyUiBaseTask implements IExpandPromptTask {
     #services: IServiceContainer;
 
     #environmentSettings: IEnvironmentSettings;
@@ -46,6 +46,8 @@ export class ComfyUiExpandPromptTask extends BaseTask implements IExpandPromptTa
     }
 
     override async process(): Promise<void> {
+        await super.process();
+
         this.#logger(LogLevel.Info, 'Processing a ComfyUiExpandPromptTask...');
 
         const imageAttachments = this.#replyService.getImageAttachments(this.#interaction);
@@ -73,6 +75,8 @@ export class ComfyUiExpandPromptTask extends BaseTask implements IExpandPromptTa
     }
 
     override async postProcess(): Promise<void> {
+        await super.postProcess();
+
         if (this.taskStatus === TaskStatus.Dead) {
             await this.#replyService.replyWithError(this.#interaction);
         }

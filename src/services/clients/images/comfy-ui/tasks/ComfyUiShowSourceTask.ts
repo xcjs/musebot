@@ -5,13 +5,13 @@ import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
 import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
-import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 import { IShowSourceTask } from '../../tasks/IShowSourceTask.js';
+import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 
-export class ComfyUiShowSourceTask extends BaseTask implements IShowSourceTask {
+export class ComfyUiShowSourceTask extends ComfyUiBaseTask implements IShowSourceTask {
     #environmentSettings: IEnvironmentSettings;
     #comfyUiReplyService: ComfyUiReplyService;
     #replyService: IReplyService;
@@ -39,6 +39,8 @@ export class ComfyUiShowSourceTask extends BaseTask implements IShowSourceTask {
     }
 
     override async process(): Promise<void> {
+        await super.process();
+
         this.#logger(LogLevel.Info, 'Processing a ComfyUiShowSourceTask...');
 
         const imageAttachments = this.#replyService.getImageAttachments(this.#interaction);
@@ -68,6 +70,8 @@ export class ComfyUiShowSourceTask extends BaseTask implements IShowSourceTask {
     }
 
     override async postProcess(): Promise<void> {
+        await super.postProcess();
+
         if (this.taskStatus === TaskStatus.Dead) {
             await this.#replyService.replyWithError(this.#interaction);
         }

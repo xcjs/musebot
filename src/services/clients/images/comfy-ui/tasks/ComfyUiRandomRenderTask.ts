@@ -8,7 +8,6 @@ import { wrapText } from '../../../../../utilities/string-utilities.js';
 import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
-import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { OllamaClient } from '../../../text/ollama/OllamaClient.js';
@@ -16,8 +15,9 @@ import { IRandomRenderTask } from '../../tasks/IRandomRenderTask.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
 import { WorkflowType } from '../enums/WorkflowType.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
+import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 
-export class ComfyUiRandomRenderTask extends BaseTask implements IRandomRenderTask {
+export class ComfyUiRandomRenderTask extends ComfyUiBaseTask implements IRandomRenderTask {
     #services: IServiceContainer;
 
     #environmentSettings: IEnvironmentSettings;
@@ -92,6 +92,8 @@ export class ComfyUiRandomRenderTask extends BaseTask implements IRandomRenderTa
     }
 
     override async postProcess(): Promise<void> {
+        await this.postProcess();
+
         if (this.taskStatus === TaskStatus.Dead) {
             await this.#replyService.replyWithError(this.#interaction);
         }

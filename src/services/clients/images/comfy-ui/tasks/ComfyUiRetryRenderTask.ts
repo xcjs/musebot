@@ -8,7 +8,6 @@ import { IFeatureService } from '../../../../features/IFeatureService.js';
 import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
-import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
@@ -19,8 +18,9 @@ import { IRetryRenderTask } from '../../tasks/IRetryRenderTask.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
 import { WorkflowType } from '../enums/WorkflowType.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
+import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 
-export class ComfyUiRetryRenderTask extends BaseTask implements IRetryRenderTask {
+export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRenderTask {
     #environmentSettings: IEnvironmentSettings;
     #featureService: IFeatureService;
     #workflowService: IWorkflowService;
@@ -66,6 +66,8 @@ export class ComfyUiRetryRenderTask extends BaseTask implements IRetryRenderTask
     }
 
     override async process(): Promise<void> {
+        await super.process();
+
         this.#logger(LogLevel.Info, 'Processing a ComfyUiRetryRenderTask...');
 
         const imageAttachments = this.#replyService.getImageAttachments(this.#interaction);
@@ -138,6 +140,8 @@ export class ComfyUiRetryRenderTask extends BaseTask implements IRetryRenderTask
     }
 
     override async postProcess(): Promise<void> {
+        await super.postProcess();
+
         if (this.taskStatus === TaskStatus.Dead) {
             await this.#replyService.replyWithError(this.#interaction);
         }

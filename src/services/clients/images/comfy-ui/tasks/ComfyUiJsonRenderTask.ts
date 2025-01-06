@@ -4,7 +4,6 @@ import { Logger, LogLevel } from 'meklog';
 import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
-import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
@@ -12,8 +11,9 @@ import { IJsonRenderTask } from '../../tasks/IJsonRenderTask.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
 import { WorkflowType } from '../enums/WorkflowType.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
+import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 
-export class ComfyUiJsonRenderTask extends BaseTask implements IJsonRenderTask {
+export class ComfyUiJsonRenderTask extends ComfyUiBaseTask implements IJsonRenderTask {
     #environmentSettings: IEnvironmentSettings;
     #discordClient: DiscordClient;
     #workflowService: IWorkflowService;
@@ -45,6 +45,8 @@ export class ComfyUiJsonRenderTask extends BaseTask implements IJsonRenderTask {
     }
 
     override async process(): Promise<void> {
+        await super.process();
+
         this.#logger(LogLevel.Info, 'Processing a ComfyUiJsonRenderTask...');
 
         const botMention = this.#message.mentions.members.find(x => x.id === this.#discordClient.user?.id)?.toString() || '';
@@ -83,6 +85,8 @@ export class ComfyUiJsonRenderTask extends BaseTask implements IJsonRenderTask {
     }
 
     override async postProcess(): Promise<void> {
+        await super.postProcess();
+
         if (this.taskStatus === TaskStatus.Dead) {
             await this.#replyService.replyWithError(this.#message);
         }

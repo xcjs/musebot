@@ -6,7 +6,6 @@ import { BotInteraction } from '../../../../../enums/BotInteraction.js';
 import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
-import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
@@ -15,8 +14,9 @@ import { ComfyUiClient } from '../ComfyUiClient.js';
 import { WorkflowType } from '../enums/WorkflowType.js';
 import { IWorkflow } from '../models/IWorkflow.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
+import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 
-export class ComfyUiUpscaleRenderTask extends BaseTask implements IUpscaleRenderTask {
+export class ComfyUiUpscaleRenderTask extends ComfyUiBaseTask implements IUpscaleRenderTask {
     #environmentSettings: IEnvironmentSettings;
     #workflowService: IWorkflowService;
     #comfyUiClient: ComfyUiClient;
@@ -48,6 +48,8 @@ export class ComfyUiUpscaleRenderTask extends BaseTask implements IUpscaleRender
     }
 
     override async process(): Promise<void> {
+        await super.process();
+
         this.#logger(LogLevel.Info, 'Processing a ComfyUiUpscaleRenderTask...');
 
         await this.#workflowService.loadWorkflows();
@@ -104,6 +106,8 @@ export class ComfyUiUpscaleRenderTask extends BaseTask implements IUpscaleRender
     }
 
     override async postProcess(): Promise<void> {
+        await super.postProcess();
+
         if (this.taskStatus === TaskStatus.Dead) {
             await this.#replyService.replyWithError(this.#interaction);
         }
