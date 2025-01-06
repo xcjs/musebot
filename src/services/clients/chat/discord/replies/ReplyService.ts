@@ -195,6 +195,10 @@ export class ReplyService implements IReplyService {
     }
 
     async replyWithError(interaction: Message | ButtonInteraction): Promise<void> {
-        await interaction.reply({ content: this.#environmentSettings.errorMessage });
+        if (interaction instanceof Message) {
+            await interaction.reply({ content: this.#environmentSettings.errorMessage });
+        } else if (interaction instanceof ButtonInteraction) {
+            await interaction.editReply({ content: this.#environmentSettings.errorMessage });
+        }
     }
 }
