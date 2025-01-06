@@ -21,7 +21,7 @@ export abstract class ComfyUiBaseTask extends BaseTask {
         this.comfyUiClient = services.comfyUiClient;
 
         this.#environmentSettings = services.environmentSettings;
-        this.#workflowService.loadWorkflows();
+        this.#workflowService = services.workflowService;
 
         this.#logger = new Logger(this.#environmentSettings.isProduction, 'ComfyUiBaseTask');
     }
