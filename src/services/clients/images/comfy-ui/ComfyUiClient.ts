@@ -45,6 +45,10 @@ export class ComfyUiClient {
 
         await this.#client.disconnect();
 
+        if(Object.keys(images).length === 0) {
+            return Promise.reject('The render failed but was not reported as a failure by the Comfy UI client.');
+        }
+
         return images;
     }
 

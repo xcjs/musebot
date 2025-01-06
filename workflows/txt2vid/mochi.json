@@ -7,7 +7,7 @@
     "width": 848,
     "height": 480,
     "sampler": "euler",
-    "scheduler": "simple",
+    "scheduler": "normal",
     "cfgScale": 7,
     "steps": 20,
     "num": 1
@@ -25,7 +25,7 @@
     "inputs": {
       "width": "{{{ width }}}",
       "height": "{{{ height }}}",
-      "length": 25,
+      "length": 19,
       "batch_size": "{{{ num }}}"
     },
     "class_type": "EmptyMochiLatentVideo",
