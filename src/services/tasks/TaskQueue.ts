@@ -76,7 +76,7 @@ export class TaskQueue implements ITaskQueue {
                     stuckTasks.forEach((stuckTask) => {
                         this.#logger(LogLevel.Warning, `Task ${stuckTask.id} appears to be stuck - resetting the task.` );
                         // Increment number of attempts by setting the task status to failed first.
-                        stuckTask.taskStatus = TaskStatus.Delayed;
+                        stuckTask.taskStatus = TaskStatus.Failed;
                     });
 
                     if(stuckTasks.length > 0) {
