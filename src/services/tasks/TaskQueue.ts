@@ -1,6 +1,7 @@
 import { Logger, LogLevel } from 'meklog';
 
 import { PromisedSettledResultStatus } from '../../enums/PromisedSettledResultStatus.js';
+import { ComfyUiBaseTask } from '../clients/images/comfy-ui/tasks/ComfyUiBaseTask.js';
 import { IEnvironmentSettings } from '../IEnvironmentSettings.js';
 import { IServiceContainer } from '../IServiceContainer.js';
 import { TaskStatus } from './enums/TaskStatus.js';
@@ -69,7 +70,8 @@ export class TaskQueue implements ITaskQueue {
                     });
 
                 setTimeout(() => {
-                    const stuckTasks = tasks.filter(x => x.taskStatus === TaskStatus.Busy);
+                    const stuckTasks = tasks.filter(x => x.taskStatus === TaskStatus.Busy
+                        && x instanceof ComfyUiBaseTask);
 
                     stuckTasks.forEach((stuckTask) => {
                         this.#logger(LogLevel.Warning, `Task ${stuckTask.id} appears to be stuck - resetting the task.` );
