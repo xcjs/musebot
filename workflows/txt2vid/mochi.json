@@ -7,7 +7,7 @@
     "width": 848,
     "height": 480,
     "sampler": "euler",
-    "scheduler": "normal",
+    "scheduler": "linear-quadratic",
     "cfgScale": 7,
     "steps": 20,
     "num": 1
