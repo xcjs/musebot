@@ -5,6 +5,7 @@ import { ComfyUiReplyService } from './clients/chat/discord/comfy-ui/ComfyUiRepl
 import { EasyDiffusionReplyService } from './clients/chat/discord/easy-diffusion/EasyDiffusionReplyService.js';
 import { OllamaReplyService } from './clients/chat/discord/ollama/OllamaReplyService.js';
 import { OllamaStreamingReplyService } from './clients/chat/discord/ollama/OllamaStreamingReplyService.js';
+import { IGenerativeChatClient } from './clients/chat/IGenerativeChatClient.js';
 import { IReplyService } from './clients/chat/IReplyService.js';
 import { ITypingService } from './clients/chat/ITypingService.js';
 import { IReplyTask } from './clients/chat/tasks/IReplyTask.js';
@@ -40,6 +41,7 @@ export interface IServiceContainer {
     taskQueue: ITaskQueue;
     typingService: ITypingService;
     discordClient: DiscordClient;
+    generativeChatClient: IGenerativeChatClient;
     workflowService: IWorkflowService;
 
     // Transitives ------------------------------------------------------------/

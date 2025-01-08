@@ -4,6 +4,7 @@ import { Logger, LogLevel } from 'meklog';
 import { getRandomArrayEntry } from '../../../../utilities/random-utilities.js';
 import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
+import { IGenerativeChatClient } from '../../chat/IGenerativeChatClient.js';
 
 export class ComfyUiClient {
     get host(): URL {
@@ -11,6 +12,7 @@ export class ComfyUiClient {
     }
 
     #environmentSettings: IEnvironmentSettings;
+    #chatClient: IGenerativeChatClient;
 
     #logger;
 
@@ -19,6 +21,7 @@ export class ComfyUiClient {
 
     constructor(services: IServiceContainer) {
         this.#environmentSettings = services.environmentSettings;
+        this.#chatClient = services.generativeChatClient;
 
         this.#logger = Logger(this.#environmentSettings.isProduction, 'ComfyUiClient');
 
@@ -30,7 +33,7 @@ export class ComfyUiClient {
             comfyHost = comfyHost.substring(0, comfyHost.length - 1);
         }
 
-        this.#client = new ComfyUIClient(comfyHost, 'Musebot');
+        this.#client = new ComfyUIClient(comfyHost, `Musebot_${this.#chatClient.name}`);
 
         this.#logger(LogLevel.Info, `Selected host: ${this.#host}`);
     }
