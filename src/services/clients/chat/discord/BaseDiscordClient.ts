@@ -9,9 +9,20 @@ import { DiscordPresenceStatus } from './enums/DiscordPresenceStatus.js';
 import { LoginTask } from './tasks/LoginTask.js';
 
 export class BaseDiscordClient implements IGenerativeChatClient {
+    get id(): string {
+        return this.#id || '';
+    }
+
+    get name(): string {
+        return this.#name || '';
+    }
+
     #services: IServiceContainer;
     #environmentSettings: IEnvironmentSettings;
     #taskQueue: ITaskQueue;
+
+    #id: string | null;
+    #name: string | null;
 
     protected logger: Logger;
 
@@ -32,6 +43,9 @@ export class BaseDiscordClient implements IGenerativeChatClient {
         if (discordClient.user === null) {
             return;
         }
+
+        this.#id = discordClient.user.id;
+        this.#name = discordClient.user.displayName;
 
         this.logger(LogLevel.Info, 'Client is ready.');
         discordClient.user.setPresence({ activities: [], status: DiscordPresenceStatus.Online });
