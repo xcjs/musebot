@@ -1,7 +1,6 @@
 import { Logger, LogLevel } from 'meklog';
 
 import { PromisedSettledResultStatus } from '../../enums/PromisedSettledResultStatus.js';
-import { ComfyUiBaseTask } from '../clients/images/comfy-ui/tasks/ComfyUiBaseTask.js';
 import { IEnvironmentSettings } from '../IEnvironmentSettings.js';
 import { IServiceContainer } from '../IServiceContainer.js';
 import { TaskStatus } from './enums/TaskStatus.js';
@@ -68,22 +67,6 @@ export class TaskQueue implements ITaskQueue {
                         x.taskStatus = TaskStatus.Busy;
                         return x.process();
                     });
-
-                setTimeout(() => {
-                    const stuckTasks = tasks.filter(x => x.taskStatus === TaskStatus.Busy
-                        && x instanceof ComfyUiBaseTask);
-
-                    stuckTasks.forEach((stuckTask) => {
-                        this.#logger(LogLevel.Warning, `Task ${stuckTask.id} appears to be stuck - resetting the task.` );
-                        // Increment number of attempts by setting the task status to failed first.
-                        stuckTask.taskStatus = TaskStatus.Failed;
-                    });
-
-                    if(stuckTasks.length > 0) {
-                        this.#logger(LogLevel.Warning, 'Recursively restarting the task queue...');
-                        this.#processQueue();
-                    }
-                }, this.#environmentSettings.taskTimeoutMilliseconds);
 
                 const processPromisesResults = await Promise.allSettled(processPromises);
 
