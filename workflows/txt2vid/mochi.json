@@ -7,7 +7,7 @@
     "width": 848,
     "height": 480,
     "sampler": "euler",
-    "scheduler": "normal",
+    "scheduler": "linear-quadratic",
     "cfgScale": 7,
     "steps": 20,
     "num": 1
@@ -25,7 +25,7 @@
     "inputs": {
       "width": "{{{ width }}}",
       "height": "{{{ height }}}",
-      "length": 19,
+      "length": 43,
       "batch_size": "{{{ num }}}"
     },
     "class_type": "EmptyMochiLatentVideo",
@@ -55,12 +55,16 @@
   },
   "8": {
     "inputs": {
+      "tile_size": 160,
+      "overlap": 96,
+      "temporal_size": 64,
+      "temporal_overlap": 8,
       "samples": ["10", 0],
       "vae": ["4", 2]
     },
-    "class_type": "VAEDecode",
+    "class_type": "VAEDecodeTiled",
     "_meta": {
-      "title": "VAE Decode"
+      "title": "VAE Decode (Tiled)"
     }
   },
   "10": {
@@ -94,25 +98,25 @@
   },
   "11": {
     "inputs": {
-      "filename_prefix": "Musebot_Mochi",
-      "fps": 6,
-      "lossless": true,
-      "quality": 95,
-      "method": "default",
-      "images": ["12", 0]
-    },
-    "class_type": "SaveAnimatedWEBP",
-    "_meta": {
-      "title": "SaveAnimatedWEBP"
-    }
-  },
-  "12": {
-    "inputs": {
       "value": ["8", 0]
     },
     "class_type": "UnloadAllModels",
     "_meta": {
       "title": "UnloadAllModels"
+    }
+  },
+  "12": {
+    "inputs": {
+      "filename_prefix": "Musebot_Mochi",
+      "fps": 24,
+      "lossless": true,
+      "quality": 95,
+      "method": "default",
+      "images": ["11", 0]
+    },
+    "class_type": "SaveAnimatedWEBP",
+    "_meta": {
+      "title": "SaveAnimatedWEBP"
     }
   }
 }
