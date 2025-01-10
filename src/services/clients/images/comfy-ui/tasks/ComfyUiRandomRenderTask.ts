@@ -51,6 +51,8 @@ export class ComfyUiRandomRenderTask extends ComfyUiBaseTask implements IRandomR
     }
 
     override async process(): Promise<void> {
+        await super.process();
+
         this.#logger(LogLevel.Info, 'Processing a ComfyUiRandomRenderTask...');
 
         const workflows = this.#workflowService.workflows.filter(x =>
@@ -90,7 +92,7 @@ export class ComfyUiRandomRenderTask extends ComfyUiBaseTask implements IRandomR
     }
 
     override async postProcess(): Promise<void> {
-        await this.postProcess();
+        await super.postProcess();
 
         if (this.taskStatus === TaskStatus.Dead) {
             await this.#replyService.replyWithError(this.#interaction);
