@@ -12,6 +12,8 @@ export interface IReplyService {
         isEdit: boolean
     ): Promise<void>;
 
+    getMessageWithoutBotMentions(message: Message): string;
+
     mention(user: User): string;
 
     replyWithError(interaction: Message | ButtonInteraction): Promise<void>;

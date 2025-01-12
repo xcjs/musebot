@@ -54,7 +54,7 @@ export class PromptRenderTask extends BaseTask implements IPromptRenderTask {
     override async process(): Promise<void> {
         const prompt = this.#message.type === MessageType.Reply
             ? `${((await this.#getAllAntecedentPrompts()).join(' '))} ${this.#message.content}`.trim()
-            : this.#filterBotMentions(this.#message.content).trim();
+            : this.#replyService.getMessageWithoutBotMentions(this.#message).trim();
 
         console.log(LogLevel.Info, `Preparing to render an image for the prompt: ${prompt}`);
 
@@ -83,15 +83,6 @@ export class PromptRenderTask extends BaseTask implements IPromptRenderTask {
         }
     }
 
-    #filterBotMentions(messageContent: string | null): string {
-        if (messageContent === null) {
-            return '';
-        }
-
-        const botMention = this.#message.mentions.members.find(x => x.id === this.#discordClient.user?.id)?.toString() || '';
-        return messageContent.replaceAll(botMention, '').trim();
-    }
-
     async #getAllAntecedentPrompts(): Promise<Array<string>> {
         const prompts: Array<string> = [];
         let currentMessage = this.#message;
@@ -100,7 +91,7 @@ export class PromptRenderTask extends BaseTask implements IPromptRenderTask {
             const antecedentMessage = await currentMessage.fetchReference();
 
             if (antecedentMessage.content !== null && antecedentMessage.content.length > 0) {
-                prompts.push(this.#filterBotMentions(antecedentMessage.content.trim()));
+                prompts.push(this.#replyService.getMessageWithoutBotMentions(antecedentMessage));
             }
 
             currentMessage = antecedentMessage;
