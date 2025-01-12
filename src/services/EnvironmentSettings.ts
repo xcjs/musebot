@@ -66,13 +66,13 @@ export class EnvironmentSettings implements IEnvironmentSettings {
 
         this.discordToken = process.env.MUSEBOT_DISCORD_TOKEN?.trim() || '';
 
-        const discordChannels = process.env.MUSEBOT_DISCORD_CHANNELS?.trim();
+        const discordChannels = process.env.MUSEBOT_DISCORD_CHANNELS?.trim() || null;
 
         if(discordChannels !== null && discordChannels.length > 0) {
             this.discordChannels = discordChannels.trim().split(',') || [];
         }
 
-        const discordChannelsDisallowed = process.env.MUSEBOT_DISCORD_CHANNELS_DISALLOWED?.trim();
+        const discordChannelsDisallowed = process.env.MUSEBOT_DISCORD_CHANNELS_DISALLOWED?.trim() || null;
 
         if (discordChannelsDisallowed !== null && discordChannelsDisallowed.length > 0) {
             this.discordChannelsDisallowed = discordChannelsDisallowed.trim().split(',') || [];
@@ -137,6 +137,7 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         this.#logger(LogLevel.Info, `MUSEBOT_FUNCTION: ${this.botFunction}`);
 
         this.#logger(LogLevel.Info, `MUSEBOT_DISCORD_CHANNELS: ${this.discordChannels.join(', ')}`);
+        this.#logger(LogLevel.Info, `MUSEBOT_DISCORD_CHANNELS_DISALLOWED: ${this.discordChannelsDisallowed.join(', ')}`);
         this.#logger(LogLevel.Info, `MUSEBOT_REQUIRES_MENTION: ${this.botRequiresMention}`);
         this.#logger(LogLevel.Info, `MUSEBOT_RESPONSE_RATE: ${this.botResponseRate}`);
         this.#logger(LogLevel.Info, `MUSEBOT_ERROR_MESSAGE: ${this.errorMessage}`);
