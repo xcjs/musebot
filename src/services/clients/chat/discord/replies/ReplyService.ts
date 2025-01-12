@@ -45,7 +45,7 @@ export class ReplyService implements IReplyService {
             return false;
         }
 
-        // The has no author.
+        // The message has no author.
         if(!message.author.id) {
             this.#logger(LogLevel.Info, 'Not replying to a message without an author.');
             return false;
@@ -61,8 +61,13 @@ export class ReplyService implements IReplyService {
         if ((this.#environmentSettings.botRequiresMention &&
             !message.mentions.members?.find(x => x.id === this.#discordClient.user?.id))
             && !isReaction) {
-            this.#logger(LogLevel.Info, 'Not replying to a message that doesn\'t mention or react to this bot.');
-            return false;
+            // Before declining to respond, check if the bot's role has been mentioned.
+            const botRole = message.guild.members.resolve(this.#discordClient.user).roles.botRole;
+
+            if(message.mentions.roles.find(x => x.id === botRole.id) === undefined) {
+                this.#logger(LogLevel.Info, 'Not replying to a message that doesn\'t mention or react to this bot or its role.');
+                return false;
+            }
         }
 
         // The bot doesn't require a mention and doesn't fall within the
@@ -142,6 +147,31 @@ export class ReplyService implements IReplyService {
 
             i++;
         }
+    }
+
+    getMessageWithoutBotMentions(message: Message): string {
+        this.#logger(LogLevel.Info, 'Stripping any bot mentions from the message content');
+
+        if(message.content === null) {
+            this.#logger(LogLevel.Info, 'There is no content in the message - skipping.')
+            return '';
+        }
+
+        let messageContent = message.content;
+
+        const botMention = message.mentions.members.find(x => x.id === this.#discordClient.user?.id)?.toString() || '';
+        messageContent = message.content.replaceAll(botMention, '').trim();
+
+        const botRole = message.guild.members.resolve(this.#discordClient.user).roles.botRole;
+        const botRoleMention = message.mentions.roles.find(x => x.id === botRole.id).toString() || '';
+
+        messageContent = messageContent.replaceAll(botRoleMention, '');
+
+        messageContent = messageContent.trim();
+
+        this.#logger(LogLevel.Info, `Returning "${message.content}" as "${messageContent}".`);
+
+        return messageContent;
     }
 
     mention(user: User): string {

@@ -66,8 +66,7 @@ export class PromptResponseTask extends BaseTask implements IPromptResponseTask 
     }
 
     override async process(): Promise<void> {
-        const botMention = this.#message.mentions.members.find(x => x.id === this.#discordClient.user?.id)?.toString() || '';
-        const formattedMessage = `${this.#message.author.displayName}: ${this.#message.content.replaceAll(botMention, '').trim()}`;
+        const formattedMessage = `${this.#message.author.displayName}: ${this.#replyService.getMessageWithoutBotMentions(this.#message)}`;
 
         if(this.#environmentSettings.ollamaStreamsResponse) {
             await this.#processAsStream(formattedMessage, this.#context);

@@ -56,7 +56,7 @@ export class ComfyUiPromptRenderTask extends ComfyUiBaseTask implements IPromptR
 
         const prompt = this.#message.type === MessageType.Reply
             ? `${((await this.#getAllAntecedentPrompts()).join(' '))} ${this.#message.content}`.trim()
-            : this.#filterBotMentions(this.#message.content).trim();
+            : this.#replyService.getMessageWithoutBotMentions(this.#message);
 
         if(prompt.charAt(0) === '{') {
             this.#taskQueue.add(new ComfyUiJsonRenderTask(
@@ -94,15 +94,6 @@ export class ComfyUiPromptRenderTask extends ComfyUiBaseTask implements IPromptR
         }
     }
 
-    #filterBotMentions(messageContent: string | null): string {
-        if(messageContent === null) {
-            return '';
-        }
-
-        const botMention = this.#message.mentions.members.find(x => x.id === this.#discordClient.user?.id)?.toString() || '';
-        return messageContent.replaceAll(botMention, '').trim();
-    }
-
     async #getAllAntecedentPrompts(): Promise<Array<string>> {
         const prompts: Array<string> = [];
         let currentMessage = this.#message;
@@ -111,7 +102,7 @@ export class ComfyUiPromptRenderTask extends ComfyUiBaseTask implements IPromptR
             const antecedentMessage = await currentMessage.fetchReference();
 
             if (antecedentMessage.content !== null && antecedentMessage.content.length > 0) {
-                prompts.push(this.#filterBotMentions(antecedentMessage.content.trim()));
+                prompts.push(this.#replyService.getMessageWithoutBotMentions(antecedentMessage));
             }
 
             currentMessage = antecedentMessage;
