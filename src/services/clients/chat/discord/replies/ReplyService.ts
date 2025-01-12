@@ -170,7 +170,7 @@ export class ReplyService implements IReplyService {
         messageContent = message.content.replaceAll(botMention, '').trim();
 
         const botRole = message.guild.members.resolve(this.#discordClient.user).roles.botRole;
-        const botRoleMention = message.mentions.roles.find(x => x.id === botRole.id).toString() || '';
+        const botRoleMention = message.mentions.roles.find(x => x.id === botRole.id)?.toString() || '';
 
         messageContent = messageContent.replaceAll(botRoleMention, '');
 
