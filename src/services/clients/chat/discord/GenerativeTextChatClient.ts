@@ -10,6 +10,7 @@ import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { IReplyService } from '../IReplyService.js';
 import { ITypingService } from '../ITypingService.js';
 import { BaseDiscordClient } from './BaseDiscordClient.js';
+import { LargeLanguageModelConfirmClearActionRow } from './components/buttonRows/LargeLanguageModelConfirmClearActionRow.js';
 
 export class GenerativeTextChatClient extends BaseDiscordClient {
     #services: IServiceContainer;
@@ -79,6 +80,12 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
 
         switch(interaction.customId) {
             case BotInteraction.ClearContext:
+                await this.#clearContextAskConfirmation(interaction);
+                break;
+            case BotInteraction.ClearContextCancel:
+                await this.#clearContextCancel(interaction);
+                break;
+            case BotInteraction.ClearContextConfirm:
                 await this.#clearContext(interaction);
                 break;
             case BotInteraction.Help:
@@ -93,14 +100,38 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
         }
      }
 
+    async #clearContextAskConfirmation(interaction: ButtonInteraction): Promise<void> {
+        this.logger(LogLevel.Info, 'Asking confirmation before clearing the large language model context...');
+
+        try {
+            await interaction.editReply({
+                content: `Are you sure you want to clear the conversational context of ${this.#context.length} tokens?`,
+                components: new LargeLanguageModelConfirmClearActionRow(this.#services).build()
+            });
+        } catch {
+            this.logger(LogLevel.Error, 'An error occurred while asking to clear the Ollama context.');
+        }
+     }
+
      async #clearContext(interaction: ButtonInteraction): Promise<void> {
         this.logger(LogLevel.Info, 'Clearing the large language model context...');
         this.#context = [];
 
         try{
             await interaction.editReply(`The conversational context has been cleared - ${interaction.member} just gave an AI amnesia!`);
+            await interaction.message.delete();
         } catch {
-            this.logger(LogLevel.Error, 'An exception occurred while clearing the Ollama context.');
+            this.logger(LogLevel.Error, 'An error occurred while clearing the Ollama context.');
+        }
+     }
+
+    async #clearContextCancel(interaction: ButtonInteraction): Promise<void> {
+         this.logger(LogLevel.Info, 'Asking confirmation before clearing the large language model context...');
+
+        try {
+            await interaction.editReply(`The conversational context has been cleared - ${interaction.member} just gave an AI amnesia!`);
+        } catch {
+            this.logger(LogLevel.Error, 'An error occurred while canceling clearing the Ollama context.');
         }
      }
 

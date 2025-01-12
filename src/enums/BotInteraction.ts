@@ -1,5 +1,7 @@
 export enum BotInteraction {
     ClearContext = 'clearContext',
+    ClearContextCancel = 'clearContextCancel',
+    ClearContextConfirm = 'clearContextConfirm',
     ExpandPrompt = 'expandPrompt',
     GuidanceScaleMinus = 'guidanceScaleMinus',
     GuidanceScalePlus = 'guidanceScalePlus',

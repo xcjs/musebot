@@ -32,8 +32,8 @@ export class TextHelpService extends BaseHelpService implements IHelpService {
             + ' Additionally, there are various button-based interactions you can use after interacting with the bot at least once: '
             + '\n\n';
 
-        const actionRows = new LargeLanguageModelActionRow(this.#services);
-        helpArticle += this.buildHelpArticleFromActionRows(actionRows);
+        helpArticle += this.buildHelpArticleFromActionRows(new LargeLanguageModelActionRow(this.#services));
+        helpArticle += this.buildHelpArticleFromActionRows(new LargeLanguageModelActionRow(this.#services));
 
         return helpArticle;
     }

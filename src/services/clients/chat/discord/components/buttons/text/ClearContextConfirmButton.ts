@@ -5,9 +5,9 @@ import { SupportedFeature } from '../../../../../../features/enum/SupportedFeatu
 import { IServiceContainer } from '../../../../../../IServiceContainer.js';
 import { BaseComponent } from '../../BaseComponent.js';
 
-export class ClearContextButton extends BaseComponent<ButtonBuilder> {
+export class ClearContextConfirmButton extends BaseComponent<ButtonBuilder> {
     override get label(): string {
-        return '⠀🆑⠀';
+        return '⚠️';
     }
 
     override get isSupported(): boolean {
@@ -15,11 +15,12 @@ export class ClearContextButton extends BaseComponent<ButtonBuilder> {
     }
 
     override get title(): string {
-        return 'Clear Context';
+        return 'Confirm Clearing Context';
     }
 
     override get helpText(): string {
-        return 'Asks for confirmation to clear the conversational context.';
+        return 'Clears the conversational context, effectively making the bot forget everything in the discussion so far.'
+            + ' Responses may also complete faster afterward as large language model performance can be impacted by large contexts.';
     }
 
     constructor(services: IServiceContainer) {
@@ -28,8 +29,8 @@ export class ClearContextButton extends BaseComponent<ButtonBuilder> {
 
     override build(): ButtonBuilder {
         return new ButtonBuilder()
-            .setCustomId(BotInteraction.ClearContext)
+            .setCustomId(BotInteraction.ClearContextConfirm)
             .setLabel(this.label)
-            .setStyle(ButtonStyle.Secondary);
+            .setStyle(ButtonStyle.Danger);
     }
 }

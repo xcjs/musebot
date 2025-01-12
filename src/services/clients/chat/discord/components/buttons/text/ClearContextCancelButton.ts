@@ -5,9 +5,9 @@ import { SupportedFeature } from '../../../../../../features/enum/SupportedFeatu
 import { IServiceContainer } from '../../../../../../IServiceContainer.js';
 import { BaseComponent } from '../../BaseComponent.js';
 
-export class ClearContextButton extends BaseComponent<ButtonBuilder> {
+export class ClearContextCancelButton extends BaseComponent<ButtonBuilder> {
     override get label(): string {
-        return '⠀🆑⠀';
+        return '↩️';
     }
 
     override get isSupported(): boolean {
@@ -15,11 +15,11 @@ export class ClearContextButton extends BaseComponent<ButtonBuilder> {
     }
 
     override get title(): string {
-        return 'Clear Context';
+        return 'Cancel Clearing Context';
     }
 
     override get helpText(): string {
-        return 'Asks for confirmation to clear the conversational context.';
+        return 'Cancels clearing the conversational context, allowing the bot to continue the conversation where it left off.';
     }
 
     constructor(services: IServiceContainer) {
@@ -28,7 +28,7 @@ export class ClearContextButton extends BaseComponent<ButtonBuilder> {
 
     override build(): ButtonBuilder {
         return new ButtonBuilder()
-            .setCustomId(BotInteraction.ClearContext)
+            .setCustomId(BotInteraction.ClearContextCancel)
             .setLabel(this.label)
             .setStyle(ButtonStyle.Secondary);
     }
