@@ -127,12 +127,14 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
      }
 
     async #clearContextCancel(interaction: ButtonInteraction): Promise<void> {
-         this.logger(LogLevel.Info, 'Asking confirmation before clearing the large language model context...');
+         this.logger(LogLevel.Info, 'Cancelling clearing the large language model context...');
 
         try {
-            await interaction.editReply(`The conversational context has been cleared - ${interaction.member} just gave an AI amnesia!`);
+            await interaction.message.delete();
+            await interaction.editReply('Cancelling...');
+            await interaction.deleteReply();
         } catch {
-            this.logger(LogLevel.Error, 'An error occurred while canceling clearing the Ollama context.');
+            this.logger(LogLevel.Error, 'An error occurred while cancelling clearing the Ollama context.');
         }
      }
 
