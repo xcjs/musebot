@@ -86,7 +86,7 @@ export class ReplyService implements IReplyService {
 
         // The bot can't reply to itself unless it's in response to a reaction.
         if (message.author.id === this.#discordClient.user?.id && !isReaction) {
-            this.#logger(LogLevel.Info, 'Not replying to a myself.');
+            this.#logger(LogLevel.Info, 'Not replying to myself.');
             return false;
         }
 
