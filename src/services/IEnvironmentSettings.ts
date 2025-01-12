@@ -15,6 +15,7 @@ export interface IEnvironmentSettings {
 
     discordToken: string;
     discordChannels: Array<string>;
+    discordChannelsDisallowed: Array<string>;
 
     stableDiffusionApiType: StableDiffusionApiType;
     stableDiffusionHosts: Array<URL>;

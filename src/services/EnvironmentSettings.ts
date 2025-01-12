@@ -22,6 +22,7 @@ export class EnvironmentSettings implements IEnvironmentSettings {
 
     discordToken: string;
     discordChannels: Array<string> = [];
+    discordChannelsDisallowed: Array<string> = [];
 
     stableDiffusionApiType: StableDiffusionApiType;
     stableDiffusionHosts: Array<URL> = [];
@@ -69,6 +70,12 @@ export class EnvironmentSettings implements IEnvironmentSettings {
 
         if(discordChannels !== null && discordChannels.length > 0) {
             this.discordChannels = discordChannels.trim().split(',') || [];
+        }
+
+        const discordChannelsDisallowed = process.env.MUSEBOT_DISCORD_CHANNELS_DISALLOWED?.trim();
+
+        if (discordChannelsDisallowed !== null && discordChannelsDisallowed.length > 0) {
+            this.discordChannelsDisallowed = discordChannelsDisallowed.trim().split(',') || [];
         }
 
         this.botRequiresMention = (process.env.MUSEBOT_REQUIRES_MENTION?.trim().toLowerCase() === true.toString());

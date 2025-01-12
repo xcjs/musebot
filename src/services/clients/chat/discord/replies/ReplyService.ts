@@ -97,6 +97,13 @@ export class ReplyService implements IReplyService {
             return false;
         }
 
+        // The channel isn't in the configured blacklist if there is one.
+        if (this.#environmentSettings.discordChannelsDisallowed.length > 0
+            && this.#environmentSettings.discordChannelsDisallowed.includes(message.channel.id)) {
+            this.#logger(LogLevel.Info, 'Not replying to a message in a disallowed channel.');
+            return false;
+        }
+
         // The message has no content and is not a reaction.
         if (message.content.length === 0 && !isReaction) {
             this.#logger(LogLevel.Info, 'Not replying to a message with no content.');
