@@ -105,7 +105,8 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
 
         try {
             await interaction.editReply({
-                content: `Are you sure you want to clear the conversational context of ${this.#context.length} tokens?`,
+                content: `Are you sure you want to clear the conversational context of ${this.#context.length} tokens?`
+                    + ` This will make me forget everything we've discussed up to this point.`,
                 components: new LargeLanguageModelConfirmClearActionRow(this.#services).build()
             });
         } catch {
