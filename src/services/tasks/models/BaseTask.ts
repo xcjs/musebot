@@ -21,6 +21,10 @@ export abstract class BaseTask {
     }
 
     set taskStatus(taskStatus: TaskStatus) {
+        if(taskStatus === TaskStatus.Delayed) {
+            taskStatus = TaskStatus.Failed;
+        }
+
         if (taskStatus === TaskStatus.Failed) {
             this.#numAttempts++;
 
