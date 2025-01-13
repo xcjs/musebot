@@ -86,6 +86,8 @@ export class EnvironmentSettings implements IEnvironmentSettings {
 
         this.errorMessage = process.env.MUSEBOT_ERROR_MESSAGE?.trim() || this.errorMessage;
 
+        this.stableDiffusionApiType = process.env.MUSEBOT_STABLE_DIFFUSION_API_TYPE?.trim() as StableDiffusionApiType;
+
         // If the ComfyUI integration is configured, workflows will be loaded
         // from the $PWD/workflows directory and the
         // MUSEBOT_STABLE_DIFFUSION_MODELS environment variable will be ignored.
