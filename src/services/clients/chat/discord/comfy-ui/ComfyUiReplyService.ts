@@ -124,8 +124,8 @@ export class ComfyUiReplyService {
 
         for (const imageResponse of imagesResponses) {
             for (const [key, value] of Object.entries(imageResponse)) {
-                if (imageResponse[key] === undefined) {
-                    imageResponse[key] = [];
+                if (imagesResponse[key] === undefined) {
+                    imagesResponse[key] = [];
                 }
 
                 imagesResponse[key].concat(value);
