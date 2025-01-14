@@ -128,7 +128,7 @@ export class ComfyUiReplyService {
                     imageResponse[key] = [];
                 }
 
-                imagesResponse[key] = value;
+                imagesResponse[key].concat(value);
             }
         }
 
