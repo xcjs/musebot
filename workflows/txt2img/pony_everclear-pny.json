@@ -6,15 +6,15 @@
     "seed": -1,
     "width": 1024,
     "height": 1024,
-    "sampler": "euler",
-    "scheduler": "simple",
+    "sampler": "dpmpp_sde",
+    "scheduler": "karras",
     "cfgScale": 7,
     "steps": 20,
-    "num": 1
+    "num": 4
   },
   "4": {
     "inputs": {
-      "ckpt_name": "SDXL/Pixel/pixelArtDiffusionXL_spriteShaper.safetensors"
+      "ckpt_name": "SDXL/Pony/everclearPNYByZovya_v4.safetensors"
     },
     "class_type": "CheckpointLoaderSimple",
     "_meta": {
@@ -141,7 +141,7 @@
   },
   "102": {
     "inputs": {
-      "filename_prefix": "Musebot_Sprite-Shifter",
+      "filename_prefix": "Musebot_Anima-Pencil",
       "images": [
         "101",
         0
