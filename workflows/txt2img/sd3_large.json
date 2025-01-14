@@ -132,7 +132,7 @@
   },
   "104": {
     "inputs": {
-      "filename_prefix": "Musebot_SD3_Large",
+      "filename_prefix": "Musebot",
       "images": ["103", 0]
     },
     "class_type": "SaveImage",

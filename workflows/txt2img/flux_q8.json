@@ -134,7 +134,7 @@
   },
   "103": {
     "inputs": {
-      "filename_prefix": "Musebot_Flux_Q8",
+      "filename_prefix": "Musebot",
       "images": ["102", 0]
     },
     "class_type": "SaveImage",
