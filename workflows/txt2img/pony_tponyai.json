@@ -8,13 +8,13 @@
     "height": 1024,
     "sampler": "dpmpp_sde",
     "scheduler": "karras",
-    "cfgScale": 2,
-    "steps": 8,
-    "num": 1
+    "cfgScale": 7,
+    "steps": 20,
+    "num": 4
   },
   "4": {
     "inputs": {
-      "ckpt_name": "SDXL-Turbo/General/dreamshaperXL_v21TurboDPMSDE.safetensors"
+      "ckpt_name": "SDXL/Pony/tPonynai3_v6.safetensors"
     },
     "class_type": "CheckpointLoaderSimple",
     "_meta": {
@@ -141,11 +141,8 @@
   },
   "102": {
     "inputs": {
-      "filename_prefix": "Musebot_Dreamshaper",
-      "images": [
-        "101",
-        0
-      ]
+      "filename_prefix": "Musebot",
+      "images": ["101", 0]
     },
     "class_type": "SaveImage",
     "_meta": {
