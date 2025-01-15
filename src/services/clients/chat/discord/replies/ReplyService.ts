@@ -160,7 +160,7 @@ export class ReplyService implements IReplyService {
         this.#logger(LogLevel.Info, 'Stripping any bot mentions from the message content');
 
         if(message.content === null) {
-            this.#logger(LogLevel.Info, 'There is no content in the message - skipping.')
+            this.#logger(LogLevel.Info, 'There is no content in the message - skipping.');
             return '';
         }
 
