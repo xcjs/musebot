@@ -8,17 +8,17 @@
     "height": 1024,
     "sampler": "euler",
     "scheduler": "simple",
-    "cfgScale": 3.5,
+    "cfgScale": 7,
     "steps": 20,
-    "num": 1
+    "num": 4
   },
   "4": {
     "inputs": {
-      "unet_name": "Flux.1/Dev/flux1-dev-Q8_0.gguf"
+      "ckpt_name": "SDXL/Pixel/pixelArtDiffusionXL_spriteShaper.safetensors"
     },
-    "class_type": "UnetLoaderGGUF",
+    "class_type": "CheckpointLoaderSimple",
     "_meta": {
-      "title": "Unet Loader (GGUF)"
+      "title": "Load Checkpoint"
     }
   },
   "5": {
@@ -27,47 +27,47 @@
       "height": "{{{ height }}}",
       "batch_size": "{{{ num }}}"
     },
-    "class_type": "EmptySD3LatentImage",
+    "class_type": "EmptyLatentImage",
     "_meta": {
-      "title": "EmptySD3LatentImage"
+      "title": "Empty Latent Image"
     }
   },
   "6": {
     "inputs": {
-      "steps": "{{{ steps }}}",
-      "prompt": "{{{ prompt }}}",
-      "width": "{{{ width }}}",
-      "height": "{{{ height }}}",
-      "target_width": "{{{ width }}}",
-      "target_height": "{{{ height }}}",
-      "guidance": "{{{ cfgScale }}}",
-      "clip": ["100", 0]
+      "text": "{{{ prompt }}}",
+      "clip": [
+        "4",
+        1
+      ]
     },
-    "class_type": "SwarmClipTextEncodeAdvanced",
+    "class_type": "CLIPTextEncode",
     "_meta": {
-      "title": "SwarmClipTextEncodeAdvanced"
+      "title": "CLIP Text Encode (Prompt)"
     }
   },
   "7": {
     "inputs": {
-      "steps": 20,
-      "prompt": "",
-      "width": "{{{ width }}}",
-      "height": "{{{ height }}}",
-      "target_width": "{{{ width }}}",
-      "target_height": "{{{ height }}}",
-      "guidance": "{{{ cfgScale }}}",
-      "clip": ["100", 0]
+      "text": "{{{ promptNegative }}}",
+      "clip": [
+        "4",
+        1
+      ]
     },
-    "class_type": "SwarmClipTextEncodeAdvanced",
+    "class_type": "CLIPTextEncode",
     "_meta": {
-      "title": "SwarmClipTextEncodeAdvanced"
+      "title": "CLIP Text Encode (Prompt)"
     }
   },
   "8": {
     "inputs": {
-      "samples": ["10", 0],
-      "vae": ["101", 0]
+      "samples": [
+        "10",
+        0
+      ],
+      "vae": [
+        "4",
+        2
+      ]
     },
     "class_type": "VAEDecode",
     "_meta": {
@@ -78,7 +78,7 @@
     "inputs": {
       "noise_seed": "{{{ seed }}}",
       "steps": "{{{ steps }}}",
-      "cfg": 1,
+      "cfg": "{{{ cfgScale }}}",
       "sampler_name": "{{{ sampler }}}",
       "scheduler": "{{{ scheduler }}}",
       "start_at_step": 0,
@@ -93,10 +93,22 @@
       "previews": "default",
       "tile_sample": false,
       "tile_size": 1024,
-      "model": ["4", 0],
-      "positive": ["6", 0],
-      "negative": ["7", 0],
-      "latent_image": ["5", 0]
+      "model": [
+        "4",
+        0
+      ],
+      "positive": [
+        "6",
+        0
+      ],
+      "negative": [
+        "100",
+        0
+      ],
+      "latent_image": [
+        "5",
+        0
+      ]
     },
     "class_type": "SwarmKSampler",
     "_meta": {
@@ -105,37 +117,32 @@
   },
   "100": {
     "inputs": {
-      "clip_name1": "t5xxl_enconly.safetensors",
-      "clip_name2": "clip_l.safetensors",
-      "type": "flux"
+      "conditioning": [
+        "7",
+        0
+      ]
     },
-    "class_type": "DualCLIPLoader",
+    "class_type": "ConditioningZeroOut",
     "_meta": {
-      "title": "DualCLIPLoader"
+      "title": "ConditioningZeroOut"
     }
   },
   "101": {
     "inputs": {
-      "vae_name": "Flux/ae.safetensors"
-    },
-    "class_type": "VAELoader",
-    "_meta": {
-      "title": "Load VAE"
-    }
-  },
-  "102": {
-    "inputs": {
-      "value": ["8", 0]
+      "value": [
+        "8",
+        0
+      ]
     },
     "class_type": "UnloadAllModels",
     "_meta": {
       "title": "UnloadAllModels"
     }
   },
-  "103": {
+  "102": {
     "inputs": {
       "filename_prefix": "Musebot",
-      "images": ["102", 0]
+      "images": ["101", 0]
     },
     "class_type": "SaveImage",
     "_meta": {

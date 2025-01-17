@@ -6,15 +6,15 @@
     "seed": -1,
     "width": 1024,
     "height": 1024,
-    "sampler": "euler",
-    "scheduler": "simple",
+    "sampler": "dpmpp_sde",
+    "scheduler": "karras",
     "cfgScale": 7,
     "steps": 20,
-    "num": 1
+    "num": 4
   },
   "4": {
     "inputs": {
-      "ckpt_name": "SDXL/Anime/ghostxl_v10BakedVAE.safetensors"
+      "ckpt_name": "SDXL/General/midnight_v50.safetensors"
     },
     "class_type": "CheckpointLoaderSimple",
     "_meta": {
@@ -141,11 +141,8 @@
   },
   "102": {
     "inputs": {
-      "filename_prefix": "Musebot_Ghost",
-      "images": [
-        "101",
-        0
-      ]
+      "filename_prefix": "Musebot",
+      "images": ["101", 0]
     },
     "class_type": "SaveImage",
     "_meta": {
