@@ -74,7 +74,7 @@ export class ComfyUiAttachRenderTask extends ComfyUiBaseTask implements IAttachR
         const imagesResponse = await this.#comfyUiClient.render(prompt);
 
         const exchange = {
-            request: renderRequest,
+            request: [renderRequest],
             response: imagesResponse
         };
 

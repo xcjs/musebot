@@ -1,3 +1,4 @@
+import { ImagesResponse } from 'comfy-ui-client';
 import { Client as DiscordClient, Message, MessageType } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
@@ -7,6 +8,7 @@ import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { TaskQueue } from '../../../../tasks/TaskQueue.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
+import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 import { IPromptRenderTask } from '../../tasks/IPromptRenderTask.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
 import { WorkflowType } from '../enums/WorkflowType.js';
@@ -69,21 +71,41 @@ export class ComfyUiPromptRenderTask extends ComfyUiBaseTask implements IPromptR
             x.type === WorkflowType.Txt2img
             || x.type === WorkflowType.Txt2vid);
 
-        const workflow = getRandomArrayEntry(workflows);
+        const renderRequests: Array<SerializableRenderRequest> = [];
+        const imagesResponses: Array<ImagesResponse> = [];
+        let numRenders = 1;
+        let i = 0;
 
-        this.#logger(LogLevel.Info, `Using ${workflow.name} as the selected workflow.`);
+        do {
+            const workflow = getRandomArrayEntry(workflows);
 
-        const renderRequest = this.#workflowService.getWorkflowDefaults(workflow);
-        renderRequest.model = workflow.name;
-        renderRequest.prompt = prompt;
-        renderRequest.refreshSeed();
+            this.#logger(LogLevel.Info, `Using ${workflow.name} as the selected workflow.`);
 
-        const workflowPrompt = this.#workflowService.renderWorkflow(workflow, renderRequest);
+            const renderRequest = this.#workflowService.getWorkflowDefaults(workflow);
+            numRenders = renderRequest.num;
 
-        const images = await this.#comfyUiClient.render(workflowPrompt);
+            renderRequest.model = workflow.name;
+            renderRequest.prompt = prompt;
+            renderRequest.num = 1;
+            renderRequest.refreshSeed();
+
+            renderRequests.push(renderRequest);
+
+
+            const workflowPrompt = this.#workflowService.renderWorkflow(workflow, renderRequest);
+
+            imagesResponses.push(await this.#comfyUiClient.render(workflowPrompt));
+
+            i++;
+        } while(i < numRenders);
+
+
+        const imagesResponse = this.#comfyUiReplyService.flattenMultipleImagesResponses(imagesResponses);
+
         await this.#comfyUiReplyService.reply(this.#message, {
-            request: renderRequest,
-            response: images });
+            request: renderRequests,
+            response: imagesResponse
+        });
     }
 
     override async postProcess(): Promise<void> {

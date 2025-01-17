@@ -77,12 +77,12 @@ export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRen
             return;
         }
 
-        let renderRequest: SerializableRenderRequest = null;
+        const renderRequests: Array<SerializableRenderRequest> = [];
         let content: string;
         const imagesResponses: Array<ImagesResponse> = [];
 
         for (const imageAttachment of imageAttachments) {
-            renderRequest = SerializableRenderRequest.fromJson(imageAttachment.description);
+            let renderRequest = SerializableRenderRequest.fromJson(imageAttachment.description);
             content =
                 `${this.#userOverride !== null ? this.#replyService.mention(this.#userOverride) : this.#interaction.member}`
                 + ` re-rendered \`${renderRequest.prompt}\``.substring(0, DiscordConstants.ContentMaxLength);
@@ -126,6 +126,8 @@ export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRen
             defaultRequest.num = 1;
             renderRequest = defaultRequest;
 
+            renderRequests.push(renderRequest);
+
             const workflowPrompt = this.#workflowService.renderWorkflow(workflow, renderRequest);
             imagesResponses.push(await this.#comfyUiClient.render(workflowPrompt));
         }
@@ -133,7 +135,7 @@ export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRen
         const imagesResponse = this.#comfyUiReplyService.flattenMultipleImagesResponses(imagesResponses);
 
         await this.#comfyUiReplyService.reply(this.#interaction, {
-            request: renderRequest,
+            request: renderRequests,
             response: imagesResponse
         }, content);
     }

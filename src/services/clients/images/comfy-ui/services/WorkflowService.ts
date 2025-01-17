@@ -110,11 +110,15 @@ export class WorkflowService implements IWorkflowService {
         const destructiveRenderRequest = SerializableRenderRequest.fromSerializableRenderRequest(renderRequest);
 
         // Filter characters that will break the JSON encoding.
-        destructiveRenderRequest.prompt = JSON.stringify(destructiveRenderRequest.prompt);
-        destructiveRenderRequest.prompt = destructiveRenderRequest.prompt.substring(1, destructiveRenderRequest.prompt.length - 1);
+        if(destructiveRenderRequest.prompt.length > 0) {
+            destructiveRenderRequest.prompt = JSON.stringify(destructiveRenderRequest.prompt);
+            destructiveRenderRequest.prompt = destructiveRenderRequest.prompt.substring(1, destructiveRenderRequest.prompt.length - 1);
+        }
 
-        destructiveRenderRequest.promptNegative = JSON.stringify(destructiveRenderRequest.promptNegative);
-        destructiveRenderRequest.promptNegative = destructiveRenderRequest.promptNegative.substring(1, destructiveRenderRequest.promptNegative.length - 1);
+        if(destructiveRenderRequest.promptNegative?.length > 0) {
+            destructiveRenderRequest.promptNegative = JSON.stringify(destructiveRenderRequest.promptNegative);
+            destructiveRenderRequest.promptNegative = destructiveRenderRequest.promptNegative.substring(1, destructiveRenderRequest.promptNegative.length - 1);
+        }
 
         const templateString = mustache.default.render(workflow.workflowString, destructiveRenderRequest);
         return JSON.parse(templateString) as Prompt;

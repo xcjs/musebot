@@ -41,27 +41,35 @@ export class ComfyUiReplyService {
     }
 
     async reply(interaction: Message | ButtonInteraction,
-        renderExchange: IHttpExchange<SerializableRenderRequest, ImagesResponse>,
+        renderExchange: IHttpExchange<Array<SerializableRenderRequest>, ImagesResponse>,
         content: string | null = null,
         additionalAttachments: Array<AttachmentBuilder> | null = null,
         isEdit: boolean = false): Promise<void> {
-
-        const description = JSON.stringify(renderExchange.request);
-        const isStatefulResponse = description.length <= DiscordConstants.ImageDescriptionMaxLength;
-
-        const imageAttachments: Array<AttachmentBuilder> = [];
-
-        this.#logger(LogLevel.Info, `Attaching render(s):`, description);
 
         if (Object.values(renderExchange.response).length === 0) {
             this.#logger(LogLevel.Error, 'A reply was created with no attachments.');
             return await this.#replyService.replyWithError(interaction);
         }
 
+        const jsonDescriptions: Array<string> = [];
+
+        const isStatefulResponse = renderExchange.request.filter((_, i) => {
+            const description = JSON.stringify(renderExchange.request[i]);
+            jsonDescriptions.push(description);
+            return description.length <= DiscordConstants.ImageDescriptionMaxLength;
+        }).length === renderExchange.request.length;
+
+        const imageAttachments: Array<AttachmentBuilder> = [];
+
+
         for (const imageResponse of Object.values(renderExchange.response)) {
+            this.#logger(LogLevel.Info, `Attaching render(s):`, JSON.stringify);
+            let i = 0;
+
             for (const imageContainer of imageResponse) {
                 const image = Buffer.from(await imageContainer.blob.arrayBuffer());
-                const filename = this.getFileNameFromPrompt(renderExchange.request);
+                const filename = this.getFileNameFromPrompt(renderExchange.request[i]
+                    || renderExchange.request[0]);
 
                 let extension = '';
 
@@ -81,11 +89,12 @@ export class ComfyUiReplyService {
                     image, {
                         name: `${filename}${extension}`,
                         description: isStatefulResponse
-                            ? description
+                            ? jsonDescriptions[i] || jsonDescriptions[0]
                             : null,
-
                     }
                 ));
+
+                i++;
             }
         }
 
@@ -99,7 +108,7 @@ export class ComfyUiReplyService {
             content,
             files,
             components: isStatefulResponse ?
-                new StatefulImageGenerationActionRows(this.#services, renderExchange.request).build() :
+                new StatefulImageGenerationActionRows(this.#services, renderExchange.request[0]).build() :
                 new StatelessImageGenerationActionRow(this.#services).build()
         };
 
