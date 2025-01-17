@@ -54,12 +54,14 @@ export class ComfyUiIncreaseGuidanceScaleRenderTask extends ComfyUiBaseTask impl
             return;
         }
 
-        let renderRequest: SerializableRenderRequest;
+        const renderRequests: Array<SerializableRenderRequest> = [];
         let cfgScaleValue: number;
         const imagesResponses: Array<ImagesResponse> = [];
 
         for (const imageAttachment of imageAttachments) {
-            renderRequest = SerializableRenderRequest.fromJson(imageAttachment.description);
+            const renderRequest = SerializableRenderRequest.fromJson(imageAttachment.description);
+            renderRequests.push(renderRequest);
+
             const workflow = this.#workflowService.workflows.find(x => x.name === renderRequest.model);
 
             this.#logger(LogLevel.Info, `Using ${workflow.name} as the selected workflow.`);
@@ -78,7 +80,7 @@ export class ComfyUiIncreaseGuidanceScaleRenderTask extends ComfyUiBaseTask impl
             - this.#environmentSettings.stableDiffusionGuidanceScaleInterval} to ${cfgScaleValue}.`;
 
         await this.#comfyUiReplyService.reply(this.#interaction, {
-            request: renderRequest,
+            request: renderRequests,
             response: imagesResponse
         }, content);
     }
