@@ -69,13 +69,14 @@ export class ComfyUiRandomRenderTask extends ComfyUiBaseTask implements IRandomR
 
         const renderRequest = this.#workflowService.getWorkflowDefaults(workflow);
         renderRequest.prompt = ollamaExchange.response.response;
+        renderRequest.num = 1;
         renderRequest.refreshSeed();
 
         const prompt = this.#workflowService.renderWorkflow(workflow, renderRequest);
         const imagesResponse = await this.#comfyUiClient.render(prompt);
 
         const exchange = {
-            request: renderRequest,
+            request: [renderRequest],
             response: imagesResponse
         };
 

@@ -59,13 +59,17 @@ export class ComfyUiUpscaleRenderTask extends ComfyUiBaseTask implements IUpscal
             await this.#replyService.replyWithError(this.#interaction);
         }
 
-        const originalRenderRequest = SerializableRenderRequest.fromJson(imageAttachments[0].description);
         const imagesAsBase64 = await this.#replyService.getAttachedImagesAsBase64(this.#interaction);
 
         const templateKey = '{{ upscalerType }}';
         let content = `${this.#interaction.user} upscaled an image using ${templateKey} upscaler.`;
 
+        const renderRequests: Array<SerializableRenderRequest> = [];
+        let i = 0;
+
         for(const imageAsBase64 of imagesAsBase64) {
+            renderRequests.push(SerializableRenderRequest.fromJson(imageAttachments[i].description));
+
             const upscalingWorkflows = this.#workflowService.workflows.filter(x => x.type === WorkflowType.Upscaler);
             let workflow: IWorkflow;
 
@@ -93,12 +97,14 @@ export class ComfyUiUpscaleRenderTask extends ComfyUiBaseTask implements IUpscal
             const imagesResponse = await this.#comfyUiClient.render(prompt);
 
             imagesResponses.push(imagesResponse);
+
+            i++;
         }
 
         const imagesResponse = this.#comfyUiReplyService.flattenMultipleImagesResponses(imagesResponses);
 
         await this.#comfyUiReplyService.reply(this.#interaction, {
-            request: originalRenderRequest,
+            request: renderRequests,
             response: imagesResponse
         }, content);
     }

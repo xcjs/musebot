@@ -45,32 +45,6 @@
       "title": "Load Image (Base64)"
     }
   },
-  "106": {
-    "inputs": {
-      "bit_depth": "8bit",
-      "images": [
-        "103",
-        0
-      ]
-    },
-    "class_type": "SwarmSaveImageWS",
-    "_meta": {
-      "title": "SwarmSaveImageWS"
-    }
-  },
-  "107": {
-    "inputs": {
-      "filename_prefix": "Musebot_Upscale_Detail",
-      "images": [
-        "103",
-        0
-      ]
-    },
-    "class_type": "SaveImage",
-    "_meta": {
-      "title": "Save Image"
-    }
-  },
   "109": {
     "inputs": {
       "width": 1024,
@@ -87,6 +61,23 @@
     "class_type": "ImageResizeKJ",
     "_meta": {
       "title": "Resize Image"
+    }
+  },
+  "112": {
+    "inputs": {
+      "filename_prefix": "Musebot_Upscale_Detail",
+      "fps": 0.01,
+      "lossless": false,
+      "quality": 85,
+      "method": "default",
+      "images": [
+        "103",
+        0
+      ]
+    },
+    "class_type": "SaveAnimatedWEBP",
+    "_meta": {
+      "title": "SaveAnimatedWEBP"
     }
   }
 }

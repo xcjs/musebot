@@ -5,6 +5,7 @@ import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
+import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 import { IJsonRenderTask } from '../../tasks/IJsonRenderTask.js';
@@ -71,11 +72,15 @@ export class ComfyUiJsonRenderTask extends ComfyUiBaseTask implements IJsonRende
             renderRequest.refreshSeed();
         }
 
+        if(renderRequest.num > DiscordConstants.MaxAttachmentsPerMessage) {
+            renderRequest.num = DiscordConstants.MaxAttachmentsPerMessage;
+        }
+
         const workflowPrompt = this.#workflowService.renderWorkflow(workflow, renderRequest);
         const imagesResponse = await this.#comfyUiClient.render(workflowPrompt);
 
         const exchange = {
-            request: renderRequest,
+            request: [renderRequest],
             response: imagesResponse
         };
 
