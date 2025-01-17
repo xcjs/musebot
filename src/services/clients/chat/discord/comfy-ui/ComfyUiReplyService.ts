@@ -91,7 +91,6 @@ export class ComfyUiReplyService {
                         description: isStatefulResponse
                             ? jsonDescriptions[i] || jsonDescriptions[0]
                             : null,
-
                     }
                 ));
             }
