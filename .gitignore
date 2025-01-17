@@ -13,3 +13,6 @@ build/
 
 # Package Management
 node_modules/
+
+# Unit Test Coverage
+coverage/
