@@ -68,7 +68,8 @@ export class ComfyUiReplyService {
 
             for (const imageContainer of imageResponse) {
                 const image = Buffer.from(await imageContainer.blob.arrayBuffer());
-                const filename = this.getFileNameFromPrompt(renderExchange.request[i]);
+                const filename = this.getFileNameFromPrompt(renderExchange.request[i]
+                    || renderExchange.request[0]);
 
                 let extension = '';
 
