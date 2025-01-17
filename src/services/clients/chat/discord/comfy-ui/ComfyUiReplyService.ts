@@ -53,8 +53,8 @@ export class ComfyUiReplyService {
 
         const jsonDescriptions: Array<string> = [];
 
-        const isStatefulResponse = renderExchange.request.filter(() => {
-            const description = JSON.stringify(renderExchange.request);
+        const isStatefulResponse = renderExchange.request.filter((_, i) => {
+            const description = JSON.stringify(renderExchange.request[i]);
             jsonDescriptions.push(description);
             return description.length <= DiscordConstants.ImageDescriptionMaxLength;
         }).length === renderExchange.request.length;
@@ -69,7 +69,6 @@ export class ComfyUiReplyService {
             for (const imageContainer of imageResponse) {
                 const image = Buffer.from(await imageContainer.blob.arrayBuffer());
                 const filename = this.getFileNameFromPrompt(renderExchange.request[i]);
-
 
                 let extension = '';
 
