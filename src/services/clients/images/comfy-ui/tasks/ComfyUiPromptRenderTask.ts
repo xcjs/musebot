@@ -82,13 +82,15 @@ export class ComfyUiPromptRenderTask extends ComfyUiBaseTask implements IPromptR
             this.#logger(LogLevel.Info, `Using ${workflow.name} as the selected workflow.`);
 
             const renderRequest = this.#workflowService.getWorkflowDefaults(workflow);
+            numRenders = renderRequest.num;
+
             renderRequest.model = workflow.name;
             renderRequest.prompt = prompt;
             renderRequest.num = 1;
             renderRequest.refreshSeed();
 
             renderRequests.push(renderRequest);
-            numRenders = renderRequest.num;
+
 
             const workflowPrompt = this.#workflowService.renderWorkflow(workflow, renderRequest);
 
