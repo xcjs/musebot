@@ -60,13 +60,13 @@ export class ComfyUiIncreaseGuidanceScaleRenderTask extends ComfyUiBaseTask impl
 
         for (const imageAttachment of imageAttachments) {
             const renderRequest = SerializableRenderRequest.fromJson(imageAttachment.description);
-            renderRequests.push(renderRequest);
 
             const workflow = this.#workflowService.workflows.find(x => x.name === renderRequest.model);
 
             this.#logger(LogLevel.Info, `Using ${workflow.name} as the selected workflow.`);
 
             renderRequest.cfgScale += this.#environmentSettings.stableDiffusionGuidanceScaleInterval;
+            renderRequests.push(renderRequest);
             cfgScaleValue = renderRequest.cfgScale;
 
             const prompt = this.#workflowService.renderWorkflow(workflow, renderRequest);
