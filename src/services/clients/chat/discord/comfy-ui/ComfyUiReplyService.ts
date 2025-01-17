@@ -61,10 +61,10 @@ export class ComfyUiReplyService {
 
         const imageAttachments: Array<AttachmentBuilder> = [];
 
-        let i = 0;
 
         for (const imageResponse of Object.values(renderExchange.response)) {
             this.#logger(LogLevel.Info, `Attaching render(s):`, JSON.stringify);
+            let i = 0;
 
             for (const imageContainer of imageResponse) {
                 const image = Buffer.from(await imageContainer.blob.arrayBuffer());
@@ -92,9 +92,9 @@ export class ComfyUiReplyService {
                             : null,
                     }
                 ));
-            }
 
-            i++;
+                i++;
+            }
         }
 
         let files = imageAttachments;
