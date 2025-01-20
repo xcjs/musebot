@@ -27,7 +27,7 @@
     "build:bin": "npx pkg .",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "test": "jest"
+    "test": "jest --silent"
   },
   "dependencies": {
     "@yao-pkg/pkg": "^6.1.1",
