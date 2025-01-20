@@ -54,9 +54,9 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         this.packageName = nodePackage.name;
         this.version = nodePackage.version;
 
-        this.nodeEnvironment = process.env.NODE_ENV?.trim() as NodeEnvironment;
+        this.nodeEnvironment = process.env.NODE_ENV.trim() as NodeEnvironment;
 
-        this.botFunction = process.env.MUSEBOT_FUNCTION?.trim() as BotFunction;
+        this.botFunction = process.env.MUSEBOT_FUNCTION.trim() as BotFunction;
 
         this.maxTaskAttempts = process.env.MUSEBOT_TASK_QUEUE_MAX_ATTEMPTS
             ? parseInt(process.env.MUSEBOT_TASK_QUEUE_MAX_ATTEMPTS)
