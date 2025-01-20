@@ -14,12 +14,12 @@ beforeEach(() => {
     // is present or any environment variables are set.
     process.env = {
         // NODE_ENV should be preserved as Jest sets this to "test".
-        NODE_ENV: process.env.NODE_ENV
+        NODE_ENV: process.env.NODE_ENV || 'test'
     };
 
     // Preset all minimally required values for most tests to pass.
-    process.env.MUSEBOT_DISCORD_TOKEN = 'mockToken';
     process.env.MUSEBOT_FUNCTION = BotFunction.Images;
+    process.env.MUSEBOT_DISCORD_TOKEN = 'mockToken';
     process.env.MUSEBOT_STABLE_DIFFUSION_HOSTS = 'http://localhost';
 });
 
@@ -39,6 +39,14 @@ describe('EnvironmentSettings', () => {
     });
 
     describe('nodeEnvironment', () => {
+        test(`it should throw an exception if undefined`, () => {
+            delete process.env.NODE_ENV;
+
+            expect(() => {
+                new EnvironmentSettings();
+            }).toThrow();
+        });
+
         test(`it should return test in the testing environment without mocking`, () => {
             const environmentSettings = new EnvironmentSettings();
             expect(environmentSettings.nodeEnvironment).toBe(NodeEnvironment.Test);
@@ -52,6 +60,16 @@ describe('EnvironmentSettings', () => {
             const environmentSettings = new EnvironmentSettings();
 
             expect(environmentSettings.nodeEnvironment).toBe(environment);
+        });
+    });
+
+    describe('botFunction', () => {
+        test('it should throw an exception if undefined', () => {
+            delete process.env.MUSEBOT_FUNCTION;
+
+            expect(() => {
+                new EnvironmentSettings();
+            }).toThrow();
         });
     });
 });
