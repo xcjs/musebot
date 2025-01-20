@@ -1,17 +1,43 @@
 stages:
+  - Setup
   - Lint
+  - Test
   - Build
   - Publish
+
+Install Dependencies:
+  stage: Setup
+  image: node:lts
+  tags:
+    - docker
+  script:
+    - npm install
+  artifacts:
+    name: node_modules
+    paths:
+      - node_modules
+    expire_in: 1 week
 
 Lint:
   stage: Lint
   image: node:lts
   tags:
     - docker
-  before_script:
-    - npm install
   script:
     - npm run lint
+
+Test:
+  stage: Test
+  image: node:lts
+  tags:
+    - docker
+  script:
+    - npm test
+  artifacts:
+    name: coverage
+    paths:
+      - coverage
+    expire_in: 1 week
 
 Build Docker Image:
   stage: Build
