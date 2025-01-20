@@ -87,7 +87,6 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         this.botRequiresMention = (process.env.MUSEBOT_REQUIRES_MENTION?.trim().toLowerCase() === true.toString());
 
         const responseRate = parseInt(process.env.MUSEBOT_RESPONSE_RATE);
-
         this.botResponseRate = !isNaN(responseRate) && responseRate > 0 && responseRate <=100 ? responseRate : this.botResponseRate;
 
         this.errorMessage = process.env.MUSEBOT_ERROR_MESSAGE?.trim() || this.errorMessage;
@@ -160,6 +159,14 @@ export class EnvironmentSettings implements IEnvironmentSettings {
     }
 
     #validate(): void {
+        if(isNaN(this.maxTaskAttempts)) {
+            throw new Error('MUSEBOT_TASK_QUEUE_MAX_ATTEMPTS must be a number.');
+        }
+
+        if(isNaN(this.taskRetryDelayMilliseconds)) {
+            throw new Error('MUSEBOT_TASK_QUEUE_RETRY_DELAY_MS must be a number.');
+        }
+
         if(this.discordToken.length === 0) {
             throw new Error(`MUSEBOT_DISCORD_TOKEN requires a value.`);
         }
