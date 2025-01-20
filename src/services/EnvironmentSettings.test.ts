@@ -262,7 +262,7 @@ describe('EnvironmentSettings', () => {
             'true',
             'TRUE',
             'true '
-        ])('it should accept any valid version of "true', (botRequiresMention: string) => {
+        ])('it should accept any valid version of "true"', (botRequiresMention: string) => {
             process.env.MUSEBOT_REQUIRES_MENTION = botRequiresMention;
             const environmentSettings = new EnvironmentSettings();
 
