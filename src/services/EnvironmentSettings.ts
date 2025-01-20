@@ -3,6 +3,8 @@ import process from 'node:process';
 import dotenv from 'dotenv';
 import { Logger, LogLevel } from 'meklog';
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import nodePackage from '../../package.json' with { type: 'json' };
 import { BotFunction } from '../enums/BotFunction.js';
 import { NodeEnvironment } from '../enums/NodeEnvironment.js';
