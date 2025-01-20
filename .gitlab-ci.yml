@@ -56,8 +56,6 @@ Build Distributable:
   image: node:lts
   tags:
     - docker
-  before_script:
-    - npm install
   script:
     - npm run build:bin
     - cp -f .env.example build/pkg/.env
