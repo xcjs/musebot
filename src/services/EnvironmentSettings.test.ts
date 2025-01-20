@@ -10,6 +10,13 @@ import { NodeEnvironment } from '../enums/NodeEnvironment.js';
 import { EnvironmentSettings } from './EnvironmentSettings';
 
 beforeEach(() => {
+    // Clear any configuration values ahead of time in case a configuration file
+    // is present or any environment variables are set.
+    process.env = {
+        // NODE_ENV should be preserved as Jest sets this to "test".
+        NODE_ENV: process.env.NODE_ENV
+    };
+
     // Preset all minimally required values for most tests to pass.
     process.env.MUSEBOT_DISCORD_TOKEN = 'mockToken';
     process.env.MUSEBOT_FUNCTION = BotFunction.Images;
