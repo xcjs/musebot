@@ -14,7 +14,7 @@ beforeEach(() => {
     // is present or any environment variables are set.
     process.env = {
         // NODE_ENV should be preserved as Jest sets this to "test".
-        NODE_ENV: process.env.NODE_ENV || 'test'
+        NODE_ENV: process.env.NODE_ENV || NodeEnvironment.Test
     };
 
     // Preset all minimally required values for most tests to pass.
