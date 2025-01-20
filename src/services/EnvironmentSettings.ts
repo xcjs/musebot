@@ -157,7 +157,7 @@ export class EnvironmentSettings implements IEnvironmentSettings {
 
     #validate(): void {
         if(this.discordToken.length === 0) {
-            throw new Error(`EASY_DIFFUSION_DISCORD_BOT_TOKEN requires a value.`);
+            throw new Error(`MUSEBOT_DISCORD_TOKEN requires a value.`);
         }
 
         if(this.botFunction === BotFunction.Images && this.stableDiffusionHosts.length === 0) {
