@@ -49,7 +49,11 @@ export class EnvironmentSettings implements IEnvironmentSettings {
     }
 
     constructor() {
-        dotenv.config();
+        // If this loads environment variables during a test, it can pollute
+        // the results.
+        if(process.env.NODE_ENV !== NodeEnvironment.Test) {
+            dotenv.config();
+        }
 
         this.packageName = nodePackage.name;
         this.version = nodePackage.version;
