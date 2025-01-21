@@ -3,6 +3,8 @@ import process from 'node:process';
 import dotenv from 'dotenv';
 import { Logger, LogLevel } from 'meklog';
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import nodePackage from '../../package.json' with { type: 'json' };
 import { BotFunction } from '../enums/BotFunction.js';
 import { NodeEnvironment } from '../enums/NodeEnvironment.js';
@@ -47,7 +49,11 @@ export class EnvironmentSettings implements IEnvironmentSettings {
     }
 
     constructor() {
-        dotenv.config();
+        // If this loads environment variables during a test, it can pollute
+        // the results.
+        if(process.env.NODE_ENV !== NodeEnvironment.Test) {
+            dotenv.config();
+        }
 
         this.packageName = nodePackage.name;
         this.version = nodePackage.version;
@@ -81,7 +87,6 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         this.botRequiresMention = (process.env.MUSEBOT_REQUIRES_MENTION?.trim().toLowerCase() === true.toString());
 
         const responseRate = parseInt(process.env.MUSEBOT_RESPONSE_RATE);
-
         this.botResponseRate = !isNaN(responseRate) && responseRate > 0 && responseRate <=100 ? responseRate : this.botResponseRate;
 
         this.errorMessage = process.env.MUSEBOT_ERROR_MESSAGE?.trim() || this.errorMessage;
@@ -154,8 +159,16 @@ export class EnvironmentSettings implements IEnvironmentSettings {
     }
 
     #validate(): void {
+        if(isNaN(this.maxTaskAttempts)) {
+            throw new Error('MUSEBOT_TASK_QUEUE_MAX_ATTEMPTS must be a number.');
+        }
+
+        if(isNaN(this.taskRetryDelayMilliseconds)) {
+            throw new Error('MUSEBOT_TASK_QUEUE_RETRY_DELAY_MS must be a number.');
+        }
+
         if(this.discordToken.length === 0) {
-            throw new Error(`EASY_DIFFUSION_DISCORD_BOT_TOKEN requires a value.`);
+            throw new Error(`MUSEBOT_DISCORD_TOKEN requires a value.`);
         }
 
         if(this.botFunction === BotFunction.Images && this.stableDiffusionHosts.length === 0) {

@@ -1,0 +1,321 @@
+import process from 'node:process';
+
+import { beforeEach, describe, expect, test } from '@jest/globals';
+
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import nodePackage from '../../package.json' with { type: 'json' };
+import { BotFunction } from '../enums/BotFunction.js';
+import { NodeEnvironment } from '../enums/NodeEnvironment.js';
+import { EnvironmentSettings } from './EnvironmentSettings';
+
+beforeEach(() => {
+    // Clear any configuration values ahead of time in case a configuration file
+    // is present or any environment variables are set.
+    process.env = {
+        // NODE_ENV should be preserved as Jest sets this to "test".
+        NODE_ENV: process.env.NODE_ENV || NodeEnvironment.Test
+    };
+
+    // Preset all minimally required values for most tests to pass.
+    process.env.MUSEBOT_FUNCTION = BotFunction.Images;
+    process.env.MUSEBOT_DISCORD_TOKEN = 'mockToken';
+    process.env.MUSEBOT_STABLE_DIFFUSION_HOSTS = 'http://localhost';
+});
+
+describe('EnvironmentSettings', () => {
+    describe('packageName', () => {
+        test('it should equal the package name in package.json', () => {
+            const environmentSettings = new EnvironmentSettings();
+            expect(environmentSettings.packageName).toBe(nodePackage.name);
+        });
+    });
+
+    describe('version', () => {
+        test('it should equal the version number in package.json', () => {
+            const environmentSettings = new EnvironmentSettings();
+            expect(environmentSettings.version).toBe(nodePackage.version);
+        });
+    });
+
+    describe('nodeEnvironment', () => {
+        test(`it should return test in the testing environment without mocking`, () => {
+            const environmentSettings = new EnvironmentSettings();
+            expect(environmentSettings.nodeEnvironment).toBe(NodeEnvironment.Test);
+        });
+
+        test.each([
+            NodeEnvironment.Development,
+            NodeEnvironment.Production
+        ])(`it should match the NODE_ENV environment variable`, (environment) => {
+            process.env.NODE_ENV = environment;
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.nodeEnvironment).toBe(environment);
+
+            // Reset the NODE_ENV variable for all other tests. This is very
+            // important!
+            process.env.NODE_ENV = NodeEnvironment.Test;
+        });
+    });
+
+    describe('botFunction', () => {
+        test('it should be required', () => {
+            delete process.env.MUSEBOT_FUNCTION;
+
+            expect(() => {
+                new EnvironmentSettings();
+            }).toThrow();
+        });
+
+        test.each([
+            BotFunction.Images,
+            BotFunction.Text
+        ])('it should accept any valid BotFunction value', (botFunction: BotFunction) => {
+            process.env.MUSEBOT_FUNCTION = botFunction;
+            process.env.MUSEBOT_OLLAMA_HOSTS = 'http://localhost';
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.botFunction).toBe(botFunction);
+
+            // Reset environment settings for all other tests. This is very
+            // important!
+            process.env.MUSEBOT_FUNCTION = BotFunction.Images;
+        });
+
+        test('it should not accept any invalid value', () => {
+            process.env.MUSEBOT_FUNCTION = 'invalidFunction';
+
+            expect(() => {
+               new EnvironmentSettings();
+            });
+
+            process.env.MUSEBOT_FUNCTION = BotFunction.Images;
+        });
+    });
+
+    describe('maxTaskAttempts', () => {
+        test('it should default to 10', () => {
+            const environmentSettings = new EnvironmentSettings();
+            expect(environmentSettings.maxTaskAttempts).toBe(10);
+        });
+
+        test('it should prefer the provided value', () => {
+            const mockMaxAttempts = 1000;
+
+            process.env.MUSEBOT_TASK_QUEUE_MAX_ATTEMPTS = mockMaxAttempts.toString();
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.maxTaskAttempts).toBe(mockMaxAttempts);
+
+            delete process.env.MUSEBOT_TASK_QUEUE_MAX_ATTEMPTS;
+        });
+
+        test('it should not accept non-numeric values', () => {
+            const mockMaxAttempts = 'invalidValue';
+
+            process.env.MUSEBOT_TASK_QUEUE_MAX_ATTEMPTS = mockMaxAttempts;
+
+            expect(() => {
+                new EnvironmentSettings();
+            }).toThrow();
+
+            delete process.env.MUSEBOT_TASK_QUEUE_MAX_ATTEMPTS;
+        });
+    });
+
+    describe('taskRetryDelayMilliseconds', () => {
+        test('it should default to 1 second', () => {
+            const environmentSettings = new EnvironmentSettings();
+            expect(environmentSettings.taskRetryDelayMilliseconds).toBe(1000);
+        });
+
+        test('it should prefer the provided value', () => {
+            const mockRetryDelay = 5000;
+            process.env.MUSEBOT_TASK_QUEUE_RETRY_DELAY_MS = mockRetryDelay.toString();
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.taskRetryDelayMilliseconds).toBe(mockRetryDelay);
+
+            delete process.env.MUSEBOT_TASK_QUEUE_RETRY_DELAY_MS;
+        });
+
+        test('it should not accept non-numeric values', () => {
+            const mockRetryDelay = 'invalidValue';
+
+            process.env.MUSEBOT_TASK_QUEUE_RETRY_DELAY_MS = mockRetryDelay;
+
+            expect(() => {
+                new EnvironmentSettings();
+            }).toThrow();
+
+            delete process.env.MUSEBOT_TASK_QUEUE_RETRY_DELAY_MS;
+        });
+    });
+
+    describe('discordToken', () => {
+        test('it should be required', () => {
+            const originalMockToken = process.env.MUSEBOT_DISCORD_TOKEN;
+            delete process.env.MUSEBOT_DISCORD_TOKEN;
+
+            expect(() => {
+                new EnvironmentSettings();
+            }).toThrow();
+
+            process.env.MUSEBOT_DISCORD_TOKEN = originalMockToken;
+        });
+
+        test('it should equal the associated environment variable', () => {
+            const environmentSettings = new EnvironmentSettings();
+            expect(environmentSettings.discordToken).toBe(process.env.MUSEBOT_DISCORD_TOKEN);
+        });
+    });
+
+    describe('discordChannels', () => {
+        test('it should be optional', () => {
+            const environmentSettings = new EnvironmentSettings();
+            expect(environmentSettings.discordChannels.length).toBe(0);
+        });
+
+        test('it should support one value', () => {
+            const mockChannelId = '1234567891234567891'
+            process.env.MUSEBOT_DISCORD_CHANNELS = mockChannelId;
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.discordChannels).toStrictEqual([mockChannelId])
+
+            delete process.env.MUSEBOT_DISCORD_CHANNELS;
+        });
+
+        test('it should support comma separated values', () => {
+            const mockChannelIds = [
+                '1234567891234567891',
+                '1234567891234567892',
+                '1234567891234567893'
+            ];
+
+            process.env.MUSEBOT_DISCORD_CHANNELS = mockChannelIds.join(',');
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.discordChannels).toStrictEqual(mockChannelIds);
+
+            delete process.env.MUSEBOT_DISCORD_CHANNELS;
+        });
+    });
+
+    describe('discordChannelsDisallowed', () => {
+        test('it should be optional', () => {
+            const environmentSettings = new EnvironmentSettings();
+            expect(environmentSettings.discordChannelsDisallowed.length).toBe(0);
+        });
+
+        test('it should support one value', () => {
+            const mockChannelId = '1234567891234567891'
+            process.env.MUSEBOT_DISCORD_CHANNELS_DISALLOWED = mockChannelId;
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.discordChannelsDisallowed).toStrictEqual([mockChannelId])
+
+            delete process.env.MUSEBOT_DISCORD_CHANNELS_DISALLOWED;
+        });
+
+        test('it should support comma separated values', () => {
+            const mockChannelIds = [
+                '1234567891234567891',
+                '1234567891234567892',
+                '1234567891234567893'
+            ];
+
+            process.env.MUSEBOT_DISCORD_CHANNELS_DISALLOWED = mockChannelIds.join(',');
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.discordChannelsDisallowed).toStrictEqual(mockChannelIds);
+
+            delete process.env.MUSEBOT_DISCORD_CHANNELS_DISALLOWED;
+        });
+    });
+
+    describe('botRequiresMention', () => {
+        test('it should default to false', () => {
+            const environmentSettings = new EnvironmentSettings();
+            expect(environmentSettings.botRequiresMention).toBe(false);
+        });
+
+        test.each([
+            'false',
+            'FALSE',
+            'tru',
+            'invalidValue',
+            undefined,
+            null
+        ]
+        )('it should convert any other provided value to false', (botRequiresMention: string | null | undefined) => {
+            process.env.MUSEBOT_REQUIRES_MENTION = botRequiresMention;
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.botRequiresMention).toBe(false);
+
+            delete process.env.MUSEBOT_REQUIRES_MENTION;
+        });
+
+        test.each([
+            'true',
+            'TRUE',
+            'true '
+        ])('it should accept any valid version of "true"', (botRequiresMention: string) => {
+            process.env.MUSEBOT_REQUIRES_MENTION = botRequiresMention;
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.botRequiresMention).toBe(true);
+
+            delete process.env.MUSEBOT_REQUIRES_MENTION;
+        });
+    });
+
+    describe('botResponseRate', () => {
+        test('it should default to 100', () => {
+            const environmentSettings = new EnvironmentSettings();
+            expect(environmentSettings.botResponseRate).toBe(100);
+        });
+
+        test('it should prefer the provided value', () => {
+            const mockResponseRate = 50;
+            process.env.MUSEBOT_RESPONSE_RATE = mockResponseRate.toString();
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.botResponseRate).toBe(mockResponseRate);
+
+            delete process.env.MUSEBOT_RESPONSE_RATE;
+        });
+
+        test.each([
+            -1, 0, 101
+        ])('it should default to 100 when the value is outside the valid range', (rate: number) => {
+            process.env.MUSEBOT_RESPONSE_RATE = rate.toString();
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.botResponseRate).toBe(100);
+
+            delete process.env.MUSEBOT_RESPONSE_RATE;
+        });
+    });
+
+    describe('errorMessage', () => {
+        test('it should default to the default error message', () => {
+            const environmentSettings = new EnvironmentSettings();
+            expect(environmentSettings.errorMessage)
+                .toBe('An error occurred while generating a response. Please try again later.');
+        });
+
+        test('it should prefer the provided value', () => {
+            const mockErrorMessage = 'mockError';
+            process.env.MUSEBOT_ERROR_MESSAGE = mockErrorMessage;
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.errorMessage).toBe(mockErrorMessage);
+        });
+    });
+});

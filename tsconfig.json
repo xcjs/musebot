@@ -24,5 +24,15 @@
     // Finally, an additional setting for reducing the amount of possible
     // files to track work from these directories
     "excludeDirectories": ["**/node_modules", "build"]
+  },
+  "ts-node": {
+    "esm": true,
+    "compilerOptions": {
+      "composite": true,
+      "module": "ESNext",
+      "moduleResolution": "Node",
+      "resolveJsonModule": true,
+      "allowSyntheticDefaultImports": true
+    }
   }
 }

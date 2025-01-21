@@ -1,4 +1,5 @@
 export enum NodeEnvironment {
     Development = 'development',
-    Production = 'production'
+    Production = 'production',
+    Test = 'test'
 }

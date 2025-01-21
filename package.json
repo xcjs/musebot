@@ -26,23 +26,30 @@
     "prebuild:bin": "npm run parcel",
     "build:bin": "npx pkg .",
     "lint": "eslint .",
-    "lint:fix": "eslint --fix ."
+    "lint:fix": "eslint --fix .",
+    "test": "jest --silent"
   },
   "dependencies": {
     "@yao-pkg/pkg": "^6.1.1",
     "comfy-ui-client": "^0.1.2",
+    "cross-env": "^7.0.3",
     "discord.js": "14.16.1",
     "dotenv": "^16.3.1",
     "meklog": "^1.0.2",
     "mustache": "^4.2.0",
     "ollama": "^0.5.2",
     "parcel": "^2.12.0",
+    "ts-jest": "^29.2.5",
     "typescript": "^5.5.2"
   },
   "devDependencies": {
+    "@babel/preset-typescript": "^7.26.0",
+    "@jest/globals": "^29.7.0",
     "eslint": "^8.57.0",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "globals": "^15.6.0",
+    "jest": "^29.7.0",
+    "ts-node": "^10.9.2",
     "typescript-eslint": "^7.14.1"
   }
 }
