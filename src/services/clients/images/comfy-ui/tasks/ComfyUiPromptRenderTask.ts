@@ -1,11 +1,11 @@
 import { ImagesResponse } from 'comfy-ui-client';
-import { Client as DiscordClient, Message, MessageType } from 'discord.js';
+import { Message, MessageType } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
 import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
-import { TaskQueue } from '../../../../tasks/TaskQueue.js';
+import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
@@ -19,12 +19,11 @@ import { ComfyUiJsonRenderTask } from './ComfyUiJsonRenderTask.js';
 export class ComfyUiPromptRenderTask extends ComfyUiBaseTask implements IPromptRenderTask {
     #services: IServiceContainer;
 
-    #discordClient: DiscordClient;
     #workflowService: IWorkflowService;
     #comfyUiClient: ComfyUiClient;
     #comfyUiReplyService: ComfyUiReplyService;
     #replyService: IReplyService;
-    #taskQueue: TaskQueue;
+    #taskQueue: ITaskQueue;
 
     #message: Message;
 
@@ -41,11 +40,11 @@ export class ComfyUiPromptRenderTask extends ComfyUiBaseTask implements IPromptR
 
         this.#services = services;
 
-        this.#discordClient = services.discordClient;
         this.#workflowService = services.workflowService;
         this.#comfyUiClient = services.comfyUiClient;
         this.#comfyUiReplyService = services.comfyUiReplyService;
         this.#replyService = services.replyService;
+        this.#taskQueue = services.taskQueue;
         this.#message = message;
 
         this.#logger = new Logger(services.environmentSettings.isProduction, 'ComfyUiPromptRenderTask');
@@ -60,11 +59,11 @@ export class ComfyUiPromptRenderTask extends ComfyUiBaseTask implements IPromptR
             ? `${((await this.#getAllAntecedentPrompts()).join(' '))} ${this.#message.content}`.trim()
             : this.#replyService.getMessageWithoutBotMentions(this.#message);
 
-        if(prompt.charAt(0) === '{') {
+        if (prompt.charAt(0) === '{') {
             this.#taskQueue.add(new ComfyUiJsonRenderTask(
                 this.#services,
                 this.#message));
-            return;
+            return Promise.resolve();
         }
 
         const workflows = this.#workflowService.workflows.filter(x =>
