@@ -16,6 +16,7 @@ import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 
 export class ComfyUiJsonRenderTask extends ComfyUiBaseTask implements IJsonRenderTask {
     #environmentSettings: IEnvironmentSettings;
+
     #discordClient: DiscordClient;
     #workflowService: IWorkflowService;
     #comfyUiClient: ComfyUiClient;
@@ -38,6 +39,7 @@ export class ComfyUiJsonRenderTask extends ComfyUiBaseTask implements IJsonRende
         this.#environmentSettings = services.environmentSettings;
         this.#discordClient = services.discordClient;
         this.#workflowService = services.workflowService;
+        this.#comfyUiClient = services.comfyUiClient;
         this.#comfyUiReplyService = services.comfyUiReplyService;
         this.#replyService = services.replyService;
         this.#message = message;
