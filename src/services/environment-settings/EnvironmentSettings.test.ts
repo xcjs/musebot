@@ -7,20 +7,23 @@ import { beforeEach, describe, expect, it, test } from '@jest/globals';
 import nodePackage from '../../../package.json' with { type: 'json' };
 import { BotFunction } from '../../enums/BotFunction.js';
 import { NodeEnvironment } from '../../enums/NodeEnvironment.js';
+import { EnvironmentKey } from './constants/EnvironmentKey.js';
 import { EnvironmentSettings } from './EnvironmentSettings';
+
+const mockToken = 'mockToken';
+const mockUrl = 'http://localhost/';
 
 beforeEach(() => {
     // Clear any configuration values ahead of time in case a configuration file
     // is present or any environment variables are set.
     process.env = {
         // NODE_ENV should be preserved as Jest sets this to "test".
-        NODE_ENV: process.env.NODE_ENV || NodeEnvironment.Test
+        [EnvironmentKey.NodeEnvironment]: process.env[EnvironmentKey.NodeEnvironment] || NodeEnvironment.Test,
+        // Preset all minimally required values for most tests to pass.
+        [EnvironmentKey.BotFunction]: BotFunction.Images,
+        [EnvironmentKey.AuthenticationToken]: mockToken,
+        [EnvironmentKey.StableDiffusionHosts]: mockUrl
     };
-
-    // Preset all minimally required values for most tests to pass.
-    process.env.MUSEBOT_FUNCTION = BotFunction.Images;
-    process.env.MUSEBOT_DISCORD_TOKEN = 'mockToken';
-    process.env.MUSEBOT_STABLE_DIFFUSION_HOSTS = 'http://localhost';
 });
 
 describe('EnvironmentSettings', () => {
@@ -47,15 +50,15 @@ describe('EnvironmentSettings', () => {
         test.each([
             NodeEnvironment.Development,
             NodeEnvironment.Production
-        ])(`should match the NODE_ENV environment variable`, (environment) => {
-            process.env.NODE_ENV = environment;
+        ])(`should match the ${EnvironmentKey.NodeEnvironment} environment variable`, (environment) => {
+            process.env[EnvironmentKey.NodeEnvironment] = environment;
             const environmentSettings = new EnvironmentSettings();
 
             expect(environmentSettings.nodeEnvironment).toBe(environment);
 
             // Reset the NODE_ENV variable for all other tests. This is very
             // important!
-            process.env.NODE_ENV = NodeEnvironment.Test;
+            process.env[EnvironmentKey.NodeEnvironment] = NodeEnvironment.Test;
         });
     });
 
@@ -73,7 +76,7 @@ describe('EnvironmentSettings', () => {
             BotFunction.Text
         ])('should accept any valid BotFunction value', (botFunction: BotFunction) => {
             process.env.MUSEBOT_FUNCTION = botFunction;
-            process.env.MUSEBOT_OLLAMA_HOSTS = 'http://localhost';
+            process.env.MUSEBOT_OLLAMA_HOSTS = mockUrl;
             const environmentSettings = new EnvironmentSettings();
 
             expect(environmentSettings.botFunction).toBe(botFunction);
@@ -87,8 +90,9 @@ describe('EnvironmentSettings', () => {
             process.env.MUSEBOT_FUNCTION = 'invalidFunction';
 
             expect(() => {
-               new EnvironmentSettings();
-            });
+               const environmentSettings = new EnvironmentSettings();
+               console.log(environmentSettings);
+            }).toThrow();
 
             process.env.MUSEBOT_FUNCTION = BotFunction.Images;
         });
@@ -302,7 +306,7 @@ describe('EnvironmentSettings', () => {
         });
 
         it('should floor floating point values', () => {
-            process.env.MUSEBOT_RESPONSE_RATE
+            process.env.MUSEBOT_RESPONSE_RATE = '1.5';
         });
     });
 

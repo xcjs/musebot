@@ -9,6 +9,7 @@ import nodePackage from '../../../package.json' with { type: 'json' };
 import { BotFunction } from '../../enums/BotFunction.js';
 import { NodeEnvironment } from '../../enums/NodeEnvironment.js';
 import { StableDiffusionApiType } from '../clients/images/stable-diffusion/enums/StableDiffusionApiType.js';
+import { EnvironmentKey } from './constants/EnvironmentKey.js';
 import { IEnvironmentSettings } from './IEnvironmentSettings.js';
 
 export class EnvironmentSettings implements IEnvironmentSettings {
@@ -58,40 +59,43 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         this.packageName = nodePackage.name;
         this.version = nodePackage.version;
 
-        this.nodeEnvironment = process.env.NODE_ENV.trim() as NodeEnvironment;
+        this.nodeEnvironment = process.env[EnvironmentKey.NodeEnvironment].trim() as NodeEnvironment;
 
-        this.botFunction = process.env.MUSEBOT_FUNCTION.trim() as BotFunction;
+        this.botFunction = process.env[EnvironmentKey.BotFunction].trim() as BotFunction;
 
-        this.maxTaskAttempts = process.env.MUSEBOT_TASK_QUEUE_MAX_ATTEMPTS
-            ? parseInt(process.env.MUSEBOT_TASK_QUEUE_MAX_ATTEMPTS)
+        this.maxTaskAttempts = process.env[EnvironmentKey.TaskQueueMaxAttempts]
+            ? parseInt(process.env[EnvironmentKey.TaskQueueMaxAttempts])
             : this.maxTaskAttempts;
 
-        this.taskRetryDelayMilliseconds = process.env.MUSEBOT_TASK_QUEUE_RETRY_DELAY_MS
-            ? parseInt(process.env.MUSEBOT_TASK_QUEUE_RETRY_DELAY_MS)
+        this.taskRetryDelayMilliseconds = process.env[EnvironmentKey.TaskQueueRetryDelayMs]
+            ? parseInt(process.env[EnvironmentKey.TaskQueueRetryDelayMs])
             : this.taskRetryDelayMilliseconds;
 
-        this.discordToken = process.env.MUSEBOT_DISCORD_TOKEN?.trim() || '';
+        this.discordToken = process.env[EnvironmentKey.AuthenticationToken]?.trim() || '';
 
-        const discordChannels = process.env.MUSEBOT_DISCORD_CHANNELS?.trim() || null;
+        const discordChannels = process.env[EnvironmentKey.ChatChannels]?.trim() || null;
 
         if(discordChannels !== null && discordChannels.length > 0) {
             this.discordChannels = discordChannels.trim().split(',') || [];
         }
 
-        const discordChannelsDisallowed = process.env.MUSEBOT_DISCORD_CHANNELS_DISALLOWED?.trim() || null;
+        const discordChannelsDisallowed = process.env[EnvironmentKey.ChatChannelsDisallowed]?.trim() || null;
 
         if (discordChannelsDisallowed !== null && discordChannelsDisallowed.length > 0) {
             this.discordChannelsDisallowed = discordChannelsDisallowed.trim().split(',') || [];
         }
 
-        this.botRequiresMention = (process.env.MUSEBOT_REQUIRES_MENTION?.trim().toLowerCase() === true.toString());
+        this.botRequiresMention = (process.env[EnvironmentKey.BotRequiresMention]?.trim()
+            .toLowerCase() === true.toString());
 
-        const responseRate = parseInt(process.env.MUSEBOT_RESPONSE_RATE);
-        this.botResponseRate = !isNaN(responseRate) && responseRate > 0 && responseRate <=100 ? responseRate : this.botResponseRate;
+        const responseRate = parseInt(process.env[EnvironmentKey.BotResponseRate]);
+        this.botResponseRate = !isNaN(responseRate) && responseRate > 0 && responseRate <=100
+            ? responseRate
+            : this.botResponseRate;
 
-        this.errorMessage = process.env.MUSEBOT_ERROR_MESSAGE?.trim() || this.errorMessage;
+        this.errorMessage = process.env[EnvironmentKey.BotErrorMessage]?.trim() || this.errorMessage;
 
-        this.stableDiffusionApiType = process.env.MUSEBOT_STABLE_DIFFUSION_API_TYPE?.trim() as StableDiffusionApiType;
+        this.stableDiffusionApiType = process.env[EnvironmentKey.BotErrorMessage]?.trim() as StableDiffusionApiType;
 
         // If the ComfyUI integration is configured, workflows will be loaded
         // from the $PWD/workflows directory and the
@@ -99,28 +103,38 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         //
         // Otherwise, load the environment variable as normal.
         if(this.stableDiffusionApiType !== StableDiffusionApiType.ComfyUI) {
-            this.stableDiffusionModels = process.env.MUSEBOT_STABLE_DIFFUSION_MODELS?.trim().split(',').filter(x => x.length > 0) || [];
+            this.stableDiffusionModels = process.env[EnvironmentKey.StableDiffusionApiType]?.trim()
+                .split(',')
+                .filter(x => x.length > 0) || [];
         }
 
-        const stableDiffusionHosts = process.env.MUSEBOT_STABLE_DIFFUSION_HOSTS?.trim() || null;
+        const stableDiffusionHosts = process.env[EnvironmentKey.StableDiffusionHosts]?.trim() || null;
 
         if (stableDiffusionHosts !== null && stableDiffusionHosts.length > 0) {
             this.stableDiffusionHosts = stableDiffusionHosts.split(',').map(url => new URL(url)) || [];
         }
 
-        this.stableDiffusionModels = process.env.MUSEBOT_STABLE_DIFFUSION_MODELS?.trim().split(',').filter(x => x.length > 0) || [];
+        this.stableDiffusionModels = process.env[EnvironmentKey.StableDiffusionModels]?.trim()
+            .split(',')
+            .filter(x => x.length > 0) || [];
 
-        const ollamaHosts = process.env.MUSEBOT_OLLAMA_HOSTS?.trim() || null;
+        const ollamaHosts = process.env[EnvironmentKey.OllamaHosts]?.trim() || null;
 
         if(ollamaHosts !== null && ollamaHosts.length > 0) {
             this.ollamaHosts = ollamaHosts.split(',').map(url => new URL(url)) || [];
         }
 
-        this.ollamaModels = process.env.MUSEBOT_OLLAMA_MODELS?.trim().split(',').filter(x => x.length > 0) || [];
-        this.ollamaSystemPrompt = process.env.MUSEBOT_OLLAMA_SYSTEM_PROMPT?.trim() || '';
-        this.ollamaStreamsResponse = (process.env.MUSEBOT_OLLAMA_STREAMS_RESPONSE?.trim().toLowerCase() === true.toString());
+        this.ollamaModels = process.env[EnvironmentKey.OllamaModels]?.trim()
+            .split(',')
+            .filter(x => x.length > 0) || [];
 
-        this.stableDiffusionOllamaPrompts = process.env.MUSEBOT_STABLE_DIFFUSION_OLLAMA_PROMPTS?.split('|') || this.stableDiffusionOllamaPrompts;
+        this.ollamaSystemPrompt = process.env[EnvironmentKey.OllamaSystemPrompt]?.trim() || '';
+
+        this.ollamaStreamsResponse = (process.env[EnvironmentKey.OllamaStreamsResponse]?.trim()
+            .toLowerCase() === true.toString());
+
+        this.stableDiffusionOllamaPrompts = process.env[EnvironmentKey.StableDiffusionOllamaPrompts]?.split('|')
+            || this.stableDiffusionOllamaPrompts;
 
         this.#logger = new Logger(this.isProduction, 'EnvironmentSettings');
 
@@ -130,61 +144,71 @@ export class EnvironmentSettings implements IEnvironmentSettings {
     }
 
     #logConfiguration(): void {
+        if(this.nodeEnvironment === NodeEnvironment.Test) {
+            return;
+        }
+
         this.#logger(LogLevel.Info, `Package Name: ${this.packageName}`);
         this.#logger(LogLevel.Info, `Package Version: ${this.version}`);
 
-        this.#logger(LogLevel.Info, `NODE_ENV: ${this.nodeEnvironment}`);
+        this.#logger(LogLevel.Info, `${EnvironmentKey.NodeEnvironment}: ${this.nodeEnvironment}`);
 
-        this.#logger(LogLevel.Info, `MUSEBOT_TASK_QUEUE_MAX_ATTEMPTS ${this.maxTaskAttempts}`);
-        this.#logger(LogLevel.Info, `MUSEBOT_TASK_QUEUE_RETRY_DELAY_MS: ${this.taskRetryDelayMilliseconds}`);
+        this.#logger(LogLevel.Info, `${EnvironmentKey.TaskQueueMaxAttempts}: ${this.maxTaskAttempts}`);
+        this.#logger(LogLevel.Info, `${EnvironmentKey.TaskQueueRetryDelayMs}}: ${this.taskRetryDelayMilliseconds}`);
 
-        this.#logger(LogLevel.Info, `MUSEBOT_FUNCTION: ${this.botFunction}`);
+        this.#logger(LogLevel.Info, `${EnvironmentKey.BotFunction}: ${this.botFunction}`);
 
-        this.#logger(LogLevel.Info, `MUSEBOT_DISCORD_CHANNELS: ${this.discordChannels.join(', ')}`);
-        this.#logger(LogLevel.Info, `MUSEBOT_DISCORD_CHANNELS_DISALLOWED: ${this.discordChannelsDisallowed.join(', ')}`);
-        this.#logger(LogLevel.Info, `MUSEBOT_REQUIRES_MENTION: ${this.botRequiresMention}`);
-        this.#logger(LogLevel.Info, `MUSEBOT_RESPONSE_RATE: ${this.botResponseRate}`);
-        this.#logger(LogLevel.Info, `MUSEBOT_ERROR_MESSAGE: ${this.errorMessage}`);
+        this.#logger(LogLevel.Info, `${EnvironmentKey.ChatChannels}: ${this.discordChannels.join(', ')}`);
+        this.#logger(LogLevel.Info, `${EnvironmentKey.ChatChannelsDisallowed}}: ${this.discordChannelsDisallowed.join(', ')}`);
+        this.#logger(LogLevel.Info, `${EnvironmentKey.BotRequiresMention}: ${this.botRequiresMention}`);
+        this.#logger(LogLevel.Info, `${EnvironmentKey.BotResponseRate}: ${this.botResponseRate}`);
+        this.#logger(LogLevel.Info, `${EnvironmentKey.BotErrorMessage}: ${this.errorMessage}`);
 
-        this.#logger(LogLevel.Info, `MUSEBOT_STABLE_DIFFUSION_API_TYPE: ${this.stableDiffusionApiType}`);
-        this.#logger(LogLevel.Info, `MUSEBOT_STABLE_DIFFUSION_HOSTS: ${this.stableDiffusionHosts.join(', ')}`);
-        this.#logger(LogLevel.Info, `MUSEBOT_STABLE_DIFFUSION_MODELS: ${this.stableDiffusionModels.join(', ')}`);
+        this.#logger(LogLevel.Info, `${EnvironmentKey.StableDiffusionApiType}: ${this.stableDiffusionApiType}`);
+        this.#logger(LogLevel.Info, `${EnvironmentKey.StableDiffusionHosts}: ${this.stableDiffusionHosts.join(', ')}`);
+        this.#logger(LogLevel.Info, `${EnvironmentKey.StableDiffusionModels}: ${this.stableDiffusionModels.join(', ')}`);
 
-        this.#logger(LogLevel.Info, `MUSEBOT_OLLAMA_HOSTS: ${this.ollamaHosts.join(', ')}`);
-        this.#logger(LogLevel.Info, `MUSEBOT_OLLAMA_MODELS: ${this.ollamaModels.join(', ')}`);
-        this.#logger(LogLevel.Info, `MUSEBOT_OLLAMA_SYSTEM_PROMPT: ${this.ollamaSystemPrompt}`);
-        this.#logger(LogLevel.Info, `MUSEBOT_OLLAMA_STREAMS_RESPONSE: ${this.ollamaStreamsResponse}`);
+        this.#logger(LogLevel.Info, `${EnvironmentKey.OllamaHosts}: ${this.ollamaHosts.join(', ')}`);
+        this.#logger(LogLevel.Info, `${EnvironmentKey.OllamaModels}: ${this.ollamaModels.join(', ')}`);
+        this.#logger(LogLevel.Info, `${EnvironmentKey.OllamaSystemPrompt}: ${this.ollamaSystemPrompt}`);
+        this.#logger(LogLevel.Info, `${EnvironmentKey.OllamaStreamsResponse}: ${this.ollamaStreamsResponse}`);
 
-        this.#logger(LogLevel.Info, `MUSEBOT_STABLE_DIFFUSION_OLLAMA_PROMPTS: ${this.stableDiffusionOllamaPrompts.join(' | ')}`);
+        this.#logger(LogLevel.Info, `${EnvironmentKey.StableDiffusionOllamaPrompts}: ${this.stableDiffusionOllamaPrompts.join(' | ')}`);
     }
 
     #validate(): void {
+        if(!Object.values(BotFunction).includes(this.botFunction)) {
+            throw new Error(`${EnvironmentKey.BotFunction} must be one of the following values: ${Object.values(BotFunction).join(', ')}`);
+        }
+
         if(isNaN(this.maxTaskAttempts)) {
-            throw new Error('MUSEBOT_TASK_QUEUE_MAX_ATTEMPTS must be a number.');
+            throw new Error(`${EnvironmentKey.TaskQueueMaxAttempts} must be a number.`);
         }
 
         if(isNaN(this.taskRetryDelayMilliseconds)) {
-            throw new Error('MUSEBOT_TASK_QUEUE_RETRY_DELAY_MS must be a number.');
+            throw new Error(`${EnvironmentKey.TaskQueueRetryDelayMs} must be a number.`);
         }
 
         if(this.discordToken.length === 0) {
-            throw new Error(`MUSEBOT_DISCORD_TOKEN requires a value.`);
+            throw new Error(`${EnvironmentKey.AuthenticationToken} requires a value.`);
         }
 
         if(this.botFunction === BotFunction.Images && this.stableDiffusionHosts.length === 0) {
-            throw new Error(`MUSEBOT_STABLE_DIFFUSION_HOSTS requires at least one value.`);
+            throw new Error(`${EnvironmentKey.StableDiffusionHosts} requires at least one value.`);
         }
 
         if(this.stableDiffusionModels.length === 0) {
-            this.#logger(LogLevel.Info, 'MUSEBOT_STABLE_DIFFUSION_MODELS had no value - a random model will be selected per render.');
+            this.#logger(LogLevel.Info,
+                `${EnvironmentKey.StableDiffusionModels} had no value - a random model will be selected per render.`);
         }
 
         if(this.botFunction === BotFunction.Text && this.ollamaHosts.length === 0) {
-            throw new Error(`MUSEBOT_OLLAMA_HOSTS requires at least one value.`);
+            throw new Error(`${EnvironmentKey.OllamaHosts} requires at least one value.`);
         }
 
         if(this.ollamaModels.length === 0) {
-            this.#logger(LogLevel.Info, 'MUSEBOT_OLLAMA_MODELS had no value - random model selection is not yet supported.');
+            this.#logger(LogLevel.Info,
+                `${EnvironmentKey.OllamaModels} had no value - random model selection is not yet supported.`);
         }
     }
 }
