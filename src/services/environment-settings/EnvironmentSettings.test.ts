@@ -56,15 +56,14 @@ describe('EnvironmentSettings', () => {
 
             expect(environmentSettings.nodeEnvironment).toBe(environment);
 
-            // Reset the NODE_ENV variable for all other tests. This is very
-            // important!
+            // Reset the environment after this test to prevent scope leak.
             process.env[EnvironmentKey.NodeEnvironment] = NodeEnvironment.Test;
         });
     });
 
     describe('botFunction', () => {
         it('should be required', () => {
-            delete process.env.MUSEBOT_FUNCTION;
+            delete process.env[EnvironmentKey.BotFunction];
 
             expect(() => {
                 new EnvironmentSettings();
@@ -75,26 +74,19 @@ describe('EnvironmentSettings', () => {
             BotFunction.Images,
             BotFunction.Text
         ])('should accept any valid BotFunction value', (botFunction: BotFunction) => {
-            process.env.MUSEBOT_FUNCTION = botFunction;
-            process.env.MUSEBOT_OLLAMA_HOSTS = mockUrl;
+            process.env[EnvironmentKey.BotFunction] = botFunction;
+            process.env[EnvironmentKey.OllamaHosts] = mockUrl;
             const environmentSettings = new EnvironmentSettings();
 
             expect(environmentSettings.botFunction).toBe(botFunction);
-
-            // Reset environment settings for all other tests. This is very
-            // important!
-            process.env.MUSEBOT_FUNCTION = BotFunction.Images;
         });
 
         it('should not accept any invalid value', () => {
             process.env.MUSEBOT_FUNCTION = 'invalidFunction';
 
             expect(() => {
-               const environmentSettings = new EnvironmentSettings();
-               console.log(environmentSettings);
+               new EnvironmentSettings();
             }).toThrow();
-
-            process.env.MUSEBOT_FUNCTION = BotFunction.Images;
         });
     });
 
