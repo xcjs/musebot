@@ -258,7 +258,7 @@ describe('EnvironmentSettings', () => {
 
         it('should prefer the provided value', () => {
             const mockResponseRate = 50;
-            process.env.MUSEBOT_RESPONSE_RATE = mockResponseRate.toString();
+            process.env[EnvironmentKey.BotResponseRate] = mockResponseRate.toString();
 
             const environmentSettings = new EnvironmentSettings();
 
@@ -268,7 +268,15 @@ describe('EnvironmentSettings', () => {
         test.each([
             -1, 0, 101
         ])('should default to 100 when the value is outside the valid range', (rate: number) => {
-            process.env.MUSEBOT_RESPONSE_RATE = rate.toString();
+            process.env[EnvironmentKey.BotResponseRate] = rate.toString();
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.botResponseRate).toBe(100);
+        });
+
+        it('should default to 100 when an invalid value is provided', () => {
+            process.env[EnvironmentKey.BotResponseRate] = 'invalidValue';
 
             const environmentSettings = new EnvironmentSettings();
 
@@ -276,7 +284,11 @@ describe('EnvironmentSettings', () => {
         });
 
         it('should floor floating point values', () => {
-            process.env.MUSEBOT_RESPONSE_RATE = '1.5';
+            process.env[EnvironmentKey.BotResponseRate] = '1.5';
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.botResponseRate).toBe(1);
         });
     });
 
