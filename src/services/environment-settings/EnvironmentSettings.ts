@@ -56,7 +56,7 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         if(process.env.NODE_ENV !== NodeEnvironment.Test) {
             dotenv.config();
         }
-        /* c8 ignore end */
+        /* c8 ignore stop */
 
         this.packageName = nodePackage.name;
         this.version = nodePackage.version;
