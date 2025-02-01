@@ -103,8 +103,6 @@ describe('EnvironmentSettings', () => {
             const environmentSettings = new EnvironmentSettings();
 
             expect(environmentSettings.maxTaskAttempts).toBe(mockMaxAttempts);
-
-            delete process.env.MUSEBOT_TASK_QUEUE_MAX_ATTEMPTS;
         });
 
         it('should not accept non-numeric values', () => {
@@ -115,8 +113,6 @@ describe('EnvironmentSettings', () => {
             expect(() => {
                 new EnvironmentSettings();
             }).toThrow();
-
-            delete process.env.MUSEBOT_TASK_QUEUE_MAX_ATTEMPTS;
         });
     });
 
@@ -132,8 +128,6 @@ describe('EnvironmentSettings', () => {
             const environmentSettings = new EnvironmentSettings();
 
             expect(environmentSettings.taskRetryDelayMilliseconds).toBe(mockRetryDelay);
-
-            delete process.env.MUSEBOT_TASK_QUEUE_RETRY_DELAY_MS;
         });
 
         it('should not accept non-numeric values', () => {
@@ -144,8 +138,6 @@ describe('EnvironmentSettings', () => {
             expect(() => {
                 new EnvironmentSettings();
             }).toThrow();
-
-            delete process.env.MUSEBOT_TASK_QUEUE_RETRY_DELAY_MS;
         });
     });
 
@@ -179,8 +171,6 @@ describe('EnvironmentSettings', () => {
             const environmentSettings = new EnvironmentSettings();
 
             expect(environmentSettings.discordChannels).toStrictEqual([mockChannelId])
-
-            delete process.env.MUSEBOT_DISCORD_CHANNELS;
         });
 
         it('should support comma separated values', () => {
@@ -194,8 +184,6 @@ describe('EnvironmentSettings', () => {
             const environmentSettings = new EnvironmentSettings();
 
             expect(environmentSettings.discordChannels).toStrictEqual(mockChannelIds);
-
-            delete process.env.MUSEBOT_DISCORD_CHANNELS;
         });
     });
 
@@ -211,8 +199,6 @@ describe('EnvironmentSettings', () => {
             const environmentSettings = new EnvironmentSettings();
 
             expect(environmentSettings.discordChannelsDisallowed).toStrictEqual([mockChannelId])
-
-            delete process.env.MUSEBOT_DISCORD_CHANNELS_DISALLOWED;
         });
 
         it('should support comma separated values', () => {
@@ -226,8 +212,6 @@ describe('EnvironmentSettings', () => {
             const environmentSettings = new EnvironmentSettings();
 
             expect(environmentSettings.discordChannelsDisallowed).toStrictEqual(mockChannelIds);
-
-            delete process.env.MUSEBOT_DISCORD_CHANNELS_DISALLOWED;
         });
     });
 
@@ -250,8 +234,6 @@ describe('EnvironmentSettings', () => {
             const environmentSettings = new EnvironmentSettings();
 
             expect(environmentSettings.botRequiresMention).toBe(false);
-
-            delete process.env.MUSEBOT_REQUIRES_MENTION;
         });
 
         test.each([
@@ -265,8 +247,6 @@ describe('EnvironmentSettings', () => {
             const environmentSettings = new EnvironmentSettings();
 
             expect(environmentSettings.botRequiresMention).toBe(true);
-
-            delete process.env.MUSEBOT_REQUIRES_MENTION;
         });
     });
 
@@ -283,8 +263,6 @@ describe('EnvironmentSettings', () => {
             const environmentSettings = new EnvironmentSettings();
 
             expect(environmentSettings.botResponseRate).toBe(mockResponseRate);
-
-            delete process.env.MUSEBOT_RESPONSE_RATE;
         });
 
         test.each([
@@ -295,8 +273,6 @@ describe('EnvironmentSettings', () => {
             const environmentSettings = new EnvironmentSettings();
 
             expect(environmentSettings.botResponseRate).toBe(100);
-
-            delete process.env.MUSEBOT_RESPONSE_RATE;
         });
 
         it('should floor floating point values', () => {
