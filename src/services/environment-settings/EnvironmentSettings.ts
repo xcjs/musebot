@@ -53,6 +53,7 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         // If this loads environment variables during a test, it can pollute
         // the results.
         if(process.env.NODE_ENV !== NodeEnvironment.Test) {
+            /* istanbul ignore next */
             dotenv.config();
         }
 
