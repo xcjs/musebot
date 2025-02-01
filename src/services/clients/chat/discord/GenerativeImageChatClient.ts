@@ -2,8 +2,8 @@ import { ButtonInteraction, Client as DiscordClient, Events, Message, MessageRea
 import { Logger, LogLevel } from 'meklog';
 
 import { BotInteraction } from '../../../../enums/BotInteraction.js';
+import { IEnvironmentSettings } from '../../../environment-settings/IEnvironmentSettings.js';
 import { IHelpService } from '../../../help/IHelpService.js';
-import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
 import { ITaskQueue } from '../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';

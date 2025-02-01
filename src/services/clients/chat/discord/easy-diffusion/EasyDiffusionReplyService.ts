@@ -4,7 +4,7 @@ import { Logger, LogLevel } from 'meklog';
 import { MAX_FILE_NAME_LENGTH } from '../../../../../constants/FileConstants.js';
 import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
 import { IHttpExchangeWithAttachedResponse } from '../../../../../models/IHttpExchangeWithAttachedResponse.js';
-import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
+import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { EasyDiffusionClient } from '../../../images/easy-diffusion/EasyDiffusionClient.js';
 import { RenderRequest } from '../../../images/easy-diffusion/models/requests/RenderRequest.js';

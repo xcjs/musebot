@@ -5,10 +5,10 @@ import { Logger, LogLevel } from 'meklog';
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import nodePackage from '../../package.json' with { type: 'json' };
-import { BotFunction } from '../enums/BotFunction.js';
-import { NodeEnvironment } from '../enums/NodeEnvironment.js';
-import { StableDiffusionApiType } from './clients/images/stable-diffusion/enums/StableDiffusionApiType.js';
+import nodePackage from '../../../package.json' with { type: 'json' };
+import { BotFunction } from '../../enums/BotFunction.js';
+import { NodeEnvironment } from '../../enums/NodeEnvironment.js';
+import { StableDiffusionApiType } from '../clients/images/stable-diffusion/enums/StableDiffusionApiType.js';
 import { IEnvironmentSettings } from './IEnvironmentSettings.js';
 
 export class EnvironmentSettings implements IEnvironmentSettings {

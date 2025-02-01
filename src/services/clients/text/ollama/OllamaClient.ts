@@ -3,7 +3,7 @@ import { GenerateRequest, GenerateResponse, Ollama } from 'ollama';
 
 import { IHttpExchange } from '../../../../models/IHttpExchange.js';
 import { getRandomArrayEntry, getRandomInt } from '../../../../utilities/random-utilities.js';
-import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
+import { IEnvironmentSettings } from '../../../environment-settings/IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
 
 export class OllamaClient {

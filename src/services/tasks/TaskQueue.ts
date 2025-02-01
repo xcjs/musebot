@@ -1,7 +1,7 @@
 import { Logger, LogLevel } from 'meklog';
 
 import { PromisedSettledResultStatus } from '../../enums/PromisedSettledResultStatus.js';
-import { IEnvironmentSettings } from '../IEnvironmentSettings.js';
+import { IEnvironmentSettings } from '../environment-settings/IEnvironmentSettings.js';
 import { IServiceContainer } from '../IServiceContainer.js';
 import { TaskStatus } from './enums/TaskStatus.js';
 import { ITaskQueue } from './ITaskQueue.js';

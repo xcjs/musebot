@@ -28,9 +28,9 @@ import { IUpscaleRenderTask } from './clients/images/tasks/IUpscaleRenderTask.js
 import { OllamaClient } from './clients/text/ollama/OllamaClient.js';
 import { IEmojiResponseTask } from './clients/text/tasks/IEmojiResponseTask.js';
 import { IPromptResponseTask } from './clients/text/tasks/IPromptResponseTask.js';
+import { IEnvironmentSettings } from './environment-settings/IEnvironmentSettings.js';
 import { IFeatureService } from './features/IFeatureService.js';
 import { IHelpService } from './help/IHelpService.js';
-import { IEnvironmentSettings } from './IEnvironmentSettings.js';
 import { ITaskQueue } from './tasks/ITaskQueue.js';
 
 export interface IServiceContainer {
