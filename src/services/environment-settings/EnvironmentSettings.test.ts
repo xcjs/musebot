@@ -257,7 +257,9 @@ describe('EnvironmentSettings', () => {
         test.each([
             'true',
             'TRUE',
-            'true '
+            'true ',
+            ' true',
+            ' true '
         ])('should accept any valid version of "true"', (botRequiresMention: string) => {
             process.env.MUSEBOT_REQUIRES_MENTION = botRequiresMention;
             const environmentSettings = new EnvironmentSettings();
