@@ -82,7 +82,7 @@ describe('EnvironmentSettings', () => {
         });
 
         it('should not accept any invalid value', () => {
-            process.env.MUSEBOT_FUNCTION = 'invalidFunction';
+            process.env[EnvironmentKey.BotFunction] = 'invalidFunction';
 
             expect(() => {
                new EnvironmentSettings();
@@ -99,7 +99,7 @@ describe('EnvironmentSettings', () => {
         it('should prefer the provided value', () => {
             const mockMaxAttempts = 1000;
 
-            process.env.MUSEBOT_TASK_QUEUE_MAX_ATTEMPTS = mockMaxAttempts.toString();
+            process.env[EnvironmentKey.TaskQueueMaxAttempts] = mockMaxAttempts.toString();
             const environmentSettings = new EnvironmentSettings();
 
             expect(environmentSettings.maxTaskAttempts).toBe(mockMaxAttempts);
@@ -108,7 +108,7 @@ describe('EnvironmentSettings', () => {
         it('should not accept non-numeric values', () => {
             const mockMaxAttempts = 'invalidValue';
 
-            process.env.MUSEBOT_TASK_QUEUE_MAX_ATTEMPTS = mockMaxAttempts;
+            process.env[EnvironmentKey.TaskQueueMaxAttempts] = mockMaxAttempts;
 
             expect(() => {
                 new EnvironmentSettings();
@@ -124,7 +124,7 @@ describe('EnvironmentSettings', () => {
 
         it('should prefer the provided value', () => {
             const mockRetryDelay = 5000;
-            process.env.MUSEBOT_TASK_QUEUE_RETRY_DELAY_MS = mockRetryDelay.toString();
+            process.env[EnvironmentKey.TaskQueueRetryDelayMs] = mockRetryDelay.toString();
             const environmentSettings = new EnvironmentSettings();
 
             expect(environmentSettings.taskRetryDelayMilliseconds).toBe(mockRetryDelay);
@@ -133,7 +133,7 @@ describe('EnvironmentSettings', () => {
         it('should not accept non-numeric values', () => {
             const mockRetryDelay = 'invalidValue';
 
-            process.env.MUSEBOT_TASK_QUEUE_RETRY_DELAY_MS = mockRetryDelay;
+            process.env[EnvironmentKey.TaskQueueRetryDelayMs] = mockRetryDelay;
 
             expect(() => {
                 new EnvironmentSettings();
@@ -143,19 +143,16 @@ describe('EnvironmentSettings', () => {
 
     describe('discordToken', () => {
         it('should be required', () => {
-            const originalMockToken = process.env.MUSEBOT_DISCORD_TOKEN;
-            delete process.env.MUSEBOT_DISCORD_TOKEN;
+            delete process.env[EnvironmentKey.AuthenticationToken];
 
             expect(() => {
                 new EnvironmentSettings();
             }).toThrow();
-
-            process.env.MUSEBOT_DISCORD_TOKEN = originalMockToken;
         });
 
         it('should equal the associated environment variable', () => {
             const environmentSettings = new EnvironmentSettings();
-            expect(environmentSettings.discordToken).toBe(process.env.MUSEBOT_DISCORD_TOKEN);
+            expect(environmentSettings.discordToken).toBe(process.env[EnvironmentKey.AuthenticationToken]);
         });
     });
 
@@ -167,7 +164,7 @@ describe('EnvironmentSettings', () => {
 
         it('should support one value', () => {
             const mockChannelId = '1234567891234567891'
-            process.env.MUSEBOT_DISCORD_CHANNELS = mockChannelId;
+            process.env[EnvironmentKey.ChatChannels] = mockChannelId;
             const environmentSettings = new EnvironmentSettings();
 
             expect(environmentSettings.discordChannels).toStrictEqual([mockChannelId])
@@ -180,7 +177,7 @@ describe('EnvironmentSettings', () => {
                 '1234567891234567893'
             ];
 
-            process.env.MUSEBOT_DISCORD_CHANNELS = mockChannelIds.join(',');
+            process.env[EnvironmentKey.ChatChannels] = mockChannelIds.join(',');
             const environmentSettings = new EnvironmentSettings();
 
             expect(environmentSettings.discordChannels).toStrictEqual(mockChannelIds);
@@ -195,7 +192,7 @@ describe('EnvironmentSettings', () => {
 
         it('should support one value', () => {
             const mockChannelId = '1234567891234567891'
-            process.env.MUSEBOT_DISCORD_CHANNELS_DISALLOWED = mockChannelId;
+            process.env[EnvironmentKey.ChatChannelsDisallowed] = mockChannelId;
             const environmentSettings = new EnvironmentSettings();
 
             expect(environmentSettings.discordChannelsDisallowed).toStrictEqual([mockChannelId])
@@ -208,7 +205,7 @@ describe('EnvironmentSettings', () => {
                 '1234567891234567893'
             ];
 
-            process.env.MUSEBOT_DISCORD_CHANNELS_DISALLOWED = mockChannelIds.join(',');
+            process.env[EnvironmentKey.ChatChannelsDisallowed] = mockChannelIds.join(',');
             const environmentSettings = new EnvironmentSettings();
 
             expect(environmentSettings.discordChannelsDisallowed).toStrictEqual(mockChannelIds);
@@ -230,7 +227,7 @@ describe('EnvironmentSettings', () => {
             null
         ]
         )('should convert any other provided value to false', (botRequiresMention: string | null | undefined) => {
-            process.env.MUSEBOT_REQUIRES_MENTION = botRequiresMention;
+            process.env[EnvironmentKey.BotRequiresMention] = botRequiresMention;
             const environmentSettings = new EnvironmentSettings();
 
             expect(environmentSettings.botRequiresMention).toBe(false);
@@ -243,7 +240,7 @@ describe('EnvironmentSettings', () => {
             ' true',
             ' true '
         ])('should accept any valid version of "true"', (botRequiresMention: string) => {
-            process.env.MUSEBOT_REQUIRES_MENTION = botRequiresMention;
+            process.env[EnvironmentKey.BotRequiresMention] = botRequiresMention;
             const environmentSettings = new EnvironmentSettings();
 
             expect(environmentSettings.botRequiresMention).toBe(true);
@@ -301,7 +298,7 @@ describe('EnvironmentSettings', () => {
 
         it('should prefer the provided value', () => {
             const mockErrorMessage = 'mockError';
-            process.env.MUSEBOT_ERROR_MESSAGE = mockErrorMessage;
+            process.env[EnvironmentKey.BotErrorMessage] = mockErrorMessage;
 
             const environmentSettings = new EnvironmentSettings();
 
