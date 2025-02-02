@@ -91,7 +91,7 @@ export class EnvironmentSettings implements IEnvironmentSettings {
             .toLowerCase() === true.toString());
 
         const responseRate = parseInt(process.env[EnvironmentKey.BotResponseRate]);
-        this.botResponseRate = !isNaN(responseRate) && responseRate > 0 && responseRate <=100
+        this.botResponseRate = !isNaN(responseRate) && responseRate > 0 && responseRate <= 100
             ? responseRate
             : this.botResponseRate;
 
