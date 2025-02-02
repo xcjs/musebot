@@ -115,6 +115,90 @@ describe('EnvironmentSettings', () => {
                new EnvironmentSettings();
             }).toThrow();
         });
+
+        test.each([
+            { generativeAiHosts: '', botFunction: BotFunction.Images, environmentKey: EnvironmentKey.StableDiffusionHosts },
+            { generativeAiHosts: null, botFunction: BotFunction.Images, environmentKey: EnvironmentKey.StableDiffusionHosts },
+            { generativeAiHosts: undefined, botFunction: BotFunction.Images, environmentKey: EnvironmentKey.StableDiffusionHosts },
+            { generativeAiHosts: '', botFunction: BotFunction.Text, environmentKey: EnvironmentKey.OllamaHosts },
+            { generativeAiHosts: null, botFunction: BotFunction.Text, environmentKey: EnvironmentKey.OllamaHosts },
+            { generativeAiHosts: undefined, botFunction: BotFunction.Text, environmentKey: EnvironmentKey.OllamaHosts },
+        ])('should require the corresponding generative AI hosts to be provided when the bot function is set',
+            ({ generativeAiHosts, botFunction, environmentKey }:
+                { generativeAiHosts: string | null | undefined, botFunction: BotFunction, environmentKey: EnvironmentKey }) => {
+                process.env[EnvironmentKey.BotFunction] = botFunction;
+                process.env[environmentKey] = generativeAiHosts;
+
+                expect(() => {
+                    new EnvironmentSettings();
+                }).toThrow();
+        });
+
+        test.each([
+            {
+                associatedGenerativeAiHosts: mockUrl,
+                unassociatedGenerativeAiHosts: '',
+                botFunction: BotFunction.Images,
+                associatedEnvironmentKey: EnvironmentKey.StableDiffusionHosts,
+                unassociatedEnvironmentKey: EnvironmentKey.OllamaHosts
+            },
+            {
+                associatedGenerativeAiHosts: mockUrl,
+                unassociatedGenerativeAiHosts: null,
+                botFunction: BotFunction.Images,
+                associatedEnvironmentKey: EnvironmentKey.StableDiffusionHosts,
+                unassociatedEnvironmentKey: EnvironmentKey.OllamaHosts
+            },
+            {
+                associatedGenerativeAiHosts: mockUrl,
+                unassociatedGenerativeAiHosts: undefined,
+                botFunction: BotFunction.Images,
+                associatedEnvironmentKey: EnvironmentKey.StableDiffusionHosts,
+                unassociatedEnvironmentKey: EnvironmentKey.OllamaHosts
+            },
+            {
+                associatedGenerativeAiHosts: mockUrl,
+                unassociatedGenerativeAiHosts: '',
+                botFunction: BotFunction.Text,
+                associatedEnvironmentKey: EnvironmentKey.OllamaHosts,
+                unassociatedEnvironmentKey: EnvironmentKey.StableDiffusionHosts
+            },
+            {
+                associatedGenerativeAiHosts: mockUrl,
+                unassociatedGenerativeAiHosts: null,
+                botFunction: BotFunction.Text,
+                associatedEnvironmentKey: EnvironmentKey.OllamaHosts,
+                unassociatedEnvironmentKey: EnvironmentKey.StableDiffusionHosts
+            },
+            {
+                associatedGenerativeAiHosts: mockUrl,
+                unassociatedGenerativeAiHosts: undefined,
+                botFunction: BotFunction.Text,
+                associatedEnvironmentKey: EnvironmentKey.OllamaHosts,
+                unassociatedEnvironmentKey: EnvironmentKey.StableDiffusionHosts
+            },
+        ])('should not require the unassociated generative AI hosts to be provided when the bot function is set',
+            ({
+                associatedGenerativeAiHosts,
+                unassociatedGenerativeAiHosts,
+                botFunction,
+                associatedEnvironmentKey,
+                unassociatedEnvironmentKey
+             }: {
+                associatedGenerativeAiHosts: string,
+                unassociatedGenerativeAiHosts: string | null | undefined,
+                botFunction: BotFunction,
+                associatedEnvironmentKey: EnvironmentKey,
+                unassociatedEnvironmentKey: EnvironmentKey
+            }) => {
+                process.env[EnvironmentKey.BotFunction] = botFunction;
+                process.env[associatedEnvironmentKey] = associatedGenerativeAiHosts;
+                process.env[unassociatedEnvironmentKey] = unassociatedGenerativeAiHosts;
+
+                expect(() => {
+                    new EnvironmentSettings();
+                }).not.toThrow();
+        });
     });
 
     describe('maxTaskAttempts', () => {
