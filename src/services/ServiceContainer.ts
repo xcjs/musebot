@@ -70,12 +70,12 @@ import { EmojiResponseTask } from './clients/text/ollama/tasks/EmojiResponseTask
 import { PromptResponseTask } from './clients/text/ollama/tasks/PromptResponseTask.js';
 import { IEmojiResponseTask } from './clients/text/tasks/IEmojiResponseTask.js';
 import { IPromptResponseTask } from './clients/text/tasks/IPromptResponseTask.js';
-import { EnvironmentSettings } from './EnvironmentSettings.js';
+import { EnvironmentSettings } from './environment-settings/EnvironmentSettings.js';
+import { IEnvironmentSettings } from './environment-settings/IEnvironmentSettings.js';
 import { SupportedFeature } from './features/enum/SupportedFeature.js';
 import { FeatureService } from './features/FeatureService.js';
 import { IFeatureService } from './features/IFeatureService.js';
 import { IHelpService } from './help/IHelpService.js';
-import { IEnvironmentSettings } from './IEnvironmentSettings.js';
 import { IServiceContainer } from './IServiceContainer.js';
 import { ITaskQueue } from './tasks/ITaskQueue.js';
 import { TaskQueue } from './tasks/TaskQueue.js';

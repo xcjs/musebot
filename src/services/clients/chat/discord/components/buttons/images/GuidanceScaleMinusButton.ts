@@ -1,8 +1,8 @@
 import { ButtonBuilder, ButtonStyle } from 'discord.js';
 
 import { BotInteraction } from '../../../../../../../enums/BotInteraction.js';
+import { IEnvironmentSettings } from '../../../../../../environment-settings/IEnvironmentSettings.js';
 import { SupportedFeature } from '../../../../../../features/enum/SupportedFeature.js';
-import { IEnvironmentSettings } from '../../../../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../../../IServiceContainer.js';
 import { StableDiffusionGuidanceScaleLimit } from '../../../../../images/automatic1111/enums/StableDiffusionGuidanceScaleLimit.js';
 import { Txt2ImgOptionsRequest } from '../../../../../images/automatic1111/models/requests/Txt2ImgOptionsRequest.js';

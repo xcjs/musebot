@@ -5,7 +5,7 @@ import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
 import { ContentType } from '../../../../../enums/ContentType.js';
 import { getRandomInt } from '../../../../../utilities/random-utilities.js';
 import { splitText } from '../../../../../utilities/string-utilities.js';
-import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
+import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { IReplyService } from '../../IReplyService.js';
 import { DiscordConstants } from '../enums/DiscordConstants.js';

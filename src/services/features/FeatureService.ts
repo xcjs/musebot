@@ -1,4 +1,4 @@
-import { IEnvironmentSettings } from '../IEnvironmentSettings.js';
+import { IEnvironmentSettings } from '../environment-settings/IEnvironmentSettings.js';
 import { IServiceContainer } from '../IServiceContainer.js';
 import { SupportedFeature } from './enum/SupportedFeature.js';
 import { IFeatureService } from './IFeatureService.js';

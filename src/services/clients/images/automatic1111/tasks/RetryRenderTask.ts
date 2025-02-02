@@ -2,9 +2,9 @@ import { ButtonInteraction, Message, User } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
 import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
+import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../../../../features/IFeatureService.js';
-import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';

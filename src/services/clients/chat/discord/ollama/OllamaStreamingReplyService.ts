@@ -2,7 +2,7 @@ import { Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
 import { splitText } from '../../../../../utilities/string-utilities.js';
-import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
+import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { LargeLanguageModelActionRow } from '../components/buttonRows/LargeLanguageModelActionRow.js';
 import { DiscordConstants } from '../enums/DiscordConstants.js';

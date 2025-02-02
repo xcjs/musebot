@@ -9,7 +9,7 @@ import { HttpStatusCode } from '../../../../enums/HttpStatusCode.js';
 import { JavaScriptType } from '../../../../enums/JavaScriptType.js';
 import { IHttpExchange } from '../../../../models/IHttpExchange.js';
 import { getRandomArrayEntry } from '../../../../utilities/random-utilities.js';
-import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
+import { IEnvironmentSettings } from '../../../environment-settings/IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
 import { StreamStatus } from './enums/StreamStatus.js';
 import { RenderRequest } from './models/requests/RenderRequest.js';

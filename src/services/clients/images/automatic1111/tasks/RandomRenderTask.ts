@@ -5,7 +5,7 @@ import { MAX_FILE_NAME_LENGTH,MAX_TEXT_LINE_LENGTH } from '../../../../../consta
 import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
 import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
 import { wrapText } from '../../../../../utilities/string-utilities.js';
-import { IEnvironmentSettings } from '../../../../IEnvironmentSettings.js';
+import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';

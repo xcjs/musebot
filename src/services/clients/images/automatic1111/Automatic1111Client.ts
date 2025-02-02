@@ -5,7 +5,7 @@ import { HttpHeader } from '../../../../enums/HttpHeader.js';
 import { HttpMethod } from '../../../../enums/HttpMethod.js';
 import { IHttpExchangeWithAttachedData } from '../../../../models/IHttpExchangeWithAttachedData.js';
 import { getRandomArrayEntry } from '../../../../utilities/random-utilities.js';
-import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
+import { IEnvironmentSettings } from '../../../environment-settings/IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
 import { ExtraSingleImageRequest } from './models/requests/ExtraSingleImageRequest.js';
 import { Automatic1111Options } from './models/requests/models/Automatic1111Options.js';

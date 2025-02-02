@@ -2,7 +2,7 @@ import { ComfyUIClient, ImagesResponse, Prompt } from 'comfy-ui-client';
 import { Logger, LogLevel } from 'meklog';
 
 import { getRandomArrayEntry } from '../../../../utilities/random-utilities.js';
-import { IEnvironmentSettings } from '../../../IEnvironmentSettings.js';
+import { IEnvironmentSettings } from '../../../environment-settings/IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
 import { IGenerativeChatClient } from '../../chat/IGenerativeChatClient.js';
 
