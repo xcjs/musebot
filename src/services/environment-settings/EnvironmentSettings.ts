@@ -97,7 +97,7 @@ export class EnvironmentSettings implements IEnvironmentSettings {
 
         this.errorMessage = process.env[EnvironmentKey.BotErrorMessage]?.trim() || this.errorMessage;
 
-        this.stableDiffusionApiType = process.env[EnvironmentKey.BotErrorMessage]?.trim() as StableDiffusionApiType;
+        this.stableDiffusionApiType = process.env[EnvironmentKey.StableDiffusionApiType]?.trim() as StableDiffusionApiType;
 
         // If the ComfyUI integration is configured, workflows will be loaded
         // from the $PWD/workflows directory and the
@@ -161,7 +161,7 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         this.#logger(LogLevel.Info, `${EnvironmentKey.BotFunction}: ${this.botFunction}`);
 
         this.#logger(LogLevel.Info, `${EnvironmentKey.ChatChannels}: ${this.discordChannels.join(', ')}`);
-        this.#logger(LogLevel.Info, `${EnvironmentKey.ChatChannelsDisallowed}}: ${this.discordChannelsDisallowed.join(', ')}`);
+        this.#logger(LogLevel.Info, `${EnvironmentKey.ChatChannelsDisallowed}: ${this.discordChannelsDisallowed.join(', ')}`);
         this.#logger(LogLevel.Info, `${EnvironmentKey.BotRequiresMention}: ${this.botRequiresMention}`);
         this.#logger(LogLevel.Info, `${EnvironmentKey.BotResponseRate}: ${this.botResponseRate}`);
         this.#logger(LogLevel.Info, `${EnvironmentKey.BotErrorMessage}: ${this.errorMessage}`);
