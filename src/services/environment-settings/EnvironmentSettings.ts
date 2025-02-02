@@ -161,7 +161,7 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         this.#logger(LogLevel.Info, `${EnvironmentKey.BotFunction}: ${this.botFunction}`);
 
         this.#logger(LogLevel.Info, `${EnvironmentKey.ChatChannels}: ${this.discordChannels.join(', ')}`);
-        this.#logger(LogLevel.Info, `${EnvironmentKey.ChatChannelsDisallowed}}: ${this.discordChannelsDisallowed.join(', ')}`);
+        this.#logger(LogLevel.Info, `${EnvironmentKey.ChatChannelsDisallowed}: ${this.discordChannelsDisallowed.join(', ')}`);
         this.#logger(LogLevel.Info, `${EnvironmentKey.BotRequiresMention}: ${this.botRequiresMention}`);
         this.#logger(LogLevel.Info, `${EnvironmentKey.BotResponseRate}: ${this.botResponseRate}`);
         this.#logger(LogLevel.Info, `${EnvironmentKey.BotErrorMessage}: ${this.errorMessage}`);
