@@ -97,7 +97,7 @@ export class EnvironmentSettings implements IEnvironmentSettings {
 
         this.errorMessage = process.env[EnvironmentKey.BotErrorMessage]?.trim() || this.errorMessage;
 
-        this.stableDiffusionApiType = process.env[EnvironmentKey.BotErrorMessage]?.trim() as StableDiffusionApiType;
+        this.stableDiffusionApiType = process.env[EnvironmentKey.StableDiffusionApiType]?.trim() as StableDiffusionApiType;
 
         // If the ComfyUI integration is configured, workflows will be loaded
         // from the $PWD/workflows directory and the
