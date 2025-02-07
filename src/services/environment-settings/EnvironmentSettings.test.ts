@@ -7,6 +7,7 @@ import { beforeEach, describe, expect, it, test } from '@jest/globals';
 import nodePackage from '../../../package.json' with { type: 'json' };
 import { BotFunction } from '../../enums/BotFunction.js';
 import { NodeEnvironment } from '../../enums/NodeEnvironment.js';
+import { StableDiffusionApiType } from '../clients/images/stable-diffusion/enums/StableDiffusionApiType.js';
 import { EnvironmentKey } from './constants/EnvironmentKey.js';
 import { EnvironmentSettings } from './EnvironmentSettings';
 
@@ -293,6 +294,51 @@ describe('EnvironmentSettings', () => {
             const environmentSettings = new EnvironmentSettings();
 
             expect(environmentSettings.discordChannelsDisallowed).toStrictEqual(mockChannelIds);
+        });
+    });
+
+    describe('stableDiffusionApiType', () => {
+        test.each([
+            StableDiffusionApiType.Automatic1111,
+            StableDiffusionApiType.ComfyUI,
+            StableDiffusionApiType.EasyDiffusion
+        ])('it should work with each supported API definition', (apiType: StableDiffusionApiType) => {
+            process.env[EnvironmentKey.StableDiffusionApiType] = apiType;
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.stableDiffusionApiType).toBe(apiType);
+        });
+    });
+
+    describe('stableDiffusionModels', () => {
+        const modelBasedApis = [
+            StableDiffusionApiType.Automatic1111,
+            StableDiffusionApiType.EasyDiffusion
+        ];
+
+        const mockModels = [
+            'mockModel1',
+            'mockModel2',
+            'mockModel3'
+        ];
+
+        test.each(modelBasedApis)('it should be set to configured Stable Diffusion models', (apiType: StableDiffusionApiType) => {
+            process.env[EnvironmentKey.StableDiffusionApiType] = apiType;
+            process.env[EnvironmentKey.StableDiffusionModels] = mockModels.join(',');
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.stableDiffusionModels).toEqual(mockModels);
+        });
+
+        test.each(modelBasedApis)('it should trim the configured Stable Diffusion models', (apiType: StableDiffusionApiType) => {
+            process.env[EnvironmentKey.StableDiffusionApiType] = apiType;
+            process.env[EnvironmentKey.StableDiffusionModels] = mockModels.join(', ');
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.stableDiffusionModels).toEqual(mockModels);
         });
     });
 

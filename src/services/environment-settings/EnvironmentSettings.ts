@@ -105,8 +105,9 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         //
         // Otherwise, load the environment variable as normal.
         if(this.stableDiffusionApiType !== StableDiffusionApiType.ComfyUI) {
-            this.stableDiffusionModels = process.env[EnvironmentKey.StableDiffusionApiType]?.trim()
+            this.stableDiffusionModels = process.env[EnvironmentKey.StableDiffusionModels]?.trim()
                 .split(',')
+                .map(x => x.trim())
                 .filter(x => x.length > 0) || [];
         }
 
@@ -115,10 +116,6 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         if (stableDiffusionHosts !== null && stableDiffusionHosts.length > 0) {
             this.stableDiffusionHosts = stableDiffusionHosts.split(',').map(url => new URL(url)) || [];
         }
-
-        this.stableDiffusionModels = process.env[EnvironmentKey.StableDiffusionModels]?.trim()
-            .split(',')
-            .filter(x => x.length > 0) || [];
 
         const ollamaHosts = process.env[EnvironmentKey.OllamaHosts]?.trim() || null;
 
