@@ -1,6 +1,6 @@
 # Musebot
 
-![Musebot Logo](images/logos/musebot.jpg)
+![Musebot Logo](assets/images/logos/musebot.jpg)
 
 Musebot is an interactive chat bot designed for use in the Discord chat service.
 
@@ -19,7 +19,7 @@ configuration.
 
 ## 1. Discord Configuration
 
-Refer to the included [Discord Integration](Integrations/Discord.md)
+Refer to the included [Discord Integration](Integrations/Discord/index.html)
 documentation.
 
 ## 2. AI API Configuration
@@ -39,23 +39,25 @@ be configured.
    language models, etc.) should be configured. For example, don't configure
    both ComfyUI _and_ SwarmUI as they both generate images.
 
-### Image Generation
+### Image/Video Generation
 
 #### ComfyUI
 
-Refer to the included [ComfyUI Integration](Integrations/ComfyUI.md)
+Refer to the included [ComfyUI Integration](Integrations/ComfyUI/index.html)
 documentation.
+
+**Note:** _If you're new to ComfyUI, consider using SwarmUI instead._
 
 #### SwarmUI
 
-Refer to the included [SwarmUI Integration](Integrations/SwarmUI.md)
+Refer to the included [SwarmUI Integration](Integrations/SwarmUI/index.html)
 documentation.
 
 ### Large Language Model Inferencing
 
 #### Ollama
 
-Refer to the included [Ollama Integration](Integrations/Ollama.md)
+Refer to the included [Ollama Integration](Integrations/Ollama/index.html)
 documentation.
 
 ## 3. Musebot Installation

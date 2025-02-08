@@ -1,3 +1,3 @@
 # SwarmUI Integration
 
-![SwarmUI Logo](../images/logos/swarmui.jpg)
+![SwarmUI Logo](../../assets/images/logos/swarmui.jpg)

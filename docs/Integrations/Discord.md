@@ -1,6 +1,6 @@
 # Discord Integration
 
-![Discord Logo](../images/logos/discord.jpg)
+![Discord Logo](../../assets/images/logos/discord.jpg)
 
 ## Bot Registration
 

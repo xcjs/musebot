@@ -1,3 +1,3 @@
 # ComfyUI Integration
 
-![ComfyUI Logo](../images/logos/comfyui.jpg)
+![ComfyUI Logo](../../assets/images/logos/comfyui.jpg)

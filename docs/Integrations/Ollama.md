@@ -1,3 +1,3 @@
 # Ollama Integration
 
-![Ollama Logo](../images/logos/ollama.jpg)
+![Ollama Logo](../../assets/images/logos/ollama.jpg)
