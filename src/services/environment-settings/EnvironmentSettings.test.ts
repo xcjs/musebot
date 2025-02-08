@@ -493,6 +493,49 @@ describe('EnvironmentSettings', () => {
         });
     });
 
+    describe('ollamaHosts', () => {
+        const mockHosts = [
+            mockUrl,
+            'http://localhost:8080/'
+        ];
+
+        it('should be set to the configured Ollama hosts when one host is provided', () => {
+            process.env[EnvironmentKey.OllamaHosts] = mockUrl;
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.ollamaHosts).toEqual([new URL(mockUrl)]);
+        });
+
+        it('should be set to the configured Ollama hosts when multiple hosts are provided', () => {
+            process.env[EnvironmentKey.OllamaHosts] = mockHosts.join(',');
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.ollamaHosts).toEqual(mockHosts.map(x => new URL(x)));
+        });
+
+        it('should trim individual Ollama host values', () => {
+            process.env[EnvironmentKey.OllamaHosts] = mockHosts.join(', ');
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.ollamaHosts).toEqual(mockHosts.map(x => new URL(x)));
+        });
+    });
+
+    describe('ollamaModels', () => {
+
+    });
+
+    describe('ollamaSystemPrompt', () => {
+
+    });
+
+    describe('ollamaStreamsResponse', () => {
+
+    });
+
     describe('isProduction', () => {
         it('should return true when it is production', () => {
             process.env[EnvironmentKey.NodeEnvironment] = NodeEnvironment.Production;
