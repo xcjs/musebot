@@ -7,6 +7,7 @@
         "orta.vscode-jest",
         "davidanson.vscode-markdownlint",
         "idered.npm",
-        "christian-kohler.npm-intellisense"
+        "christian-kohler.npm-intellisense",
+        "streetsidesoftware.code-spell-checker"
     ]
 }
