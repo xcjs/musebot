@@ -298,100 +298,6 @@ describe('EnvironmentSettings', () => {
         });
     });
 
-    describe('stableDiffusionApiType', () => {
-        test.each([
-            StableDiffusionApiType.Automatic1111,
-            StableDiffusionApiType.ComfyUI,
-            StableDiffusionApiType.EasyDiffusion
-        ])('it should work with each supported API definition', (apiType: StableDiffusionApiType) => {
-            process.env[EnvironmentKey.StableDiffusionApiType] = apiType;
-
-            const environmentSettings = new EnvironmentSettings();
-
-            expect(environmentSettings.stableDiffusionApiType).toBe(apiType);
-        });
-
-        it('should throw an exception if an invalid API type is provided', () => {
-            const invalidApiType = 'invalidApiType';
-            process.env[EnvironmentKey.StableDiffusionApiType] = invalidApiType;
-
-            expect(() => {
-                new EnvironmentSettings();
-            }).toThrow();
-        });
-    });
-
-    describe('stableDiffusionHosts', () => {
-        const mockHosts = [
-            mockUrl,
-            'http://localhost:8080/'
-        ];
-
-        it('should be set to the configured Stable Diffusion hosts when one host is provided', () => {
-            process.env[EnvironmentKey.StableDiffusionHosts] = mockUrl;
-
-            const environmentSettings = new EnvironmentSettings();
-
-            expect(environmentSettings.stableDiffusionHosts).toEqual([new URL(mockUrl)]);
-        });
-
-        it('should be set to the configured Stable Diffusion hosts when multiple hosts are provided', () => {
-            process.env[EnvironmentKey.StableDiffusionHosts] = mockHosts.join(',');
-
-            const environmentSettings = new EnvironmentSettings();
-
-            expect(environmentSettings.stableDiffusionHosts).toEqual(mockHosts.map(x => new URL(x)));
-        });
-
-        it('should trim individual Stable Diffusion host values', () => {
-            process.env[EnvironmentKey.StableDiffusionHosts] = mockHosts.join(', ');
-
-            const environmentSettings = new EnvironmentSettings();
-
-            expect(environmentSettings.stableDiffusionHosts).toEqual(mockHosts.map(x => new URL(x)));
-        });
-    });
-
-    describe('stableDiffusionModels', () => {
-        const modelBasedApis = [
-            StableDiffusionApiType.Automatic1111,
-            StableDiffusionApiType.EasyDiffusion
-        ];
-
-        const mockModels = [
-            'mockModel1',
-            'mockModel2',
-            'mockModel3'
-        ];
-
-        test.each(modelBasedApis)('it should be set to configured Stable Diffusion models', (apiType: StableDiffusionApiType) => {
-            process.env[EnvironmentKey.StableDiffusionApiType] = apiType;
-            process.env[EnvironmentKey.StableDiffusionModels] = mockModels.join(',');
-
-            const environmentSettings = new EnvironmentSettings();
-
-            expect(environmentSettings.stableDiffusionModels).toEqual(mockModels);
-        });
-
-        test.each(modelBasedApis)('it should trim the configured Stable Diffusion models', (apiType: StableDiffusionApiType) => {
-            process.env[EnvironmentKey.StableDiffusionApiType] = apiType;
-            process.env[EnvironmentKey.StableDiffusionModels] = mockModels.join(', ');
-
-            const environmentSettings = new EnvironmentSettings();
-
-            expect(environmentSettings.stableDiffusionModels).toEqual(mockModels);
-        });
-
-        it('should not load Stable Diffusion models when the API type is ComfyUI', () => {
-            process.env[EnvironmentKey.StableDiffusionApiType] = StableDiffusionApiType.ComfyUI;
-            process.env[EnvironmentKey.StableDiffusionModels] = mockModels.join(', ');
-
-            const environmentSettings = new EnvironmentSettings();
-
-            expect(environmentSettings.stableDiffusionModels).toEqual([]);
-        });
-    });
-
     describe('botRequiresMention', () => {
         it('should default to false', () => {
             const environmentSettings = new EnvironmentSettings();
@@ -483,6 +389,100 @@ describe('EnvironmentSettings', () => {
             const environmentSettings = new EnvironmentSettings();
 
             expect(environmentSettings.errorMessage).toBe(mockErrorMessage);
+        });
+    });
+
+    describe('stableDiffusionApiType', () => {
+        test.each([
+            StableDiffusionApiType.Automatic1111,
+            StableDiffusionApiType.ComfyUI,
+            StableDiffusionApiType.EasyDiffusion
+        ])('it should work with each supported API definition', (apiType: StableDiffusionApiType) => {
+            process.env[EnvironmentKey.StableDiffusionApiType] = apiType;
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.stableDiffusionApiType).toBe(apiType);
+        });
+
+        it('should throw an exception if an invalid API type is provided', () => {
+            const invalidApiType = 'invalidApiType';
+            process.env[EnvironmentKey.StableDiffusionApiType] = invalidApiType;
+
+            expect(() => {
+                new EnvironmentSettings();
+            }).toThrow();
+        });
+    });
+
+    describe('stableDiffusionHosts', () => {
+        const mockHosts = [
+            mockUrl,
+            'http://localhost:8080/'
+        ];
+
+        it('should be set to the configured Stable Diffusion hosts when one host is provided', () => {
+            process.env[EnvironmentKey.StableDiffusionHosts] = mockUrl;
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.stableDiffusionHosts).toEqual([new URL(mockUrl)]);
+        });
+
+        it('should be set to the configured Stable Diffusion hosts when multiple hosts are provided', () => {
+            process.env[EnvironmentKey.StableDiffusionHosts] = mockHosts.join(',');
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.stableDiffusionHosts).toEqual(mockHosts.map(x => new URL(x)));
+        });
+
+        it('should trim individual Stable Diffusion host values', () => {
+            process.env[EnvironmentKey.StableDiffusionHosts] = mockHosts.join(', ');
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.stableDiffusionHosts).toEqual(mockHosts.map(x => new URL(x)));
+        });
+    });
+
+    describe('stableDiffusionModels', () => {
+        const modelBasedApis = [
+            StableDiffusionApiType.Automatic1111,
+            StableDiffusionApiType.EasyDiffusion
+        ];
+
+        const mockModels = [
+            'mockModel1',
+            'mockModel2',
+            'mockModel3'
+        ];
+
+        test.each(modelBasedApis)('it should be set to configured Stable Diffusion models', (apiType: StableDiffusionApiType) => {
+            process.env[EnvironmentKey.StableDiffusionApiType] = apiType;
+            process.env[EnvironmentKey.StableDiffusionModels] = mockModels.join(',');
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.stableDiffusionModels).toEqual(mockModels);
+        });
+
+        test.each(modelBasedApis)('it should trim the configured Stable Diffusion models', (apiType: StableDiffusionApiType) => {
+            process.env[EnvironmentKey.StableDiffusionApiType] = apiType;
+            process.env[EnvironmentKey.StableDiffusionModels] = mockModels.join(', ');
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.stableDiffusionModels).toEqual(mockModels);
+        });
+
+        it('should not load Stable Diffusion models when the API type is ComfyUI', () => {
+            process.env[EnvironmentKey.StableDiffusionApiType] = StableDiffusionApiType.ComfyUI;
+            process.env[EnvironmentKey.StableDiffusionModels] = mockModels.join(', ');
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.stableDiffusionModels).toEqual([]);
         });
     });
 
