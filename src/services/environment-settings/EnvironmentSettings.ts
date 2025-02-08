@@ -106,6 +106,13 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         this.#logConfiguration();
     }
 
+    /**
+    * Logs the configuration of the application.
+    *
+    * This method logs various configuration settings to the logger if the current node environment is not `Test`.
+    * It includes details such as package name, version, and specific environment variables related to task queues,
+    * bot functions, chat channels, stable diffusion API configurations, and more.
+    */
     #logConfiguration(): void {
         if(this.nodeEnvironment === NodeEnvironment.Test) {
             return;
@@ -139,6 +146,12 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         this.#logger(LogLevel.Info, `${EnvironmentKey.StableDiffusionOllamaPrompts}: ${this.stableDiffusionOllamaPrompts.join(' | ')}`);
     }
 
+    /**
+    * Validates the configuration settings for the bot.
+    *
+    * This method checks if the required environment variables are set and throws an error if any of them are missing or invalid.
+    * It also logs informational messages if certain configurations are not provided.
+    */
     #validate(): void {
         if(this.botFunction === BotFunction.Images && this.stableDiffusionHosts.length === 0) {
             throw new Error(`${EnvironmentKey.StableDiffusionHosts} requires at least one value.`);
@@ -159,6 +172,15 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         }
     }
 
+    /**
+    * Reads an environment variable and validates it against a list of enum values.
+    *
+    * @template T - The type of the enum values.
+    * @param {EnvironmentKey} key - The key of the environment variable to read.
+    * @param {T[]} enumValues - An array of enum values to validate against.
+    * @returns {T} - The validated value from the environment variable.
+    * @throws {Error} - Throws an error if the environment variable is not one of the allowed values.
+    */
     #readEnum<T>(key: EnvironmentKey, enumValues: T[]): T {
         const valueString = process.env[key].trim() as T;
 
@@ -169,6 +191,13 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         return valueString;
     }
 
+    /**
+    * Reads a defaultable number from an environment variable.
+    *
+    * @param {EnvironmentKey} key - The key of the environment variable to read.
+    * @param {number} defaultValue - The default value to return if the environment variable is not set or cannot be parsed as a number.
+    * @returns {number} - The parsed number from the environment variable, or the default value if parsing fails.
+    */
     #readDefaultableNumber(key: EnvironmentKey, defaultValue: number): number {
         const value = parseInt(process.env[key]?.trim());
 
@@ -177,6 +206,13 @@ export class EnvironmentSettings implements IEnvironmentSettings {
             : value;
     }
 
+    /**
+    * Reads a required environment variable and returns its trimmed value.
+    *
+    * @param {EnvironmentKey} key - The key of the environment variable to read.
+    * @returns {string} - The trimmed value of the environment variable.
+    * @throws {Error} - Throws an error if the environment variable is not provided or is empty.
+    */
     #readRequiredString(key: EnvironmentKey): string {
         const value = process.env[key]?.trim() || '';
 
@@ -187,10 +223,24 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         return value;
     }
 
+    /**
+    * Reads a defaultable string value from the environment.
+    *
+    * @param {EnvironmentKey} key - The key to look up in the environment variables.
+    * @param {string} defaultValue - The default value to return if the environment variable is not set or is empty.
+    * @returns {string} - The value of the environment variable, trimmed, or the default value if not set.
+    */
     #readDefaultableString(key: EnvironmentKey, defaultValue: string): string {
         return process.env[key]?.trim() || defaultValue;
     }
 
+    /**
+    * Reads a delimited list from the environment variables.
+    *
+    * @param {EnvironmentKey} key - The key of the environment variable to read.
+    * @param {string} separator - The character used to separate items in the list.
+    * @returns {string[]} An array of strings, each representing an item in the list. If the environment variable is not set or empty, returns an empty array.
+    */
     #readDelimitedList(key: EnvironmentKey, separator: string): string[] {
         const stringValue = process.env[key]?.trim() || null;
 
@@ -201,11 +251,24 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         return stringValue.split(separator).map(x => x.trim());
     }
 
+    /**
+    * Reads a boolean value from the environment variables.
+    *
+    * @param {EnvironmentKey} key - The key of the environment variable to read.
+    * @returns {boolean} - The boolean value parsed from the environment variable, or `false` if not found or invalid.
+    */
     #readBoolean(key: EnvironmentKey): boolean {
         return (process.env[key]?.trim()
             .toLowerCase() === true.toString());
     }
 
+    /**
+    * Reads an environment variable as a defaultable integer.
+    *
+    * @param {EnvironmentKey} key - The key of the environment variable to read.
+    * @param {number} defaultValue - The default value to return if the environment variable is not set or cannot be parsed as an integer.
+    * @returns {number} - The parsed integer from the environment variable, or the default value if parsing fails.
+    */
     #readDefaultableInteger(key: EnvironmentKey, defaultValue: number): number {
         const value = parseInt(process.env[key]);
 
@@ -216,6 +279,15 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         return value;
     }
 
+    /**
+    * Reads an integer from the environment with a default value and ensures it falls within a specified range.
+    *
+    * @param {EnvironmentKey} key - The key to read from the environment.
+    * @param {number} lowerBound - The lower bound of the acceptable range (inclusive).
+    * @param {number} upperBound - The upper bound of the acceptable range (inclusive).
+    * @param {number} defaultValue - The default value to return if the environment value is not within the range or is undefined.
+    * @returns {number} - The integer value from the environment, clamped to the specified range or the default value.
+    */
     #readDefaultableRangedInteger(key: EnvironmentKey, lowerBound: number, upperBound: number, defaultValue: number): number {
         const value = this.#readDefaultableInteger(key, defaultValue);
 
