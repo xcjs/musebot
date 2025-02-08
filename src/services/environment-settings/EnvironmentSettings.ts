@@ -177,6 +177,10 @@ export class EnvironmentSettings implements IEnvironmentSettings {
     }
 
     #validate(): void {
+        if(!Object.values(NodeEnvironment).includes(this.nodeEnvironment)) {
+            throw new Error(`${EnvironmentKey.NodeEnvironment} must be one of the following values: ${Object.values(NodeEnvironment).join(', ')}`);
+        }
+
         if(!Object.values(BotFunction).includes(this.botFunction)) {
             throw new Error(`${EnvironmentKey.BotFunction} must be one of the following values: ${Object.values(BotFunction).join(', ')}`);
         }
