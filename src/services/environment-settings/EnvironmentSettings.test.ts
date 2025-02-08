@@ -525,7 +525,27 @@ describe('EnvironmentSettings', () => {
     });
 
     describe('ollamaModels', () => {
+        const mockModels = [
+            'mockModel1',
+            'mockModel2',
+            'mockModel3'
+        ];
 
+        it('should be set to configured Stable Diffusion models', () => {
+            process.env[EnvironmentKey.OllamaModels] = mockModels.join(',');
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.ollamaModels).toEqual(mockModels);
+        });
+
+        it('should trim the configured Ollama models', () => {
+            process.env[EnvironmentKey.OllamaModels] = mockModels.join(', ');
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.ollamaModels).toEqual(mockModels);
+        });
     });
 
     describe('ollamaSystemPrompt', () => {

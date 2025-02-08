@@ -125,6 +125,7 @@ export class EnvironmentSettings implements IEnvironmentSettings {
 
         this.ollamaModels = process.env[EnvironmentKey.OllamaModels]?.trim()
             .split(',')
+            .map(x => x.trim())
             .filter(x => x.length > 0) || [];
 
         this.ollamaSystemPrompt = process.env[EnvironmentKey.OllamaSystemPrompt]?.trim() || '';
