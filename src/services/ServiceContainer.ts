@@ -1,9 +1,7 @@
 import { AttachmentBuilder, ButtonInteraction, Client as DiscordClient, GatewayIntentBits, Message, MessageReaction, Partials, User } from 'discord.js';
 
 import { BotFunction } from '../enums/BotFunction.js';
-import { Automatic1111ReplyService } from './clients/chat/discord/automatic1111/Automatic1111ReplyService.js';
 import { ComfyUiReplyService } from './clients/chat/discord/comfy-ui/ComfyUiReplyService.js';
-import { EasyDiffusionReplyService } from './clients/chat/discord/easy-diffusion/EasyDiffusionReplyService.js';
 import { DiscordConstants } from './clients/chat/discord/enums/DiscordConstants.js';
 import { GenerativeImageChatClient } from './clients/chat/discord/GenerativeImageChatClient.js';
 import { GenerativeTextChatClient } from './clients/chat/discord/GenerativeTextChatClient.js';
@@ -16,18 +14,6 @@ import { IGenerativeChatClient } from './clients/chat/IGenerativeChatClient.js';
 import { IReplyService } from './clients/chat/IReplyService.js';
 import { ITypingService } from './clients/chat/ITypingService.js';
 import { IReplyTask } from './clients/chat/tasks/IReplyTask.js';
-import { Automatic1111Client } from './clients/images/automatic1111/Automatic1111Client.js';
-import { Upscaler } from './clients/images/automatic1111/enums/Upscaler.js';
-import { AttachRenderTask as A1AttachRenderTask } from './clients/images/automatic1111/tasks/AttachRenderTask.js';
-import { DecreaseGuidanceScaleRenderTask as A1DecreaseGuidanceScaleRenderTask } from './clients/images/automatic1111/tasks/DecreaseGuidanceScaleRenderTask.js';
-import { ExpandPromptTask as A1ExpandPromptTask } from './clients/images/automatic1111/tasks/ExpandPromptTask.js';
-import { IncreaseGuidanceScaleRenderTask as A1IncreaseGuidanceScaleRenderTask } from './clients/images/automatic1111/tasks/IncreaseGuidanceScaleRenderTask.js';
-import { JsonRenderTask as A1JsonRenderTask } from './clients/images/automatic1111/tasks/JsonRenderTask.js';
-import { PromptRenderTask as A1PromptRenderTask } from './clients/images/automatic1111/tasks/PromptRenderTask.js';
-import { RandomRenderTask as A1RandomRenderTask } from './clients/images/automatic1111/tasks/RandomRenderTask.js';
-import { RetryRenderTask as A1RetryRenderTask } from './clients/images/automatic1111/tasks/RetryRenderTask.js';
-import { ShowSourceTask as A1ShowSourceTask } from './clients/images/automatic1111/tasks/ShowSourceTask.js';
-import { UpscaleRenderTask as A1UpscaleRenderTask } from './clients/images/automatic1111/tasks/UpscaleRenderTask.js';
 import { ComfyUiClient } from './clients/images/comfy-ui/ComfyUiClient.js';
 import { IWorkflowService } from './clients/images/comfy-ui/services/IWorkflowService.js';
 import { WorkflowService } from './clients/images/comfy-ui/services/WorkflowService.js';
@@ -35,22 +21,12 @@ import { ComfyUiAttachRenderTask } from './clients/images/comfy-ui/tasks/ComfyUi
 import { ComfyUiDecreaseGuidanceScaleRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiDecreaseGuidanceScaleRenderTask.js';
 import { ComfyUiExpandPromptTask } from './clients/images/comfy-ui/tasks/ComfyUiExpandPromptTask.js';
 import { ComfyUiIncreaseGuidanceScaleRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiIncreaseGuidanceScaleRenderTask.js';
+import { ComfyUiJsonRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiJsonRenderTask.js';
 import { ComfyUiPromptRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiPromptRenderTask.js';
 import { ComfyUiRandomRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiRandomRenderTask.js';
 import { ComfyUiRetryRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiRetryRenderTask.js';
 import { ComfyUiShowSourceTask } from './clients/images/comfy-ui/tasks/ComfyUiShowSourceTask.js';
 import { ComfyUiUpscaleRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiUpscaleRenderTask.js';
-import { EasyDiffusionClient } from './clients/images/easy-diffusion/EasyDiffusionClient.js';
-import { AttachRenderTask as EdAttachRenderTask } from './clients/images/easy-diffusion/tasks/AttachRenderTask.js';
-import { DecreaseGuidanceScaleRenderTask as EdDecreaseGuidanceScaleRenderTask } from './clients/images/easy-diffusion/tasks/DecreaseGuidanceScaleRenderTask.js';
-import { ExpandPromptTask as EdExpandPromptTask } from './clients/images/easy-diffusion/tasks/ExpandPromptTask.js';
-import { IncreaseGuidanceScaleRenderTask as EdIncreaseGuidanceScaleRenderTask } from './clients/images/easy-diffusion/tasks/IncreaseGuidanceScaleRenderTask.js';
-import { JsonRenderTask as EdJsonRenderTask } from './clients/images/easy-diffusion/tasks/JsonRenderTask.js';
-import { PromptRenderTask as EdPromptRenderTask } from './clients/images/easy-diffusion/tasks/PromptRenderTask.js';
-import { RandomRenderTask as EdRandomRenderTask } from './clients/images/easy-diffusion/tasks/RandomRenderTask.js';
-import { RetryRenderTask as EdRetryRenderTask } from './clients/images/easy-diffusion/tasks/RetryRenderTask.js';
-import { ShowSourceTask as EdShowSourceTask } from './clients/images/easy-diffusion/tasks/ShowSourceTask.js';
-import { UpscaleRenderTask as EdUpscaleRenderTask } from './clients/images/easy-diffusion/tasks/UpscaleRenderTask.js';
 import { PromptExtensionType } from './clients/images/enums/PromptExtensionType.js';
 import { ImageHelpService } from './clients/images/help/ImageHelpService.js';
 import { StableDiffusionApiType } from './clients/images/stable-diffusion/enums/StableDiffusionApiType.js';
@@ -126,28 +102,12 @@ export class ServiceContainer implements IServiceContainer {
         return new ReplyService(this);
     }
 
-    get automatic1111Client(): Automatic1111Client {
-        return new Automatic1111Client(this);
-    }
-
-    get automatic1111ReplyService(): Automatic1111ReplyService {
-        return new Automatic1111ReplyService(this);
-    }
-
     get comfyUiClient(): ComfyUiClient {
         return new ComfyUiClient(this);
     }
 
     get comfyUiReplyService(): ComfyUiReplyService {
         return new ComfyUiReplyService(this);
-    }
-
-    get easyDiffusionClient(): EasyDiffusionClient {
-        return new EasyDiffusionClient(this);
-    }
-
-    get easyDiffusionReplyService(): EasyDiffusionReplyService {
-        return new EasyDiffusionReplyService(this);
     }
 
     get ollamaClient(): OllamaClient {
@@ -186,12 +146,8 @@ export class ServiceContainer implements IServiceContainer {
         }
 
         switch (this.#environmentSettings.stableDiffusionApiType) {
-            case StableDiffusionApiType.Automatic1111:
-                return new A1AttachRenderTask(this, interaction, prompt, content, isEdit);
             case StableDiffusionApiType.ComfyUI:
                 return new ComfyUiAttachRenderTask(this, interaction, prompt, content, isEdit);
-            case StableDiffusionApiType.EasyDiffusion:
-                return new EdAttachRenderTask(this, interaction, prompt, content, isEdit);
             default:
                 throw this.#taskNotConfiguredError;
         }
@@ -203,12 +159,8 @@ export class ServiceContainer implements IServiceContainer {
         }
 
         switch (this.#environmentSettings.stableDiffusionApiType) {
-            case StableDiffusionApiType.Automatic1111:
-                return new A1DecreaseGuidanceScaleRenderTask(this, interaction);
             case StableDiffusionApiType.ComfyUI:
                 return new ComfyUiDecreaseGuidanceScaleRenderTask(this, interaction);
-            case StableDiffusionApiType.EasyDiffusion:
-                return new EdDecreaseGuidanceScaleRenderTask(this, interaction);
             default:
                 throw this.#taskNotConfiguredError;
         }
@@ -220,12 +172,8 @@ export class ServiceContainer implements IServiceContainer {
         }
 
         switch (this.#environmentSettings.stableDiffusionApiType) {
-            case StableDiffusionApiType.Automatic1111:
-                return new A1ExpandPromptTask(this, interaction);
             case StableDiffusionApiType.ComfyUI:
                 return new ComfyUiExpandPromptTask(this, interaction);
-            case StableDiffusionApiType.EasyDiffusion:
-                return new EdExpandPromptTask(this, interaction);
             default:
                 throw this.#taskNotConfiguredError;
         }
@@ -237,12 +185,8 @@ export class ServiceContainer implements IServiceContainer {
         }
 
         switch (this.#environmentSettings.stableDiffusionApiType) {
-            case StableDiffusionApiType.Automatic1111:
-                return new A1IncreaseGuidanceScaleRenderTask(this, interaction);
             case StableDiffusionApiType.ComfyUI:
                 return new ComfyUiIncreaseGuidanceScaleRenderTask(this, interaction);
-            case StableDiffusionApiType.EasyDiffusion:
-                return new EdIncreaseGuidanceScaleRenderTask(this, interaction);
             default:
                 throw this.#taskNotConfiguredError;
         }
@@ -254,10 +198,8 @@ export class ServiceContainer implements IServiceContainer {
         }
 
         switch (this.#environmentSettings.stableDiffusionApiType) {
-            case StableDiffusionApiType.Automatic1111:
-                return new A1JsonRenderTask(this, message);
-            case StableDiffusionApiType.EasyDiffusion:
-                return new EdJsonRenderTask(this, message);
+            case StableDiffusionApiType.ComfyUI:
+                return new ComfyUiJsonRenderTask(this, message);
             default:
                 throw this.#taskNotConfiguredError;
         }
@@ -269,12 +211,8 @@ export class ServiceContainer implements IServiceContainer {
         }
 
         switch (this.#environmentSettings.stableDiffusionApiType) {
-            case StableDiffusionApiType.Automatic1111:
-                return new A1PromptRenderTask(this, message);
             case StableDiffusionApiType.ComfyUI:
                 return new ComfyUiPromptRenderTask(this, message);
-            case StableDiffusionApiType.EasyDiffusion:
-                return new EdPromptRenderTask(this, message);
             default:
                 throw this.#taskNotConfiguredError;
         }
@@ -286,12 +224,8 @@ export class ServiceContainer implements IServiceContainer {
         }
 
         switch (this.#environmentSettings.stableDiffusionApiType) {
-            case StableDiffusionApiType.Automatic1111:
-                return new A1RandomRenderTask(this, interaction);
             case StableDiffusionApiType.ComfyUI:
                 return new ComfyUiRandomRenderTask(this, interaction);
-            case StableDiffusionApiType.EasyDiffusion:
-                return new EdRandomRenderTask(this, interaction);
             default:
                 throw this.#taskNotConfiguredError;
         }
@@ -308,12 +242,8 @@ export class ServiceContainer implements IServiceContainer {
         }
 
         switch (this.#environmentSettings.stableDiffusionApiType) {
-            case StableDiffusionApiType.Automatic1111:
-                return new A1RetryRenderTask(this, interaction, promptExtension, promptExtensionType, userOverride);
             case StableDiffusionApiType.ComfyUI:
                 return new ComfyUiRetryRenderTask(this, interaction, promptExtension, promptExtensionType, userOverride);
-            case StableDiffusionApiType.EasyDiffusion:
-                return new EdRetryRenderTask(this, interaction, promptExtension, promptExtensionType, userOverride);
             default:
                 throw this.#taskNotConfiguredError;
         }
@@ -325,29 +255,21 @@ export class ServiceContainer implements IServiceContainer {
         }
 
         switch (this.#environmentSettings.stableDiffusionApiType) {
-            case StableDiffusionApiType.Automatic1111:
-                return new A1ShowSourceTask(this, interaction);
             case StableDiffusionApiType.ComfyUI:
                 return new ComfyUiShowSourceTask(this, interaction);
-            case StableDiffusionApiType.EasyDiffusion:
-                return new EdShowSourceTask(this, interaction);
             default:
                 throw this.#taskNotConfiguredError;
         }
     }
 
-    getUpscaleRenderTask(interaction: ButtonInteraction, upscaler: Upscaler): IUpscaleRenderTask {
+    getUpscaleRenderTask(interaction: ButtonInteraction): IUpscaleRenderTask {
         if (!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)) {
             throw this.#taskNotConfiguredError;
         }
 
         switch (this.#environmentSettings.stableDiffusionApiType) {
-            case StableDiffusionApiType.Automatic1111:
-                return new A1UpscaleRenderTask(this, interaction, upscaler);
             case StableDiffusionApiType.ComfyUI:
                 return new ComfyUiUpscaleRenderTask(this, interaction);
-            case StableDiffusionApiType.EasyDiffusion:
-                return new EdUpscaleRenderTask(this, interaction);
             default:
                 throw this.#taskNotConfiguredError;
         }

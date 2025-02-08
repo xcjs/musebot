@@ -402,9 +402,7 @@ describe('EnvironmentSettings', () => {
 
     describe('stableDiffusionApiType', () => {
         it.each([
-            StableDiffusionApiType.Automatic1111,
             StableDiffusionApiType.ComfyUI,
-            StableDiffusionApiType.EasyDiffusion
         ])('it should work with each supported API definition', (apiType: StableDiffusionApiType) => {
             process.env[EnvironmentKey.StableDiffusionApiType] = apiType;
 
@@ -460,46 +458,6 @@ describe('EnvironmentSettings', () => {
             expect(() => {
                 new EnvironmentSettings();
             }).toThrow();
-        });
-    });
-
-    describe('stableDiffusionModels', () => {
-        const modelBasedApis = [
-            StableDiffusionApiType.Automatic1111,
-            StableDiffusionApiType.EasyDiffusion
-        ];
-
-        const mockModels = [
-            'mockModel1',
-            'mockModel2',
-            'mockModel3'
-        ];
-
-        it.each(modelBasedApis)('should be set to configured Stable Diffusion models', (apiType: StableDiffusionApiType) => {
-            process.env[EnvironmentKey.StableDiffusionApiType] = apiType;
-            process.env[EnvironmentKey.StableDiffusionModels] = mockModels.join(',');
-
-            const environmentSettings = new EnvironmentSettings();
-
-            expect(environmentSettings.stableDiffusionModels).toEqual(mockModels);
-        });
-
-        it.each(modelBasedApis)('should trim the configured Stable Diffusion models', (apiType: StableDiffusionApiType) => {
-            process.env[EnvironmentKey.StableDiffusionApiType] = apiType;
-            process.env[EnvironmentKey.StableDiffusionModels] = mockModels.join(', ');
-
-            const environmentSettings = new EnvironmentSettings();
-
-            expect(environmentSettings.stableDiffusionModels).toEqual(mockModels);
-        });
-
-        it('should not load Stable Diffusion models when the API type is ComfyUI', () => {
-            process.env[EnvironmentKey.StableDiffusionApiType] = StableDiffusionApiType.ComfyUI;
-            process.env[EnvironmentKey.StableDiffusionModels] = mockModels.join(', ');
-
-            const environmentSettings = new EnvironmentSettings();
-
-            expect(environmentSettings.stableDiffusionModels).toEqual([]);
         });
     });
 

@@ -81,15 +81,6 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         this.stableDiffusionHosts = this.#readDelimitedList(EnvironmentKey.StableDiffusionHosts, ',')
             .map(x => new URL(x));
 
-        // If the ComfyUI integration is configured, workflows will be loaded
-        // from the $PWD/workflows directory and the
-        // MUSEBOT_STABLE_DIFFUSION_MODELS environment variable will be ignored.
-        //
-        // Otherwise, load the environment variable as normal.
-        if (this.stableDiffusionApiType !== StableDiffusionApiType.ComfyUI) {
-            this.stableDiffusionModels = this.#readDelimitedList(EnvironmentKey.StableDiffusionModels, ',');
-        }
-
         this.ollamaHosts = this.#readDelimitedList(EnvironmentKey.OllamaHosts, ',')
             .map(x => new URL(x));
 
@@ -136,7 +127,6 @@ export class EnvironmentSettings implements IEnvironmentSettings {
 
         this.#logger(LogLevel.Info, `${EnvironmentKey.StableDiffusionApiType}: ${this.stableDiffusionApiType}`);
         this.#logger(LogLevel.Info, `${EnvironmentKey.StableDiffusionHosts}: ${this.stableDiffusionHosts.join(', ')}`);
-        this.#logger(LogLevel.Info, `${EnvironmentKey.StableDiffusionModels}: ${this.stableDiffusionModels.join(', ')}`);
 
         this.#logger(LogLevel.Info, `${EnvironmentKey.OllamaHosts}: ${this.ollamaHosts.join(', ')}`);
         this.#logger(LogLevel.Info, `${EnvironmentKey.OllamaModels}: ${this.ollamaModels.join(', ')}`);
@@ -155,11 +145,6 @@ export class EnvironmentSettings implements IEnvironmentSettings {
     #validate(): void {
         if(this.botFunction === BotFunction.Images && this.stableDiffusionHosts.length === 0) {
             throw new Error(`${EnvironmentKey.StableDiffusionHosts} requires at least one value.`);
-        }
-
-        if(this.stableDiffusionModels.length === 0) {
-            this.#logger(LogLevel.Info,
-                `${EnvironmentKey.StableDiffusionModels} had no value - a random model will be selected per render.`);
         }
 
         if(this.botFunction === BotFunction.Text && this.ollamaHosts.length === 0) {

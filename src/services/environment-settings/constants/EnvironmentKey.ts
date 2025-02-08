@@ -14,7 +14,6 @@ export enum EnvironmentKey {
     StableDiffusionApiType = 'MUSEBOT_STABLE_DIFFUSION_API_TYPE',
     StableDiffusionHosts = 'MUSEBOT_STABLE_DIFFUSION_HOSTS',
     StableDiffusionOllamaPrompts = 'MUSEBOT_STABLE_DIFFUSION_OLLAMA_PROMPTS',
-    StableDiffusionModels = 'MUSEBOT_STABLE_DIFFUSION_MODELS',
     TaskQueueMaxAttempts = 'MUSEBOT_TASK_QUEUE_MAX_ATTEMPTS',
     TaskQueueRetryDelayMs = 'MUSEBOT_TASK_QUEUE_RETRY_DELAY_MS',
 }
