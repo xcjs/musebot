@@ -27,6 +27,10 @@ export class EnvironmentSettings implements IEnvironmentSettings {
     discordChannels: Array<string> = [];
     discordChannelsDisallowed: Array<string> = [];
 
+    botRequiresMention: boolean = true;
+    botResponseRate: number = 100;
+    errorMessage: string = 'An error occurred while generating a response. Please try again later.';
+
     stableDiffusionApiType: StableDiffusionApiType;
     stableDiffusionHosts: Array<URL> = [];
     stableDiffusionModels: Array<string> = [];
@@ -38,10 +42,6 @@ export class EnvironmentSettings implements IEnvironmentSettings {
     ollamaStreamsResponse: boolean = false;
 
     stableDiffusionOllamaPrompts: Array<string> = ['Describe something or someone with extraordinary detail.'];
-
-    botRequiresMention: boolean = true;
-    botResponseRate: number = 100;
-    errorMessage: string = 'An error occurred while generating a response. Please try again later.';
 
     #logger;
 
