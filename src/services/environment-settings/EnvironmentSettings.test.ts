@@ -486,6 +486,13 @@ describe('EnvironmentSettings', () => {
         });
     });
 
+    describe('stableDiffusionGuidanceScaleInterval', () => {
+        it('should equal .5',() => {
+            const environmentSettings = new EnvironmentSettings();
+            expect(environmentSettings.stableDiffusionGuidanceScaleInterval).toBe(.5);
+        });
+    });
+
     describe('isProduction', () => {
         it('should return true when it is production', () => {
             process.env[EnvironmentKey.NodeEnvironment] = NodeEnvironment.Production;
