@@ -340,6 +340,15 @@ describe('EnvironmentSettings', () => {
 
             expect(environmentSettings.stableDiffusionModels).toEqual(mockModels);
         });
+
+        it('should not load Stable Diffusion models when the API type is ComfyUI', () => {
+            process.env[EnvironmentKey.StableDiffusionApiType] = StableDiffusionApiType.ComfyUI;
+            process.env[EnvironmentKey.StableDiffusionModels] = mockModels.join(', ');
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.stableDiffusionModels).toEqual([]);
+        });
     });
 
     describe('botRequiresMention', () => {
