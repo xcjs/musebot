@@ -567,7 +567,19 @@ describe('EnvironmentSettings', () => {
     });
 
     describe('ollamaSystemPrompt', () => {
+        it('should be set to the configured system prompt', () => {
+            const mockSystemPrompt = 'mockSystemPrompt';
+            process.env[EnvironmentKey.OllamaSystemPrompt] = mockSystemPrompt;
 
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.ollamaSystemPrompt).toBe(mockSystemPrompt);
+        });
+
+        it('should handle undefined', () => {
+            const environmentSettings = new EnvironmentSettings();
+            expect(environmentSettings.ollamaSystemPrompt).toBe('');
+        });
     });
 
     describe('ollamaStreamsResponse', () => {
