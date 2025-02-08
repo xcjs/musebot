@@ -196,6 +196,12 @@ describe('EnvironmentSettings', () => {
             expect(environmentSettings.maxTaskAttempts).toBe(10);
         });
 
+        it('should default to 10 when provided an invalid value', () => {
+            process.env[EnvironmentKey.TaskQueueMaxAttempts] = 'invalidValue';
+            const environmentSettings = new EnvironmentSettings();
+            expect(environmentSettings.maxTaskAttempts).toBe(10);
+        });
+
         it('should prefer the provided value', () => {
             const mockMaxAttempts = 1000;
 
@@ -203,16 +209,6 @@ describe('EnvironmentSettings', () => {
             const environmentSettings = new EnvironmentSettings();
 
             expect(environmentSettings.maxTaskAttempts).toBe(mockMaxAttempts);
-        });
-
-        it('should not accept non-numeric values', () => {
-            const mockMaxAttempts = 'invalidValue';
-
-            process.env[EnvironmentKey.TaskQueueMaxAttempts] = mockMaxAttempts;
-
-            expect(() => {
-                new EnvironmentSettings();
-            }).toThrow();
         });
     });
 
@@ -222,22 +218,20 @@ describe('EnvironmentSettings', () => {
             expect(environmentSettings.taskRetryDelayMilliseconds).toBe(1000);
         });
 
+        it('should default to 1 second when provided an invalid value', () => {
+            process.env[EnvironmentKey.TaskQueueRetryDelayMs] = 'invalidValue';
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.taskRetryDelayMilliseconds).toBe(1000);
+        });
+
         it('should prefer the provided value', () => {
             const mockRetryDelay = 5000;
             process.env[EnvironmentKey.TaskQueueRetryDelayMs] = mockRetryDelay.toString();
             const environmentSettings = new EnvironmentSettings();
 
             expect(environmentSettings.taskRetryDelayMilliseconds).toBe(mockRetryDelay);
-        });
-
-        it('should not accept non-numeric values', () => {
-            const mockRetryDelay = 'invalidValue';
-
-            process.env[EnvironmentKey.TaskQueueRetryDelayMs] = mockRetryDelay;
-
-            expect(() => {
-                new EnvironmentSettings();
-            }).toThrow();
         });
     });
 
