@@ -22,6 +22,7 @@ beforeEach(() => {
         [EnvironmentKey.NodeEnvironment]: process.env[EnvironmentKey.NodeEnvironment] || NodeEnvironment.Test,
         // Preset all minimally required values for most tests to pass.
         [EnvironmentKey.BotFunction]: BotFunction.Images,
+        [EnvironmentKey.StableDiffusionApiType]: StableDiffusionApiType.ComfyUI,
         [EnvironmentKey.AuthenticationToken]: mockToken,
         [EnvironmentKey.StableDiffusionHosts]: mockUrl
     };
@@ -308,6 +309,15 @@ describe('EnvironmentSettings', () => {
             const environmentSettings = new EnvironmentSettings();
 
             expect(environmentSettings.stableDiffusionApiType).toBe(apiType);
+        });
+
+        it('should throw an exception if an invalid API type is provided', () => {
+            const invalidApiType = 'invalidApiType';
+            process.env[EnvironmentKey.StableDiffusionApiType] = invalidApiType;
+
+            expect(() => {
+                new EnvironmentSettings();
+            }).toThrow();
         });
     });
 

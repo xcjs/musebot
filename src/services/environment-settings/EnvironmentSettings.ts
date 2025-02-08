@@ -196,6 +196,11 @@ export class EnvironmentSettings implements IEnvironmentSettings {
             throw new Error(`${EnvironmentKey.StableDiffusionHosts} requires at least one value.`);
         }
 
+        if (this.botFunction === BotFunction.Images &&
+            !Object.values(StableDiffusionApiType).includes(this.stableDiffusionApiType)) {
+            throw new Error(`${EnvironmentKey.StableDiffusionApiType} must be one of the following values: ${Object.values(StableDiffusionApiType).join(', ')}`);
+        }
+
         if(this.stableDiffusionModels.length === 0) {
             this.#logger(LogLevel.Info,
                 `${EnvironmentKey.StableDiffusionModels} had no value - a random model will be selected per render.`);
