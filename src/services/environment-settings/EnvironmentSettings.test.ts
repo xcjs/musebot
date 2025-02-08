@@ -591,7 +591,53 @@ describe('EnvironmentSettings', () => {
     });
 
     describe('ollamaStreamsResponse', () => {
+        test.each([
+            'true',
+            'TRUE',
+            'tRuE'
+        ])('it should be set to the configured positive value', (stringValue: string) => {
+            process.env[EnvironmentKey.OllamaStreamsResponse] = stringValue;
 
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.ollamaStreamsResponse).toBe(true);
+        });
+
+        test.each([
+            'false',
+            'invalid',
+            undefined
+        ])('it should be set to the configured negative value', (stringValue: string | undefined) => {
+            process.env[EnvironmentKey.OllamaStreamsResponse] = stringValue;
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.ollamaStreamsResponse).toBe(false);
+        });
+    });
+
+    describe('stableDiffusionOllamaPrompts', () => {
+        const mockPrompts = [
+            'mockPrompt1',
+            'mockPrompt2',
+            'mockPrompt3'
+        ];
+
+        it('should be set to the configured values', () => {
+             process.env[EnvironmentKey.StableDiffusionOllamaPrompts] = mockPrompts.join('|');
+
+             const environmentSettings = new EnvironmentSettings();
+
+             expect(environmentSettings.stableDiffusionOllamaPrompts).toEqual(mockPrompts);
+        });
+
+        it('should work with undefined', () => {
+            process.env[EnvironmentKey.StableDiffusionOllamaPrompts] = undefined;
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.stableDiffusionOllamaPrompts).toEqual([]);
+        });
     });
 
     describe('isProduction', () => {
