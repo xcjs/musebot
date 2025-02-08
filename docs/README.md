@@ -11,16 +11,17 @@ Musebot currently supports the following generative AI solutions:
 * [Swarm UI](https://github.com/Stability-AI/StableSwarmUI)
 * [Ollama](https://ollama.com/)
 
-Please refer to the respective documentation provided by these projects for
-installation and configuration.
+While some documentation is included on these systems, please refer to the
+respective documentation provided by these projects for basic installation and
+configuration.
 
-## Installation
+## 1. System Installation
 
 Musebot is provided as a single-file application with no external dependencies
 except for those built into your operating system.
 
 Musebot currently supports the following operating systems and architectures.
-Your download should include an application for each supported configuration:
+Your download should include an application for each supported platform:
 
 | Operating System | Architectures | File Name                |
 | ---------------- | ------------- | ------------------------ |
@@ -79,50 +80,26 @@ Your download should include an application for each supported configuration:
    the use case of each provided environment variable.
 3. Continue to Bot Registration.
 4. Execute `./musebot-win-x86_64.exe` from the Command Prompt or Powershell.
-   Double-clicking on it may work.
+   Double-clicking on it may also work, but isn't recommended.
 
-### Bot Registration
+## 2. Discord Configuration
 
-Before starting Musebot, ensure that you've registered an application with
-Discord.
+Refer to the included [Discord](Integrations/Discord.md) documentation.
 
-1. Using your web browser, navigate to the
-   [Discord Developer Portal](https://discord.com/developers/applications).
-2. Login to the Discord account associated with the Discord server you want to
-   add Musebot to.
-3. Click `New Application` in the upper right hand corner and name your
-   application. It does not need to be "Musebot", but can be any character or
-   concept you desire. Agree to Discord's terms by checking the box.
-4. Name your application, add a profile image, and save your changes. Provide a
-   Provide a description if you want.
-5. Save your changes.
-6. Click the `Bot` link in the left navigation menu.
-7. If you want to limit your bot to only your Discord server, disable the toggle
-   titled `Public Bot`.
-8. Enable the `Server Members Intent` toggle.
-9. Enable the `Message Content Intent` toggle.
-10. Save your changes.
-11. Click the `OAuth2` link in the left navigation menu.
-12. Under the `OAuth2 URL Generator` in the `Scopes` checklist, check `Bot`.
-13. In the `Bot Permissions` checklist, check the following checkboxes:
+## 3. AI API Configuration
 
-    * Read Messages/View Channels
-    * Send Messages
-    * Read Message History
-14. Copy the generated link at the bottom of the page and paste it into a new
-    browser tab. You will be asked to login and/or confirm the bot and its
-    requested permissions.
-15. Return to the tab where you configured your Discord application.
-16. Click on `Bot` in the left navigation menu.
-17. Optionally set a banner and save it.
-18. Click the `Reset Token` button. This will create or reset your token. This
-    is required for the `MUSEBOT_DISCORD_TOKEN` environment variable.
+### Image Generation
 
-### Lookup Discord Channel IDs
+#### ComfyUI
 
-If you decide to restrict Musebot to a single or subset of channels, follow
-these steps:
+Refer to the included [ComfyUI](Integrations/ComfyUI.md) documentation.
 
-1. In Discord, go to `User Settings` » `Advanced` » `Enable Developer Mode`.
-2. Right click on a channel for Musebot to use and click `Copy Channel ID`.
-3. Add the channel ID(s) to the `MUSEBOT_DISCORD_CHANNELS` environment variable.
+#### SwarmUI
+
+Refer to the included [SwarmUI](Integrations/SwarmUI.md) documentation.
+
+### Large Language Model Inferencing
+
+#### Ollama
+
+Refer to the included [Ollama](Integrations/Ollama.md) documentation.
