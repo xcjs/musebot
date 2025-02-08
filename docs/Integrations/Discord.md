@@ -1,4 +1,4 @@
-# Discord
+# Discord Integration
 
 ## Bot Registration
 

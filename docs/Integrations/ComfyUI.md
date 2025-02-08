@@ -1,1 +1,1 @@
-# ComfyUI
+# ComfyUI Integration

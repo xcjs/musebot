@@ -1,1 +1,1 @@
-# SwarmUI
+# SwarmUI Integration

@@ -1,5 +1,7 @@
 # Musebot
 
+![Musebot Logo](images/logos/musebot.jpg)
+
 Musebot is an interactive chat bot designed for use in the Discord chat service.
 
 The goal of Musebot is to bring self-hosted generative AI solutions to Discord
@@ -15,7 +17,48 @@ While some documentation is included on these systems, please refer to the
 respective documentation provided by these projects for basic installation and
 configuration.
 
-## 1. System Installation
+## 1. Discord Configuration
+
+Refer to the included [Discord Integration](Integrations/Discord.md)
+documentation.
+
+## 2. AI API Configuration
+
+While Musebot supports multiple generative AI backends, only one needs to
+be configured.
+
+1. Choose the primary/only functionality you expect from Musebot by setting
+   `MUSEBOT_FUNCTION` in your `.env` file. Supported values are documented for
+   you and are based on the supported generative AI backends.
+2. While this drives Musebot's primary functionality, additional multimodal
+   features can be unlocked by configuring other backends. This is entirely
+   optional.
+
+   Only one supported backend needs to be configured, but feel free to configure
+   multiple. Additionally, only one backend per media type (images, large
+   language models, etc.) should be configured. For example, don't configure
+   both ComfyUI _and_ SwarmUI as they both generate images.
+
+### Image Generation
+
+#### ComfyUI
+
+Refer to the included [ComfyUI Integration](Integrations/ComfyUI.md)
+documentation.
+
+#### SwarmUI
+
+Refer to the included [SwarmUI Integration](Integrations/SwarmUI.md)
+documentation.
+
+### Large Language Model Inferencing
+
+#### Ollama
+
+Refer to the included [Ollama Integration](Integrations/Ollama.md)
+documentation.
+
+## 3. Musebot Installation
 
 Musebot is provided as a single-file application with no external dependencies
 except for those built into your operating system.
@@ -81,25 +124,3 @@ Your download should include an application for each supported platform:
 3. Continue to Bot Registration.
 4. Execute `./musebot-win-x86_64.exe` from the Command Prompt or Powershell.
    Double-clicking on it may also work, but isn't recommended.
-
-## 2. Discord Configuration
-
-Refer to the included [Discord](Integrations/Discord.md) documentation.
-
-## 3. AI API Configuration
-
-### Image Generation
-
-#### ComfyUI
-
-Refer to the included [ComfyUI](Integrations/ComfyUI.md) documentation.
-
-#### SwarmUI
-
-Refer to the included [SwarmUI](Integrations/SwarmUI.md) documentation.
-
-### Large Language Model Inferencing
-
-#### Ollama
-
-Refer to the included [Ollama](Integrations/Ollama.md) documentation.
