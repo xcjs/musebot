@@ -297,6 +297,37 @@ describe('EnvironmentSettings', () => {
         });
     });
 
+    describe('stableDiffusionHosts', () => {
+        const mockHosts = [
+            mockUrl,
+            'http://localhost:8080/'
+        ];
+
+        it('should be set to the configured Stable Diffusion hosts when one host is provided', () => {
+            process.env[EnvironmentKey.StableDiffusionHosts] = mockUrl;
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.stableDiffusionHosts).toEqual([new URL(mockUrl)]);
+        });
+
+        it('should be set to the configured Stable Diffusion hosts when multiple hosts are provided', () => {
+            process.env[EnvironmentKey.StableDiffusionHosts] = mockHosts.join(',');
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.stableDiffusionHosts).toEqual(mockHosts.map(x => new URL(x)));
+        });
+
+        it('should trim individual Stable Diffusion host values', () => {
+            process.env[EnvironmentKey.StableDiffusionHosts] = mockHosts.join(', ');
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.stableDiffusionHosts).toEqual(mockHosts.map(x => new URL(x)));
+        });
+    });
+
     describe('stableDiffusionApiType', () => {
         test.each([
             StableDiffusionApiType.Automatic1111,
