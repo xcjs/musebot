@@ -297,6 +297,20 @@ describe('EnvironmentSettings', () => {
         });
     });
 
+    describe('stableDiffusionApiType', () => {
+        test.each([
+            StableDiffusionApiType.Automatic1111,
+            StableDiffusionApiType.ComfyUI,
+            StableDiffusionApiType.EasyDiffusion
+        ])('it should work with each supported API definition', (apiType: StableDiffusionApiType) => {
+            process.env[EnvironmentKey.StableDiffusionApiType] = apiType;
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.stableDiffusionApiType).toBe(apiType);
+        });
+    });
+
     describe('stableDiffusionHosts', () => {
         const mockHosts = [
             mockUrl,
@@ -325,20 +339,6 @@ describe('EnvironmentSettings', () => {
             const environmentSettings = new EnvironmentSettings();
 
             expect(environmentSettings.stableDiffusionHosts).toEqual(mockHosts.map(x => new URL(x)));
-        });
-    });
-
-    describe('stableDiffusionApiType', () => {
-        test.each([
-            StableDiffusionApiType.Automatic1111,
-            StableDiffusionApiType.ComfyUI,
-            StableDiffusionApiType.EasyDiffusion
-        ])('it should work with each supported API definition', (apiType: StableDiffusionApiType) => {
-            process.env[EnvironmentKey.StableDiffusionApiType] = apiType;
-
-            const environmentSettings = new EnvironmentSettings();
-
-            expect(environmentSettings.stableDiffusionApiType).toBe(apiType);
         });
     });
 
