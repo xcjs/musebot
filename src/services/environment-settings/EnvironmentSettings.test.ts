@@ -444,6 +444,15 @@ describe('EnvironmentSettings', () => {
 
             expect(environmentSettings.stableDiffusionHosts).toEqual(mockHosts.map(x => new URL(x)));
         });
+
+        it('should throw an exception for invalid URLs', () => {
+            const invalidUrl = 'invalidUrl';
+            process.env[EnvironmentKey.StableDiffusionApiType] = invalidUrl;
+
+            expect(() => {
+                new EnvironmentSettings();
+            }).toThrow();
+        });
     });
 
     describe('stableDiffusionModels', () => {
@@ -521,6 +530,15 @@ describe('EnvironmentSettings', () => {
             const environmentSettings = new EnvironmentSettings();
 
             expect(environmentSettings.ollamaHosts).toEqual(mockHosts.map(x => new URL(x)));
+        });
+
+        it('should throw an exception for invalid URLs', () => {
+            const invalidUrl = 'invalidUrl';
+            process.env[EnvironmentKey.OllamaHosts] = invalidUrl;
+
+            expect(() => {
+                new EnvironmentSettings();
+            }).toThrow();
         });
     });
 
