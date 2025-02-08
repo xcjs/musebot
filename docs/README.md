@@ -22,7 +22,7 @@ configuration.
 Refer to the included [Discord Integration](Integrations/Discord/index.html)
 documentation.
 
-## 2. AI API Configuration
+## 2. Generative AI API Configuration
 
 While Musebot supports multiple generative AI backends, only one needs to
 be configured.
