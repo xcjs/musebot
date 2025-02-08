@@ -1,5 +1,7 @@
 # Discord Integration
 
+![Discord Logo](../images/logos/discord.jpg)
+
 ## Bot Registration
 
 Before starting Musebot, ensure that you've registered an application with
