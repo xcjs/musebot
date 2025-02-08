@@ -1,6 +1,6 @@
 import process from 'node:process';
 
-import { beforeEach, describe, expect, it, test } from '@jest/globals';
+import { beforeEach, describe, expect, it } from '@jest/globals';
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -51,7 +51,7 @@ describe('EnvironmentSettings', () => {
             expect(environmentSettings.nodeEnvironment).toBe(NodeEnvironment.Test);
         });
 
-        test.each([
+        it.each([
             NodeEnvironment.Development,
             NodeEnvironment.Production
         ])(`should match the ${EnvironmentKey.NodeEnvironment} environment variable`, (nodeEnvironment) => {
@@ -86,7 +86,7 @@ describe('EnvironmentSettings', () => {
             }).toThrow();
         });
 
-        test.each([
+        it.each([
             BotFunction.Images,
             BotFunction.Text
         ])('should accept any valid BotFunction value', (botFunction: BotFunction) => {
@@ -105,7 +105,7 @@ describe('EnvironmentSettings', () => {
             }).toThrow();
         });
 
-        test.each([
+        it.each([
             { generativeAiHosts: '', botFunction: BotFunction.Images, environmentKey: EnvironmentKey.StableDiffusionHosts },
             { generativeAiHosts: null, botFunction: BotFunction.Images, environmentKey: EnvironmentKey.StableDiffusionHosts },
             { generativeAiHosts: undefined, botFunction: BotFunction.Images, environmentKey: EnvironmentKey.StableDiffusionHosts },
@@ -123,7 +123,7 @@ describe('EnvironmentSettings', () => {
                 }).toThrow();
         });
 
-        test.each([
+        it.each([
             {
                 associatedGenerativeAiHosts: mockUrl,
                 unassociatedGenerativeAiHosts: '',
@@ -312,7 +312,7 @@ describe('EnvironmentSettings', () => {
             expect(environmentSettings.botRequiresMention).toBe(false);
         });
 
-        test.each([
+        it.each([
             'false',
             'FALSE',
             'tru',
@@ -327,7 +327,7 @@ describe('EnvironmentSettings', () => {
             expect(environmentSettings.botRequiresMention).toBe(false);
         });
 
-        test.each([
+        it.each([
             'true',
             'TRUE',
             'true ',
@@ -356,7 +356,7 @@ describe('EnvironmentSettings', () => {
             expect(environmentSettings.botResponseRate).toBe(mockResponseRate);
         });
 
-        test.each([
+        it.each([
             -1, 0, 101
         ])('should default to 100 when the value is outside the valid range', (rate: number) => {
             process.env[EnvironmentKey.BotResponseRate] = rate.toString();
@@ -401,7 +401,7 @@ describe('EnvironmentSettings', () => {
     });
 
     describe('stableDiffusionApiType', () => {
-        test.each([
+        it.each([
             StableDiffusionApiType.Automatic1111,
             StableDiffusionApiType.ComfyUI,
             StableDiffusionApiType.EasyDiffusion
@@ -475,7 +475,7 @@ describe('EnvironmentSettings', () => {
             'mockModel3'
         ];
 
-        test.each(modelBasedApis)('it should be set to configured Stable Diffusion models', (apiType: StableDiffusionApiType) => {
+        it.each(modelBasedApis)('should be set to configured Stable Diffusion models', (apiType: StableDiffusionApiType) => {
             process.env[EnvironmentKey.StableDiffusionApiType] = apiType;
             process.env[EnvironmentKey.StableDiffusionModels] = mockModels.join(',');
 
@@ -484,7 +484,7 @@ describe('EnvironmentSettings', () => {
             expect(environmentSettings.stableDiffusionModels).toEqual(mockModels);
         });
 
-        test.each(modelBasedApis)('it should trim the configured Stable Diffusion models', (apiType: StableDiffusionApiType) => {
+        it.each(modelBasedApis)('should trim the configured Stable Diffusion models', (apiType: StableDiffusionApiType) => {
             process.env[EnvironmentKey.StableDiffusionApiType] = apiType;
             process.env[EnvironmentKey.StableDiffusionModels] = mockModels.join(', ');
 
@@ -591,11 +591,11 @@ describe('EnvironmentSettings', () => {
     });
 
     describe('ollamaStreamsResponse', () => {
-        test.each([
+        it.each([
             'true',
             'TRUE',
             'tRuE'
-        ])('it should be set to the configured positive value', (stringValue: string) => {
+        ])('should be set to the configured positive value', (stringValue: string) => {
             process.env[EnvironmentKey.OllamaStreamsResponse] = stringValue;
 
             const environmentSettings = new EnvironmentSettings();
@@ -603,11 +603,11 @@ describe('EnvironmentSettings', () => {
             expect(environmentSettings.ollamaStreamsResponse).toBe(true);
         });
 
-        test.each([
+        it.each([
             'false',
             'invalid',
             undefined
-        ])('it should be set to the configured negative value', (stringValue: string | undefined) => {
+        ])('should be set to the configured negative value', (stringValue: string | undefined) => {
             process.env[EnvironmentKey.OllamaStreamsResponse] = stringValue;
 
             const environmentSettings = new EnvironmentSettings();
@@ -652,7 +652,7 @@ describe('EnvironmentSettings', () => {
             process.env[EnvironmentKey.NodeEnvironment] = NodeEnvironment.Test;
         });
 
-        test.each([
+        it.each([
             NodeEnvironment.Development,
             NodeEnvironment.Test
         ])('should return false when not production', (nodeEnvironment: NodeEnvironment) => {
