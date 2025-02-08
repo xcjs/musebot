@@ -7,6 +7,7 @@ import { beforeEach, describe, expect, it, test } from '@jest/globals';
 import nodePackage from '../../../package.json' with { type: 'json' };
 import { BotFunction } from '../../enums/BotFunction.js';
 import { NodeEnvironment } from '../../enums/NodeEnvironment.js';
+import { StableDiffusionApiType } from '../clients/images/stable-diffusion/enums/StableDiffusionApiType.js';
 import { EnvironmentKey } from './constants/EnvironmentKey.js';
 import { EnvironmentSettings } from './EnvironmentSettings';
 
@@ -21,6 +22,7 @@ beforeEach(() => {
         [EnvironmentKey.NodeEnvironment]: process.env[EnvironmentKey.NodeEnvironment] || NodeEnvironment.Test,
         // Preset all minimally required values for most tests to pass.
         [EnvironmentKey.BotFunction]: BotFunction.Images,
+        [EnvironmentKey.StableDiffusionApiType]: StableDiffusionApiType.ComfyUI,
         [EnvironmentKey.AuthenticationToken]: mockToken,
         [EnvironmentKey.StableDiffusionHosts]: mockUrl
     };
@@ -42,6 +44,8 @@ describe('EnvironmentSettings', () => {
     });
 
     describe('nodeEnvironment', () => {
+        const originalEnvironment = process.env[EnvironmentKey.NodeEnvironment];
+
         it(`should return test in the testing environment without mocking`, () => {
             const environmentSettings = new EnvironmentSettings();
             expect(environmentSettings.nodeEnvironment).toBe(NodeEnvironment.Test);
@@ -57,34 +61,19 @@ describe('EnvironmentSettings', () => {
             expect(environmentSettings.nodeEnvironment).toBe(nodeEnvironment);
 
             // Reset the environment after this test to prevent scope leak.
-            process.env[EnvironmentKey.NodeEnvironment] = NodeEnvironment.Test;
-        });
-    });
-
-    describe('isProduction()', () => {
-        it('should return true when it is production', () => {
-            process.env[EnvironmentKey.NodeEnvironment] = NodeEnvironment.Production;
-
-            const environmentSettings = new EnvironmentSettings();
-
-            expect(environmentSettings.isProduction).toBe(true);
-
-            // Reset the environment after this test to prevent scope leak.
-            process.env[EnvironmentKey.NodeEnvironment] = NodeEnvironment.Test;
+            process.env[EnvironmentKey.NodeEnvironment] = originalEnvironment;
         });
 
-        test.each([
-            NodeEnvironment.Development,
-            NodeEnvironment.Test
-        ])('should return false when not production', (nodeEnvironment: NodeEnvironment) => {
-            process.env[EnvironmentKey.NodeEnvironment] = nodeEnvironment;
+        it('should throw an exception if it isn\'t a valid NodeEnvironment value', () => {
+            const invalidEnvironment = 'invalidEnvironment';
+            process.env[EnvironmentKey.NodeEnvironment] = invalidEnvironment;
 
-            const environmentSettings = new EnvironmentSettings();
-
-            expect(environmentSettings.isProduction).toBe(false);
+            expect(() => {
+                new EnvironmentSettings();
+            }).toThrow();
 
             // Reset the environment after this test to prevent scope leak.
-            process.env[EnvironmentKey.NodeEnvironment] = NodeEnvironment.Test;
+            process.env[EnvironmentKey.NodeEnvironment] = originalEnvironment;
         });
     });
 
@@ -207,6 +196,12 @@ describe('EnvironmentSettings', () => {
             expect(environmentSettings.maxTaskAttempts).toBe(10);
         });
 
+        it('should default to 10 when provided an invalid value', () => {
+            process.env[EnvironmentKey.TaskQueueMaxAttempts] = 'invalidValue';
+            const environmentSettings = new EnvironmentSettings();
+            expect(environmentSettings.maxTaskAttempts).toBe(10);
+        });
+
         it('should prefer the provided value', () => {
             const mockMaxAttempts = 1000;
 
@@ -214,16 +209,6 @@ describe('EnvironmentSettings', () => {
             const environmentSettings = new EnvironmentSettings();
 
             expect(environmentSettings.maxTaskAttempts).toBe(mockMaxAttempts);
-        });
-
-        it('should not accept non-numeric values', () => {
-            const mockMaxAttempts = 'invalidValue';
-
-            process.env[EnvironmentKey.TaskQueueMaxAttempts] = mockMaxAttempts;
-
-            expect(() => {
-                new EnvironmentSettings();
-            }).toThrow();
         });
     });
 
@@ -233,22 +218,20 @@ describe('EnvironmentSettings', () => {
             expect(environmentSettings.taskRetryDelayMilliseconds).toBe(1000);
         });
 
+        it('should default to 1 second when provided an invalid value', () => {
+            process.env[EnvironmentKey.TaskQueueRetryDelayMs] = 'invalidValue';
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.taskRetryDelayMilliseconds).toBe(1000);
+        });
+
         it('should prefer the provided value', () => {
             const mockRetryDelay = 5000;
             process.env[EnvironmentKey.TaskQueueRetryDelayMs] = mockRetryDelay.toString();
             const environmentSettings = new EnvironmentSettings();
 
             expect(environmentSettings.taskRetryDelayMilliseconds).toBe(mockRetryDelay);
-        });
-
-        it('should not accept non-numeric values', () => {
-            const mockRetryDelay = 'invalidValue';
-
-            process.env[EnvironmentKey.TaskQueueRetryDelayMs] = mockRetryDelay;
-
-            expect(() => {
-                new EnvironmentSettings();
-            }).toThrow();
         });
     });
 
@@ -414,6 +397,273 @@ describe('EnvironmentSettings', () => {
             const environmentSettings = new EnvironmentSettings();
 
             expect(environmentSettings.errorMessage).toBe(mockErrorMessage);
+        });
+    });
+
+    describe('stableDiffusionApiType', () => {
+        test.each([
+            StableDiffusionApiType.Automatic1111,
+            StableDiffusionApiType.ComfyUI,
+            StableDiffusionApiType.EasyDiffusion
+        ])('it should work with each supported API definition', (apiType: StableDiffusionApiType) => {
+            process.env[EnvironmentKey.StableDiffusionApiType] = apiType;
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.stableDiffusionApiType).toBe(apiType);
+        });
+
+        it('should throw an exception if an invalid API type is provided', () => {
+            const invalidApiType = 'invalidApiType';
+            process.env[EnvironmentKey.StableDiffusionApiType] = invalidApiType;
+
+            expect(() => {
+                new EnvironmentSettings();
+            }).toThrow();
+        });
+    });
+
+    describe('stableDiffusionHosts', () => {
+        const mockHosts = [
+            mockUrl,
+            'http://localhost:8080/'
+        ];
+
+        it('should be set to the configured Stable Diffusion hosts when one host is provided', () => {
+            process.env[EnvironmentKey.StableDiffusionHosts] = mockUrl;
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.stableDiffusionHosts).toEqual([new URL(mockUrl)]);
+        });
+
+        it('should be set to the configured Stable Diffusion hosts when multiple hosts are provided', () => {
+            process.env[EnvironmentKey.StableDiffusionHosts] = mockHosts.join(',');
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.stableDiffusionHosts).toEqual(mockHosts.map(x => new URL(x)));
+        });
+
+        it('should trim individual Stable Diffusion host values', () => {
+            process.env[EnvironmentKey.StableDiffusionHosts] = mockHosts.join(', ');
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.stableDiffusionHosts).toEqual(mockHosts.map(x => new URL(x)));
+        });
+
+        it('should throw an exception for invalid URLs', () => {
+            const invalidUrl = 'invalidUrl';
+            process.env[EnvironmentKey.StableDiffusionApiType] = invalidUrl;
+
+            expect(() => {
+                new EnvironmentSettings();
+            }).toThrow();
+        });
+    });
+
+    describe('stableDiffusionModels', () => {
+        const modelBasedApis = [
+            StableDiffusionApiType.Automatic1111,
+            StableDiffusionApiType.EasyDiffusion
+        ];
+
+        const mockModels = [
+            'mockModel1',
+            'mockModel2',
+            'mockModel3'
+        ];
+
+        test.each(modelBasedApis)('it should be set to configured Stable Diffusion models', (apiType: StableDiffusionApiType) => {
+            process.env[EnvironmentKey.StableDiffusionApiType] = apiType;
+            process.env[EnvironmentKey.StableDiffusionModels] = mockModels.join(',');
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.stableDiffusionModels).toEqual(mockModels);
+        });
+
+        test.each(modelBasedApis)('it should trim the configured Stable Diffusion models', (apiType: StableDiffusionApiType) => {
+            process.env[EnvironmentKey.StableDiffusionApiType] = apiType;
+            process.env[EnvironmentKey.StableDiffusionModels] = mockModels.join(', ');
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.stableDiffusionModels).toEqual(mockModels);
+        });
+
+        it('should not load Stable Diffusion models when the API type is ComfyUI', () => {
+            process.env[EnvironmentKey.StableDiffusionApiType] = StableDiffusionApiType.ComfyUI;
+            process.env[EnvironmentKey.StableDiffusionModels] = mockModels.join(', ');
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.stableDiffusionModels).toEqual([]);
+        });
+    });
+
+    describe('stableDiffusionGuidanceScaleInterval', () => {
+        it('should equal .5',() => {
+            const environmentSettings = new EnvironmentSettings();
+            expect(environmentSettings.stableDiffusionGuidanceScaleInterval).toBe(.5);
+        });
+    });
+
+    describe('ollamaHosts', () => {
+        const mockHosts = [
+            mockUrl,
+            'http://localhost:8080/'
+        ];
+
+        it('should be set to the configured Ollama hosts when one host is provided', () => {
+            process.env[EnvironmentKey.OllamaHosts] = mockUrl;
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.ollamaHosts).toEqual([new URL(mockUrl)]);
+        });
+
+        it('should be set to the configured Ollama hosts when multiple hosts are provided', () => {
+            process.env[EnvironmentKey.OllamaHosts] = mockHosts.join(',');
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.ollamaHosts).toEqual(mockHosts.map(x => new URL(x)));
+        });
+
+        it('should trim individual Ollama host values', () => {
+            process.env[EnvironmentKey.OllamaHosts] = mockHosts.join(', ');
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.ollamaHosts).toEqual(mockHosts.map(x => new URL(x)));
+        });
+
+        it('should throw an exception for invalid URLs', () => {
+            const invalidUrl = 'invalidUrl';
+            process.env[EnvironmentKey.OllamaHosts] = invalidUrl;
+
+            expect(() => {
+                new EnvironmentSettings();
+            }).toThrow();
+        });
+    });
+
+    describe('ollamaModels', () => {
+        const mockModels = [
+            'mockModel1',
+            'mockModel2',
+            'mockModel3'
+        ];
+
+        it('should be set to configured Stable Diffusion models', () => {
+            process.env[EnvironmentKey.OllamaModels] = mockModels.join(',');
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.ollamaModels).toEqual(mockModels);
+        });
+
+        it('should trim the configured Ollama models', () => {
+            process.env[EnvironmentKey.OllamaModels] = mockModels.join(', ');
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.ollamaModels).toEqual(mockModels);
+        });
+    });
+
+    describe('ollamaSystemPrompt', () => {
+        it('should be set to the configured system prompt', () => {
+            const mockSystemPrompt = 'mockSystemPrompt';
+            process.env[EnvironmentKey.OllamaSystemPrompt] = mockSystemPrompt;
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.ollamaSystemPrompt).toBe(mockSystemPrompt);
+        });
+
+        it('should handle undefined', () => {
+            const environmentSettings = new EnvironmentSettings();
+            expect(environmentSettings.ollamaSystemPrompt).toBe('');
+        });
+    });
+
+    describe('ollamaStreamsResponse', () => {
+        test.each([
+            'true',
+            'TRUE',
+            'tRuE'
+        ])('it should be set to the configured positive value', (stringValue: string) => {
+            process.env[EnvironmentKey.OllamaStreamsResponse] = stringValue;
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.ollamaStreamsResponse).toBe(true);
+        });
+
+        test.each([
+            'false',
+            'invalid',
+            undefined
+        ])('it should be set to the configured negative value', (stringValue: string | undefined) => {
+            process.env[EnvironmentKey.OllamaStreamsResponse] = stringValue;
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.ollamaStreamsResponse).toBe(false);
+        });
+    });
+
+    describe('stableDiffusionOllamaPrompts', () => {
+        const mockPrompts = [
+            'mockPrompt1',
+            'mockPrompt2',
+            'mockPrompt3'
+        ];
+
+        it('should be set to the configured values', () => {
+             process.env[EnvironmentKey.StableDiffusionOllamaPrompts] = mockPrompts.join('|');
+
+             const environmentSettings = new EnvironmentSettings();
+
+             expect(environmentSettings.stableDiffusionOllamaPrompts).toEqual(mockPrompts);
+        });
+
+        it('should work with undefined', () => {
+            process.env[EnvironmentKey.StableDiffusionOllamaPrompts] = undefined;
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.stableDiffusionOllamaPrompts).toEqual([]);
+        });
+    });
+
+    describe('isProduction', () => {
+        it('should return true when it is production', () => {
+            process.env[EnvironmentKey.NodeEnvironment] = NodeEnvironment.Production;
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.isProduction).toBe(true);
+
+            // Reset the environment after this test to prevent scope leak.
+            process.env[EnvironmentKey.NodeEnvironment] = NodeEnvironment.Test;
+        });
+
+        test.each([
+            NodeEnvironment.Development,
+            NodeEnvironment.Test
+        ])('should return false when not production', (nodeEnvironment: NodeEnvironment) => {
+            process.env[EnvironmentKey.NodeEnvironment] = nodeEnvironment;
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.isProduction).toBe(false);
+
+            // Reset the environment after this test to prevent scope leak.
+            process.env[EnvironmentKey.NodeEnvironment] = NodeEnvironment.Test;
         });
     });
 });
