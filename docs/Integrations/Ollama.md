@@ -37,3 +37,10 @@ ollama pull mistral-nemo
 Once Ollama downloads your preferred model, you can specify it in your `.env`
 configuration by assigning it to the `MUSEBOT_OLLAMA_MODELS` environment
 variable.
+
+## Image Attachment Support
+
+If you also integrate Musebot with a [ComfyUI](../comfyui/index.html) or
+[SwarmUI](../swarmui/index.html) instance with `MUSEBOT_FUNCTION` set to `text`,
+Musebot will use the large language model response as a prompt for an image and
+attach it to its response asynchronously, providing a visual for the response.
