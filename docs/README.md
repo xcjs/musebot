@@ -25,7 +25,7 @@ documentation.
 ## 2. Generative AI API Configuration
 
 While Musebot supports multiple generative AI backends, only one needs to
-be configured.
+be configured, although you are welcome to set up more.
 
 1. Choose the primary/only functionality you expect from Musebot by setting
    `MUSEBOT_FUNCTION` in your `.env` file. Supported values are documented for
@@ -34,10 +34,11 @@ be configured.
    features can be unlocked by configuring other backends. This is entirely
    optional.
 
-   Only one supported backend needs to be configured, but feel free to configure
-   multiple. Additionally, only one backend per media type (images, large
-   language models, etc.) should be configured. For example, don't configure
-   both ComfyUI _and_ SwarmUI as they both generate images.
+   Only one supported backend _needs_ to be configured, but feel free to
+   configure multiple based on your needs. Additionally, only one backend per
+   media type (images, large language models, etc.) should be configured. For
+   example, don't configure both ComfyUI _and_ SwarmUI as they both generate
+   images.
 
 ### Image/Video Generation
 

@@ -111,3 +111,8 @@ channel IDs up:
 Additionally, Musebot can work across multiple Discord servers as long as the
 bot is added to the server by an administrator or owner. Channel IDs are unique
 to each server across all of Discord.
+
+## Return
+
+Return to the main [Musebot Documentation](../../index.html) and continue from
+step 2.
