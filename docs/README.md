@@ -57,7 +57,7 @@ as a wrapper) is supported, but for more advanced users. There is no
 documentation for standalone ComfyUI integration at this time.
 
 If you need help with ComfyUI configuration for Musebot, some of the
-[SwarmUI documentation] may offer some clues, albeit with some adjustments
+[SwarmUI documentation](Integrations/SwarmUI/index.html) may offer some clues, albeit with some adjustments
 here and there.
 
 ### Large Language Model Inferencing
