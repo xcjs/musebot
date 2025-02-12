@@ -42,17 +42,17 @@ be configured, although you are welcome to set up more.
 
 ### Image/Video Generation
 
+#### SwarmUI
+
+Refer to the included [SwarmUI Integration](Integrations/SwarmUI/index.html)
+documentation.
+
 #### ComfyUI
 
 Refer to the included [ComfyUI Integration](Integrations/ComfyUI/index.html)
 documentation.
 
 **Note:** _If you're new to ComfyUI, consider using SwarmUI instead._
-
-#### SwarmUI
-
-Refer to the included [SwarmUI Integration](Integrations/SwarmUI/index.html)
-documentation.
 
 ### Large Language Model Inferencing
 
