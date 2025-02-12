@@ -49,10 +49,16 @@ documentation.
 
 #### ComfyUI
 
-Refer to the included [ComfyUI Integration](Integrations/ComfyUI/index.html)
-documentation.
-
 **Note:** _If you're new to ComfyUI, consider using SwarmUI instead._
+
+Standalone ComfyUI integration (that is, without
+[SwarmUI](Integrations/SwarmUI/index.html)
+as a wrapper) is supported, but for more advanced users. There is no
+documentation for standalone ComfyUI integration at this time.
+
+If you need help with ComfyUI configuration for Musebot, some of the
+[SwarmUI documentation] may offer some clues, albeit with some adjustments
+here and there.
 
 ### Large Language Model Inferencing
 
