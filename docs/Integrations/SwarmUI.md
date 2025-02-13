@@ -147,7 +147,7 @@ configuration) is included for with Musebot.
    Musebot is also distributed with some example workflows to help get you
    started.
 
-   _Note: You may need to design your workflows around Musebot's limitations._
+   **Note:** _You may need to design your workflows around Musebot's limitations._
 
 ### Types of Workflows
 
@@ -203,7 +203,7 @@ Mustache documentation very much, if at all.
    understand some of the concepts and syntax intuitively if you're not already
    familiar.
 
-   _Note: Ensure that you open the workflow in a **text** editor. Word
+   **Note:** _Ensure that you open the workflow in a **text** editor. Word
    processors such as Microsoft Word are not sufficient to edit these files._
 2. Each workflow file should begin with a curly brace: `{`. This represents the
    beginning of a JSON object. We need to define two different things in each
