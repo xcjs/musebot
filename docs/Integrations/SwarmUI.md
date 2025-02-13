@@ -89,6 +89,23 @@ in your preferred shell.
 
    ![ComfyUI Settings Modal](../../assets/images/comfyui/settings-modal.png)
 
+## Connect SwarmUI to Musebot
+
+In your `.env` configuration file, set the `MUSEBOT_STABLE_DIFFUSION_HOSTS` to
+your ComfyUI backend included as part of Swarm UI. If your SwarmUI instance is
+running on `localhost`, this setting will generally look like:
+
+```.env
+...
+
+MUSEBOT_STABLE_DIFFUSION_HOSTS=http://localhost:7801/ComfyBackendDirect
+
+...
+```
+
+Make sure to substitute your machine's hostname or IP address instead and that
+it's accessible from your Musebot instance(s).
+
 ## 3. Musebot Workflow Templates
 
 ComfyUI uses processing pipelines known as _workflows_. They contain a list

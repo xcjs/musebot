@@ -19,6 +19,17 @@ most likely use `http://localhost:11434/` as the value for the
 `MUSEBOT_OLLAMA_HOSTS` environment variable in your `.env` configuration file,
 though make sure you specify the correct host and port if that's not the case.
 
+```.env
+...
+
+MUSEBOT_OLLAMA_HOSTS=http://localhost:11434/
+
+...
+```
+
+Make sure to substitute your machine's hostname or IP address instead and that
+it's accessible from your Musebot instance(s).
+
 ## Models
 
 You can browse models for Ollama at
