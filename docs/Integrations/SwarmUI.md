@@ -187,6 +187,9 @@ to matching directories within `./workflows`:
    you provide multiple workflows in this directory, Musebot will choose a
    random one.
 
+**Note:** _Musebot reloads all workflows before each task, so you don't need to
+restart Musebot when modifying workflows._
+
 ### Musebot Defaults
 
 In order for Musebot to control various aspects of each workflow, it makes use
