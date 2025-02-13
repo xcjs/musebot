@@ -11,9 +11,6 @@ ComfyUI performs most of the actual work for SwarmUI and is a complex node-based
 workflow editor for the aforementioned multimedia and corresponding generative
 AI models.
 
-While this document covers integration with SwarmUI, some information
-specific to [ComfyUI is provided as well](../comfyui/index.html).
-
 We do recommend beginning with SwarmUI for two reasons:
 
 1. SwarmUI can automatically identify and download ancillary models that are
