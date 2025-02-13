@@ -11,9 +11,6 @@ ComfyUI performs most of the actual work for SwarmUI and is a complex node-based
 workflow editor for the aforementioned multimedia and corresponding generative
 AI models.
 
-While this document covers integration with SwarmUI, some information
-specific to [ComfyUI is provided as well](../comfyui/index.html).
-
 We do recommend beginning with SwarmUI for two reasons:
 
 1. SwarmUI can automatically identify and download ancillary models that are
@@ -186,6 +183,9 @@ to matching directories within `./workflows`:
    types as well, but you are more likely to run into them with video output. If
    you provide multiple workflows in this directory, Musebot will choose a
    random one.
+
+**Note:** _Musebot reloads all workflows before each task, so you don't need to
+restart Musebot when modifying workflows._
 
 ### Musebot Defaults
 
