@@ -4,10 +4,7 @@ import { BotInteraction } from '../../../../../../../enums/BotInteraction.js';
 import { IEnvironmentSettings } from '../../../../../../environment-settings/IEnvironmentSettings.js';
 import { SupportedFeature } from '../../../../../../features/enum/SupportedFeature.js';
 import { IServiceContainer } from '../../../../../../IServiceContainer.js';
-import { StableDiffusionGuidanceScaleLimit } from '../../../../../images/automatic1111/enums/StableDiffusionGuidanceScaleLimit.js';
-import { Txt2ImgOptionsRequest } from '../../../../../images/automatic1111/models/requests/Txt2ImgOptionsRequest.js';
-import { EasyDiffusionGuidanceScaleLimit } from '../../../../../images/easy-diffusion/enums/EasyDiffusionGuidanceScaleLimit.js';
-import { RenderRequest } from '../../../../../images/easy-diffusion/models/requests/RenderRequest.js';
+import { GuidanceScaleLimit } from '../../../../../images/stable-diffusion/enums/GuidanceScaleLimit.js';
 import { SerializableRenderRequest } from '../../../../../images/stable-diffusion/models/SerializableRenderRequest.js';
 import { BaseComponent } from '../../BaseComponent.js';
 
@@ -22,22 +19,12 @@ export class GuidanceScalePlusButton extends BaseComponent<ButtonBuilder> {
         isSupported = this.featureService.hasFeature(SupportedFeature.ImageGeneration);
 
         if (this.#renderRequest === null) {
-            return isSupported;
+            return false;
         }
 
-        if (this.#renderRequest instanceof RenderRequest) {
-            isSupported = isSupported
-                && this.#renderRequest.guidance_scale - this.#environmentSettings.stableDiffusionGuidanceScaleInterval
-                    <= EasyDiffusionGuidanceScaleLimit.Max
-        } else if (this.#renderRequest instanceof SerializableRenderRequest) {
-            isSupported = isSupported
-                && this.#renderRequest.cfgScale - this.#environmentSettings.stableDiffusionGuidanceScaleInterval
-                    <= StableDiffusionGuidanceScaleLimit.Max
-        } else {
-            isSupported = isSupported
-                && this.#renderRequest.cfg_scale - this.#environmentSettings.stableDiffusionGuidanceScaleInterval
-                    <= StableDiffusionGuidanceScaleLimit.Max
-        }
+        isSupported = isSupported
+            && this.#renderRequest.cfgScale - this.#environmentSettings.stableDiffusionGuidanceScaleInterval
+                <= GuidanceScaleLimit.Max
 
         return isSupported;
     }
@@ -52,9 +39,9 @@ export class GuidanceScalePlusButton extends BaseComponent<ButtonBuilder> {
     }
 
     #environmentSettings: IEnvironmentSettings;
-    #renderRequest: SerializableRenderRequest | RenderRequest | Txt2ImgOptionsRequest;
+    #renderRequest: SerializableRenderRequest | null;
 
-    constructor(services: IServiceContainer, renderRequest: SerializableRenderRequest | RenderRequest | Txt2ImgOptionsRequest | null) {
+    constructor(services: IServiceContainer, renderRequest: SerializableRenderRequest | null) {
         super(services);
         this.#environmentSettings = services.environmentSettings;
         this.#renderRequest = renderRequest;

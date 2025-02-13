@@ -7,7 +7,6 @@ import { IHelpService } from '../../../help/IHelpService.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
 import { ITaskQueue } from '../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
-import { Upscaler } from '../../images/automatic1111/enums/Upscaler.js';
 import { PromptExtensionType } from '../../images/enums/PromptExtensionType.js';
 import { IReplyService } from '../IReplyService.js';
 import { ITypingService } from '../ITypingService.js';
@@ -77,10 +76,10 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
                 this.#taskQueue.add(this.#services.getRetryRenderTask(interaction, null, null, null) as BaseTask);
                 break;
             case BotInteraction.UpscaleDetail:
-                this.#taskQueue.add(this.#services.getUpscaleRenderTask(interaction, Upscaler.R_ESRGAN4xPlus) as BaseTask);
+                this.#taskQueue.add(this.#services.getUpscaleRenderTask(interaction) as BaseTask);
                 break;
             case BotInteraction.UpscaleDesign:
-                this.#taskQueue.add(this.#services.getUpscaleRenderTask(interaction, Upscaler.R_ESRGAN4xPlus_Anime6B) as BaseTask)
+                this.#taskQueue.add(this.#services.getUpscaleRenderTask(interaction) as BaseTask)
                 break;
             case BotInteraction.ShowSource:
                 this.#taskQueue.add(this.#services.getShowSourceTask(interaction) as BaseTask);

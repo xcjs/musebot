@@ -1,8 +1,6 @@
 import { ActionRowBuilder, ButtonBuilder } from 'discord.js';
 
 import { IServiceContainer } from '../../../../../IServiceContainer.js';
-import { Txt2ImgOptionsRequest } from '../../../../images/automatic1111/models/requests/Txt2ImgOptionsRequest.js';
-import { RenderRequest } from '../../../../images/easy-diffusion/models/requests/RenderRequest.js';
 import { SerializableRenderRequest } from '../../../../images/stable-diffusion/models/SerializableRenderRequest.js';
 import { buildActionRows } from '../ActionRowBuilderFactory.js';
 import { BaseComponent } from '../BaseComponent.js';
@@ -23,12 +21,12 @@ export class StatefulImageGenerationActionRows extends BaseComponent<Array<Actio
 
     #services: IServiceContainer;
 
-    #renderRequest: SerializableRenderRequest | RenderRequest | Txt2ImgOptionsRequest | null;
+    #renderRequest: SerializableRenderRequest | null;
 
     #buttons: Array<BaseComponent<ButtonBuilder>> = [];
 
     constructor(services: IServiceContainer,
-        renderRequest: SerializableRenderRequest | RenderRequest | Txt2ImgOptionsRequest | null) {
+        renderRequest: SerializableRenderRequest | null) {
         super(services);
         this.#services = services;
         this.#renderRequest = renderRequest;
