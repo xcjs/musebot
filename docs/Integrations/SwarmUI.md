@@ -86,7 +86,7 @@ in your preferred shell.
 
    ![ComfyUI Settings Modal](../../assets/images/comfyui/settings-modal.png)
 
-## Connect SwarmUI to Musebot
+## 3. Connect SwarmUI to Musebot
 
 In your `.env` configuration file, set the `MUSEBOT_STABLE_DIFFUSION_HOSTS` to
 your ComfyUI backend included as part of Swarm UI. If your SwarmUI instance is
@@ -103,7 +103,7 @@ MUSEBOT_STABLE_DIFFUSION_HOSTS=http://localhost:7801/ComfyBackendDirect
 Make sure to substitute your machine's hostname or IP address instead and that
 it's accessible from your Musebot instance(s).
 
-## 3. Musebot Workflow Templates
+## 4. Musebot Workflow Templates
 
 ComfyUI uses processing pipelines known as _workflows_. They contain a list
 of instructions used to generate the output media (usually, but not limited to,
@@ -194,8 +194,8 @@ of the [Mustache template language](https://mustache.github.io/). Don't worry!
 Musebot's implementation is very basic, and you shouldn't need to reference the
 Mustache documentation very much, if at all.
 
-1. Understand the the API workflows exported by ComfyUI are JSON files. JSON is
-   a plaintext format used to exchange data in a standard way between various
+1. Understand the API workflows exported by ComfyUI are JSON files. JSON is a
+   plaintext format used to exchange data in a standard way between various
    systems and represent a hierarchy of concepts called an _object_, but you
    won't really need to worry about that too much.
 
