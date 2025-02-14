@@ -109,8 +109,7 @@ Your download should include an application for each supported platform:
 3. Configure Musebot using the provided `.env` file and place it in the same
    directory as the Musebot executable. The `.env` file is documented to explain
    the use case of each provided environment variable.
-4. Continue to Bot Registration.
-5. Execute `./musebot-linux-x86_64`
+4. Execute `./musebot-linux-x86_64`
 
 ### Mac OS X
 
@@ -121,8 +120,7 @@ Your download should include an application for each supported platform:
 3. Configure Musebot using the provided `.env` file and place it in the same
    directory as the Musebot executable. The `.env` file is documented to explain
    the use case of each provided environment variable.
-4. Continue to Bot Registration.
-5. Execute `./musebot-macos-x86_64`
+4. Execute `./musebot-macos-x86_64`
 
 ### Windows
 
@@ -130,6 +128,5 @@ Your download should include an application for each supported platform:
 2. Configure Musebot using the provided `.env` file and place it in the same
    directory as the Musebot executable. The `.env` file is documented to explain
    the use case of each provided environment variable.
-3. Continue to Bot Registration.
-4. Execute `./musebot-win-x86_64.exe` from the Command Prompt or Powershell.
+3. Execute `./musebot-win-x86_64.exe` from the Command Prompt or Powershell.
    Double-clicking on it may also work, but isn't recommended.
