@@ -194,8 +194,8 @@ of the [Mustache template language](https://mustache.github.io/). Don't worry!
 Musebot's implementation is very basic, and you shouldn't need to reference the
 Mustache documentation very much, if at all.
 
-1. Understand the the API workflows exported by ComfyUI are JSON files. JSON is
-   a plaintext format used to exchange data in a standard way between various
+1. Understand the API workflows exported by ComfyUI are JSON files. JSON is a
+   plaintext format used to exchange data in a standard way between various
    systems and represent a hierarchy of concepts called an _object_, but you
    won't really need to worry about that too much.
 
