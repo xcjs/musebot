@@ -4,7 +4,7 @@ import { Logger, LogLevel } from 'meklog';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
-import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
+import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
 import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
@@ -13,15 +13,17 @@ import { ComfyUiClient } from '../ComfyUiClient.js';
 import { WorkflowType } from '../enums/WorkflowType.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
+import { ComfyUiReplyTask } from './ComfyUiReplyTask.js';
 
 export class ComfyUiJsonRenderTask extends ComfyUiBaseTask implements IJsonRenderTask {
-    #environmentSettings: IEnvironmentSettings;
+    #services: IServiceContainer;
 
+    #environmentSettings: IEnvironmentSettings;
     #discordClient: DiscordClient;
     #workflowService: IWorkflowService;
     #comfyUiClient: ComfyUiClient;
-    #comfyUiReplyService: ComfyUiReplyService;
     #replyService: IReplyService;
+    #taskQueue: ITaskQueue;
 
     #message: Message;
 
@@ -36,12 +38,15 @@ export class ComfyUiJsonRenderTask extends ComfyUiBaseTask implements IJsonRende
         message: Message) {
         super(services);
 
+        this.#services = services;
+
         this.#environmentSettings = services.environmentSettings;
         this.#discordClient = services.discordClient;
         this.#workflowService = services.workflowService;
         this.#comfyUiClient = services.comfyUiClient;
-        this.#comfyUiReplyService = services.comfyUiReplyService;
         this.#replyService = services.replyService;
+        this.#taskQueue = services.taskQueue;
+
         this.#message = message;
 
         this.#logger = new Logger(this.#environmentSettings.isProduction, 'ComfyUiJsonRenderTask');
@@ -86,7 +91,9 @@ export class ComfyUiJsonRenderTask extends ComfyUiBaseTask implements IJsonRende
             response: imagesResponse
         };
 
-        await this.#comfyUiReplyService.reply(this.#message, exchange);
+        const replyTask = new ComfyUiReplyTask(this.#services, this.#message, exchange);
+
+        this.#taskQueue.add(replyTask);
     }
 
     override async postProcess(): Promise<void> {

@@ -8,7 +8,7 @@ import { wrapText } from '../../../../../utilities/string-utilities.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
-import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
+import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { OllamaClient } from '../../../text/ollama/OllamaClient.js';
 import { IRandomRenderTask } from '../../tasks/IRandomRenderTask.js';
@@ -16,6 +16,7 @@ import { ComfyUiClient } from '../ComfyUiClient.js';
 import { WorkflowType } from '../enums/WorkflowType.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
+import { ComfyUiReplyTask } from './ComfyUiReplyTask.js';
 
 export class ComfyUiRandomRenderTask extends ComfyUiBaseTask implements IRandomRenderTask {
     #services: IServiceContainer;
@@ -23,8 +24,8 @@ export class ComfyUiRandomRenderTask extends ComfyUiBaseTask implements IRandomR
     #environmentSettings: IEnvironmentSettings;
     #workflowService: IWorkflowService;
     #comfyUiClient: ComfyUiClient;
-    #comfyUiReplyService: ComfyUiReplyService;
     #replyService: IReplyService;
+    #taskQueue: ITaskQueue;
 
     #interaction: ButtonInteraction;
 
@@ -42,8 +43,8 @@ export class ComfyUiRandomRenderTask extends ComfyUiBaseTask implements IRandomR
         this.#environmentSettings = services.environmentSettings;
         this.#workflowService = services.workflowService;
         this.#comfyUiClient = services.comfyUiClient;
-        this.#comfyUiReplyService = services.comfyUiReplyService;
         this.#replyService = services.replyService;
+        this.#taskQueue = services.taskQueue;
 
         this.#interaction = interaction;
 
@@ -89,7 +90,8 @@ export class ComfyUiRandomRenderTask extends ComfyUiBaseTask implements IRandomR
             name: `${renderRequest.prompt.substring(0, MAX_FILE_NAME_LENGTH)}.md`
         });
 
-        await this.#comfyUiReplyService.reply(this.#interaction, exchange, content, [promptAttachment]);
+        const replyTask = new ComfyUiReplyTask(this.#services, this.#interaction, exchange, content, [promptAttachment]);
+        this.#taskQueue.add(replyTask);
     }
 
     override async postProcess(): Promise<void> {

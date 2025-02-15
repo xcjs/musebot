@@ -15,6 +15,7 @@ import { WorkflowType } from '../enums/WorkflowType.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 import { ComfyUiJsonRenderTask } from './ComfyUiJsonRenderTask.js';
+import { ComfyUiReplyTask } from './ComfyUiReplyTask.js';
 
 export class ComfyUiPromptRenderTask extends ComfyUiBaseTask implements IPromptRenderTask {
     #services: IServiceContainer;
@@ -45,6 +46,7 @@ export class ComfyUiPromptRenderTask extends ComfyUiBaseTask implements IPromptR
         this.#comfyUiReplyService = services.comfyUiReplyService;
         this.#replyService = services.replyService;
         this.#taskQueue = services.taskQueue;
+
         this.#message = message;
 
         this.#logger = new Logger(services.environmentSettings.isProduction, 'ComfyUiPromptRenderTask');
@@ -100,11 +102,12 @@ export class ComfyUiPromptRenderTask extends ComfyUiBaseTask implements IPromptR
 
 
         const imagesResponse = this.#comfyUiReplyService.flattenMultipleImagesResponses(imagesResponses);
-
-        await this.#comfyUiReplyService.reply(this.#message, {
+        const replyTask = new ComfyUiReplyTask(this.#services, this.#message, {
             request: renderRequests,
             response: imagesResponse
         });
+
+        this.#taskQueue.add(replyTask);
     }
 
     override async postProcess(): Promise<void> {

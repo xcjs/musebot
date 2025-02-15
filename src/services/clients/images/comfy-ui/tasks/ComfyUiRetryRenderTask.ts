@@ -8,6 +8,7 @@ import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js'
 import { IFeatureService } from '../../../../features/IFeatureService.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
+import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
@@ -19,8 +20,11 @@ import { ComfyUiClient } from '../ComfyUiClient.js';
 import { WorkflowType } from '../enums/WorkflowType.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
+import { ComfyUiReplyTask } from './ComfyUiReplyTask.js';
 
 export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRenderTask {
+    #services: IServiceContainer;
+
     #environmentSettings: IEnvironmentSettings;
     #featureService: IFeatureService;
     #workflowService: IWorkflowService;
@@ -28,6 +32,7 @@ export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRen
     #comfyUiReplyService: ComfyUiReplyService;
     #replyService: IReplyService;
     #ollamaClient: OllamaClient;
+    #taskQueue: ITaskQueue;
 
     #interaction: Message | ButtonInteraction;
     #promptExtension: string | null;
@@ -48,14 +53,16 @@ export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRen
         userOverride: User | null = null) {
         super(services);
 
-        this.#environmentSettings = services.environmentSettings;
+        this.#services = services;
 
+        this.#environmentSettings = services.environmentSettings;
         this.#featureService = services.featureService;
         this.#workflowService = services.workflowService;
         this.#comfyUiClient = services.comfyUiClient;
         this.#comfyUiReplyService = services.comfyUiReplyService;
         this.#replyService = services.replyService;
         this.#ollamaClient = services.ollamaClient;
+        this.#taskQueue = services.taskQueue;
 
         this.#interaction = interaction;
         this.#promptExtension = promptExtension;
@@ -134,10 +141,12 @@ export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRen
 
         const imagesResponse = this.#comfyUiReplyService.flattenMultipleImagesResponses(imagesResponses);
 
-        await this.#comfyUiReplyService.reply(this.#interaction, {
+        const replyTask = new ComfyUiReplyTask(this.#services, this.#interaction, {
             request: renderRequests,
             response: imagesResponse
         }, content);
+
+        this.#taskQueue.add(replyTask);
     }
 
     override async postProcess(): Promise<void> {
