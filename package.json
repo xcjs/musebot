@@ -1,6 +1,6 @@
 {
   "name": "musebot",
-  "version": "6.5.6",
+  "version": "6.6.0",
   "description": "A Discord bot that connects to various generative AI APIs.",
   "private": "true",
   "license": "ISC",
