@@ -96,7 +96,7 @@ export class ComfyUiAttachRenderTask extends ComfyUiBaseTask implements IAttachR
                 },
                 this.#content,
                 null,
-                false);
+                true);
         } else {
             replyTask = new ComfyUiReplyTask(
                 this.#services,

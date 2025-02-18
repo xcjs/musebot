@@ -63,7 +63,7 @@ export class ComfyUiReplyService {
 
 
         for (const imageResponse of Object.values(renderExchange.response)) {
-            this.#logger(LogLevel.Info, `Attaching render(s):`, JSON.stringify);
+            this.#logger(LogLevel.Info, `Attaching render(s):`, JSON.stringify(imageResponse));
             let i = 0;
 
             for (const imageContainer of imageResponse) {
