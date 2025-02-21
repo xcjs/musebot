@@ -1,0 +1,171 @@
+{
+  "$musebotDefaults": {
+    "prompt": "",
+    "promptNegative": "",
+    "model": "",
+    "seed": -1,
+    "width": 768,
+    "height": 1712,
+    "sampler": "euler",
+    "scheduler": "simple",
+    "cfgScale": 3.5,
+    "steps": 20,
+    "num": 1
+  },
+  "4": {
+    "inputs": {
+      "unet_name": "Flux.1/Dev/flux1-dev-Q8_0.gguf"
+    },
+    "class_type": "UnetLoaderGGUF",
+    "_meta": {
+      "title": "Unet Loader (GGUF)"
+    }
+  },
+  "6": {
+    "inputs": {
+      "steps": "{{{ steps }}}",
+      "prompt": "{{{ prompt }}}",
+      "width": "{{{ width }}}",
+      "height": "{{{ height }}}",
+      "target_width": "{{{ width }}}",
+      "target_height": "{{{ height }}}",
+      "guidance": "{{{ cfgScale }}}",
+      "clip": ["100", 0]
+    },
+    "class_type": "SwarmClipTextEncodeAdvanced",
+    "_meta": {
+      "title": "SwarmClipTextEncodeAdvanced"
+    }
+  },
+  "7": {
+    "inputs": {
+      "steps": "{{{ steps }}}",
+      "prompt": "{{{ promptNegative }}}",
+      "width": "{{{ width }}}",
+      "height": "{{{ height }}}",
+      "target_width": "{{{ width }}}",
+      "target_height": "{{{ height }}}",
+      "guidance": "{{{ cfgScale }}}",
+      "clip": ["100", 0]
+    },
+    "class_type": "SwarmClipTextEncodeAdvanced",
+    "_meta": {
+      "title": "SwarmClipTextEncodeAdvanced"
+    }
+  },
+  "100": {
+    "inputs": {
+      "clip_name1": "t5xxl_enconly.safetensors",
+      "clip_name2": "clip_l.safetensors",
+      "type": "flux",
+      "device": "default"
+    },
+    "class_type": "DualCLIPLoader",
+    "_meta": {
+      "title": "DualCLIPLoader"
+    }
+  },
+  "101": {
+    "inputs": {
+      "vae_name": "Flux/ae.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load VAE"
+    }
+  },
+  "105": {
+    "inputs": {
+      "model_name": "RealESRGAN_x4plus.pth"
+    },
+    "class_type": "UpscaleModelLoader",
+    "_meta": {
+      "title": "Load Upscale Model"
+    }
+  },
+  "108": {
+    "inputs": {
+      "width": "{{{ width }}}",
+      "height": "{{{ height }}}",
+      "batch_size": "{{{ num }}}"
+    },
+    "class_type": "EmptySD3LatentImage",
+    "_meta": {
+      "title": "EmptySD3LatentImage"
+    }
+  },
+  "109": {
+    "inputs": {
+      "noise_seed": "{{{ seed }}}",
+      "steps": "{{{ steps }}}",
+      "cfg": 1,
+      "sampler_name": "{{{ sampler }}}",
+      "scheduler": "{{{ scheduler }}}",
+      "start_at_step": 0,
+      "end_at_step": 10000,
+      "var_seed": 0,
+      "var_seed_strength": 0,
+      "sigma_max": -1,
+      "sigma_min": -1,
+      "rho": 7,
+      "add_noise": "enable",
+      "return_with_leftover_noise": "disable",
+      "previews": "default",
+      "tile_sample": false,
+      "tile_size": 1024,
+      "model": ["4", 0],
+      "positive": ["6", 0],
+      "negative": ["7", 0],
+      "latent_image": ["108", 0]
+    },
+    "class_type": "SwarmKSampler",
+    "_meta": {
+      "title": "SwarmKSampler"
+    }
+  },
+  "110": {
+    "inputs": {
+      "samples": ["109", 0],
+      "vae": ["101", 0]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "111": {
+    "inputs": {
+      "upscale_model": ["105", 0],
+      "image": ["110", 0]
+    },
+    "class_type": "ImageUpscaleWithModel",
+    "_meta": {
+      "title": "Upscale Image (using Model)"
+    }
+  },
+  "112": {
+    "inputs": {
+      "width": 1080,
+      "height": 2400,
+      "upscale_method": "bicubic",
+      "keep_proportion": false,
+      "divisible_by": 8,
+      "crop": "disabled",
+      "image": ["111", 0]
+    },
+    "class_type": "ImageResizeKJ",
+    "_meta": {
+      "title": "Resize Image"
+    }
+  },
+  "113": {
+    "inputs": {
+      "filename_prefix": "Musebot_Wallpaperer_9x20",
+      "images": ["112", 0]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
+    }
+  }
+}
