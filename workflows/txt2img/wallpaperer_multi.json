@@ -25,7 +25,7 @@
     "inputs": {
       "width": 1344,
       "height": 768,
-      "batch_size": 1
+      "batch_size": "{{{ num }}}"
     },
     "class_type": "EmptySD3LatentImage",
     "_meta": {
@@ -172,7 +172,7 @@
     "inputs": {
       "width": 768,
       "height": 1712,
-      "batch_size": 1
+      "batch_size": "{{{ num }}}"
     },
     "class_type": "EmptySD3LatentImage",
     "_meta": {
@@ -184,8 +184,8 @@
       "noise_seed": "{{{ seed }}}",
       "steps": "{{{ steps }}}",
       "cfg": 1,
-      "sampler_name": "euler",
-      "scheduler": "simple",
+      "sampler_name": "{{{ sampler }}}",
+      "scheduler": "{{{ scheduler }}}",
       "start_at_step": 0,
       "end_at_step": 10000,
       "var_seed": 0,
