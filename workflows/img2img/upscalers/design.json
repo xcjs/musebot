@@ -15,7 +15,7 @@
         0
       ],
       "image": [
-        "109",
+        "104",
         0
       ]
     },
@@ -43,24 +43,6 @@
     "class_type": "ETN_LoadImageBase64",
     "_meta": {
       "title": "Load Image (Base64)"
-    }
-  },
-  "109": {
-    "inputs": {
-      "width": 1024,
-      "height": 1024,
-      "upscale_method": "bicubic",
-      "keep_proportion": true,
-      "divisible_by": 2,
-      "crop": "disabled",
-      "image": [
-        "104",
-        0
-      ]
-    },
-    "class_type": "ImageResizeKJ",
-    "_meta": {
-      "title": "Resize Image"
     }
   },
   "110": {
