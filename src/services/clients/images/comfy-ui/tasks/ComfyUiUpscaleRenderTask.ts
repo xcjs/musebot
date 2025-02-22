@@ -76,7 +76,11 @@ export class ComfyUiUpscaleRenderTask extends ComfyUiBaseTask implements IUpscal
         let i = 0;
 
         for(const imageAsBase64 of imagesAsBase64) {
-            renderRequests.push(SerializableRenderRequest.fromJson(imageAttachments[i].description));
+            const description = imageAttachments[i].description;
+
+            if(description.length > 0) {
+                renderRequests.push(SerializableRenderRequest.fromJson(description));
+            }
 
             const upscalingWorkflows = this.#workflowService.workflows.filter(x => x.type === WorkflowType.Upscaler);
             let workflow: IWorkflow;

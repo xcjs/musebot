@@ -61,7 +61,6 @@ export class ComfyUiReplyService {
 
         const imageAttachments: Array<AttachmentBuilder> = [];
 
-
         for (const imageResponse of Object.values(renderExchange.response)) {
             this.#logger(LogLevel.Info, `Attaching render(s):`, JSON.stringify(imageResponse));
             let i = 0;
