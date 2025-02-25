@@ -60,6 +60,7 @@
         "safetensors",
         "sdapi",
         "sdxl",
+        "sitedown",
         "subseed",
         "Swin",
         "tensorboard",
