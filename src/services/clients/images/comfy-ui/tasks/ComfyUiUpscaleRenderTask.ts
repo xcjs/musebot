@@ -72,14 +72,16 @@ export class ComfyUiUpscaleRenderTask extends ComfyUiBaseTask implements IUpscal
         const templateKey = '{{ upscalerType }}';
         let content = `${this.#interaction.user} upscaled an image using ${templateKey} upscaler.`;
 
-        const renderRequests: Array<SerializableRenderRequest> = [];
+        const renderRequests: Array<SerializableRenderRequest | null> = [];
         let i = 0;
 
         for(const imageAsBase64 of imagesAsBase64) {
             const description = imageAttachments[i].description;
 
-            if(description.length > 0) {
+            if(description?.length > 0) {
                 renderRequests.push(SerializableRenderRequest.fromJson(description));
+            } else {
+                renderRequests.push(null);
             }
 
             const upscalingWorkflows = this.#workflowService.workflows.filter(x => x.type === WorkflowType.Upscaler);

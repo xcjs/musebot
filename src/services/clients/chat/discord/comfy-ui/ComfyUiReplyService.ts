@@ -41,7 +41,7 @@ export class ComfyUiReplyService {
     }
 
     async reply(interaction: Message | ButtonInteraction,
-        renderExchange: IHttpExchange<Array<SerializableRenderRequest>, ImagesResponse>,
+        renderExchange: IHttpExchange<Array<SerializableRenderRequest | null>, ImagesResponse>,
         content: string | null = null,
         additionalAttachments: Array<AttachmentBuilder> | null = null,
         isEdit: boolean = false): Promise<void> {
@@ -51,12 +51,19 @@ export class ComfyUiReplyService {
             return await this.#replyService.replyWithError(interaction);
         }
 
-        const jsonDescriptions: Array<string> = [];
+        const jsonDescriptions: Array<string | null> = [];
 
         const isStatefulResponse = renderExchange.request.filter((_, i) => {
-            const description = JSON.stringify(renderExchange.request[i]);
-            jsonDescriptions.push(description);
-            return description.length <= DiscordConstants.ImageDescriptionMaxLength;
+            const stringRequest = renderExchange.request[i];
+
+            if(stringRequest !== null) {
+                const description = JSON.stringify(stringRequest);
+                jsonDescriptions.push(description);
+                return description.length <= DiscordConstants.ImageDescriptionMaxLength;
+            } else {
+                jsonDescriptions.push(null);
+                return false;
+            }
         }).length === renderExchange.request.length;
 
         const imageAttachments: Array<AttachmentBuilder> = [];
@@ -123,7 +130,11 @@ export class ComfyUiReplyService {
         }
     }
 
-    getFileNameFromPrompt(renderRequest: SerializableRenderRequest): string {
+    getFileNameFromPrompt(renderRequest: SerializableRenderRequest | null): string {
+        if(renderRequest === null) {
+            return `${new Date().getTime()}_unnamed`;
+        }
+
         return `${renderRequest.seed}_${renderRequest.prompt}`.substring(0, MAX_FILE_NAME_LENGTH);
     }
 
