@@ -1,4 +1,4 @@
-import { Client as DiscordClient, Message } from 'discord.js';
+import { Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
@@ -31,7 +31,6 @@ export class PromptResponseTask extends BaseTask implements IPromptResponseTask 
     #ollamaClient: OllamaClient;
     #ollamaReplyService: OllamaReplyService;
     #ollamaStreamingReplyService: OllamaStreamingReplyService;
-    #discordClient: DiscordClient;
     #replyService: IReplyService;
     #taskQueue: ITaskQueue;
 
@@ -55,7 +54,6 @@ export class PromptResponseTask extends BaseTask implements IPromptResponseTask 
         this.#ollamaClient = services.ollamaClient;
         this.#ollamaReplyService = services.ollamaReplyService;
         this.#ollamaStreamingReplyService = services.ollamaStreamingReplyService;
-        this.#discordClient = services.discordClient;
         this.#replyService = services.replyService;
         this.#taskQueue = services.taskQueue;
 
