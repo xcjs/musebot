@@ -1,6 +1,7 @@
-import { Client as DiscordClient, Message } from 'discord.js';
+import { Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
+import { isOnlyWhitespace } from '../../../../../utilities/string-utilities.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../../../../features/IFeatureService.js';
@@ -31,7 +32,6 @@ export class PromptResponseTask extends BaseTask implements IPromptResponseTask 
     #ollamaClient: OllamaClient;
     #ollamaReplyService: OllamaReplyService;
     #ollamaStreamingReplyService: OllamaStreamingReplyService;
-    #discordClient: DiscordClient;
     #replyService: IReplyService;
     #taskQueue: ITaskQueue;
 
@@ -55,7 +55,6 @@ export class PromptResponseTask extends BaseTask implements IPromptResponseTask 
         this.#ollamaClient = services.ollamaClient;
         this.#ollamaReplyService = services.ollamaReplyService;
         this.#ollamaStreamingReplyService = services.ollamaStreamingReplyService;
-        this.#discordClient = services.discordClient;
         this.#replyService = services.replyService;
         this.#taskQueue = services.taskQueue;
 
@@ -110,8 +109,10 @@ export class PromptResponseTask extends BaseTask implements IPromptResponseTask 
             let replies: Array<Message> = [];
             responseBatch += response.response;
 
-            if(performance.now() - startTime >= 1000
-                / DiscordConstants.MaxRequestsPerSecond || response.done) {
+            if(((performance.now() - startTime)
+                >= (1000 / DiscordConstants.MaxRequestsPerSecond) || response.done)
+                // Discord automatically trims message edits that are only whitespace.
+                && !isOnlyWhitespace(responseBatch)) {
                 console.log('Flushing response batch.');
 
                 replies = await this.#ollamaStreamingReplyService.reply(this.#message, responseBatch, !!response.done);

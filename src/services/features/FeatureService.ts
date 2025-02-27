@@ -1,3 +1,4 @@
+import { StableDiffusionApiType } from '../clients/images/stable-diffusion/enums/StableDiffusionApiType.js';
 import { IEnvironmentSettings } from '../environment-settings/IEnvironmentSettings.js';
 import { IServiceContainer } from '../IServiceContainer.js';
 import { SupportedFeature } from './enum/SupportedFeature.js';
@@ -23,7 +24,8 @@ export class FeatureService implements IFeatureService {
     }
 
     #determineSupportedFeatures() {
-        if (this.#environmentSettings.stableDiffusionHosts.length > 0) {
+        if (this.#environmentSettings.stableDiffusionApiType !== StableDiffusionApiType.None
+            && this.#environmentSettings.stableDiffusionHosts.length > 0) {
             this.#supportedFeatures.push(SupportedFeature.ImageGeneration);
         }
 
