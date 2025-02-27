@@ -39,3 +39,7 @@ export function wrapText(text: string, lineLength: number): string {
         }
     }
 }
+
+export function isOnlyWhitespace(text: string): boolean {
+    return text.trim().length === 0;
+}

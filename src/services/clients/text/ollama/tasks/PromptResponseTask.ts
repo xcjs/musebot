@@ -1,6 +1,7 @@
 import { Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
+import { isOnlyWhitespace } from '../../../../../utilities/string-utilities.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../../../../features/IFeatureService.js';
@@ -108,8 +109,10 @@ export class PromptResponseTask extends BaseTask implements IPromptResponseTask 
             let replies: Array<Message> = [];
             responseBatch += response.response;
 
-            if(performance.now() - startTime >= 1000
-                / DiscordConstants.MaxRequestsPerSecond || response.done) {
+            if(((performance.now() - startTime)
+                >= (1000 / DiscordConstants.MaxRequestsPerSecond) || response.done)
+                // Discord automatically trims message edits that are only whitespace.
+                && !isOnlyWhitespace(responseBatch)) {
                 console.log('Flushing response batch.');
 
                 replies = await this.#ollamaStreamingReplyService.reply(this.#message, responseBatch, !!response.done);
