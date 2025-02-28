@@ -88,7 +88,11 @@ in your preferred shell.
 
 ## 3. Connect SwarmUI to Musebot
 
-In your `.env` configuration file, set the `MUSEBOT_STABLE_DIFFUSION_HOSTS` to
+In your `.env` configuration file, make sure to set
+`MUSEBOT_STABLE_DIFFUSION_API_TYPE` to `ComfyUI`. This is the correct value,
+even for SwarmUI.
+
+Also in your `.env` configuration file, set `MUSEBOT_STABLE_DIFFUSION_HOSTS` to
 your ComfyUI backend included as part of Swarm UI. If your SwarmUI instance is
 running on `localhost`, this setting will generally look like:
 
