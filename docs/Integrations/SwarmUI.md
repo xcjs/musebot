@@ -92,7 +92,7 @@ In your `.env` configuration file, set the `MUSEBOT_STABLE_DIFFUSION_HOSTS` to
 your ComfyUI backend included as part of Swarm UI. If your SwarmUI instance is
 running on `localhost`, this setting will generally look like:
 
-```.env
+```bash
 ...
 
 MUSEBOT_STABLE_DIFFUSION_HOSTS=http://localhost:7801/ComfyBackendDirect
