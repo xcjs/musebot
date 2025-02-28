@@ -37,7 +37,8 @@ You can browse models for Ollama at
 which model is best for your use case, we recommend trying out `mistral-nemo`.
 It should perform well on most hardware and is flexible enough to answer most
 questions and adopt most personas. If `mistral-nemo` is still too slow, consider
-using the regular `mistral` model instead.
+using the regular `mistral` model instead. You can, of course, use any large
+language model that you prefer.
 
 Ollama provides a CLI for downloading these models:
 
