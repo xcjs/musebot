@@ -50,6 +50,7 @@ in your preferred shell.
 
    ```bash
     git clone https://github.com/kijai/ComfyUI-KJNodes.git
+    cd ComfyUI-KJNodes/
     pip install -r requirements.txt
    ```
 
