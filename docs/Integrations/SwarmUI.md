@@ -37,6 +37,8 @@ in your preferred shell.
 
    ```bash
     git clone https://github.com/ltdrdata/ComfyUI-Manager comfyui-manager
+    cd comfyui-manager/
+    pip install -r requirements.txt
    ```
 
    Restart SwarmUI and/or ComfyUI if you want to use the manager. The ComfyUI
@@ -66,6 +68,8 @@ in your preferred shell.
 
    ```bash
     git clone https://github.com/Acly/comfyui-tooling-nodes.git
+    cd comfyui-tooling-nodes/
+    pip install -r requirements.txt
    ```
 
 5. Restart SwarmUI and/or ComfyUI. Once again, the ComfyUI backend can be
