@@ -27,7 +27,7 @@ for configuring and installing SwarmUI.
 Once you have SwarmUI installed and running, we recommend installing some custom
 nodes that are either useful or required for Musebot to function.
 
-Inside the SwarmUI directory (usually installed as `swarmui`), you'll find
+Inside the SwarmUI directory (usually installed as `SwarmUI/`), you'll find
 the ComfyUI installation in `swarmui/dlbackend/ComfyUI/`. We're interested in
 the `custom_nodes` directory within. Go ahead and navigate to that directory
 in your preferred shell.
@@ -115,7 +115,31 @@ MUSEBOT_STABLE_DIFFUSION_HOSTS=http://localhost:7801/ComfyBackendDirect
 Make sure to substitute your machine's hostname or IP address instead and that
 it's accessible from your Musebot instance(s).
 
-## 4. Musebot Workflow Templates
+## 4. Finding Image Generation Models
+
+Most image generation models can be found on:
+
+* [HuggingFace](https://huggingface.co/)
+* [CivitAI](https://civitai.com/)
+
+   **Note:** _CivitAI contains mature or sensitive material, so browse
+   responsibly._
+
+Image generation models are typically distributed as either of the following
+file formats. Don't worry _too much_ about the difference, but they do require
+begin copied to different directories within `SwarmUI/`.
+
+* `*.safetensors`: Typically installed in `SwarmUI/Models/Stable-Diffusion/`
+* `*.gguf`: Typically installed in `SwarmUI/Models/diffusion_models/`
+
+SwarmUI is very helpful and will automatically recommend download and
+installation of most ancillary models and/or workflow nodes.
+
+**Note:** _If you want to organize your models in subdirectories within their
+respective destinations, SwarmUI supports that. Make sure the full model path
+is specified in your workflow templates, however._
+
+## 5. Musebot Workflow Templates
 
 ComfyUI uses processing pipelines known as _workflows_. They contain a list
 of instructions used to generate the output media (usually, but not limited to,
@@ -156,7 +180,8 @@ configuration) is included for with Musebot.
    Musebot is also distributed with some example workflows to help get you
    started.
 
-   **Note:** _You may need to design your workflows around Musebot's limitations._
+   **Note:** _You may need to design your workflows around Musebot's
+   limitations._
 
 ### Types of Workflows
 
