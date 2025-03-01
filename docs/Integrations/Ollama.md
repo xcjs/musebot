@@ -19,7 +19,7 @@ most likely use `http://localhost:11434/` as the value for the
 `MUSEBOT_OLLAMA_HOSTS` environment variable in your `.env` configuration file,
 though make sure you specify the correct host and port if that's not the case.
 
-```.env
+```bash
 ...
 
 MUSEBOT_OLLAMA_HOSTS=http://localhost:11434/
@@ -37,7 +37,8 @@ You can browse models for Ollama at
 which model is best for your use case, we recommend trying out `mistral-nemo`.
 It should perform well on most hardware and is flexible enough to answer most
 questions and adopt most personas. If `mistral-nemo` is still too slow, consider
-using the regular `mistral` model instead.
+using the regular `mistral` model instead. You can, of course, use any large
+language model that you prefer.
 
 Ollama provides a CLI for downloading these models:
 
