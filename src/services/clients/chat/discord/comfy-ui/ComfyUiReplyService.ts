@@ -41,10 +41,9 @@ export class ComfyUiReplyService {
     }
 
     async reply(interaction: Message | ButtonInteraction,
-        renderExchange: IHttpExchange<Array<SerializableRenderRequest | null>, ImagesResponse>,
-        content: string | null = null,
-        additionalAttachments: Array<AttachmentBuilder> | null = null,
-        isEdit: boolean = false): Promise<void> {
+        reply: BaseMessageOptions,
+        isEdit: boolean = false,
+        renderExchange: IHttpExchange<Array<SerializableRenderRequest | null>, ImagesResponse>): Promise<void> {
 
         if (Object.values(renderExchange.response).length === 0) {
             this.#logger(LogLevel.Error, 'A reply was created with no attachments.');
@@ -104,19 +103,15 @@ export class ComfyUiReplyService {
             }
         }
 
-        let files = imageAttachments;
-
-        if (additionalAttachments) {
-            files = imageAttachments.concat(additionalAttachments);
+        if (reply.files !== undefined && reply.files !== null) {
+            reply.files.concat(imageAttachments);
+        } else {
+            reply.files = imageAttachments
         }
 
-        const reply: BaseMessageOptions = {
-            content,
-            files,
-            components: isStatefulResponse ?
+        reply.components = isStatefulResponse ?
                 new StatefulImageGenerationActionRows(this.#services, renderExchange.request[0]).build() :
-                new StatelessImageGenerationActionRow(this.#services).build()
-        };
+                new StatelessImageGenerationActionRow(this.#services).build();
 
         if (interaction instanceof Message) {
             if (isEdit) {

@@ -39,7 +39,7 @@ export class TaskChannel {
     }
 
     cleanQueue(): void {
-        this.#logger(LogLevel.Info, 'Removing completed or failed entries from a channel...');
+        this.#logger(LogLevel.Info, 'Removing completed or dead entries from a channel...');
 
         const incompleteTasks = this.#queue.filter(task => {
             if(task.taskStatus === TaskStatus.Idle

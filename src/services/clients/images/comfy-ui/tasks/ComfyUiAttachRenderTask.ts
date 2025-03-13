@@ -27,7 +27,6 @@ export class ComfyUiAttachRenderTask extends ComfyUiBaseTask implements IAttachR
 
     #prompt: string;
     #content: string | null;
-    #isEdit: boolean;
 
     #interaction: Message | ButtonInteraction;
 
@@ -41,8 +40,7 @@ export class ComfyUiAttachRenderTask extends ComfyUiBaseTask implements IAttachR
         services: IServiceContainer,
         interaction: Message | ButtonInteraction,
         prompt: string,
-        content: string | null = null,
-        isEdit: boolean = false) {
+        content: string | null = null) {
         super(services);
 
         this.#services = services;
@@ -57,7 +55,6 @@ export class ComfyUiAttachRenderTask extends ComfyUiBaseTask implements IAttachR
         this.#interaction = interaction;
         this.#prompt = prompt;
         this.#content = content;
-        this.#isEdit = isEdit;
 
         this.#logger = new Logger(this.#environmentSettings.isProduction, 'ComfyUiAttachRenderTask');
     }
@@ -82,29 +79,15 @@ export class ComfyUiAttachRenderTask extends ComfyUiBaseTask implements IAttachR
         const prompt = this.#workflowService.renderWorkflow(workflow, renderRequest);
         const imagesResponse = await this.#comfyUiClient.render(prompt);
 
-        const exchange = {
-            request: [renderRequest],
-            response: imagesResponse
-        };
-
         let replyTask: ComfyUiReplyTask;
 
-        if(this.#interaction instanceof ButtonInteraction || this.#isEdit) {
+        if(this.#interaction instanceof ButtonInteraction) {
             replyTask = new ComfyUiReplyTask(this.#services, this.#interaction, {
+                    content: this.#content
+                }, {
                     request: [renderRequest],
                     response: imagesResponse
-                },
-                this.#content,
-                null,
-                true);
-        } else {
-            replyTask = new ComfyUiReplyTask(
-                this.#services,
-                this.#interaction,
-                exchange,
-                this.#content);
-
-            await this.#comfyUiReplyService.reply(this.#interaction, exchange, this.#content);
+                });
         }
 
         this.#taskQueue.add(replyTask);

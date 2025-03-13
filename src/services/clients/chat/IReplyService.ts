@@ -1,4 +1,4 @@
-import { Attachment, AttachmentBuilder, ButtonInteraction, Message, User } from 'discord.js';
+import { Attachment, BaseMessageOptions, ButtonInteraction, Message, User } from 'discord.js';
 
 import { ContentType } from '../../../enums/ContentType.js';
 
@@ -7,9 +7,8 @@ export interface IReplyService {
 
     reply(
         interaction: Message | ButtonInteraction,
-        content: string | null,
-        attachments: Array<AttachmentBuilder>,
-        isEdit: boolean
+        reply: BaseMessageOptions,
+        bypassEdit: boolean
     ): Promise<void>;
 
     getMessageWithoutBotMentions(message: Message): string;

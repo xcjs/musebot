@@ -90,9 +90,9 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
                 break;
             case BotInteraction.Help:
                 this.#taskQueue.add(this.#services.getReplyTask(
-                    interaction,
-                    this.#helpService.buildHelpArticle(interaction),
-                    []) as BaseTask);
+                    interaction, {
+                        content: this.#helpService.buildHelpArticle(interaction)
+                    }) as BaseTask);
                 break;
             default:
                 this.logger(LogLevel.Warning, `An unknown interaction was passed: ${interaction.customId}.`);

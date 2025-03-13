@@ -90,7 +90,7 @@ export class ComfyUiRandomRenderTask extends ComfyUiBaseTask implements IRandomR
             name: `${renderRequest.prompt.substring(0, MAX_FILE_NAME_LENGTH)}.md`
         });
 
-        const replyTask = new ComfyUiReplyTask(this.#services, this.#interaction, exchange, content, [promptAttachment]);
+        const replyTask = new ComfyUiReplyTask(this.#services, this.#interaction, {content, files: [promptAttachment] }, exchange);
         this.#taskQueue.add(replyTask);
     }
 

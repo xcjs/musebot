@@ -1,5 +1,5 @@
 import { ImagesResponse } from 'comfy-ui-client';
-import { AttachmentBuilder, ButtonInteraction, Message } from 'discord.js';
+import { BaseMessageOptions, ButtonInteraction, Message } from 'discord.js';
 
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
@@ -19,39 +19,34 @@ export class ComfyUiReplyTask extends BaseTask implements IReplyTask {
     #replyService: IReplyService;
 
     #interaction: Message | ButtonInteraction;
+    #reply: BaseMessageOptions;
     #renderExchange: IHttpExchange<Array<SerializableRenderRequest>, ImagesResponse>;
-    #content: string | null;
-    #additionalAttachments: Array<AttachmentBuilder>;
-    #isEdit: boolean;
 
     constructor(services: IServiceContainer,
         interaction: Message | ButtonInteraction,
-        renderExchange: IHttpExchange<Array<SerializableRenderRequest>, ImagesResponse>,
-        content: string | null = null,
-        additionalAttachments: Array<AttachmentBuilder> = [],
-        isEdit: boolean = false) {
+        reply: BaseMessageOptions,
+        renderExchange: IHttpExchange<Array<SerializableRenderRequest>, ImagesResponse>) {
         super(services);
 
         this.#comfyUiReplyService = services.comfyUiReplyService;
         this.#replyService = services.replyService;
 
         this.#interaction = interaction;
+        this.#reply = reply;
         this.#renderExchange = renderExchange;
-        this.#content = content;
-        this.#additionalAttachments = additionalAttachments;
-        this.#isEdit = isEdit;
     }
 
     async process(): Promise<void> {
+        let bypassEdit = false;
+
         // In case the bot takes too long to reply to a delayed response and the
         // reply token expires, force a normal reply to prevent running a task
         // that may never succeed.
-        if(this.numAttempts > 0 && this.#isEdit) {
-            await this.#comfyUiReplyService.reply(this.#interaction, this.#renderExchange, this.#content, this.#additionalAttachments, false);
-            return;
+        if(this.numAttempts > 0 && this.#interaction instanceof ButtonInteraction) {
+            bypassEdit = true;
         }
 
-        await this.#comfyUiReplyService.reply(this.#interaction, this.#renderExchange, this.#content, this.#additionalAttachments, this.#isEdit);
+        await this.#comfyUiReplyService.reply(this.#interaction, this.#reply, bypassEdit, this.#renderExchange);
     }
 
     override async postProcess(): Promise<void> {

@@ -87,10 +87,10 @@ export class ComfyUiIncreaseGuidanceScaleRenderTask extends ComfyUiBaseTask impl
         const content = `${this.#interaction.member} increased the guidance scale from ${cfgScaleValue
             - this.#environmentSettings.stableDiffusionGuidanceScaleInterval} to ${cfgScaleValue}.`;
 
-        const replyTask = new ComfyUiReplyTask(this.#services, this.#interaction, {
+        const replyTask = new ComfyUiReplyTask(this.#services, this.#interaction, { content }, {
             request: renderRequests,
             response: imagesResponse
-        }, content);
+        });
 
         this.#taskQueue.add(replyTask);
     }

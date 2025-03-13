@@ -102,7 +102,7 @@ export class ComfyUiPromptRenderTask extends ComfyUiBaseTask implements IPromptR
 
 
         const imagesResponse = this.#comfyUiReplyService.flattenMultipleImagesResponses(imagesResponses);
-        const replyTask = new ComfyUiReplyTask(this.#services, this.#message, {
+        const replyTask = new ComfyUiReplyTask(this.#services, this.#message, {}, {
             request: renderRequests,
             response: imagesResponse
         });

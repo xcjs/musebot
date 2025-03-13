@@ -137,7 +137,7 @@ export class PromptResponseTask extends BaseTask implements IPromptResponseTask 
         this.#logger(LogLevel.Info, 'An image will be attached to the Ollama response.');
 
         const lastReply = replies[replies.length - 1];
-        const attachTask = this.#services.getAttachRenderTask(lastReply, prompt, lastReply.content, true) as BaseTask;
+        const attachTask = this.#services.getAttachRenderTask(lastReply, prompt, lastReply.content) as BaseTask;
 
         this.#taskQueue.add(attachTask);
     }

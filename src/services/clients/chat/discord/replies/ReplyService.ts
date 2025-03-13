@@ -1,4 +1,4 @@
-import { Attachment, AttachmentBuilder, ButtonInteraction, Client as DiscordClient, Message, MessageType, User  } from 'discord.js';
+import { Attachment, BaseMessageOptions, ButtonInteraction, Client as DiscordClient, Message, MessageType, User  } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
 import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
@@ -121,30 +121,41 @@ export class ReplyService implements IReplyService {
 
     async reply(
         interaction: Message | ButtonInteraction,
-        content: string | null,
-        attachments: Array<AttachmentBuilder> = []
+        reply: BaseMessageOptions,
+        isEdit: boolean = false
     ): Promise<void> {
-        const replyContents = splitText(content?.trim() || '', DiscordConstants.ContentMaxLength);
+        const replyContents = splitText(reply.content?.trim() || '', DiscordConstants.ContentMaxLength);
 
         let i = 0;
 
         for (const contentFragment of replyContents) {
-            const replyAttachments = i + 1 === replyContents.length ? attachments : [];
+            // All attachments should be added to the last message of a series
+            // of split responses.
+            const replyAttachments = i + 1 === replyContents.length ? reply.files : [];
 
-            if (interaction instanceof Message) {
+            if (interaction instanceof Message && !isEdit) {
                 await interaction.reply({
                     content: contentFragment.trim(),
-                    files: replyAttachments
+                    files: replyAttachments,
+                    components: reply.components
+                });
+            } else if(interaction instanceof Message && isEdit) {
+                await interaction.edit({
+                    content: interaction.content,
+                    files: reply.files,
+                    components: interaction.components
                 });
             } else if (interaction instanceof ButtonInteraction && i === 0) {
                 await interaction.editReply({
                     content: contentFragment.trim(),
-                    files: replyAttachments
+                    files: replyAttachments,
+                    components: reply.components
                 });
             } else if (interaction instanceof ButtonInteraction && i > 0) {
                 await interaction.followUp({
                     content: contentFragment.trim(),
-                    files: replyAttachments
+                    files: replyAttachments,
+                    components: reply.components
                 });
             } else {
                 this.#logger(LogLevel.Warning,

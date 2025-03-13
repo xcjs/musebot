@@ -91,7 +91,7 @@ export class ComfyUiJsonRenderTask extends ComfyUiBaseTask implements IJsonRende
             response: imagesResponse
         };
 
-        const replyTask = new ComfyUiReplyTask(this.#services, this.#message, exchange);
+        const replyTask = new ComfyUiReplyTask(this.#services, this.#message, {}, exchange);
 
         this.#taskQueue.add(replyTask);
     }

@@ -117,10 +117,10 @@ export class ComfyUiUpscaleRenderTask extends ComfyUiBaseTask implements IUpscal
 
         const imagesResponse = this.#comfyUiReplyService.flattenMultipleImagesResponses(imagesResponses);
 
-        const replyTask = new ComfyUiReplyTask(this.#services, this.#interaction, {
+        const replyTask = new ComfyUiReplyTask(this.#services, this.#interaction, { content }, {
             request: renderRequests,
             response: imagesResponse
-        }, content);
+        });
 
         this.#taskQueue.add(replyTask);
     }

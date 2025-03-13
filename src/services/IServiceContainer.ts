@@ -1,4 +1,4 @@
-import { AttachmentBuilder, ButtonInteraction, Client as DiscordClient, Message, MessageReaction, User } from 'discord.js';
+import { BaseMessageOptions, ButtonInteraction, Client as DiscordClient, Message, MessageReaction, User } from 'discord.js';
 
 import { ComfyUiReplyService } from './clients/chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { OllamaReplyService } from './clients/chat/discord/ollama/OllamaReplyService.js';
@@ -52,14 +52,12 @@ export interface IServiceContainer {
     // Factories --------------------------------------------------------------/
     getReplyTask(
         interaction: Message | ButtonInteraction,
-        content: string,
-        attachments: Array<AttachmentBuilder>): IReplyTask;
+        reply: BaseMessageOptions): IReplyTask;
 
     getAttachRenderTask(
         interaction: ButtonInteraction | Message,
         prompt: string,
-        content: string | null,
-        isEdit: boolean): IAttachRenderTask;
+        content: string | null): IAttachRenderTask;
 
     getDecreaseGuidanceScaleRenderTask(interaction: ButtonInteraction): IDecreaseGuidanceScaleRenderTask;
     getExpandPromptTask(interaction: ButtonInteraction): IExpandPromptTask;
