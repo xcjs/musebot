@@ -124,7 +124,7 @@ export class ComfyUiReplyService {
             return `${new Date().getTime()}_unnamed`;
         }
 
-        return `${renderRequest.seed}_${renderRequest.prompt}`.substring(0, MAX_FILE_NAME_LENGTH);
+        return `Musebot_${renderRequest.seed}_${renderRequest.prompt}`.substring(0, MAX_FILE_NAME_LENGTH);
     }
 
     flattenMultipleImagesResponses(imagesResponses: Array<ImagesResponse>): ImagesResponse {
