@@ -120,11 +120,13 @@ export class ComfyUiReplyService {
     }
 
     getFileNameFromPrompt(renderRequest: SerializableRenderRequest | null): string {
+        const namePrefix = 'Musebot'
+
         if(renderRequest === null) {
-            return `${new Date().getTime()}_unnamed`;
+            return `${namePrefix}_${new Date().getTime()}_unnamed`;
         }
 
-        return `Musebot_${renderRequest.seed}_${renderRequest.prompt}`.substring(0, MAX_FILE_NAME_LENGTH);
+        return `${namePrefix}_${renderRequest.seed}_${renderRequest.prompt}`.substring(0, MAX_FILE_NAME_LENGTH);
     }
 
     flattenMultipleImagesResponses(imagesResponses: Array<ImagesResponse>): ImagesResponse {
