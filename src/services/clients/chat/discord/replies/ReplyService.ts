@@ -164,6 +164,7 @@ export class ReplyService implements IReplyService {
                     this.#logger(LogLevel.Error,
                         'An exception occurred while editing a deferred reply - retrying as a new reply:', error);
                     await interaction.message.reply(replyFragment);
+                    await interaction.deleteReply();
                 }
 
             } else if (interaction instanceof ButtonInteraction && i > 0) {
@@ -179,6 +180,7 @@ export class ReplyService implements IReplyService {
                     this.#logger(LogLevel.Error,
                         'An exception occurred while following up a deferred reply - retrying as a new reply:', error);
                     await interaction.message.reply(replyFragment);
+                    await interaction.deleteReply();
                 }
             } else {
                 this.#logger(LogLevel.Warning,
