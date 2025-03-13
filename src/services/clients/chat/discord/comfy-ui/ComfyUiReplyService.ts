@@ -41,10 +41,17 @@ export class ComfyUiReplyService {
     }
 
     async reply(interaction: Message | ButtonInteraction,
-        renderExchange: IHttpExchange<Array<SerializableRenderRequest | null>, ImagesResponse>,
-        content: string | null = null,
-        additionalAttachments: Array<AttachmentBuilder> | null = null,
-        isEdit: boolean = false): Promise<void> {
+        reply: BaseMessageOptions,
+        isEdit: boolean = false,
+        renderExchange: IHttpExchange<Array<SerializableRenderRequest | null>, ImagesResponse>): Promise<void> {
+
+        if(reply.content === undefined || reply.content === null) {
+            reply.content = '';
+        }
+
+        if(reply.files === undefined || reply.files === null) {
+            reply.files = [];
+        }
 
         if (Object.values(renderExchange.response).length === 0) {
             this.#logger(LogLevel.Error, 'A reply was created with no attachments.');
@@ -104,38 +111,22 @@ export class ComfyUiReplyService {
             }
         }
 
-        let files = imageAttachments;
-
-        if (additionalAttachments) {
-            files = imageAttachments.concat(additionalAttachments);
-        }
-
-        const reply: BaseMessageOptions = {
-            content,
-            files,
-            components: isStatefulResponse ?
+        reply.files = reply.files.concat(imageAttachments);
+        reply.components = isStatefulResponse ?
                 new StatefulImageGenerationActionRows(this.#services, renderExchange.request[0]).build() :
-                new StatelessImageGenerationActionRow(this.#services).build()
-        };
+                new StatelessImageGenerationActionRow(this.#services).build();
 
-        if (interaction instanceof Message) {
-            if (isEdit) {
-                reply.components = interaction.components;
-                await interaction.edit(reply);
-            } else {
-                await interaction.reply(reply);
-            }
-        } else if (interaction instanceof ButtonInteraction) {
-            await interaction.editReply(reply);
-        }
+        this.#replyService.reply(interaction, reply, isEdit);
     }
 
     getFileNameFromPrompt(renderRequest: SerializableRenderRequest | null): string {
+        const namePrefix = 'Musebot'
+
         if(renderRequest === null) {
-            return `${new Date().getTime()}_unnamed`;
+            return `${namePrefix}_${new Date().getTime()}_unnamed`;
         }
 
-        return `${renderRequest.seed}_${renderRequest.prompt}`.substring(0, MAX_FILE_NAME_LENGTH);
+        return `${namePrefix}_${renderRequest.seed}_${renderRequest.prompt}`.substring(0, MAX_FILE_NAME_LENGTH);
     }
 
     flattenMultipleImagesResponses(imagesResponses: Array<ImagesResponse>): ImagesResponse {

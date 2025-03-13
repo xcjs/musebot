@@ -69,8 +69,8 @@ export class ComfyUiExpandPromptTask extends ComfyUiBaseTask implements IExpandP
         this.#taskQueue.add(new ComfyUiAttachRenderTask(
             this.#services,
             this.#interaction,
+            { content },
             exchange.response.response,
-            content
         ));
     }
 

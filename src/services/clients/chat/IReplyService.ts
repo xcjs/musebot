@@ -1,4 +1,4 @@
-import { Attachment, AttachmentBuilder, ButtonInteraction, Message, User } from 'discord.js';
+import { Attachment, BaseMessageOptions, ButtonInteraction, Message, User } from 'discord.js';
 
 import { ContentType } from '../../../enums/ContentType.js';
 
@@ -7,8 +7,7 @@ export interface IReplyService {
 
     reply(
         interaction: Message | ButtonInteraction,
-        content: string | null,
-        attachments: Array<AttachmentBuilder>,
+        reply: BaseMessageOptions,
         isEdit: boolean
     ): Promise<void>;
 

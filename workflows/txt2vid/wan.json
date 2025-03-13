@@ -4,41 +4,39 @@
     "promptNegative": "",
     "model": "",
     "seed": -1,
-    "width": 1024,
-    "height": 1024,
-    "sampler": "dpmpp_2m_sde",
+    "width": 832,
+    "height": 480,
+    "sampler": "euler",
     "scheduler": "simple",
-    "cfgScale": 7,
+    "cfgScale": 6,
     "steps": 20,
-    "num": 4
+    "num": 1
   },
   "4": {
     "inputs": {
-      "ckpt_name": "SDXL/Anime/ghostxl_v10BakedVAE.safetensors"
+      "unet_name": "Wan/txt2img/wan2.1-t2v-14b-Q5_0.gguf"
     },
-    "class_type": "CheckpointLoaderSimple",
+    "class_type": "UnetLoaderGGUF",
     "_meta": {
-      "title": "Load Checkpoint"
+      "title": "Unet Loader (GGUF)"
     }
   },
   "5": {
     "inputs": {
       "width": "{{{ width }}}",
       "height": "{{{ height }}}",
-      "batch_size": "{{{ num }}}"
+      "length": 33,
+      "batch_size": 1
     },
-    "class_type": "EmptyLatentImage",
+    "class_type": "EmptyHunyuanLatentVideo",
     "_meta": {
-      "title": "Empty Latent Image"
+      "title": "EmptyHunyuanLatentVideo"
     }
   },
   "6": {
     "inputs": {
       "text": "{{{ prompt }}}",
-      "clip": [
-        "4",
-        1
-      ]
+      "clip": ["100", 0]
     },
     "class_type": "CLIPTextEncode",
     "_meta": {
@@ -48,10 +46,7 @@
   "7": {
     "inputs": {
       "text": "{{{ promptNegative }}}",
-      "clip": [
-        "4",
-        1
-      ]
+      "clip": ["100", 0]
     },
     "class_type": "CLIPTextEncode",
     "_meta": {
@@ -60,14 +55,8 @@
   },
   "8": {
     "inputs": {
-      "samples": [
-        "10",
-        0
-      ],
-      "vae": [
-        "4",
-        2
-      ]
+      "samples": ["10", 0],
+      "vae": ["101", 0]
     },
     "class_type": "VAEDecode",
     "_meta": {
@@ -90,25 +79,13 @@
       "rho": 7,
       "add_noise": "enable",
       "return_with_leftover_noise": "disable",
-      "previews": "default",
+      "previews": "animate",
       "tile_sample": false,
-      "tile_size": 1024,
-      "model": [
-        "4",
-        0
-      ],
-      "positive": [
-        "6",
-        0
-      ],
-      "negative": [
-        "100",
-        0
-      ],
-      "latent_image": [
-        "5",
-        0
-      ]
+      "tile_size": "{{{ width` }}}",
+      "model": ["4", 0],
+      "positive": ["6", 0],
+      "negative": ["7", 0],
+      "latent_image": ["5", 0]
     },
     "class_type": "SwarmKSampler",
     "_meta": {
@@ -117,36 +94,45 @@
   },
   "100": {
     "inputs": {
-      "conditioning": [
-        "7",
-        0
-      ]
+      "clip_name": "umt5_xxl_fp8_e4m3fn_scaled.safetensors",
+      "type": "wan",
+      "device": "default"
     },
-    "class_type": "ConditioningZeroOut",
+    "class_type": "CLIPLoader",
     "_meta": {
-      "title": "ConditioningZeroOut"
+      "title": "Load CLIP"
     }
   },
   "101": {
     "inputs": {
-      "value": [
-        "8",
-        0
-      ]
+      "vae_name": "Wan/wan_2.1_vae.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load VAE"
+    }
+  },
+  "102": {
+    "inputs": {
+      "value": ["8", 0]
     },
     "class_type": "UnloadAllModels",
     "_meta": {
       "title": "UnloadAllModels"
     }
   },
-  "102": {
+  "103": {
     "inputs": {
-      "filename_prefix": "Musebot",
-      "images": ["101", 0]
+      "filename_prefix": "Musebot_Wan",
+      "fps": 16,
+      "lossless": false,
+      "quality": 85,
+      "method": "default",
+      "images": ["102", 0]
     },
-    "class_type": "SaveImage",
+    "class_type": "SaveAnimatedWEBP",
     "_meta": {
-      "title": "Save Image"
+      "title": "SaveAnimatedWEBP"
     }
   }
 }

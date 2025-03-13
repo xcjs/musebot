@@ -83,7 +83,10 @@ export class ComfyUiPromptRenderTask extends ComfyUiBaseTask implements IPromptR
             this.#logger(LogLevel.Info, `Using ${workflow.name} as the selected workflow.`);
 
             const renderRequest = this.#workflowService.getWorkflowDefaults(workflow);
-            numRenders = renderRequest.num;
+
+            if(i === 0) {
+                numRenders = renderRequest.num;
+            }
 
             renderRequest.model = workflow.name;
             renderRequest.prompt = prompt;
@@ -102,7 +105,7 @@ export class ComfyUiPromptRenderTask extends ComfyUiBaseTask implements IPromptR
 
 
         const imagesResponse = this.#comfyUiReplyService.flattenMultipleImagesResponses(imagesResponses);
-        const replyTask = new ComfyUiReplyTask(this.#services, this.#message, {
+        const replyTask = new ComfyUiReplyTask(this.#services, this.#message, { }, {
             request: renderRequests,
             response: imagesResponse
         });

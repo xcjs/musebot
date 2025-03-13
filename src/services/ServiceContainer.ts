@@ -1,4 +1,4 @@
-import { AttachmentBuilder, ButtonInteraction, Client as DiscordClient, GatewayIntentBits, Message, MessageReaction, Partials, User } from 'discord.js';
+import { BaseMessageOptions, ButtonInteraction, Client as DiscordClient, GatewayIntentBits, Message, MessageReaction, Partials, User } from 'discord.js';
 
 import { BotFunction } from '../enums/BotFunction.js';
 import { ComfyUiReplyService } from './clients/chat/discord/comfy-ui/ComfyUiReplyService.js';
@@ -130,24 +130,22 @@ export class ServiceContainer implements IServiceContainer {
     // Factories --------------------------------------------------------------/
     getReplyTask(
         interaction: Message | ButtonInteraction,
-        content: string | null,
-        attachments: Array<AttachmentBuilder> = []
+        reply: BaseMessageOptions
         ): IReplyTask {
-        return new ReplyTask(this, interaction, content, attachments);
+        return new ReplyTask(this, interaction, reply);
     }
 
     getAttachRenderTask(
         interaction: ButtonInteraction | Message,
         prompt: string,
-        content: string | null = null,
-        isEdit: boolean = false): IAttachRenderTask {
+        content: string | null = null): IAttachRenderTask {
         if (!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)) {
             throw this.#taskNotConfiguredError;
         }
 
         switch (this.#environmentSettings.stableDiffusionApiType) {
             case StableDiffusionApiType.ComfyUI:
-                return new ComfyUiAttachRenderTask(this, interaction, prompt, content, isEdit);
+                return new ComfyUiAttachRenderTask(this, interaction, { content }, prompt);
             default:
                 throw this.#taskNotConfiguredError;
         }

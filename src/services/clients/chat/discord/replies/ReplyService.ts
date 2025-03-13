@@ -1,4 +1,4 @@
-import { Attachment, AttachmentBuilder, ButtonInteraction, Client as DiscordClient, Message, MessageType, User  } from 'discord.js';
+import { Attachment, BaseMessageOptions, ButtonInteraction, Client as DiscordClient, Message, MessageType, User  } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
 import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
@@ -121,31 +121,65 @@ export class ReplyService implements IReplyService {
 
     async reply(
         interaction: Message | ButtonInteraction,
-        content: string | null,
-        attachments: Array<AttachmentBuilder> = []
+        reply: BaseMessageOptions,
+        isEdit: boolean = false
     ): Promise<void> {
-        const replyContents = splitText(content?.trim() || '', DiscordConstants.ContentMaxLength);
+        const replyContents = splitText(reply.content?.trim() || '', DiscordConstants.ContentMaxLength);
+
+        // Replies without text content will result in an empty array and skip
+        // the reply loop.
+        if(replyContents.length === 0) {
+            replyContents.push('');
+        }
 
         let i = 0;
 
         for (const contentFragment of replyContents) {
-            const replyAttachments = i + 1 === replyContents.length ? attachments : [];
+            // All attachments should be added to the last message of a series
+            // of split responses.
+            const replyAttachments = i + 1 === replyContents.length ? reply.files : [];
 
-            if (interaction instanceof Message) {
+            if (interaction instanceof Message && !isEdit) {
                 await interaction.reply({
                     content: contentFragment.trim(),
-                    files: replyAttachments
+                    files: replyAttachments,
+                    components: reply.components
+                });
+            } else if(interaction instanceof Message && isEdit) {
+                await interaction.edit({
+                    content: interaction.content,
+                    files: reply.files,
+                    components: interaction.components
                 });
             } else if (interaction instanceof ButtonInteraction && i === 0) {
-                await interaction.editReply({
+                const replyFragment: BaseMessageOptions = {
                     content: contentFragment.trim(),
-                    files: replyAttachments
-                });
+                    files: replyAttachments,
+                    components: reply.components
+                };
+
+                try {
+                    await interaction.editReply(replyFragment);
+                } catch(error) {
+                    this.#logger(LogLevel.Error,
+                        'An exception occurred while editing a deferred reply - retrying as a new reply:', error);
+                    await interaction.message.reply(replyFragment);
+                }
+
             } else if (interaction instanceof ButtonInteraction && i > 0) {
-                await interaction.followUp({
+                const replyFragment: BaseMessageOptions = {
                     content: contentFragment.trim(),
-                    files: replyAttachments
-                });
+                    files: replyAttachments,
+                    components: reply.components
+                }
+
+                try {
+                    await interaction.followUp(replyFragment);
+                } catch(error) {
+                    this.#logger(LogLevel.Error,
+                        'An exception occurred while following up a deferred reply - retrying as a new reply:', error);
+                    await interaction.message.reply(replyFragment);
+                }
             } else {
                 this.#logger(LogLevel.Warning,
                     `An interaction occurred that did not fit the reply criteria of either being an edited reply to a`
