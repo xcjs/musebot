@@ -8,7 +8,7 @@ export interface IReplyService {
     reply(
         interaction: Message | ButtonInteraction,
         reply: BaseMessageOptions,
-        bypassEdit: boolean
+        isEdit: boolean
     ): Promise<void>;
 
     getMessageWithoutBotMentions(message: Message): string;

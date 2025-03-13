@@ -1,4 +1,4 @@
-import { ButtonInteraction, Message } from 'discord.js';
+import { BaseMessageOptions, ButtonInteraction, Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
 import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
@@ -6,7 +6,6 @@ import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironm
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
-import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { IAttachRenderTask } from '../../tasks/IAttachRenderTask.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
@@ -21,12 +20,11 @@ export class ComfyUiAttachRenderTask extends ComfyUiBaseTask implements IAttachR
     #environmentSettings: IEnvironmentSettings;
     #workflowService: IWorkflowService;
     #comfyUiClient: ComfyUiClient;
-    #comfyUiReplyService: ComfyUiReplyService;
     #replyService: IReplyService;
     #taskQueue: ITaskQueue;
 
+    #reply: BaseMessageOptions;
     #prompt: string;
-    #content: string | null;
 
     #interaction: Message | ButtonInteraction;
 
@@ -39,8 +37,8 @@ export class ComfyUiAttachRenderTask extends ComfyUiBaseTask implements IAttachR
     constructor(
         services: IServiceContainer,
         interaction: Message | ButtonInteraction,
-        prompt: string,
-        content: string | null = null) {
+        reply: BaseMessageOptions,
+        prompt: string) {
         super(services);
 
         this.#services = services;
@@ -48,13 +46,12 @@ export class ComfyUiAttachRenderTask extends ComfyUiBaseTask implements IAttachR
         this.#environmentSettings = services.environmentSettings;
         this.#workflowService = services.workflowService;
         this.#comfyUiClient = services.comfyUiClient;
-        this.#comfyUiReplyService = services.comfyUiReplyService;
         this.#replyService = services.replyService;
         this.#taskQueue = services.taskQueue;
 
         this.#interaction = interaction;
+        this.#reply = reply;
         this.#prompt = prompt;
-        this.#content = content;
 
         this.#logger = new Logger(this.#environmentSettings.isProduction, 'ComfyUiAttachRenderTask');
     }
@@ -79,16 +76,12 @@ export class ComfyUiAttachRenderTask extends ComfyUiBaseTask implements IAttachR
         const prompt = this.#workflowService.renderWorkflow(workflow, renderRequest);
         const imagesResponse = await this.#comfyUiClient.render(prompt);
 
-        let replyTask: ComfyUiReplyTask;
-
-        if(this.#interaction instanceof ButtonInteraction) {
-            replyTask = new ComfyUiReplyTask(this.#services, this.#interaction, {
-                    content: this.#content
-                }, {
-                    request: [renderRequest],
-                    response: imagesResponse
-                });
-        }
+        const replyTask = new ComfyUiReplyTask(this.#services, this.#interaction, {
+            content: this.#reply.content
+        }, {
+            request: [renderRequest],
+            response: imagesResponse
+        }, true);
 
         this.#taskQueue.add(replyTask);
     }

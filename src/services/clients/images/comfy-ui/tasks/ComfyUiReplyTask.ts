@@ -21,11 +21,13 @@ export class ComfyUiReplyTask extends BaseTask implements IReplyTask {
     #interaction: Message | ButtonInteraction;
     #reply: BaseMessageOptions;
     #renderExchange: IHttpExchange<Array<SerializableRenderRequest>, ImagesResponse>;
+    #isEdit: boolean;
 
     constructor(services: IServiceContainer,
         interaction: Message | ButtonInteraction,
         reply: BaseMessageOptions,
-        renderExchange: IHttpExchange<Array<SerializableRenderRequest>, ImagesResponse>) {
+        renderExchange: IHttpExchange<Array<SerializableRenderRequest>, ImagesResponse>,
+        isEdit: boolean = false) {
         super(services);
 
         this.#comfyUiReplyService = services.comfyUiReplyService;
@@ -34,19 +36,20 @@ export class ComfyUiReplyTask extends BaseTask implements IReplyTask {
         this.#interaction = interaction;
         this.#reply = reply;
         this.#renderExchange = renderExchange;
+        this.#isEdit = isEdit;
     }
 
     async process(): Promise<void> {
-        let bypassEdit = false;
-
         // In case the bot takes too long to reply to a delayed response and the
         // reply token expires, force a normal reply to prevent running a task
         // that may never succeed.
-        if(this.numAttempts > 0 && this.#interaction instanceof ButtonInteraction) {
-            bypassEdit = true;
+        if(this.#isEdit
+            && this.numAttempts > 0
+            && this.#interaction instanceof ButtonInteraction) {
+            this.#isEdit = false;
         }
 
-        await this.#comfyUiReplyService.reply(this.#interaction, this.#reply, bypassEdit, this.#renderExchange);
+        await this.#comfyUiReplyService.reply(this.#interaction, this.#reply, this.#isEdit, this.#renderExchange);
     }
 
     override async postProcess(): Promise<void> {

@@ -45,6 +45,14 @@ export class ComfyUiReplyService {
         isEdit: boolean = false,
         renderExchange: IHttpExchange<Array<SerializableRenderRequest | null>, ImagesResponse>): Promise<void> {
 
+        if(reply.content === undefined || reply.content === null) {
+            reply.content = '';
+        }
+
+        if(reply.files === undefined || reply.files === null) {
+            reply.files = [];
+        }
+
         if (Object.values(renderExchange.response).length === 0) {
             this.#logger(LogLevel.Error, 'A reply was created with no attachments.');
             return await this.#replyService.replyWithError(interaction);
@@ -103,26 +111,12 @@ export class ComfyUiReplyService {
             }
         }
 
-        if (reply.files !== undefined && reply.files !== null) {
-            reply.files.concat(imageAttachments);
-        } else {
-            reply.files = imageAttachments
-        }
-
+        reply.files = reply.files.concat(imageAttachments);
         reply.components = isStatefulResponse ?
                 new StatefulImageGenerationActionRows(this.#services, renderExchange.request[0]).build() :
                 new StatelessImageGenerationActionRow(this.#services).build();
 
-        if (interaction instanceof Message) {
-            if (isEdit) {
-                reply.components = interaction.components;
-                await interaction.edit(reply);
-            } else {
-                await interaction.reply(reply);
-            }
-        } else if (interaction instanceof ButtonInteraction) {
-            await interaction.editReply(reply);
-        }
+        this.#replyService.reply(interaction, reply, isEdit);
     }
 
     getFileNameFromPrompt(renderRequest: SerializableRenderRequest | null): string {

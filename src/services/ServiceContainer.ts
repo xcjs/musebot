@@ -145,7 +145,7 @@ export class ServiceContainer implements IServiceContainer {
 
         switch (this.#environmentSettings.stableDiffusionApiType) {
             case StableDiffusionApiType.ComfyUI:
-                return new ComfyUiAttachRenderTask(this, interaction, prompt, content);
+                return new ComfyUiAttachRenderTask(this, interaction, { content }, prompt);
             default:
                 throw this.#taskNotConfiguredError;
         }

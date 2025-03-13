@@ -82,7 +82,7 @@ export class TaskQueue implements ITaskQueue {
                         task.taskStatus = TaskStatus.Failed;
                         this.#logger(LogLevel.Error, `Task ${task.id} was rejected ${task.numAttempts} time(s): ${promise.reason}`);
 
-                        if(task.numAttempts === this.#environmentSettings.maxTaskAttempts) {
+                        if(task.numAttempts >= this.#environmentSettings.maxTaskAttempts) {
                             return task.postProcess();
                         }
                     }
