@@ -40,15 +40,6 @@ export class ComfyUiReplyTask extends BaseTask implements IReplyTask {
     }
 
     async process(): Promise<void> {
-        // In case the bot takes too long to reply to a delayed response and the
-        // reply token expires, force a normal reply to prevent running a task
-        // that may never succeed.
-        if(this.#isEdit
-            && this.numAttempts > 0
-            && this.#interaction instanceof ButtonInteraction) {
-            this.#isEdit = false;
-        }
-
         await this.#comfyUiReplyService.reply(this.#interaction, this.#reply, this.#isEdit, this.#renderExchange);
     }
 
