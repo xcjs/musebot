@@ -126,6 +126,12 @@ export class ReplyService implements IReplyService {
     ): Promise<void> {
         const replyContents = splitText(reply.content?.trim() || '', DiscordConstants.ContentMaxLength);
 
+        // Replies without text content will result in an empty array and skip
+        // the reply loop.
+        if(replyContents.length === 0) {
+            replyContents.push('');
+        }
+
         let i = 0;
 
         for (const contentFragment of replyContents) {
