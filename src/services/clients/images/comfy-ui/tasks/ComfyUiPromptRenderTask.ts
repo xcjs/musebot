@@ -34,10 +34,8 @@ export class ComfyUiPromptRenderTask extends ComfyUiBaseTask implements IPromptR
         return `ComfyUi_${this.#comfyUiClient.host}`;
     }
 
-    constructor(
-        services: IServiceContainer,
-        message: Message) {
-        super(services);
+    constructor(services: IServiceContainer, message: Message) {
+        super(services, message);
 
         this.#services = services;
 

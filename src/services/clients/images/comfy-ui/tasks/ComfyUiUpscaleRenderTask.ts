@@ -36,10 +36,8 @@ export class ComfyUiUpscaleRenderTask extends ComfyUiBaseTask implements IUpscal
         return `ComfyUi_${this.#comfyUiReplyService.host}`;
     }
 
-    constructor(
-        services: IServiceContainer,
-        interaction: ButtonInteraction) {
-        super(services);
+    constructor(services: IServiceContainer, interaction: ButtonInteraction) {
+        super(services, interaction);
 
         this.#services = services;
 

@@ -24,10 +24,8 @@ export class ComfyUiShowSourceTask extends ComfyUiBaseTask implements IShowSourc
         return 'Discord';
     }
 
-    constructor(
-        services: IServiceContainer,
-        interaction: ButtonInteraction) {
-        super(services);
+    constructor(services: IServiceContainer, interaction: ButtonInteraction) {
+        super(services, interaction);
 
         this.#environmentSettings = services.environmentSettings;
         this.#comfyUiReplyService = services.comfyUiReplyService;

@@ -158,14 +158,7 @@ export class ReplyService implements IReplyService {
                     components: reply.components
                 };
 
-                try {
-                    await interaction.editReply(replyFragment);
-                } catch(error) {
-                    this.#logger(LogLevel.Error,
-                        'An exception occurred while editing a deferred reply - retrying as a new reply:', error);
-                    await interaction.message.reply(replyFragment);
-                    await interaction.deleteReply();
-                }
+                await interaction.message.reply(replyFragment);
 
             } else if (interaction instanceof ButtonInteraction && i > 0) {
                 const replyFragment: BaseMessageOptions = {
@@ -174,14 +167,7 @@ export class ReplyService implements IReplyService {
                     components: reply.components
                 }
 
-                try {
-                    await interaction.followUp(replyFragment);
-                } catch(error) {
-                    this.#logger(LogLevel.Error,
-                        'An exception occurred while following up a deferred reply - retrying as a new reply:', error);
-                    await interaction.message.reply(replyFragment);
-                    await interaction.deleteReply();
-                }
+                await interaction.message.reply(replyFragment);
             } else {
                 this.#logger(LogLevel.Warning,
                     `An interaction occurred that did not fit the reply criteria of either being an edited reply to a`

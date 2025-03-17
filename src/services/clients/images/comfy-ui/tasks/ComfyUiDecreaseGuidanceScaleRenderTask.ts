@@ -34,7 +34,7 @@ export class ComfyUiDecreaseGuidanceScaleRenderTask extends ComfyUiBaseTask impl
     }
 
     constructor(services: IServiceContainer, interaction: ButtonInteraction) {
-        super(services);
+        super(services, interaction);
 
         this.#services = services;
 
