@@ -44,14 +44,13 @@ export abstract class ComfyUiBaseTask extends BaseTask {
             this.#logger(LogLevel.Info, 'The interaction is a button interaction - sending acknowledgement of task receipt.');
 
             const buttonLabels = [...(this.#interaction.component as ButtonComponent).label.replaceAll('⠀', '')];
+            let label = buttonLabels[buttonLabels.length - 1];
 
-            for(let label of buttonLabels) {
-                if(label.startsWith('{')) {
-                    label = '🧑‍💻️';
-                }
-
-                await this.#interaction.message.react(label);
+            if(label === '}') {
+                label = '💻';
             }
+
+            await this.#interaction.message.react(label);
         }
 
         this.#logger(LogLevel.Info, 'Loading workflows...');
