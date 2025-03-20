@@ -24,10 +24,8 @@ export class ComfyUiShowSourceTask extends ComfyUiBaseTask implements IShowSourc
         return 'Discord';
     }
 
-    constructor(
-        services: IServiceContainer,
-        interaction: ButtonInteraction) {
-        super(services);
+    constructor(services: IServiceContainer, interaction: ButtonInteraction) {
+        super(services, interaction);
 
         this.#environmentSettings = services.environmentSettings;
         this.#comfyUiReplyService = services.comfyUiReplyService;
@@ -66,7 +64,7 @@ export class ComfyUiShowSourceTask extends ComfyUiBaseTask implements IShowSourc
             files: jsonAttachments
         };
 
-        await this.#interaction.editReply(reply);
+        await this.#interaction.message.reply(reply);
     }
 
     override async postProcess(): Promise<void> {

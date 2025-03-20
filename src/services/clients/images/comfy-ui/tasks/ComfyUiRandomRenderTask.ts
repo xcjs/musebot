@@ -36,7 +36,7 @@ export class ComfyUiRandomRenderTask extends ComfyUiBaseTask implements IRandomR
     }
 
     constructor(services: IServiceContainer, interaction: ButtonInteraction) {
-        super(services);
+        super(services, interaction);
 
         this.#services = services;
 
@@ -74,7 +74,7 @@ export class ComfyUiRandomRenderTask extends ComfyUiBaseTask implements IRandomR
         renderRequest.refreshSeed();
 
         const prompt = this.#workflowService.renderWorkflow(workflow, renderRequest);
-        const imagesResponse = await this.#comfyUiClient.render(prompt);
+        const imagesResponse = await this.#comfyUiClient.render([prompt]);
 
         const exchange = {
             request: [renderRequest],

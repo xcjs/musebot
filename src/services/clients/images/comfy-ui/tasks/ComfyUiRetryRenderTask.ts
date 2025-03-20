@@ -1,4 +1,4 @@
-import { ImagesResponse } from 'comfy-ui-client';
+import { Prompt } from 'comfy-ui-client';
 import { ButtonInteraction, Message, User } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
@@ -9,7 +9,6 @@ import { IFeatureService } from '../../../../features/IFeatureService.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
-import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { OllamaClient } from '../../../text/ollama/OllamaClient.js';
@@ -29,7 +28,6 @@ export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRen
     #featureService: IFeatureService;
     #workflowService: IWorkflowService;
     #comfyUiClient: ComfyUiClient;
-    #comfyUiReplyService: ComfyUiReplyService;
     #replyService: IReplyService;
     #ollamaClient: OllamaClient;
     #taskQueue: ITaskQueue;
@@ -51,7 +49,7 @@ export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRen
         promptExtension: string | null = null,
         promptExtensionType: PromptExtensionType | null = null,
         userOverride: User | null = null) {
-        super(services);
+        super(services, interaction);
 
         this.#services = services;
 
@@ -59,7 +57,6 @@ export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRen
         this.#featureService = services.featureService;
         this.#workflowService = services.workflowService;
         this.#comfyUiClient = services.comfyUiClient;
-        this.#comfyUiReplyService = services.comfyUiReplyService;
         this.#replyService = services.replyService;
         this.#ollamaClient = services.ollamaClient;
         this.#taskQueue = services.taskQueue;
@@ -84,9 +81,9 @@ export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRen
             return;
         }
 
-        const renderRequests: Array<SerializableRenderRequest> = [];
+        const renderRequests: SerializableRenderRequest[] = [];
+        const prompts: Prompt[] = [];
         let content: string;
-        const imagesResponses: Array<ImagesResponse> = [];
 
         for (const imageAttachment of imageAttachments) {
             let renderRequest = SerializableRenderRequest.fromJson(imageAttachment.description);
@@ -125,7 +122,6 @@ export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRen
 
             // Normalize render request to use settings best for the newly selected
             // workflow.
-
             const defaultRequest = this.#workflowService.getWorkflowDefaults(workflow);
             defaultRequest.prompt = renderRequest.prompt;
             defaultRequest.seed = renderRequest.seed;
@@ -135,11 +131,10 @@ export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRen
 
             renderRequests.push(renderRequest);
 
-            const workflowPrompt = this.#workflowService.renderWorkflow(workflow, renderRequest);
-            imagesResponses.push(await this.#comfyUiClient.render(workflowPrompt));
+            prompts.push(this.#workflowService.renderWorkflow(workflow, renderRequest));
         }
 
-        const imagesResponse = this.#comfyUiReplyService.flattenMultipleImagesResponses(imagesResponses);
+        const imagesResponse = await this.#comfyUiClient.render(prompts);
 
         const replyTask = new ComfyUiReplyTask(this.#services, this.#interaction, { content }, {
             request: renderRequests,

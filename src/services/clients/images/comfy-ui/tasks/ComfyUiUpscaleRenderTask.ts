@@ -1,4 +1,4 @@
-import { ImagesResponse } from 'comfy-ui-client';
+import { Prompt } from 'comfy-ui-client';
 import { ButtonInteraction } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
@@ -36,10 +36,8 @@ export class ComfyUiUpscaleRenderTask extends ComfyUiBaseTask implements IUpscal
         return `ComfyUi_${this.#comfyUiReplyService.host}`;
     }
 
-    constructor(
-        services: IServiceContainer,
-        interaction: ButtonInteraction) {
-        super(services);
+    constructor(services: IServiceContainer, interaction: ButtonInteraction) {
+        super(services, interaction);
 
         this.#services = services;
 
@@ -61,7 +59,7 @@ export class ComfyUiUpscaleRenderTask extends ComfyUiBaseTask implements IUpscal
         this.#logger(LogLevel.Info, 'Processing a ComfyUiUpscaleRenderTask...');
 
         const imageAttachments = this.#replyService.getImageAttachments(this.#interaction);
-        const imagesResponses: Array<ImagesResponse> = [];
+        const prompts: Prompt[] = [];
 
         if(imageAttachments.length === 0) {
             await this.#replyService.replyWithError(this.#interaction);
@@ -107,15 +105,11 @@ export class ComfyUiUpscaleRenderTask extends ComfyUiBaseTask implements IUpscal
             const renderRequest = new SerializableRenderRequest();
             renderRequest.prompt = imageAsBase64;
 
-            const prompt = this.#workflowService.renderWorkflow(workflow, renderRequest);
-            const imagesResponse = await this.#comfyUiClient.render(prompt);
-
-            imagesResponses.push(imagesResponse);
-
+            prompts.push(this.#workflowService.renderWorkflow(workflow, renderRequest));
             i++;
         }
 
-        const imagesResponse = this.#comfyUiReplyService.flattenMultipleImagesResponses(imagesResponses);
+        const imagesResponse = await this.#comfyUiClient.render(prompts);
 
         const replyTask = new ComfyUiReplyTask(this.#services, this.#interaction, { content }, {
             request: renderRequests,

@@ -31,7 +31,7 @@ export class ComfyUiAttachRenderTask extends ComfyUiBaseTask implements IAttachR
     #logger;
 
     override get taskChannel(): string {
-        return `ComfyUi_${this.#comfyUiClient.host}`;
+        return `ComfyUI_${this.#comfyUiClient.host}`;
     }
 
     constructor(
@@ -39,7 +39,7 @@ export class ComfyUiAttachRenderTask extends ComfyUiBaseTask implements IAttachR
         interaction: Message | ButtonInteraction,
         reply: BaseMessageOptions,
         prompt: string) {
-        super(services);
+        super(services, interaction);
 
         this.#services = services;
 
@@ -74,7 +74,7 @@ export class ComfyUiAttachRenderTask extends ComfyUiBaseTask implements IAttachR
         renderRequest.refreshSeed();
 
         const prompt = this.#workflowService.renderWorkflow(workflow, renderRequest);
-        const imagesResponse = await this.#comfyUiClient.render(prompt);
+        const imagesResponse = await this.#comfyUiClient.render([prompt]);
 
         const replyTask = new ComfyUiReplyTask(this.#services, this.#interaction, {
             content: this.#reply.content
