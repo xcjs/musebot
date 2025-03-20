@@ -51,8 +51,14 @@ export class ReplyService implements IReplyService {
             return false;
         }
 
-        // No messages by bots unless it's a reaction reply.
-        if (message.author.bot && !isReaction) {
+        // The bot can't reply to itself.
+        if (message.author.id === this.#discordClient.user?.id) {
+            this.#logger(LogLevel.Info, 'Not replying to myself.');
+            return false;
+        }
+
+        // The bot can't reply to another bot.
+        if (message.author.bot) {
             this.#logger(LogLevel.Info, 'Not replying to any other bots/apps.');
             return false;
         }
@@ -81,12 +87,6 @@ export class ReplyService implements IReplyService {
                 && !isReaction) {
             this.#logger(LogLevel.Info, `Not replying to a message outside the response rate` +
                 ` (${generatedResponseRate} > ${this.#environmentSettings.botResponseRate}).`);
-            return false;
-        }
-
-        // The bot can't reply to itself unless it's in response to a reaction.
-        if (message.author.id === this.#discordClient.user?.id && !isReaction) {
-            this.#logger(LogLevel.Info, 'Not replying to myself.');
             return false;
         }
 
@@ -254,10 +254,6 @@ export class ReplyService implements IReplyService {
     }
 
     async replyWithError(interaction: Message | ButtonInteraction): Promise<void> {
-        if (interaction instanceof Message) {
-            await interaction.reply({ content: this.#environmentSettings.errorMessage });
-        } else if (interaction instanceof ButtonInteraction) {
-            await interaction.editReply({ content: this.#environmentSettings.errorMessage });
-        }
+        await interaction.reply({ content: this.#environmentSettings.errorMessage });
     }
 }
