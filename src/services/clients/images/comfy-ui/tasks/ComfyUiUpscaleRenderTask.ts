@@ -106,7 +106,6 @@ export class ComfyUiUpscaleRenderTask extends ComfyUiBaseTask implements IUpscal
             renderRequest.prompt = imageAsBase64;
 
             prompts.push(this.#workflowService.renderWorkflow(workflow, renderRequest));
-
             i++;
         }
 
