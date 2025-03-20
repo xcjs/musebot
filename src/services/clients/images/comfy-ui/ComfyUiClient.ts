@@ -40,13 +40,13 @@ export class ComfyUiClient {
     }
 
     async render(prompts: Prompt[]): Promise<ImagesResponse> {
-        this.#logger(LogLevel.Info, 'Sending workflow to ComfyUI:', JSON.stringify(prompt));
-
         await this.#client.connect();
+
         const imagesPromises: Promise<ImagesResponse>[] = [];
         const imagesResponses: ImagesResponse[] = [];
 
         prompts.forEach((prompt) => {
+            this.#logger(LogLevel.Info, 'Sending workflow to ComfyUI:', JSON.stringify(prompt));
             delete prompt.$musebotDefaults;
             imagesPromises.push(this.#client.getImages(prompt));
         });
