@@ -1,4 +1,4 @@
-import { ButtonInteraction, Message } from 'discord.js';
+import { ButtonComponent, ButtonInteraction, Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
@@ -42,7 +42,10 @@ export abstract class ComfyUiBaseTask extends BaseTask {
 
         if(this.#interaction instanceof ButtonInteraction) {
             this.#logger(LogLevel.Info, 'The interaction is a button interaction - sending acknowledgement of task receipt.');
-            await this.#interaction.editReply('Got it! I\'ll get started soon!');
+            const buttonLabel = (this.#interaction.component as ButtonComponent).label;
+
+            await this.#interaction.deleteReply();
+            await this.#interaction.message.react(buttonLabel);
         }
 
         this.#logger(LogLevel.Info, 'Loading workflows...');

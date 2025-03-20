@@ -37,7 +37,7 @@ export class ComfyUiReplyService {
     }
 
     async renderImage(prompt: Prompt): Promise<ImagesResponse> {
-        return await this.#comfyUiClient.render(prompt);
+        return await this.#comfyUiClient.render([prompt]);
     }
 
     async reply(interaction: Message | ButtonInteraction,
@@ -127,21 +127,5 @@ export class ComfyUiReplyService {
         }
 
         return `${namePrefix}_${renderRequest.seed}_${renderRequest.prompt}`.substring(0, MAX_FILE_NAME_LENGTH);
-    }
-
-    flattenMultipleImagesResponses(imagesResponses: Array<ImagesResponse>): ImagesResponse {
-        const imagesResponse: ImagesResponse = { };
-
-        for (const imageResponse of imagesResponses) {
-            for (const [key, value] of Object.entries(imageResponse)) {
-                if (imagesResponse[key] === undefined) {
-                    imagesResponse[key] = [];
-                }
-
-                imagesResponse[key] = imagesResponse[key].concat(value);
-            }
-        }
-
-        return imagesResponse;
     }
 }

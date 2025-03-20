@@ -82,7 +82,7 @@ export class ComfyUiJsonRenderTask extends ComfyUiBaseTask implements IJsonRende
         }
 
         const workflowPrompt = this.#workflowService.renderWorkflow(workflow, renderRequest);
-        const imagesResponse = await this.#comfyUiClient.render(workflowPrompt);
+        const imagesResponse = await this.#comfyUiClient.render([workflowPrompt]);
 
         const exchange = {
             request: [renderRequest],

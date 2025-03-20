@@ -74,7 +74,7 @@ export class ComfyUiAttachRenderTask extends ComfyUiBaseTask implements IAttachR
         renderRequest.refreshSeed();
 
         const prompt = this.#workflowService.renderWorkflow(workflow, renderRequest);
-        const imagesResponse = await this.#comfyUiClient.render(prompt);
+        const imagesResponse = await this.#comfyUiClient.render([prompt]);
 
         const replyTask = new ComfyUiReplyTask(this.#services, this.#interaction, {
             content: this.#reply.content

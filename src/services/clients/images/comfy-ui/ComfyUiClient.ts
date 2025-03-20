@@ -1,6 +1,7 @@
 import { ComfyUIClient, ImagesResponse, Prompt } from 'comfy-ui-client';
 import { Logger, LogLevel } from 'meklog';
 
+import { PromisedSettledResultStatus } from '../../../../enums/PromisedSettledResultStatus.js';
 import { getRandomArrayEntry } from '../../../../utilities/random-utilities.js';
 import { IEnvironmentSettings } from '../../../environment-settings/IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
@@ -38,21 +39,37 @@ export class ComfyUiClient {
         this.#logger(LogLevel.Info, `Selected host: ${this.#host}`);
     }
 
-    async render(prompt: Prompt): Promise<ImagesResponse> {
+    async render(prompts: Prompt[]): Promise<ImagesResponse> {
         this.#logger(LogLevel.Info, 'Sending workflow to ComfyUI:', JSON.stringify(prompt));
 
         await this.#client.connect();
+        const imagesPromises: Promise<ImagesResponse>[] = [];
+        const imagesResponses: ImagesResponse[] = [];
 
-        delete prompt.$musebotDefaults;
-        const images = await this.#client.getImages(prompt);
+        prompts.forEach((prompt) => {
+            delete prompt.$musebotDefaults;
+            imagesPromises.push(this.#client.getImages(prompt));
+        });
+
+        await Promise.allSettled(imagesPromises).then((results) => {
+            results.forEach(result => {
+                if(result.status === PromisedSettledResultStatus.Fulfilled) {
+                    imagesResponses.push(result.value);
+                } else {
+                    throw result.reason;
+                }
+            });
+        });
+
+        const imagesResponse = this.#flattenMultipleImagesResponses(imagesResponses);
 
         await this.#client.disconnect();
 
-        if(Object.keys(images).length === 0) {
+        if(Object.keys(imagesResponse).length === 0) {
             return Promise.reject('The render failed but was not reported as a failure by the Comfy UI client.');
         }
 
-        return images;
+        return imagesResponse;
     }
 
     async disconnect(): Promise<void> {
@@ -63,5 +80,21 @@ export class ComfyUiClient {
         } finally {
             await this.#client.disconnect();
         }
+    }
+
+    #flattenMultipleImagesResponses(imagesResponses: Array<ImagesResponse>): ImagesResponse {
+        const imagesResponse: ImagesResponse = {};
+
+        for (const imageResponse of imagesResponses) {
+            for (const [key, value] of Object.entries(imageResponse)) {
+                if (imagesResponse[key] === undefined) {
+                    imagesResponse[key] = [];
+                }
+
+                imagesResponse[key] = imagesResponse[key].concat(value);
+            }
+        }
+
+        return imagesResponse;
     }
 }
