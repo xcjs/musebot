@@ -54,7 +54,7 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
     async #onMessageCreate(message: Message): Promise<void> {
         this.logger(LogLevel.Info, `Discord message created. ${message.author.displayName} (${message.author.username}): "${message}"`);
 
-        if(!this.#replyService.shouldReply(message, false)) {
+        if(!this.#replyService.shouldReply(message, null)) {
             return;
         }
 
@@ -148,7 +148,7 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
             }
         }
 
-        if (!this.#replyService.shouldReply(reaction.message as Message, true)) {
+        if (!this.#replyService.shouldReply(reaction.message as Message, reaction)) {
             return;
         }
 

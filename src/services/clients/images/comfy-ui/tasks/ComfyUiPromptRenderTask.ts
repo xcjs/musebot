@@ -33,7 +33,7 @@ export class ComfyUiPromptRenderTask extends ComfyUiBaseTask implements IPromptR
     }
 
     constructor(services: IServiceContainer, message: Message) {
-        super(services, message);
+        super(services);
 
         this.#services = services;
 

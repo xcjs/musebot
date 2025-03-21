@@ -49,7 +49,7 @@ export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRen
         promptExtension: string | null = null,
         promptExtensionType: PromptExtensionType | null = null,
         userOverride: User | null = null) {
-        super(services, interaction);
+        super(services);
 
         this.#services = services;
 

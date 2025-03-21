@@ -34,7 +34,7 @@ export class ComfyUiJsonRenderTask extends ComfyUiBaseTask implements IJsonRende
     }
 
     constructor(services: IServiceContainer, message: Message) {
-        super(services, message);
+        super(services);
 
         this.#services = services;
 
