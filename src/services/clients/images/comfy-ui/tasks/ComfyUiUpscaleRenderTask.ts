@@ -37,7 +37,7 @@ export class ComfyUiUpscaleRenderTask extends ComfyUiBaseTask implements IUpscal
     }
 
     constructor(services: IServiceContainer, interaction: ButtonInteraction) {
-        super(services, interaction);
+        super(services);
 
         this.#services = services;
 

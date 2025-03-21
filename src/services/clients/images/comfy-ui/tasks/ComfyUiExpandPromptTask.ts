@@ -29,7 +29,7 @@ export class ComfyUiExpandPromptTask extends ComfyUiBaseTask implements IExpandP
     }
 
     constructor(services: IServiceContainer, interaction: ButtonInteraction) {
-        super(services, interaction);
+        super(services);
 
         this.#services = services;
 

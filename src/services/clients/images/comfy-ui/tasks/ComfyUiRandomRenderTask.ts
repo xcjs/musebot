@@ -36,7 +36,7 @@ export class ComfyUiRandomRenderTask extends ComfyUiBaseTask implements IRandomR
     }
 
     constructor(services: IServiceContainer, interaction: ButtonInteraction) {
-        super(services, interaction);
+        super(services);
 
         this.#services = services;
 

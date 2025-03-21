@@ -39,7 +39,7 @@ export class ComfyUiAttachRenderTask extends ComfyUiBaseTask implements IAttachR
         interaction: Message | ButtonInteraction,
         reply: BaseMessageOptions,
         prompt: string) {
-        super(services, interaction);
+        super(services);
 
         this.#services = services;
 
