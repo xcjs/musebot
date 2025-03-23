@@ -1,4 +1,4 @@
-import { ImagesResponse } from 'comfy-ui-client';
+import { Prompt } from 'comfy-ui-client';
 import { ButtonInteraction } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
@@ -6,7 +6,6 @@ import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironm
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
-import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 import { IIncreaseGuidanceScaleRenderTask } from '../../tasks/IIncreaseGuidanceScaleRenderTask.js';
@@ -21,7 +20,6 @@ export class ComfyUiIncreaseGuidanceScaleRenderTask extends ComfyUiBaseTask impl
     #environmentSettings: IEnvironmentSettings;
     #workflowService: IWorkflowService;
     #comfyUiClient: ComfyUiClient;
-    #comfyUiReplyService: ComfyUiReplyService;
     #replyService: IReplyService;
     #taskQueue: ITaskQueue;
 
@@ -41,7 +39,6 @@ export class ComfyUiIncreaseGuidanceScaleRenderTask extends ComfyUiBaseTask impl
         this.#environmentSettings = services.environmentSettings;
         this.#workflowService = services.workflowService;
         this.#comfyUiClient = services.comfyUiClient;
-        this.#comfyUiReplyService = services.comfyUiReplyService;
         this.#replyService = services.replyService;
         this.#taskQueue = services.taskQueue;
 
@@ -63,8 +60,8 @@ export class ComfyUiIncreaseGuidanceScaleRenderTask extends ComfyUiBaseTask impl
         }
 
         const renderRequests: Array<SerializableRenderRequest> = [];
+        const prompts: Prompt[] = [];
         let cfgScaleValue: number;
-        const imagesResponses: Array<ImagesResponse> = [];
 
         for (const imageAttachment of imageAttachments) {
             const renderRequest = SerializableRenderRequest.fromJson(imageAttachment.description);
@@ -77,12 +74,10 @@ export class ComfyUiIncreaseGuidanceScaleRenderTask extends ComfyUiBaseTask impl
             renderRequests.push(renderRequest);
             cfgScaleValue = renderRequest.cfgScale;
 
-            const prompt = this.#workflowService.renderWorkflow(workflow, renderRequest);
-
-            imagesResponses.push(await this.#comfyUiClient.render(prompt));
+            prompts.push(this.#workflowService.renderWorkflow(workflow, renderRequest));
         }
 
-        const imagesResponse = this.#comfyUiReplyService.flattenMultipleImagesResponses(imagesResponses);
+        const imagesResponse = await this.#comfyUiClient.render(prompts);
 
         const content = `${this.#interaction.member} increased the guidance scale from ${cfgScaleValue
             - this.#environmentSettings.stableDiffusionGuidanceScaleInterval} to ${cfgScaleValue}.`;

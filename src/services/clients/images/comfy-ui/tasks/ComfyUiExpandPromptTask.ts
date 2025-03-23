@@ -28,9 +28,7 @@ export class ComfyUiExpandPromptTask extends ComfyUiBaseTask implements IExpandP
         return `Ollama_${this.#ollamaClient.host}`;
     }
 
-    constructor(
-        services: IServiceContainer,
-        interaction: ButtonInteraction) {
+    constructor(services: IServiceContainer, interaction: ButtonInteraction) {
         super(services);
 
         this.#services = services;

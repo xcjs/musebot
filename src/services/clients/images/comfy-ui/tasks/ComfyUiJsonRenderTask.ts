@@ -33,9 +33,7 @@ export class ComfyUiJsonRenderTask extends ComfyUiBaseTask implements IJsonRende
         return `ComfyUi_${this.#comfyUiClient.host}`;
     }
 
-    constructor(
-        services: IServiceContainer,
-        message: Message) {
+    constructor(services: IServiceContainer, message: Message) {
         super(services);
 
         this.#services = services;
@@ -84,7 +82,7 @@ export class ComfyUiJsonRenderTask extends ComfyUiBaseTask implements IJsonRende
         }
 
         const workflowPrompt = this.#workflowService.renderWorkflow(workflow, renderRequest);
-        const imagesResponse = await this.#comfyUiClient.render(workflowPrompt);
+        const imagesResponse = await this.#comfyUiClient.render([workflowPrompt]);
 
         const exchange = {
             request: [renderRequest],

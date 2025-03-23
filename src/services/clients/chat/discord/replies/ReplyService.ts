@@ -1,4 +1,4 @@
-import { Attachment, BaseMessageOptions, ButtonInteraction, Client as DiscordClient, Message, MessageType, User  } from 'discord.js';
+import { Attachment, BaseMessageOptions, ButtonInteraction, Client as DiscordClient, Message, MessageReaction, MessageType, User  } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
 import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
@@ -23,97 +23,101 @@ export class ReplyService implements IReplyService {
         this.#logger = new Logger(this.#environmentSettings.isProduction, 'ReplyService');
     }
 
-    shouldReply(message: Message, isReaction: boolean = false): boolean {
-        // The message is system message.
-        if(message.system) {
-            this.#logger(LogLevel.Info, 'Not replying to a system message.');
-            return false;
-        }
-
-        // The message isn't from a guild (server).
-        if(!message.guild) {
-            this.#logger(LogLevel.Info, 'Not replying to a non-guild message.');
-            return false;
-        }
-
-        // The message is not a default message type and not a reaction reply
-        // unless it's a reply to an LLM.
-        if (message.type !== MessageType.Default
-            && message.type !== MessageType.Reply
-            && !isReaction) {
-            this.#logger(LogLevel.Info, 'Not replying to a non-default or non-reaction message.');
-            return false;
-        }
-
-        // The message has no author.
-        if(!message.author.id) {
-            this.#logger(LogLevel.Info, 'Not replying to a message without an author.');
-            return false;
-        }
-
-        // No messages by bots unless it's a reaction reply.
-        if (message.author.bot && !isReaction) {
-            this.#logger(LogLevel.Info, 'Not replying to any other bots/apps.');
-            return false;
-        }
-
-        // The bot requires a mention and isn't a reaction reply.
-        if ((this.#environmentSettings.botRequiresMention &&
-            !message.mentions.members?.find(x => x.id === this.#discordClient.user?.id))
-            && !isReaction) {
-            // Before declining to respond, check if the bot's role has been mentioned.
-            const botRole = message.guild.members.resolve(this.#discordClient.user).roles.botRole;
-
-            if(message.mentions.roles.find(x => x.id === botRole.id) === undefined) {
-                this.#logger(LogLevel.Info, 'Not replying to a message that doesn\'t mention or react to this bot or its role.');
+    shouldReply(message: Message, reaction: MessageReaction = null): boolean {
+        if(reaction !== null) {
+            // If the bot is replying to a reaction, it must be to this bot's message.
+            if (message.author.id !== this.#discordClient.user?.id) {
+                this.#logger(LogLevel.Info, 'Not replying to a reaction not on my message.');
                 return false;
             }
-        }
 
-        // The bot doesn't require a mention and doesn't fall within the
-        // response rate, except for reactions. It should still always reply
-        // to a direct mention.
-        const generatedResponseRate = getRandomInt(1, 100);
+            if(reaction.me) {
+                this.#logger(LogLevel.Info, 'Not replying to a reaction from myself.');
+                return false;
+            }
+        } else {
+            // The message is system message.
+            if (message.system) {
+                this.#logger(LogLevel.Info, 'Not replying to a system message.');
+                return false;
+            }
 
-        if ((!this.#environmentSettings.botRequiresMention
-            && generatedResponseRate > this.#environmentSettings.botResponseRate)
-            && !message.mentions.members?.find(x => x.id === this.#discordClient.user?.id)
-                && !isReaction) {
-            this.#logger(LogLevel.Info, `Not replying to a message outside the response rate` +
-                ` (${generatedResponseRate} > ${this.#environmentSettings.botResponseRate}).`);
-            return false;
-        }
+            // The message isn't from a guild (server).
+            if (!message.guild) {
+                this.#logger(LogLevel.Info, 'Not replying to a non-guild message.');
+                return false;
+            }
 
-        // The bot can't reply to itself unless it's in response to a reaction.
-        if (message.author.id === this.#discordClient.user?.id && !isReaction) {
-            this.#logger(LogLevel.Info, 'Not replying to myself.');
-            return false;
-        }
+            // The message is not a default message type and not a reaction reply
+            // unless it's a reply to an LLM.
+            if (message.type !== MessageType.Default
+                && message.type !== MessageType.Reply) {
+                this.#logger(LogLevel.Info, 'Not replying to a non-default or non-reaction message.');
+                return false;
+            }
 
-        // The channel isn't in the configured whitelist if there is one.
-        if (this.#environmentSettings.discordChannels.length > 0
-            && !this.#environmentSettings.discordChannels.includes(message.channel.id)) {
-            this.#logger(LogLevel.Info, 'Not replying to a message in a channel outside this bot\'s allowed channels.');
-            return false;
-        }
+            // The message has no author.
+            if (!message.author.id) {
+                this.#logger(LogLevel.Info, 'Not replying to a message without an author.');
+                return false;
+            }
 
-        // The channel isn't in the configured blacklist if there is one.
-        if (this.#environmentSettings.discordChannelsDisallowed.length > 0
-            && this.#environmentSettings.discordChannelsDisallowed.includes(message.channel.id)) {
-            this.#logger(LogLevel.Info, 'Not replying to a message in a disallowed channel.');
-            return false;
-        }
+            // The bot can't reply to itself.
+            if (message.author.id === this.#discordClient.user?.id) {
+                this.#logger(LogLevel.Info, 'Not replying to myself.');
+                return false;
+            }
 
-        // The message has no content and is not a reaction.
-        if (message.content.length === 0 && !isReaction) {
-            this.#logger(LogLevel.Info, 'Not replying to a message with no content.');
-            return false;
-        }
+            // The bot can't reply to another bot.
+            if (message.author.bot) {
+                this.#logger(LogLevel.Info, 'Not replying to any other bots/apps.');
+                return false;
+            }
 
-        // If the bot is replying to a reaction, it must be to this bot's message.
-        if(isReaction && message.author.id !== this.#discordClient.user?.id) {
-            this.#logger(LogLevel.Info, 'Not replying to a reaction not on my message.');
-            return false;
+            // The bot requires a mention.
+            if ((this.#environmentSettings.botRequiresMention &&
+                !message.mentions.members?.find(x => x.id === this.#discordClient.user?.id))) {
+                // Before declining to respond, check if the bot's role has been mentioned.
+                const botRole = message.guild.members.resolve(this.#discordClient.user).roles.botRole;
+
+                if (message.mentions.roles.find(x => x.id === botRole.id) === undefined) {
+                    this.#logger(LogLevel.Info, 'Not replying to a message that doesn\'t mention or react to this bot or its role.');
+                    return false;
+                }
+            }
+
+            // The bot doesn't require a mention and doesn't fall within the
+            // response rate, except for reactions. It should still always reply
+            // to a direct mention.
+            const generatedResponseRate = getRandomInt(1, 100);
+
+            if ((!this.#environmentSettings.botRequiresMention
+                && generatedResponseRate > this.#environmentSettings.botResponseRate)
+                && !message.mentions.members?.find(x => x.id === this.#discordClient.user?.id)) {
+                this.#logger(LogLevel.Info, `Not replying to a message outside the response rate` +
+                    ` (${generatedResponseRate} > ${this.#environmentSettings.botResponseRate}).`);
+                return false;
+            }
+
+            // The channel isn't in the configured whitelist if there is one.
+            if (this.#environmentSettings.discordChannels.length > 0
+                && !this.#environmentSettings.discordChannels.includes(message.channel.id)) {
+                this.#logger(LogLevel.Info, 'Not replying to a message in a channel outside this bot\'s allowed channels.');
+                return false;
+            }
+
+            // The channel is in the configured blacklist if there is one.
+            if (this.#environmentSettings.discordChannelsDisallowed.length > 0
+                && this.#environmentSettings.discordChannelsDisallowed.includes(message.channel.id)) {
+                this.#logger(LogLevel.Info, 'Not replying to a message in a disallowed channel.');
+                return false;
+            }
+
+            // The message has no content and is not a reaction.
+            if (message.content.length === 0) {
+                this.#logger(LogLevel.Info, 'Not replying to a message with no content.');
+                return false;
+            }
         }
 
         return true;
@@ -158,14 +162,7 @@ export class ReplyService implements IReplyService {
                     components: reply.components
                 };
 
-                try {
-                    await interaction.editReply(replyFragment);
-                } catch(error) {
-                    this.#logger(LogLevel.Error,
-                        'An exception occurred while editing a deferred reply - retrying as a new reply:', error);
-                    await interaction.message.reply(replyFragment);
-                    await interaction.deleteReply();
-                }
+                await interaction.message.reply(replyFragment);
 
             } else if (interaction instanceof ButtonInteraction && i > 0) {
                 const replyFragment: BaseMessageOptions = {
@@ -174,14 +171,7 @@ export class ReplyService implements IReplyService {
                     components: reply.components
                 }
 
-                try {
-                    await interaction.followUp(replyFragment);
-                } catch(error) {
-                    this.#logger(LogLevel.Error,
-                        'An exception occurred while following up a deferred reply - retrying as a new reply:', error);
-                    await interaction.message.reply(replyFragment);
-                    await interaction.deleteReply();
-                }
+                await interaction.message.reply(replyFragment);
             } else {
                 this.#logger(LogLevel.Warning,
                     `An interaction occurred that did not fit the reply criteria of either being an edited reply to a`
@@ -268,10 +258,6 @@ export class ReplyService implements IReplyService {
     }
 
     async replyWithError(interaction: Message | ButtonInteraction): Promise<void> {
-        if (interaction instanceof Message) {
-            await interaction.reply({ content: this.#environmentSettings.errorMessage });
-        } else if (interaction instanceof ButtonInteraction) {
-            await interaction.editReply({ content: this.#environmentSettings.errorMessage });
-        }
+        await interaction.reply({ content: this.#environmentSettings.errorMessage });
     }
 }

@@ -52,7 +52,7 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
     async #onMessageCreate(message: Message): Promise<void> {
         this.logger(LogLevel.Info, `Discord message created. ${message.author.displayName} (${message.author.username}): "${message}"`);
 
-        if (!this.#replyService.shouldReply(message, false)) {
+        if (!this.#replyService.shouldReply(message, null)) {
             return;
         }
 
@@ -66,7 +66,7 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
         this.logger(LogLevel.Info, `Beginning interaction response to custom action ${interaction.customId}...`);
 
         try {
-            await interaction.deferReply();
+            await interaction.deferUpdate();
         } catch (error) {
             this.logger(LogLevel.Error, `Something went wrong while deferring a reply: ${error}. Ignore this error if the bot is functioning normally.`);
         }
@@ -120,7 +120,7 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
             }
         }
 
-        if (!this.#replyService.shouldReply(reaction.message as Message, true)) {
+        if (!this.#replyService.shouldReply(reaction.message as Message, reaction)) {
             return;
         }
 

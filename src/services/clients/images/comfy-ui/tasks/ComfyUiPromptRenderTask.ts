@@ -1,4 +1,4 @@
-import { ImagesResponse } from 'comfy-ui-client';
+import { Prompt } from 'comfy-ui-client';
 import { Message, MessageType } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
@@ -6,7 +6,6 @@ import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.j
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
-import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 import { IPromptRenderTask } from '../../tasks/IPromptRenderTask.js';
@@ -22,7 +21,6 @@ export class ComfyUiPromptRenderTask extends ComfyUiBaseTask implements IPromptR
 
     #workflowService: IWorkflowService;
     #comfyUiClient: ComfyUiClient;
-    #comfyUiReplyService: ComfyUiReplyService;
     #replyService: IReplyService;
     #taskQueue: ITaskQueue;
 
@@ -34,16 +32,13 @@ export class ComfyUiPromptRenderTask extends ComfyUiBaseTask implements IPromptR
         return `ComfyUi_${this.#comfyUiClient.host}`;
     }
 
-    constructor(
-        services: IServiceContainer,
-        message: Message) {
+    constructor(services: IServiceContainer, message: Message) {
         super(services);
 
         this.#services = services;
 
         this.#workflowService = services.workflowService;
         this.#comfyUiClient = services.comfyUiClient;
-        this.#comfyUiReplyService = services.comfyUiReplyService;
         this.#replyService = services.replyService;
         this.#taskQueue = services.taskQueue;
 
@@ -72,8 +67,8 @@ export class ComfyUiPromptRenderTask extends ComfyUiBaseTask implements IPromptR
             x.type === WorkflowType.Txt2img
             || x.type === WorkflowType.Txt2vid);
 
-        const renderRequests: Array<SerializableRenderRequest> = [];
-        const imagesResponses: Array<ImagesResponse> = [];
+        const renderRequests: SerializableRenderRequest[] = [];
+        const prompts: Prompt[] = [];
         let numRenders = 1;
         let i = 0;
 
@@ -95,16 +90,11 @@ export class ComfyUiPromptRenderTask extends ComfyUiBaseTask implements IPromptR
 
             renderRequests.push(renderRequest);
 
-
-            const workflowPrompt = this.#workflowService.renderWorkflow(workflow, renderRequest);
-
-            imagesResponses.push(await this.#comfyUiClient.render(workflowPrompt));
-
+            prompts.push(this.#workflowService.renderWorkflow(workflow, renderRequest));
             i++;
         } while(i < numRenders);
 
-
-        const imagesResponse = this.#comfyUiReplyService.flattenMultipleImagesResponses(imagesResponses);
+        const imagesResponse = await this.#comfyUiClient.render(prompts);
         const replyTask = new ComfyUiReplyTask(this.#services, this.#message, { }, {
             request: renderRequests,
             response: imagesResponse

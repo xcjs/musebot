@@ -1,9 +1,9 @@
-import { Attachment, BaseMessageOptions, ButtonInteraction, Message, User } from 'discord.js';
+import { Attachment, BaseMessageOptions, ButtonInteraction, Message, MessageReaction, User } from 'discord.js';
 
 import { ContentType } from '../../../enums/ContentType.js';
 
 export interface IReplyService {
-    shouldReply(message: Message, isReaction: boolean): boolean;
+    shouldReply(message: Message, reaction: MessageReaction | null): boolean;
 
     reply(
         interaction: Message | ButtonInteraction,
