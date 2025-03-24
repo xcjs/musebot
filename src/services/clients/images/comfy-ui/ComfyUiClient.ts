@@ -58,7 +58,7 @@ export class ComfyUiClient {
                 if(result.status === PromisedSettledResultStatus.Fulfilled) {
                     imagesResponses.push(result.value);
                 } else {
-                    throw result.reason;
+                    return Promise.reject(result.reason);
                 }
             });
         });
