@@ -31,7 +31,7 @@ export class ComfyUiAttachRenderTask extends ComfyUiBaseTask implements IAttachR
     #logger;
 
     override get taskChannel(): string {
-        return `ComfyUI_${this.#comfyUiClient.host}`;
+        return `ComfyUi_${this.#comfyUiClient.host}`;
     }
 
     constructor(
