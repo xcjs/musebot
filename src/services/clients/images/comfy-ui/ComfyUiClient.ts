@@ -51,7 +51,9 @@ export class ComfyUiClient {
             imagesPromises.push(this.#client.getImages(prompt));
         });
 
-        await Promise.allSettled(imagesPromises).then((results) => {
+        await Promise.allSettled(imagesPromises).then(async (results) => {
+            await this.#client.disconnect();
+
             results.forEach(result => {
                 if(result.status === PromisedSettledResultStatus.Fulfilled) {
                     imagesResponses.push(result.value);
@@ -62,8 +64,6 @@ export class ComfyUiClient {
         });
 
         const imagesResponse = this.#flattenMultipleImagesResponses(imagesResponses);
-
-        await this.#client.disconnect();
 
         if(Object.keys(imagesResponse).length === 0) {
             return Promise.reject('The render failed but was not reported as a failure by the Comfy UI client.');
