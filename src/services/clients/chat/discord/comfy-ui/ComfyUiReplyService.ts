@@ -1,4 +1,4 @@
-import { ImagesResponse, Prompt } from 'comfy-ui-client';
+import { ImagesResponse } from 'comfy-ui-client';
 import { AttachmentBuilder, BaseMessageOptions, ButtonInteraction, Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
@@ -34,10 +34,6 @@ export class ComfyUiReplyService {
         this.#replyService = services.replyService;
 
         this.#logger = new Logger(this.#environmentSettings.isProduction, 'ComfyUiReplyService');
-    }
-
-    async renderImage(prompt: Prompt): Promise<ImagesResponse> {
-        return await this.#comfyUiClient.render([prompt]);
     }
 
     async reply(interaction: Message | ButtonInteraction,
