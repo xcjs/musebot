@@ -35,11 +35,13 @@ export class EnvironmentSettings implements IEnvironmentSettings {
     stableDiffusionHosts: Array<URL> = [];
     stableDiffusionModels: Array<string> = [];
     stableDiffusionGuidanceScaleInterval: number = .5;
+    stableDiffusionTaskChannel: string = '';
 
     ollamaHosts: Array<URL> = [];
     ollamaModels: Array<string> = [];
     ollamaSystemPrompt: string;
     ollamaStreamsResponse: boolean = false;
+    ollamaTaskChannel: string = '';
 
     stableDiffusionOllamaPrompts: Array<string> = ['Describe something or someone with extraordinary detail.'];
 
@@ -81,12 +83,15 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         this.stableDiffusionHosts = this.#readDelimitedList(EnvironmentKey.StableDiffusionHosts, ',')
             .map(x => new URL(x));
 
+        this.stableDiffusionTaskChannel = this.#readDefaultableString(EnvironmentKey.StableDiffusionTaskChannel, this.stableDiffusionTaskChannel);
+
         this.ollamaHosts = this.#readDelimitedList(EnvironmentKey.OllamaHosts, ',')
             .map(x => new URL(x));
 
         this.ollamaModels = this.#readDelimitedList(EnvironmentKey.OllamaModels, ',');
         this.ollamaSystemPrompt = this.#readDefaultableString(EnvironmentKey.OllamaSystemPrompt, '');
         this.ollamaStreamsResponse = this.#readBoolean(EnvironmentKey.OllamaStreamsResponse);
+        this.ollamaTaskChannel = this.#readDefaultableString(EnvironmentKey.OllamaTaskChannel, this.ollamaTaskChannel);
 
         this.stableDiffusionOllamaPrompts = this.#readDelimitedList(EnvironmentKey.StableDiffusionOllamaPrompts, '|');
 
@@ -127,11 +132,13 @@ export class EnvironmentSettings implements IEnvironmentSettings {
 
         this.#logger(LogLevel.Info, `${EnvironmentKey.StableDiffusionApiType}: ${this.stableDiffusionApiType}`);
         this.#logger(LogLevel.Info, `${EnvironmentKey.StableDiffusionHosts}: ${this.stableDiffusionHosts.join(', ')}`);
+        this.#logger(LogLevel.Info, `${EnvironmentKey.StableDiffusionTaskChannel}: ${this.stableDiffusionTaskChannel}`);
 
         this.#logger(LogLevel.Info, `${EnvironmentKey.OllamaHosts}: ${this.ollamaHosts.join(', ')}`);
         this.#logger(LogLevel.Info, `${EnvironmentKey.OllamaModels}: ${this.ollamaModels.join(', ')}`);
         this.#logger(LogLevel.Info, `${EnvironmentKey.OllamaSystemPrompt}: ${this.ollamaSystemPrompt}`);
         this.#logger(LogLevel.Info, `${EnvironmentKey.OllamaStreamsResponse}: ${this.ollamaStreamsResponse}`);
+        this.#logger(LogLevel.Info, `${EnvironmentKey.OllamaTaskChannel}: ${this.ollamaTaskChannel}`);
 
         this.#logger(LogLevel.Info, `${EnvironmentKey.StableDiffusionOllamaPrompts}: ${this.stableDiffusionOllamaPrompts.join(' | ')}`);
     }
