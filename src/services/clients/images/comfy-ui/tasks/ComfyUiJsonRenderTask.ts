@@ -62,6 +62,8 @@ export class ComfyUiJsonRenderTask extends ComfyUiBaseTask implements IJsonRende
 
         try {
             renderRequest = SerializableRenderRequest.fromJson(prompt);
+            renderRequest.height = Math.ceil(renderRequest.height);
+            renderRequest.width = Math.ceil(renderRequest.width);
         } catch {
            await this.#message.reply('You call that JSON? My grandmother could knit better JSON.');
            return;

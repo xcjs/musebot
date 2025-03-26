@@ -10,7 +10,6 @@ export class SerializableRenderRequest {
     height: number;
     sampler: string;
     scheduler: string;
-    distilledCfgScale: number | null;
     cfgScale: number;
     steps: number;
     num: number = 1;
@@ -45,7 +44,6 @@ export class SerializableRenderRequest {
         instancedRequest.height = request.height;
         instancedRequest.sampler = request.sampler;
         instancedRequest.scheduler = request.scheduler;
-        instancedRequest.distilledCfgScale = request.distilledCfgScale || null;
         instancedRequest.cfgScale = request.cfgScale;
         instancedRequest.steps = request.steps;
         instancedRequest.num = request.num || 1;
