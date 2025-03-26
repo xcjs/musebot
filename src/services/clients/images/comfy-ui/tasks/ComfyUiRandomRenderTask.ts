@@ -32,7 +32,7 @@ export class ComfyUiRandomRenderTask extends ComfyUiBaseTask implements IRandomR
     #logger;
 
     override get taskChannel(): string {
-        return `ComfyUi_${this.#comfyUiClient.host}`;
+        return `${this.#environmentSettings.stableDiffusionTaskChannel}_${this.#comfyUiClient.host}`;
     }
 
     constructor(services: IServiceContainer, interaction: ButtonInteraction) {

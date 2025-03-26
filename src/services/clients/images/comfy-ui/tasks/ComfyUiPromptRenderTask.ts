@@ -3,6 +3,7 @@ import { Message, MessageType } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
 import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
+import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
@@ -19,6 +20,8 @@ import { ComfyUiReplyTask } from './ComfyUiReplyTask.js';
 export class ComfyUiPromptRenderTask extends ComfyUiBaseTask implements IPromptRenderTask {
     #services: IServiceContainer;
 
+    #environmentSettings: IEnvironmentSettings;
+
     #workflowService: IWorkflowService;
     #comfyUiClient: ComfyUiClient;
     #replyService: IReplyService;
@@ -29,13 +32,15 @@ export class ComfyUiPromptRenderTask extends ComfyUiBaseTask implements IPromptR
     #logger;
 
     override get taskChannel(): string {
-        return `ComfyUi_${this.#comfyUiClient.host}`;
+        return `${this.#environmentSettings.stableDiffusionTaskChannel}_${this.#comfyUiClient.host}`;
     }
 
     constructor(services: IServiceContainer, message: Message) {
         super(services);
 
         this.#services = services;
+
+        this.#environmentSettings = services.environmentSettings;
 
         this.#workflowService = services.workflowService;
         this.#comfyUiClient = services.comfyUiClient;

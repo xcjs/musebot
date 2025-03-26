@@ -18,7 +18,7 @@ import { OllamaClient } from '../OllamaClient.js';
 
 export class PromptResponseTask extends BaseTask implements IPromptResponseTask {
     override get taskChannel(): string {
-        return `Ollama_${this.#ollamaClient.host}`;
+        return `${this.#environmentSettings.ollamaTaskChannel}_${this.#ollamaClient.host}`;
     }
 
     override set onSuccess(callback: (context: Array<number>) => void) {

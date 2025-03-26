@@ -25,7 +25,7 @@ export class ComfyUiExpandPromptTask extends ComfyUiBaseTask implements IExpandP
     #logger;
 
     override get taskChannel(): string {
-        return `Ollama_${this.#ollamaClient.host}`;
+        return `${this.#environmentSettings.ollamaTaskChannel}_${this.#ollamaClient.host}`;
     }
 
     constructor(services: IServiceContainer, interaction: ButtonInteraction) {
