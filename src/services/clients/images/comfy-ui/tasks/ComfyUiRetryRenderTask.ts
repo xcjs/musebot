@@ -86,7 +86,7 @@ export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRen
         let content: string;
 
         for (const imageAttachment of imageAttachments) {
-            let renderRequest = SerializableRenderRequest.fromJson(imageAttachment.description);
+            const renderRequest = SerializableRenderRequest.fromJson(imageAttachment.description);
             content =
                 `${this.#userOverride !== null ? this.#replyService.mention(this.#userOverride) : this.#interaction.member}`
                 + ` re-rendered \`${renderRequest.prompt}\``.substring(0, DiscordConstants.ContentMaxLength);
@@ -108,8 +108,6 @@ export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRen
 
                 renderRequest.prompt += `, ${this.#promptExtension.trim()}`;
                 content += ` as \`${renderRequest.prompt}\``;
-            } else {
-                renderRequest.refreshSeed();
             }
 
             const workflows = this.#workflowService.workflows.filter(x =>
@@ -120,17 +118,10 @@ export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRen
 
             this.#logger(LogLevel.Info, `Using ${workflow.name} as the selected workflow.`);
 
-            // Normalize render request to use settings best for the newly selected
-            // workflow.
-            const defaultRequest = this.#workflowService.getWorkflowDefaults(workflow);
-            defaultRequest.prompt = renderRequest.prompt;
-            defaultRequest.seed = renderRequest.seed;
-            defaultRequest.model = renderRequest.model;
-            defaultRequest.num = 1;
-            renderRequest = defaultRequest;
+            renderRequest.refreshSeed();
+            renderRequest.num = 1;
 
             renderRequests.push(renderRequest);
-
             prompts.push(this.#workflowService.renderWorkflow(workflow, renderRequest));
         }
 
