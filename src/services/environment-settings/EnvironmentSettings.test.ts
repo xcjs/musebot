@@ -235,6 +235,36 @@ describe('EnvironmentSettings', () => {
         });
     });
 
+    describe('stableDiffusionTaskChannel', () => {
+        it('should default an empty string', () => {
+            const environmentSettings = new EnvironmentSettings();
+            expect(environmentSettings.stableDiffusionTaskChannel).toBe('');
+        });
+
+        it('should prefer the provided value', () => {
+            const mockTaskChannel = 'ComfyUI';
+            process.env[EnvironmentKey.StableDiffusionTaskChannel] = mockTaskChannel;
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.stableDiffusionTaskChannel).toBe(mockTaskChannel);
+        });
+    });
+
+    describe('ollamaTaskChannel', () => {
+        it('should default an empty string', () => {
+            const environmentSettings = new EnvironmentSettings();
+            expect(environmentSettings.ollamaTaskChannel).toBe('');
+        });
+
+        it('should prefer the provided value', () => {
+            const mockTaskChannel = 'Ollama';
+            process.env[EnvironmentKey.OllamaTaskChannel] = mockTaskChannel;
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.ollamaTaskChannel).toBe(mockTaskChannel);
+        });
+    });
+
     describe('discordToken', () => {
         it('should be required', () => {
             delete process.env[EnvironmentKey.AuthenticationToken];

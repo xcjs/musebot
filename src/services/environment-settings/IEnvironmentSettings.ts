@@ -21,11 +21,13 @@ export interface IEnvironmentSettings {
     stableDiffusionHosts: Array<URL>;
     stableDiffusionModels: Array<string>;
     stableDiffusionGuidanceScaleInterval: number;
+    stableDiffusionTaskChannel: string;
 
     ollamaHosts: Array<URL>;
     ollamaModels: Array<string>;
     ollamaSystemPrompt: string;
     ollamaStreamsResponse: boolean;
+    ollamaTaskChannel: string;
 
     stableDiffusionOllamaPrompts: Array<string>;
 

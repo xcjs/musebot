@@ -33,7 +33,7 @@ export class ComfyUiUpscaleRenderTask extends ComfyUiBaseTask implements IUpscal
     #logger;
 
     override get taskChannel(): string {
-        return `ComfyUi_${this.#comfyUiReplyService.host}`;
+        return `${this.#environmentSettings.stableDiffusionTaskChannel}_${this.#comfyUiClient.host}`;
     }
 
     constructor(services: IServiceContainer, interaction: ButtonInteraction) {
