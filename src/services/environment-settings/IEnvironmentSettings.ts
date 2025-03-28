@@ -17,6 +17,11 @@ export interface IEnvironmentSettings {
     discordChannels: Array<string>;
     discordChannelsDisallowed: Array<string>;
 
+    botRequiresMention: boolean;
+    botResponseRate: number;
+    botPrivateMessageRoles: string[];
+    errorMessage: string;
+
     stableDiffusionApiType: StableDiffusionApiType;
     stableDiffusionHosts: Array<URL>;
     stableDiffusionModels: Array<string>;
@@ -31,9 +36,6 @@ export interface IEnvironmentSettings {
 
     stableDiffusionOllamaPrompts: Array<string>;
 
-    botRequiresMention: boolean;
-    botResponseRate: number;
-    errorMessage: string;
 
     isProduction: boolean;
 }

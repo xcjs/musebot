@@ -24,21 +24,22 @@ export class EnvironmentSettings implements IEnvironmentSettings {
     taskRetryDelayMilliseconds: number = 1000;
 
     discordToken: string;
-    discordChannels: Array<string> = [];
-    discordChannelsDisallowed: Array<string> = [];
+    discordChannels: string[] = [];
+    discordChannelsDisallowed: string[] = [];
 
     botRequiresMention: boolean = true;
     botResponseRate: number = 100;
+    botPrivateMessageRoles: string[] = [];
     errorMessage: string = 'An error occurred while generating a response. Please try again later.';
 
     stableDiffusionApiType: StableDiffusionApiType;
-    stableDiffusionHosts: Array<URL> = [];
-    stableDiffusionModels: Array<string> = [];
+    stableDiffusionHosts: URL[] = [];
+    stableDiffusionModels: string[] = [];
     stableDiffusionGuidanceScaleInterval: number = .5;
     stableDiffusionTaskChannel: string = '';
 
-    ollamaHosts: Array<URL> = [];
-    ollamaModels: Array<string> = [];
+    ollamaHosts: URL[] = [];
+    ollamaModels: string[] = [];
     ollamaSystemPrompt: string;
     ollamaStreamsResponse: boolean = false;
     ollamaTaskChannel: string = '';
@@ -75,6 +76,7 @@ export class EnvironmentSettings implements IEnvironmentSettings {
 
         this.botRequiresMention = this.#readBoolean(EnvironmentKey.BotRequiresMention);
         this.botResponseRate = this.#readDefaultableRangedInteger(EnvironmentKey.BotResponseRate, 1, 100, 100);
+        this.botPrivateMessageRoles = this.#readDelimitedList(EnvironmentKey.BotPrivateMessageRoles, ',');
         this.errorMessage = this.#readDefaultableString(EnvironmentKey.BotErrorMessage, this.errorMessage);
 
         this.stableDiffusionApiType = this.#readEnum<StableDiffusionApiType>
@@ -128,6 +130,7 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         this.#logger(LogLevel.Info, `${EnvironmentKey.ChatChannelsDisallowed}: ${this.discordChannelsDisallowed.join(', ')}`);
         this.#logger(LogLevel.Info, `${EnvironmentKey.BotRequiresMention}: ${this.botRequiresMention}`);
         this.#logger(LogLevel.Info, `${EnvironmentKey.BotResponseRate}: ${this.botResponseRate}`);
+        this.#logger(LogLevel.Info, `${EnvironmentKey.BotPrivateMessageRoles}: ${this.botPrivateMessageRoles.join(', ')}`);
         this.#logger(LogLevel.Info, `${EnvironmentKey.BotErrorMessage}: ${this.errorMessage}`);
 
         this.#logger(LogLevel.Info, `${EnvironmentKey.StableDiffusionApiType}: ${this.stableDiffusionApiType}`);
