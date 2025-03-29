@@ -54,7 +54,7 @@ export class ComfyUiShowSourceTask extends ComfyUiBaseTask implements IShowSourc
                 name: `${this.#comfyUiReplyService.getFileNameFromPrompt(renderRequest)}.json`
             }));
 
-            messageContent = `${this.#interaction.member} wanted to see the request message for \`${renderRequest.prompt}\``;
+            messageContent = `${this.#interaction.member || 'You'} wanted to see the request message for \`${renderRequest.prompt}\``;
         }
 
         this.#logger(LogLevel.Info, messageContent);

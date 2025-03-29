@@ -81,7 +81,7 @@ export class ComfyUiRandomRenderTask extends ComfyUiBaseTask implements IRandomR
             response: imagesResponse
         };
 
-        const content = `Two AIs whisper to each other over the the ancient \`TCP/IP\` protocol. They present ${this.#interaction.member} with this.`;
+        const content = `Two AIs whisper to each other over the the ancient \`TCP/IP\` protocol. They present ${this.#interaction.member || 'you'} with this.`;
 
         const promptBuffer = Buffer.from(wrapText(renderRequest.prompt, MAX_TEXT_LINE_LENGTH).trim(),
             BufferEncoding.UTF8);

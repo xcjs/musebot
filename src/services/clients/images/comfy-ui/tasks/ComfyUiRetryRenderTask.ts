@@ -85,11 +85,16 @@ export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRen
         const prompts: Prompt[] = [];
         let content: string;
 
+        const username =
+            this.#userOverride !== null
+                ? this.#replyService.mention(this.#userOverride)
+                : this.#interaction.member !== null
+                    ? this.#replyService.mention(this.#interaction.member.user as User)
+                    : 'You';
+
         for (const imageAttachment of imageAttachments) {
             const renderRequest = SerializableRenderRequest.fromJson(imageAttachment.description);
-            content =
-                `${this.#userOverride !== null ? this.#replyService.mention(this.#userOverride) : this.#interaction.member}`
-                + ` re-rendered \`${renderRequest.prompt}\``.substring(0, DiscordConstants.ContentMaxLength);
+            content = `${username} re-rendered \`${renderRequest.prompt}\``.substring(0, DiscordConstants.ContentMaxLength);
 
             if (this.#promptExtension !== null) {
                 switch (this.#promptExtensionType) {
