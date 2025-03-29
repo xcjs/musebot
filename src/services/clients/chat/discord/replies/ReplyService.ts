@@ -75,9 +75,10 @@ export class ReplyService implements IReplyService {
                 return false;
             }
 
-            // The bot requires a mention.
-            if ((this.#environmentSettings.botRequiresMention &&
-                !message.mentions.members?.find(x => x.id === this.#discordClient.user?.id))) {
+            // The bot requires a mention within a guild.
+            if (message.guild !== null
+                && (this.#environmentSettings.botRequiresMention
+                    && !message.mentions.members?.find(x => x.id === this.#discordClient.user?.id))) {
                 // Before declining to respond, check if the bot's role has been mentioned.
                 const botRole = message.guild.members?.resolve(this.#discordClient.user).roles.botRole;
 
@@ -101,14 +102,16 @@ export class ReplyService implements IReplyService {
             }
 
             // The channel isn't in the configured whitelist if there is one.
-            if (this.#environmentSettings.discordChannels.length > 0
+            if (message.guild !== null
+                && this.#environmentSettings.discordChannels.length > 0
                 && !this.#environmentSettings.discordChannels.includes(message.channel.id)) {
                 this.#logger(LogLevel.Info, 'Not replying to a message in a channel outside this bot\'s allowed channels.');
                 return false;
             }
 
             // The channel is in the configured blacklist if there is one.
-            if (this.#environmentSettings.discordChannelsDisallowed.length > 0
+            if (message.guild !== null
+                && this.#environmentSettings.discordChannelsDisallowed.length > 0
                 && this.#environmentSettings.discordChannelsDisallowed.includes(message.channel.id)) {
                 this.#logger(LogLevel.Info, 'Not replying to a message in a disallowed channel.');
                 return false;
@@ -193,11 +196,11 @@ export class ReplyService implements IReplyService {
 
         let messageContent = message.content;
 
-        const botMention = message.mentions.members.find(x => x.id === this.#discordClient.user?.id)?.toString() || '';
+        const botMention = message.mentions.members?.find(x => x.id === this.#discordClient.user?.id)?.toString() || '';
         messageContent = message.content.replaceAll(botMention, '').trim();
 
-        const botRole = message.guild.members.resolve(this.#discordClient.user).roles.botRole;
-        const botRoleMention = message.mentions.roles.find(x => x.id === botRole.id)?.toString() || '';
+        const botRole = message.guild?.members.resolve(this.#discordClient.user).roles.botRole || null;
+        const botRoleMention = message.mentions.roles.find(x => x.id === botRole?.id)?.toString() || '';
 
         messageContent = messageContent.replaceAll(botRoleMention, '');
 
