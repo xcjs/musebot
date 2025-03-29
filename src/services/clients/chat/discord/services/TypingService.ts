@@ -1,4 +1,4 @@
-import { BaseGuildTextChannel, ButtonInteraction, Message } from 'discord.js';
+import { BaseGuildTextChannel, ButtonInteraction, DMChannel, Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
@@ -84,7 +84,10 @@ export class TypingService implements ITypingService {
     }
 
     async #onTypingInterval(message: Message | ButtonInteraction): Promise<void> {
-        if(this.#taskQueue.isActive && message.channel instanceof BaseGuildTextChannel) {
+        if(this.#taskQueue.isActive
+            && (message.channel instanceof BaseGuildTextChannel
+                || message.channel instanceof DMChannel
+            )) {
             try {
                 await message.channel.sendTyping();
             } catch(error) {
