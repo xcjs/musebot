@@ -232,8 +232,7 @@ export class ServiceContainer implements IServiceContainer {
     getRetryRenderTask(
         interaction: Message | ButtonInteraction,
         promptExtension: string = null,
-        promptExtensionType: PromptExtensionType | null,
-        userOverride: User | null = null
+        promptExtensionType: PromptExtensionType | null
     ): IRetryRenderTask {
         if (!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)) {
             throw this.#taskNotConfiguredError;
@@ -241,7 +240,7 @@ export class ServiceContainer implements IServiceContainer {
 
         switch (this.#environmentSettings.stableDiffusionApiType) {
             case StableDiffusionApiType.ComfyUI:
-                return new ComfyUiRetryRenderTask(this, interaction, promptExtension, promptExtensionType, userOverride);
+                return new ComfyUiRetryRenderTask(this, interaction, promptExtension, promptExtensionType);
             default:
                 throw this.#taskNotConfiguredError;
         }

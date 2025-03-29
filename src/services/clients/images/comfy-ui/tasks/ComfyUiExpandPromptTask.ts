@@ -62,7 +62,7 @@ export class ComfyUiExpandPromptTask extends ComfyUiBaseTask implements IExpandP
         const exchange = await this.#ollamaClient.sendMessage(prompt, null);
         this.#logger(LogLevel.Info, `Ollama responded with ${exchange.response.response}`);
 
-        const content = `${this.#interaction.member} expanded the detail in the prompt: \`${originalRequest.prompt}\``;
+        const content = `${this.#interaction.member || 'You'} expanded the detail in the prompt: \`${originalRequest.prompt}\``;
 
         this.#taskQueue.add(new ComfyUiAttachRenderTask(
             this.#services,

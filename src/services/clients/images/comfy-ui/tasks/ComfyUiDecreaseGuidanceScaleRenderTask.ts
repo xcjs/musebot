@@ -80,7 +80,7 @@ export class ComfyUiDecreaseGuidanceScaleRenderTask extends ComfyUiBaseTask impl
 
         const imagesResponse = await this.#comfyUiClient.render(prompts);
 
-        const content = `${this.#interaction.member} decreased the guidance scale from ${cfgScaleValue
+        const content = `${this.#interaction.member || 'You'} decreased the guidance scale from ${cfgScaleValue
             + this.#environmentSettings.stableDiffusionGuidanceScaleInterval} to ${cfgScaleValue}.`;
 
         const replyTask = new ComfyUiReplyTask(this.#services, this.#interaction, { content }, {
