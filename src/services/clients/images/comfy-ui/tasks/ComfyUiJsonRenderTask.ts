@@ -55,7 +55,7 @@ export class ComfyUiJsonRenderTask extends ComfyUiBaseTask implements IJsonRende
 
         this.#logger(LogLevel.Info, 'Processing a ComfyUiJsonRenderTask...');
 
-        const botMention = this.#message.mentions.members.find(x => x.id === this.#discordClient.user?.id)?.toString() || '';
+        const botMention = this.#message.mentions.members?.find(x => x.id === this.#discordClient.user?.id)?.toString() || '';
         const prompt = this.#message.content.replaceAll(botMention, '').trim();
 
         let renderRequest: SerializableRenderRequest;
