@@ -420,7 +420,7 @@ describe('EnvironmentSettings', () => {
         });
 
         it('should prefer the provided value', () => {
-            const mockRoles = 'Role 1,Role 2';
+            const mockRoles = 'User 1,User 2';
             process.env[EnvironmentKey.BotPrivateMessageUsers] = mockRoles;
 
             const environmentSettings = new EnvironmentSettings();
