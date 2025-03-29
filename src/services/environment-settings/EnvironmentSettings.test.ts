@@ -413,6 +413,23 @@ describe('EnvironmentSettings', () => {
         });
     });
 
+    describe('botPrivateMessageUsers', () => {
+        it('should default to an empty array', () => {
+            const environmentSettings = new EnvironmentSettings();
+            expect(environmentSettings.botPrivateMessageUsers).toStrictEqual([]);
+        });
+
+        it('should prefer the provided value', () => {
+            const mockRoles = 'User 1,User 2';
+            process.env[EnvironmentKey.BotPrivateMessageUsers] = mockRoles;
+
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.botPrivateMessageUsers).toStrictEqual(
+                mockRoles.split(',').map(x => x.trim()));
+        });
+    });
+
     describe('errorMessage', () => {
         it('should default to the default error message', () => {
             const environmentSettings = new EnvironmentSettings();
