@@ -19,7 +19,7 @@ export interface IEnvironmentSettings {
 
     botRequiresMention: boolean;
     botResponseRate: number;
-    botPrivateMessageRoles: string[];
+    botPrivateMessageUsers: string[];
     errorMessage: string;
 
     stableDiffusionApiType: StableDiffusionApiType;

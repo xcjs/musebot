@@ -42,14 +42,15 @@ export class ReplyService implements IReplyService {
                 return false;
             }
 
-            // The message isn't from a guild (server).
-            if (!message.guild) {
-                this.#logger(LogLevel.Info, 'Not replying to a non-guild message.');
+            // The message is private and not from a member in a private message
+            // role.
+            if (!message.guild && !(this.#environmentSettings.botPrivateMessageUsers.includes(message.author.username))) {
+                this.#logger(LogLevel.Info, 'Not replying to a non-guild message that\'s not from someone in a private messaging role.');
                 return false;
             }
 
-            // The message is not a default message type and not a reaction reply
-            // unless it's a reply to an LLM.
+            // The message is not a default message type and not a reaction
+            // reply unless it's a reply to an LLM.
             if (message.type !== MessageType.Default
                 && message.type !== MessageType.Reply) {
                 this.#logger(LogLevel.Info, 'Not replying to a non-default or non-reaction message.');
@@ -78,9 +79,9 @@ export class ReplyService implements IReplyService {
             if ((this.#environmentSettings.botRequiresMention &&
                 !message.mentions.members?.find(x => x.id === this.#discordClient.user?.id))) {
                 // Before declining to respond, check if the bot's role has been mentioned.
-                const botRole = message.guild.members.resolve(this.#discordClient.user).roles.botRole;
+                const botRole = message.guild.members?.resolve(this.#discordClient.user).roles.botRole;
 
-                if (message.mentions.roles.find(x => x.id === botRole.id) === undefined) {
+                if (message.mentions.roles.find(x => x.id === botRole?.id) === undefined) {
                     this.#logger(LogLevel.Info, 'Not replying to a message that doesn\'t mention or react to this bot or its role.');
                     return false;
                 }

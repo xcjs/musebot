@@ -6,7 +6,7 @@ export enum EnvironmentKey {
     BotFunction = 'MUSEBOT_FUNCTION',
     BotResponseRate = 'MUSEBOT_RESPONSE_RATE',
     BotRequiresMention = 'MUSEBOT_REQUIRES_MENTION',
-    BotPrivateMessageRoles = 'MUSEBOT_PRIVATE_MESSAGE_ROLES',
+    BotPrivateMessageUsers = 'MUSEBOT_PRIVATE_MESSAGE_USERS',
     NodeEnvironment = 'NODE_ENV',
     OllamaHosts = 'MUSEBOT_OLLAMA_HOSTS',
     OllamaModels = 'MUSEBOT_OLLAMA_MODELS',

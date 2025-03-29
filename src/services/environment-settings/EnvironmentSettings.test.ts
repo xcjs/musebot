@@ -413,19 +413,19 @@ describe('EnvironmentSettings', () => {
         });
     });
 
-    describe('botPrivateMessageRoles', () => {
+    describe('botPrivateMessageUsers', () => {
         it('should default to an empty array', () => {
             const environmentSettings = new EnvironmentSettings();
-            expect(environmentSettings.botPrivateMessageRoles).toStrictEqual([]);
+            expect(environmentSettings.botPrivateMessageUsers).toStrictEqual([]);
         });
 
         it('should prefer the provided value', () => {
             const mockRoles = 'Role 1,Role 2';
-            process.env[EnvironmentKey.BotPrivateMessageRoles] = mockRoles;
+            process.env[EnvironmentKey.BotPrivateMessageUsers] = mockRoles;
 
             const environmentSettings = new EnvironmentSettings();
 
-            expect(environmentSettings.botPrivateMessageRoles).toStrictEqual(
+            expect(environmentSettings.botPrivateMessageUsers).toStrictEqual(
                 mockRoles.split(',').map(x => x.trim()));
         });
     });
