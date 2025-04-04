@@ -6,15 +6,15 @@
     "seed": -1,
     "width": 1024,
     "height": 1024,
-    "sampler": "euler_ancestral",
-    "scheduler": "simple",
-    "cfgScale": 4.5,
-    "steps": 28,
+    "sampler": "dpmpp_sde",
+    "scheduler": "karras",
+    "cfgScale": 2,
+    "steps": 8,
     "num": 4
   },
   "4": {
     "inputs": {
-      "ckpt_name": "SDXL/Anime/noobaiXLNAIXL_vPred10Version.safetensors"
+      "ckpt_name": "SDXL-Turbo/General/dreamshaperXL_v21TurboDPMSDE.safetensors"
     },
     "class_type": "CheckpointLoaderSimple",
     "_meta": {
@@ -141,8 +141,11 @@
   },
   "102": {
     "inputs": {
-      "filename_prefix": "Musebot",
-      "images": ["101", 0]
+      "filename_prefix": "Musebot_Dreamshaper",
+      "images": [
+        "101",
+        0
+      ]
     },
     "class_type": "SaveImage",
     "_meta": {
