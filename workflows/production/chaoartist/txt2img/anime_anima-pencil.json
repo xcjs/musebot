@@ -6,10 +6,10 @@
     "seed": -1,
     "width": 1024,
     "height": 1024,
-    "sampler": "euler_ancestral",
+    "sampler": "dpmpp_2m_sde",
     "scheduler": "simple",
-    "cfgScale": 7,
-    "steps": 20,
+    "cfgScale": 5,
+    "steps": 30,
     "num": 4
   },
   "4": {
