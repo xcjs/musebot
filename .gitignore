@@ -16,3 +16,9 @@ node_modules/
 
 # Unit Test Coverage
 coverage/
+
+# Testing Workflows
+workflows/img2img/
+workflows/img2vid/
+workflows/txt2img/
+workflows/txt2vid/
