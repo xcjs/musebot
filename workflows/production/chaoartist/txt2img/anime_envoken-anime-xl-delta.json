@@ -4,12 +4,12 @@
     "promptNegative": "",
     "model": "",
     "seed": -1,
-    "width": 1024,
-    "height": 1024,
-    "sampler": "dpmpp_sde",
-    "scheduler": "karras",
+    "width": 896,
+    "height": 1152,
+    "sampler": "dpmpp_2m_sde",
+    "scheduler": "simple",
     "cfgScale": 7,
-    "steps": 20,
+    "steps": 23,
     "num": 4
   },
   "4": {
@@ -35,10 +35,7 @@
   "6": {
     "inputs": {
       "text": "{{{ prompt }}}",
-      "clip": [
-        "4",
-        1
-      ]
+      "clip": ["4", 1]
     },
     "class_type": "CLIPTextEncode",
     "_meta": {
@@ -47,11 +44,8 @@
   },
   "7": {
     "inputs": {
-      "text": "{{{ promptNegative }}}",
-      "clip": [
-        "4",
-        1
-      ]
+      "text": "NDXL, {{{ promptNegative }}}",
+      "clip": ["4", 1]
     },
     "class_type": "CLIPTextEncode",
     "_meta": {
@@ -60,14 +54,8 @@
   },
   "8": {
     "inputs": {
-      "samples": [
-        "10",
-        0
-      ],
-      "vae": [
-        "4",
-        2
-      ]
+      "samples": ["10", 0],
+      "vae": ["4", 2]
     },
     "class_type": "VAEDecode",
     "_meta": {
@@ -93,22 +81,10 @@
       "previews": "default",
       "tile_sample": false,
       "tile_size": 1024,
-      "model": [
-        "4",
-        0
-      ],
-      "positive": [
-        "6",
-        0
-      ],
-      "negative": [
-        "100",
-        0
-      ],
-      "latent_image": [
-        "5",
-        0
-      ]
+      "model": ["4", 0],
+      "positive": ["6", 0],
+      "negative": ["100", 0],
+      "latent_image": ["5", 0]
     },
     "class_type": "SwarmKSampler",
     "_meta": {
@@ -117,10 +93,7 @@
   },
   "100": {
     "inputs": {
-      "conditioning": [
-        "7",
-        0
-      ]
+      "conditioning": ["7", 0]
     },
     "class_type": "ConditioningZeroOut",
     "_meta": {
@@ -129,10 +102,7 @@
   },
   "101": {
     "inputs": {
-      "value": [
-        "8",
-        0
-      ]
+      "value": ["8", 0]
     },
     "class_type": "UnloadAllModels",
     "_meta": {
