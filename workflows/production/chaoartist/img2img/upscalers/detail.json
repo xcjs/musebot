@@ -1,7 +1,7 @@
 {
   "27": {
     "inputs": {
-      "model_name": "RealESRGAN_x4plus.pth"
+      "model_name": "4xNomos8kSCHAT-L.pth"
     },
     "class_type": "UpscaleModelLoader",
     "_meta": {

@@ -4,8 +4,8 @@
     "promptNegative": "",
     "model": "",
     "seed": -1,
-    "width": 0,
-    "height": 0,
+    "width": 768,
+    "height": 1712,
     "sampler": "euler",
     "scheduler": "simple",
     "cfgScale": 3.5,
@@ -21,25 +21,14 @@
       "title": "Unet Loader (GGUF)"
     }
   },
-  "5": {
-    "inputs": {
-      "width": 1344,
-      "height": 768,
-      "batch_size": "{{{ num }}}"
-    },
-    "class_type": "EmptySD3LatentImage",
-    "_meta": {
-      "title": "EmptySD3LatentImage"
-    }
-  },
   "6": {
     "inputs": {
-      "steps": 20,
+      "steps": "{{{ steps }}}",
       "prompt": "{{{ prompt }}}",
-      "width": 1024,
-      "height": 1024,
-      "target_width": 1024,
-      "target_height": 1024,
+      "width": "{{{ width }}}",
+      "height": "{{{ height }}}",
+      "target_width": "{{{ width }}}",
+      "target_height": "{{{ height }}}",
       "guidance": "{{{ cfgScale }}}",
       "clip": ["100", 0]
     },
@@ -50,57 +39,18 @@
   },
   "7": {
     "inputs": {
-      "steps": 20,
-      "prompt": "",
-      "width": 1024,
-      "height": 1024,
-      "target_width": 1024,
-      "target_height": 1024,
+      "steps": "{{{ steps }}}",
+      "prompt": "{{{ promptNegative }}}",
+      "width": "{{{ width }}}",
+      "height": "{{{ height }}}",
+      "target_width": "{{{ width }}}",
+      "target_height": "{{{ height }}}",
       "guidance": "{{{ cfgScale }}}",
       "clip": ["100", 0]
     },
     "class_type": "SwarmClipTextEncodeAdvanced",
     "_meta": {
       "title": "SwarmClipTextEncodeAdvanced"
-    }
-  },
-  "8": {
-    "inputs": {
-      "samples": ["10", 0],
-      "vae": ["101", 0]
-    },
-    "class_type": "VAEDecode",
-    "_meta": {
-      "title": "VAE Decode"
-    }
-  },
-  "10": {
-    "inputs": {
-      "noise_seed": "{{{ seed }}}",
-      "steps": "{{{ steps }}}",
-      "cfg": 1,
-      "sampler_name": "{{{ sampler }}}",
-      "scheduler": "{{{ scheduler }}}",
-      "start_at_step": 0,
-      "end_at_step": 10000,
-      "var_seed": 0,
-      "var_seed_strength": 0,
-      "sigma_max": -1,
-      "sigma_min": -1,
-      "rho": 7,
-      "add_noise": "enable",
-      "return_with_leftover_noise": "disable",
-      "previews": "default",
-      "tile_sample": false,
-      "tile_size": 1024,
-      "model": ["4", 0],
-      "positive": ["6", 0],
-      "negative": ["7", 0],
-      "latent_image": ["5", 0]
-    },
-    "class_type": "SwarmKSampler",
-    "_meta": {
-      "title": "SwarmKSampler"
     }
   },
   "100": {
@@ -124,26 +74,6 @@
       "title": "Load VAE"
     }
   },
-  "103": {
-    "inputs": {
-      "filename_prefix": "Musebot_Wallpaperer_16x9",
-      "images": ["106", 0]
-    },
-    "class_type": "SaveImage",
-    "_meta": {
-      "title": "Save Image"
-    }
-  },
-  "104": {
-    "inputs": {
-      "upscale_model": ["105", 0],
-      "image": ["8", 0]
-    },
-    "class_type": "ImageUpscaleWithModel",
-    "_meta": {
-      "title": "Upscale Image (using Model)"
-    }
-  },
   "105": {
     "inputs": {
       "model_name": "RealESRGAN_x4plus.pth"
@@ -153,25 +83,10 @@
       "title": "Load Upscale Model"
     }
   },
-  "106": {
-    "inputs": {
-      "width": 1920,
-      "height": 1080,
-      "upscale_method": "bicubic",
-      "keep_proportion": false,
-      "divisible_by": 8,
-      "crop": "disabled",
-      "image": ["104", 0]
-    },
-    "class_type": "ImageResizeKJ",
-    "_meta": {
-      "title": "Resize Image"
-    }
-  },
   "108": {
     "inputs": {
-      "width": 768,
-      "height": 1712,
+      "width": "{{{ width }}}",
+      "height": "{{{ height }}}",
       "batch_size": "{{{ num }}}"
     },
     "class_type": "EmptySD3LatentImage",
