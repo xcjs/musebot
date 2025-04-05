@@ -128,10 +128,13 @@ export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRen
             renderRequest.model = workflow.name;
             renderRequest.num = 1;
             renderRequest.cfgScale = renderDefaults.cfgScale;
-            renderRequest.height = renderDefaults.height;
             renderRequest.sampler = renderDefaults.sampler;
             renderRequest.scheduler = renderDefaults.scheduler;
-            renderRequest.width = renderDefaults.width;
+
+            if(renderRequest.model !== workflow.name) {
+                renderRequest.height = renderDefaults.height;
+                renderRequest.width = renderDefaults.width;
+            }
 
             renderRequests.push(renderRequest);
             prompts.push(this.#workflowService.renderWorkflow(workflow, renderRequest));
