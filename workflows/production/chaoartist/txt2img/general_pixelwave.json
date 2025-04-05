@@ -6,11 +6,11 @@
     "seed": -1,
     "width": 1024,
     "height": 1024,
-    "sampler": "dpmpp_sde",
+    "sampler": "dpmpp_2m_sde",
     "scheduler": "karras",
-    "cfgScale": 7,
-    "steps": 20,
-    "num": 4
+    "cfgScale": 5,
+    "steps": 40,
+    "num": 1
   },
   "4": {
     "inputs": {
@@ -47,7 +47,7 @@
   },
   "7": {
     "inputs": {
-      "text": "{{{ promptNegative }}}",
+      "text": "photoshop, video game, ugly, tiling, poorly drawn hands, poorly drawn feet, poorly drawn face, out of frame, mutation, mutated, extra limbs, extra legs, extra arms, disfigured, deformed, body out of frame, bad art, bad anatomy, 3d render, double, clones, twins, brothers, same face, repeated person, long neck, make up, ugly, animated, hat, poorly drawn, out of frame, text, watermark, signature, logo, split image, copyright, cartoon, desaturated, {{{ promptNegative }}}",
       "clip": [
         "4",
         1

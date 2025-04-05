@@ -9,7 +9,7 @@
     "sampler": "dpmpp_2m",
     "scheduler": "sgm_uniform",
     "cfgScale": 7,
-    "steps": 20,
+    "steps": 35,
     "num": 1
   },
   "4": {

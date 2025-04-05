@@ -10,7 +10,7 @@
     "scheduler": "karras",
     "cfgScale": 2,
     "steps": 8,
-    "num": 4
+    "num": 1
   },
   "4": {
     "inputs": {

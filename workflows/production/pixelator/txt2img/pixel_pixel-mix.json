@@ -4,13 +4,13 @@
     "promptNegative": "",
     "model": "",
     "seed": -1,
-    "width": 1024,
-    "height": 1024,
-    "sampler": "euler",
-    "scheduler": "simple",
-    "cfgScale": 7,
-    "steps": 20,
-    "num": 4
+    "width": 512,
+    "height": 512,
+    "sampler": "euler_ancestral",
+    "scheduler": "sgm_uniform",
+    "cfgScale": 6,
+    "steps": 30,
+    "num": 1
   },
   "4": {
     "inputs": {
@@ -34,7 +34,7 @@
   },
   "6": {
     "inputs": {
-      "text": "{{{ prompt }}}",
+      "text": "{{{ prompt }}}, score_9, score_8_up, score_7_up, score_6_up, score_5_up, score_4_up, pixel art",
       "clip": [
         "4",
         1
@@ -47,7 +47,7 @@
   },
   "7": {
     "inputs": {
-      "text": "{{{ promptNegative }}}",
+      "text": "art, bad anatomy, bad hands, disfigured, text, logo, watermark, 3d, ugly, low quality, bad pose, blur, blurry, motion blur, bad-hands-5, noise, jpeg, jpg, {{{ promptNegative }}}",
       "clip": [
         "4",
         1

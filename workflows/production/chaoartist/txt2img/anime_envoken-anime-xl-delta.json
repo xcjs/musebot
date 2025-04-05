@@ -7,10 +7,10 @@
     "width": 896,
     "height": 1152,
     "sampler": "dpmpp_2m_sde",
-    "scheduler": "simple",
+    "scheduler": "sgm_uniform",
     "cfgScale": 7,
     "steps": 23,
-    "num": 4
+    "num": 1
   },
   "4": {
     "inputs": {
