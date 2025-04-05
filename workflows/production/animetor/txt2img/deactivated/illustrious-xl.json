@@ -4,17 +4,17 @@
     "promptNegative": "",
     "model": "",
     "seed": -1,
-    "width": 1024,
-    "height": 1024,
-    "sampler": "dpmpp_sde",
-    "scheduler": "karras",
-    "cfgScale": 7,
-    "steps": 20,
+    "width": 832,
+    "height": 1216,
+    "sampler": "euler_ancestral",
+    "scheduler": "simple",
+    "cfgScale": 7.5,
+    "steps": 28,
     "num": 4
   },
   "4": {
     "inputs": {
-      "ckpt_name": "SDXL/Illustrious/waiNSFWIllustrious_v130.safetensors"
+      "ckpt_name": "SDXL/Illustrious/illustriousXL_v01.safetensors"
     },
     "class_type": "CheckpointLoaderSimple",
     "_meta": {

@@ -5,16 +5,16 @@
     "model": "",
     "seed": -1,
     "width": 1024,
-    "height": 1024,
+    "height": 768,
     "sampler": "dpmpp_sde",
     "scheduler": "karras",
-    "cfgScale": 7,
-    "steps": 20,
+    "cfgScale": 2,
+    "steps": 8,
     "num": 4
   },
   "4": {
     "inputs": {
-      "ckpt_name": "SDXL/Illustrious/waiNSFWIllustrious_v130.safetensors"
+      "ckpt_name": "SDXL-Turbo/General/dreamshaperXL_v21TurboDPMSDE.safetensors"
     },
     "class_type": "CheckpointLoaderSimple",
     "_meta": {
@@ -141,8 +141,11 @@
   },
   "102": {
     "inputs": {
-      "filename_prefix": "Musebot",
-      "images": ["101", 0]
+      "filename_prefix": "Musebot_Dreamshaper",
+      "images": [
+        "101",
+        0
+      ]
     },
     "class_type": "SaveImage",
     "_meta": {
