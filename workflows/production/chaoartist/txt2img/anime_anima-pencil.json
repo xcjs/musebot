@@ -7,7 +7,7 @@
     "width": 1024,
     "height": 1024,
     "sampler": "dpmpp_2m_sde",
-    "scheduler": "sgm_uniform",
+    "scheduler": "simple",
     "cfgScale": 5,
     "steps": 30,
     "num": 1
