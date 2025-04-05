@@ -6,11 +6,11 @@
     "seed": -1,
     "width": 1024,
     "height": 1024,
-    "sampler": "dpmpp_sde",
+    "sampler": "dpmpp_2m_sde",
     "scheduler": "karras",
-    "cfgScale": 7,
-    "steps": 20,
-    "num": 4
+    "cfgScale": 9,
+    "steps": 50,
+    "num": 1
   },
   "4": {
     "inputs": {

@@ -4,17 +4,17 @@
     "promptNegative": "",
     "model": "",
     "seed": -1,
-    "width": 1024,
-    "height": 1024,
-    "sampler": "dpmpp_sde",
+    "width": 896,
+    "height": 1152,
+    "sampler": "dpmpp_2m_sde",
     "scheduler": "karras",
-    "cfgScale": 7,
-    "steps": 20,
-    "num": 4
+    "cfgScale": 5,
+    "steps": 30,
+    "num": 1
   },
   "4": {
     "inputs": {
-      "ckpt_name": "SDXL/General/cyberrealisticXL_v22.safetensors"
+      "ckpt_name": "SDXL/General/cyberrealisticXL_v53.safetensors"
     },
     "class_type": "CheckpointLoaderSimple",
     "_meta": {
@@ -47,7 +47,7 @@
   },
   "7": {
     "inputs": {
-      "text": "{{{ promptNegative }}}",
+      "text": "(worst quality, low quality, normal quality, lowres, low details, oversaturated, undersaturated, overexposed, underexposed, grayscale, bad photo, bad photography, bad art:1.4), {{{ promptNegative }}}",
       "clip": [
         "4",
         1

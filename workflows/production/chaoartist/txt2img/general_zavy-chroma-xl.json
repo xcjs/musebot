@@ -10,7 +10,7 @@
     "scheduler": "exponential",
     "cfgScale": 6,
     "steps": 40,
-    "num": 4
+    "num": 1
   },
   "4": {
     "inputs": {

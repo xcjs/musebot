@@ -10,11 +10,11 @@
     "scheduler": "karras",
     "cfgScale": 7,
     "steps": 20,
-    "num": 4
+    "num": 1
   },
   "4": {
     "inputs": {
-      "ckpt_name": "SDXL/Anime/konanmix_v10.safetensors"
+      "ckpt_name": "SDXL/General/photoart_V20.safetensors"
     },
     "class_type": "CheckpointLoaderSimple",
     "_meta": {
@@ -141,11 +141,8 @@
   },
   "102": {
     "inputs": {
-      "filename_prefix": "Musebot_Anima-Pencil",
-      "images": [
-        "101",
-        0
-      ]
+      "filename_prefix": "Musebot",
+      "images": ["101", 0]
     },
     "class_type": "SaveImage",
     "_meta": {

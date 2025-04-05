@@ -6,11 +6,11 @@
     "seed": -1,
     "width": 1024,
     "height": 1024,
-    "sampler": "dpmpp_sde",
+    "sampler": "dpmpp_2m_sde",
     "scheduler": "karras",
     "cfgScale": 7,
-    "steps": 20,
-    "num": 4
+    "steps": 150,
+    "num": 1
   },
   "4": {
     "inputs": {
@@ -34,7 +34,7 @@
   },
   "6": {
     "inputs": {
-      "text": "{{{ prompt }}}",
+      "text": "worst quality, extra fingers, missing fingers, poorly rendered hands, mutation, deformed iris, deformed pupils, deformed eyes, deformed limbs, missing limbs, amputee, amputated limbs, watermark, logo , text, big eyes , teeth, cartoon, deformed hands, bad teeth, deformed mouth, dark eyes, {{{ prompt }}}",
       "clip": [
         "4",
         1

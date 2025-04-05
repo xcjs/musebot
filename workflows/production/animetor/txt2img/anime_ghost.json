@@ -5,12 +5,12 @@
     "model": "",
     "seed": -1,
     "width": 1024,
-    "height": 1024,
+    "height": 1536,
     "sampler": "dpmpp_2m_sde",
-    "scheduler": "simple",
-    "cfgScale": 7,
+    "scheduler": "karras",
+    "cfgScale": 5,
     "steps": 20,
-    "num": 4
+    "num": 1
   },
   "4": {
     "inputs": {
@@ -47,7 +47,7 @@
   },
   "7": {
     "inputs": {
-      "text": "{{{ promptNegative }}}",
+      "text": "(low quality, worst quality), negativeXL_D, cgi, text, signature, watermark, extra limbs, {{{ promptNegative }}}",
       "clip": [
         "4",
         1

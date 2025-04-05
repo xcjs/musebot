@@ -6,15 +6,15 @@
     "seed": -1,
     "width": 1024,
     "height": 1024,
-    "sampler": "dpmpp_sde",
+    "sampler": "dpmpp_2m_sde",
     "scheduler": "karras",
-    "cfgScale": 7,
+    "cfgScale": 5,
     "steps": 20,
-    "num": 4
+    "num": 1
   },
   "4": {
     "inputs": {
-      "ckpt_name": "SDXL/Cartoon/CHEYENNE_v18.safetensors"
+      "ckpt_name": "SDXL/Cartoon/CHEYENNE_v20.safetensors"
     },
     "class_type": "CheckpointLoaderSimple",
     "_meta": {
@@ -34,7 +34,7 @@
   },
   "6": {
     "inputs": {
-      "text": "{{{ prompt }}}",
+      "text": "detailed illustration, {{{ prompt }}}",
       "clip": [
         "4",
         1

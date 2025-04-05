@@ -4,13 +4,13 @@
     "promptNegative": "",
     "model": "",
     "seed": -1,
-    "width": 1024,
-    "height": 1024,
-    "sampler": "dpmpp_sde",
+    "width": 832,
+    "height": 1216,
+    "sampler": "dpmpp_2m_sde",
     "scheduler": "karras",
     "cfgScale": 7,
-    "steps": 20,
-    "num": 4
+    "steps": 30,
+    "num": 1
   },
   "4": {
     "inputs": {

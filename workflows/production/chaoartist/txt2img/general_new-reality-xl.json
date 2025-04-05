@@ -8,9 +8,9 @@
     "height": 1024,
     "sampler": "dpmpp_sde",
     "scheduler": "karras",
-    "cfgScale": 7,
-    "steps": 20,
-    "num": 4
+    "cfgScale": 4,
+    "steps": 30,
+    "num": 1
   },
   "4": {
     "inputs": {

@@ -6,11 +6,11 @@
     "seed": -1,
     "width": 1024,
     "height": 1024,
-    "sampler": "dpmpp_sde",
+    "sampler": "dpmpp_3m_sde",
     "scheduler": "karras",
-    "cfgScale": 7,
-    "steps": 20,
-    "num": 4
+    "cfgScale": 2,
+    "steps": 35,
+    "num": 1
   },
   "4": {
     "inputs": {
@@ -47,7 +47,7 @@
   },
   "7": {
     "inputs": {
-      "text": "{{{ promptNegative }}}",
+      "text": "Bad quality, boring, watermark, signature, text, low resolution, white color, Bad_artist, {{{ promptNegative }}}",
       "clip": [
         "4",
         1
