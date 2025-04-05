@@ -8,8 +8,8 @@
     "height": 1024,
     "sampler": "dpmpp_2m",
     "scheduler": "sgm_uniform",
-    "cfgScale": 7,
-    "steps": 35,
+    "cfgScale": 3.5,
+    "steps": 28,
     "num": 1
   },
   "4": {
