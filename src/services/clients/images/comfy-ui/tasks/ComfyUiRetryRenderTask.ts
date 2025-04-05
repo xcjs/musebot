@@ -120,12 +120,18 @@ export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRen
                 || x.type === WorkflowType.Txt2vid);
 
             const workflow = getRandomArrayEntry(workflows);
+            const renderDefaults = this.#workflowService.getWorkflowDefaults(workflow);
 
             this.#logger(LogLevel.Info, `Using ${workflow.name} as the selected workflow.`);
 
             renderRequest.refreshSeed();
             renderRequest.model = workflow.name;
             renderRequest.num = 1;
+            renderRequest.cfgScale = renderDefaults.cfgScale;
+            renderRequest.height = renderDefaults.height;
+            renderRequest.sampler = renderDefaults.sampler;
+            renderRequest.scheduler = renderDefaults.scheduler;
+            renderRequest.width = renderDefaults.width;
 
             renderRequests.push(renderRequest);
             prompts.push(this.#workflowService.renderWorkflow(workflow, renderRequest));
