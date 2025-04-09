@@ -1,4 +1,4 @@
-import { BaseMessageOptions, ButtonInteraction, Client as DiscordClient, GatewayIntentBits, Message, MessageReaction, Partials, User } from 'discord.js';
+import { BaseMessageOptions, ButtonInteraction, Client as DiscordClient, GatewayIntentBits, Message, MessageReaction, Partials, ReactionEmoji, User } from 'discord.js';
 
 import { BotFunction } from '../enums/BotFunction.js';
 import { ComfyUiReplyService } from './clients/chat/discord/comfy-ui/ComfyUiReplyService.js';
@@ -19,6 +19,7 @@ import { IWorkflowService } from './clients/images/comfy-ui/services/IWorkflowSe
 import { WorkflowService } from './clients/images/comfy-ui/services/WorkflowService.js';
 import { ComfyUiAttachRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiAttachRenderTask.js';
 import { ComfyUiDecreaseGuidanceScaleRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiDecreaseGuidanceScaleRenderTask.js';
+import { ComfyUiEmojiReactionRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiEmojiReactionRenderTask.js';
 import { ComfyUiExpandPromptTask } from './clients/images/comfy-ui/tasks/ComfyUiExpandPromptTask.js';
 import { ComfyUiIncreaseGuidanceScaleRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiIncreaseGuidanceScaleRenderTask.js';
 import { ComfyUiJsonRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiJsonRenderTask.js';
@@ -27,11 +28,11 @@ import { ComfyUiRandomRenderTask } from './clients/images/comfy-ui/tasks/ComfyUi
 import { ComfyUiRetryRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiRetryRenderTask.js';
 import { ComfyUiShowSourceTask } from './clients/images/comfy-ui/tasks/ComfyUiShowSourceTask.js';
 import { ComfyUiUpscaleRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiUpscaleRenderTask.js';
-import { PromptExtensionType } from './clients/images/enums/PromptExtensionType.js';
 import { ImageHelpService } from './clients/images/help/ImageHelpService.js';
 import { StableDiffusionApiType } from './clients/images/stable-diffusion/enums/StableDiffusionApiType.js';
 import { IAttachRenderTask } from './clients/images/tasks/IAttachRenderTask.js';
 import { IDecreaseGuidanceScaleRenderTask } from './clients/images/tasks/IDecreaseGuidanceScaleRenderTask.js';
+import { IEmojiReactionRenderTask } from './clients/images/tasks/IEmojiReactionRenderTask.js';
 import { IExpandPromptTask } from './clients/images/tasks/IExpandPromptTask.js';
 import { IIncreaseGuidanceScaleRenderTask } from './clients/images/tasks/IIncreaseGuidanceScaleRenderTask.js';
 import { IJsonRenderTask } from './clients/images/tasks/IJsonRenderTask.js';
@@ -164,6 +165,19 @@ export class ServiceContainer implements IServiceContainer {
         }
     }
 
+    getEmojiReactionRenderTask(interaction: Message, emoji: ReactionEmoji, userOverride: User): IEmojiReactionRenderTask {
+        if(!this.#featureService.hasFeature(SupportedFeature.ImagesAndText)) {
+            throw this.#taskNotConfiguredError;
+        }
+
+        switch(this.#environmentSettings.stableDiffusionApiType) {
+            case StableDiffusionApiType.ComfyUI:
+                return new ComfyUiEmojiReactionRenderTask(this, interaction, emoji, userOverride);
+            default:
+                throw this.#taskNotConfiguredError;
+        }
+    }
+
     getExpandPromptTask(interaction: ButtonInteraction): IExpandPromptTask {
         if(!this.#featureService.hasFeature(SupportedFeature.ImagesAndText)) {
             throw this.#taskNotConfiguredError;
@@ -229,19 +243,14 @@ export class ServiceContainer implements IServiceContainer {
         }
     }
 
-    getRetryRenderTask(
-        interaction: Message | ButtonInteraction,
-        promptExtension: string = null,
-        promptExtensionType: PromptExtensionType | null,
-        userOverride: User
-    ): IRetryRenderTask {
+    getRetryRenderTask(interaction: ButtonInteraction): IRetryRenderTask {
         if (!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)) {
             throw this.#taskNotConfiguredError;
         }
 
         switch (this.#environmentSettings.stableDiffusionApiType) {
             case StableDiffusionApiType.ComfyUI:
-                return new ComfyUiRetryRenderTask(this, interaction, promptExtension, promptExtensionType, userOverride);
+                return new ComfyUiRetryRenderTask(this, interaction);
             default:
                 throw this.#taskNotConfiguredError;
         }

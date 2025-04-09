@@ -1,9 +1,10 @@
 import { Prompt } from 'comfy-ui-client';
-import { ButtonInteraction, Message, User } from 'discord.js';
+import { ButtonInteraction, Message, ReactionEmoji, User } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
 import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
+import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../../../../features/IFeatureService.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
@@ -12,14 +13,14 @@ import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.j
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { OllamaClient } from '../../../text/ollama/OllamaClient.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
-import { IRetryRenderTask } from '../../tasks/IRetryRenderTask.js';
+import { IEmojiReactionRenderTask } from '../../tasks/IEmojiReactionRenderTask.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
 import { WorkflowType } from '../enums/WorkflowType.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 import { ComfyUiReplyTask } from './ComfyUiReplyTask.js';
 
-export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRenderTask {
+export class ComfyUiEmojiReactionRenderTask extends ComfyUiBaseTask implements IEmojiReactionRenderTask {
     #services: IServiceContainer;
 
     #environmentSettings: IEnvironmentSettings;
@@ -31,7 +32,7 @@ export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRen
     #taskQueue: ITaskQueue;
 
     #interaction: Message | ButtonInteraction;
-    #promptExtension: string | null;
+    #emoji: ReactionEmoji;
     #userOverride: User | null;
 
     #logger;
@@ -42,7 +43,9 @@ export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRen
 
     constructor(
         services: IServiceContainer,
-        interaction: Message | ButtonInteraction) {
+        interaction: Message | ButtonInteraction,
+        emoji: ReactionEmoji | null = null,
+        userOverride: User | null = null) {
         super(services);
 
         this.#services = services;
@@ -56,14 +59,16 @@ export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRen
         this.#taskQueue = services.taskQueue;
 
         this.#interaction = interaction;
+        this.#emoji = emoji;
+        this.#userOverride = userOverride;
 
-        this.#logger = new Logger(this.#environmentSettings.isProduction, 'ComfyUiRetryRenderTask');
+        this.#logger = new Logger(this.#environmentSettings.isProduction, 'ComfyUiEmojiReactionRenderTask');
     }
 
     override async process(): Promise<void> {
         await super.process();
 
-        this.#logger(LogLevel.Info, 'Processing a ComfyUiRetryRenderTask...');
+        this.#logger(LogLevel.Info, 'Processing a ComfyUiEmojiReactionRenderTask...');
 
         const imageAttachments = this.#replyService.getImageAttachments(this.#interaction);
 
@@ -74,8 +79,6 @@ export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRen
 
         const renderRequests: SerializableRenderRequest[] = [];
         const prompts: Prompt[] = [];
-        let content: string;
-
         const username =
             this.#userOverride !== null
                 ? this.#replyService.mention(this.#userOverride)
@@ -83,9 +86,21 @@ export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRen
                     ? this.#replyService.mention(this.#interaction.member.user as User)
                     : 'You';
 
+        let content = '';
+        let emojiText = this.#emoji.name;
+
+        if(this.#featureService.hasFeature(SupportedFeature.TextGeneration)) {
+            this.#logger(LogLevel.Info, `Text generation is supported - converting the emoji to plain text for better model compatibility.`);
+            const exchange = await this.#ollamaClient.sendMessage(`Tell me the name of the following emoji in as few words as possible: ${this.#emoji.name}.`, []);
+            emojiText = exchange.response.response.trim();
+            this.#logger(LogLevel.Info, `The LLM responded with ${emojiText} as the converted text.`);
+        }
+
         for (const imageAttachment of imageAttachments) {
             const renderRequest = SerializableRenderRequest.fromJson(imageAttachment.description);
-            content = `${username} re-rendered \`${renderRequest.prompt}\``.substring(0, DiscordConstants.ContentMaxLength);
+            const newPrompt = `${renderRequest.prompt}, ${emojiText}`;
+
+            content = `${username} re-rendered \`${renderRequest.prompt}\` as ${newPrompt}`.substring(0, DiscordConstants.ContentMaxLength);
 
             const workflows = this.#workflowService.workflows.filter(x =>
                 x.type === WorkflowType.Txt2img
@@ -96,6 +111,7 @@ export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRen
 
             this.#logger(LogLevel.Info, `Using ${workflow.name} as the selected workflow.`);
 
+            renderRequest.prompt = newPrompt;
             renderRequest.refreshSeed();
             renderRequest.model = workflow.name;
             renderRequest.num = 1;
