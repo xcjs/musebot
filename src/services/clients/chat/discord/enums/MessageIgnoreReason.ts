@@ -1,0 +1,15 @@
+export enum MessageIgnoreReason {
+    None = 'none',
+    NotReactingToMe = 'notReactingToMe',
+    MyReaction = 'myReaction',
+    SelfMention = 'selfMention',
+    BotMention = 'botMention',
+    NoMentionOrRole = 'noMentionOrRole',
+    ResponseRate = 'responseRate',
+    NotInGuild = 'notInGuild',
+    ReactionToBot = 'reactionToBot',
+    ReactionToSelf = 'reactionToSelf',
+    ReactionToOtherBot = 'reactionToOtherBot',
+    ReactionToNonexistentMessage = 'reactionToNonexistentMessage',
+    ReactionToDeletedMessage = 'reactionToDeletedMessage',
+}
