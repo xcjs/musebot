@@ -56,9 +56,13 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
         }
 
         this.logger(LogLevel.Info, 'Replying to message...');
-        this.#taskQueue.add(this.#services.getPromptRenderTask(message) as BaseTask);
-
         await this.#typingService.startTyping(message);
+
+        if(this.#replyService.getMessageWithoutBotMentions(message).startsWith('{')) {
+            this.#taskQueue.add(this.#services.getJsonRenderTask(message) as BaseTask);
+        } else {
+            this.#taskQueue.add(this.#services.getPromptRenderTask(message) as BaseTask);
+        }
     }
 
     async #onInteraction(interaction: ButtonInteraction): Promise<void> {
