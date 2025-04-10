@@ -96,6 +96,7 @@ export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRen
 
             this.#logger(LogLevel.Info, `Using ${workflow.name} as the selected workflow.`);
 
+            renderRequest.prompt = renderRequest.prompt;
             renderRequest.refreshSeed();
             renderRequest.model = workflow.name;
             renderRequest.num = 1;
