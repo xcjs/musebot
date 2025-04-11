@@ -33,10 +33,5 @@ export class FeatureService implements IFeatureService {
             && this.#environmentSettings.ollamaModels.length > 0) {
             this.#supportedFeatures.push(SupportedFeature.TextGeneration);
         }
-
-        if(this.supportedFeatures.includes(SupportedFeature.ImageGeneration)
-            && this.supportedFeatures.includes(SupportedFeature.TextGeneration)) {
-            this.supportedFeatures.push(SupportedFeature.ImagesAndText);
-        }
     }
 }

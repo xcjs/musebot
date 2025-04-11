@@ -166,7 +166,8 @@ export class ServiceContainer implements IServiceContainer {
     }
 
     getEmojiReactionRenderTask(interaction: Message, emoji: ReactionEmoji, userOverride: User): IEmojiReactionRenderTask {
-        if(!this.#featureService.hasFeature(SupportedFeature.ImagesAndText)) {
+        if(!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)
+            || !this.#featureService.hasFeature(SupportedFeature.TextGeneration)) {
             throw this.#taskNotConfiguredError;
         }
 
@@ -179,7 +180,7 @@ export class ServiceContainer implements IServiceContainer {
     }
 
     getExpandPromptTask(interaction: ButtonInteraction): IExpandPromptTask {
-        if(!this.#featureService.hasFeature(SupportedFeature.ImagesAndText)) {
+        if(!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)) {
             throw this.#taskNotConfiguredError;
         }
 
