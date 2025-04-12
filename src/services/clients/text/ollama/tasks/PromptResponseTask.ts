@@ -104,8 +104,6 @@ export class PromptResponseTask extends BaseTask implements IPromptResponseTask 
         let responseBatch = '';
 
         for await (const response of exchange.response) {
-            console.log(`Appending "${response.response}"`);
-
             let replies: Array<Message> = [];
             responseBatch += response.response;
 
@@ -113,7 +111,7 @@ export class PromptResponseTask extends BaseTask implements IPromptResponseTask 
                 >= (1000 / DiscordConstants.MaxRequestsPerSecond) || response.done)
                 // Discord automatically trims message edits that are only whitespace.
                 && !isOnlyWhitespace(responseBatch)) {
-                console.log('Flushing response batch.');
+                this.#logger(LogLevel.Info, `Appending "${responseBatch}"`);
 
                 replies = await this.#ollamaStreamingReplyService.reply(this.#message, responseBatch, response.done);
                 startTime = performance.now();
