@@ -4,13 +4,11 @@ import { Logger, LogLevel } from 'meklog';
 
 import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
-import { IFeatureService } from '../../../../features/IFeatureService.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
 import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
-import { OllamaClient } from '../../../text/ollama/OllamaClient.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 import { IRetryRenderTask } from '../../tasks/IRetryRenderTask.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
@@ -23,15 +21,12 @@ export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRen
     #services: IServiceContainer;
 
     #environmentSettings: IEnvironmentSettings;
-    #featureService: IFeatureService;
     #workflowService: IWorkflowService;
     #comfyUiClient: ComfyUiClient;
     #replyService: IReplyService;
-    #ollamaClient: OllamaClient;
     #taskQueue: ITaskQueue;
 
     #interaction: Message | ButtonInteraction;
-    #promptExtension: string | null;
     #userOverride: User | null;
 
     #logger;
@@ -48,11 +43,9 @@ export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRen
         this.#services = services;
 
         this.#environmentSettings = services.environmentSettings;
-        this.#featureService = services.featureService;
         this.#workflowService = services.workflowService;
         this.#comfyUiClient = services.comfyUiClient;
         this.#replyService = services.replyService;
-        this.#ollamaClient = services.ollamaClient;
         this.#taskQueue = services.taskQueue;
 
         this.#interaction = interaction;
