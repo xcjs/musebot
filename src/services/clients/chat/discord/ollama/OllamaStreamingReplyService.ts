@@ -32,7 +32,7 @@ export class OllamaStreamingReplyService {
 
         const components = done ? new LargeLanguageModelActionRow(this.#services).build() : null;
 
-        const contentText = `${prependedText} ${responseBatch}`;
+        const contentText = `${prependedText}${responseBatch}`;
 
         if (this.#currentReply() == null && contentText.length <= DiscordConstants.ContentMaxLength) {
             this.#replies.push(await message.reply({
