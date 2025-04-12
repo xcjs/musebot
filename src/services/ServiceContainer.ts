@@ -23,8 +23,8 @@ import { ComfyUiEmojiReactionRenderTask } from './clients/images/comfy-ui/tasks/
 import { ComfyUiExpandPromptTask } from './clients/images/comfy-ui/tasks/ComfyUiExpandPromptTask.js';
 import { ComfyUiIncreaseGuidanceScaleRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiIncreaseGuidanceScaleRenderTask.js';
 import { ComfyUiJsonRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiJsonRenderTask.js';
-import { ComfyUiPromptRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiPromptRenderTask.js';
 import { ComfyUiRandomRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiRandomRenderTask.js';
+import { ComfyUiReplyRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiReplyRenderTask.js';
 import { ComfyUiRetryRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiRetryRenderTask.js';
 import { ComfyUiShowSourceTask } from './clients/images/comfy-ui/tasks/ComfyUiShowSourceTask.js';
 import { ComfyUiUpscaleRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiUpscaleRenderTask.js';
@@ -36,8 +36,8 @@ import { IEmojiReactionRenderTask } from './clients/images/tasks/IEmojiReactionR
 import { IExpandPromptTask } from './clients/images/tasks/IExpandPromptTask.js';
 import { IIncreaseGuidanceScaleRenderTask } from './clients/images/tasks/IIncreaseGuidanceScaleRenderTask.js';
 import { IJsonRenderTask } from './clients/images/tasks/IJsonRenderTask.js';
-import { IPromptRenderTask } from './clients/images/tasks/IPromptRenderTask.js';
 import { IRandomRenderTask } from './clients/images/tasks/IRandomRenderTask.js';
+import { IReplyRenderTask } from './clients/images/tasks/IReplyRenderTask.js';
 import { IRetryRenderTask } from './clients/images/tasks/IRetryRenderTask.js';
 import { IShowSourceTask } from './clients/images/tasks/IShowSourceTask.js';
 import { IUpscaleRenderTask } from './clients/images/tasks/IUpscaleRenderTask.js';
@@ -218,19 +218,6 @@ export class ServiceContainer implements IServiceContainer {
         }
     }
 
-    getPromptRenderTask(message: Message): IPromptRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)) {
-            throw this.#taskNotConfiguredError;
-        }
-
-        switch (this.#environmentSettings.stableDiffusionApiType) {
-            case StableDiffusionApiType.ComfyUI:
-                return new ComfyUiPromptRenderTask(this, message);
-            default:
-                throw this.#taskNotConfiguredError;
-        }
-    }
-
     getRandomRenderTask(interaction: ButtonInteraction): IRandomRenderTask {
         if (!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)) {
             throw this.#taskNotConfiguredError;
@@ -239,6 +226,19 @@ export class ServiceContainer implements IServiceContainer {
         switch (this.#environmentSettings.stableDiffusionApiType) {
             case StableDiffusionApiType.ComfyUI:
                 return new ComfyUiRandomRenderTask(this, interaction);
+                default:
+                    throw this.#taskNotConfiguredError;
+                }
+            }
+
+    getReplyRenderTask(message: Message): IReplyRenderTask {
+        if (!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)) {
+            throw this.#taskNotConfiguredError;
+        }
+
+        switch (this.#environmentSettings.stableDiffusionApiType) {
+            case StableDiffusionApiType.ComfyUI:
+                return new ComfyUiReplyRenderTask(this, message);
             default:
                 throw this.#taskNotConfiguredError;
         }

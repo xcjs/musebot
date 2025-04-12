@@ -61,7 +61,7 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
         if(this.#replyService.getMessageWithoutBotMentions(message).startsWith('{')) {
             this.#taskQueue.add(this.#services.getJsonRenderTask(message) as BaseTask);
         } else {
-            this.#taskQueue.add(this.#services.getPromptRenderTask(message) as BaseTask);
+            this.#taskQueue.add(this.#services.getReplyRenderTask(message) as BaseTask);
         }
     }
 

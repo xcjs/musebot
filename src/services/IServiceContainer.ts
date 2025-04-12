@@ -15,8 +15,8 @@ import { IEmojiReactionRenderTask } from './clients/images/tasks/IEmojiReactionR
 import { IExpandPromptTask } from './clients/images/tasks/IExpandPromptTask.js';
 import { IIncreaseGuidanceScaleRenderTask } from './clients/images/tasks/IIncreaseGuidanceScaleRenderTask.js';
 import { IJsonRenderTask } from './clients/images/tasks/IJsonRenderTask.js';
-import { IPromptRenderTask } from './clients/images/tasks/IPromptRenderTask.js';
 import { IRandomRenderTask } from './clients/images/tasks/IRandomRenderTask.js';
+import { IReplyRenderTask } from './clients/images/tasks/IReplyRenderTask.js';
 import { IRetryRenderTask } from './clients/images/tasks/IRetryRenderTask.js';
 import { IShowSourceTask } from './clients/images/tasks/IShowSourceTask.js';
 import { IUpscaleRenderTask } from './clients/images/tasks/IUpscaleRenderTask.js';
@@ -64,8 +64,8 @@ export interface IServiceContainer {
     getExpandPromptTask(interaction: ButtonInteraction): IExpandPromptTask;
     getIncreaseGuidanceScaleRenderTask(interaction: ButtonInteraction): IIncreaseGuidanceScaleRenderTask;
     getJsonRenderTask(message: Message): IJsonRenderTask;
-    getPromptRenderTask(message: Message): IPromptRenderTask;
     getRandomRenderTask(interaction: ButtonInteraction): IRandomRenderTask;
+    getReplyRenderTask(message: Message): IReplyRenderTask;
     getRetryRenderTask(interaction: ButtonInteraction): IRetryRenderTask;
     getShowSourceTask(interaction: ButtonInteraction): IShowSourceTask;
     getUpscaleRenderTask(interaction: ButtonInteraction): IUpscaleRenderTask;
