@@ -115,7 +115,7 @@ export class PromptResponseTask extends BaseTask implements IPromptResponseTask 
                 && !isOnlyWhitespace(responseBatch)) {
                 console.log('Flushing response batch.');
 
-                replies = await this.#ollamaStreamingReplyService.reply(this.#message, responseBatch, !!response.done);
+                replies = await this.#ollamaStreamingReplyService.reply(this.#message, responseBatch, response.done);
                 startTime = performance.now();
 
                 fullResponse += responseBatch;
