@@ -1,4 +1,4 @@
-import { BaseMessageOptions, ButtonInteraction, Client as DiscordClient, Message, MessageReaction, User } from 'discord.js';
+import { ApplicationEmoji, BaseMessageOptions, ButtonInteraction, Client as DiscordClient, GuildEmoji, Message, MessageReaction, ReactionEmoji, User } from 'discord.js';
 
 import { ComfyUiReplyService } from './clients/chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { OllamaReplyService } from './clients/chat/discord/ollama/OllamaReplyService.js';
@@ -9,14 +9,14 @@ import { ITypingService } from './clients/chat/ITypingService.js';
 import { IReplyTask } from './clients/chat/tasks/IReplyTask.js';
 import { ComfyUiClient } from './clients/images/comfy-ui/ComfyUiClient.js';
 import { IWorkflowService } from './clients/images/comfy-ui/services/IWorkflowService.js';
-import { PromptExtensionType } from './clients/images/enums/PromptExtensionType.js';
 import { IAttachRenderTask } from './clients/images/tasks/IAttachRenderTask.js';
 import { IDecreaseGuidanceScaleRenderTask } from './clients/images/tasks/IDecreaseGuidanceScaleRenderTask.js';
+import { IEmojiReactionRenderTask } from './clients/images/tasks/IEmojiReactionRenderTask.js';
 import { IExpandPromptTask } from './clients/images/tasks/IExpandPromptTask.js';
 import { IIncreaseGuidanceScaleRenderTask } from './clients/images/tasks/IIncreaseGuidanceScaleRenderTask.js';
 import { IJsonRenderTask } from './clients/images/tasks/IJsonRenderTask.js';
-import { IPromptRenderTask } from './clients/images/tasks/IPromptRenderTask.js';
 import { IRandomRenderTask } from './clients/images/tasks/IRandomRenderTask.js';
+import { IReplyRenderTask } from './clients/images/tasks/IReplyRenderTask.js';
 import { IRetryRenderTask } from './clients/images/tasks/IRetryRenderTask.js';
 import { IShowSourceTask } from './clients/images/tasks/IShowSourceTask.js';
 import { IUpscaleRenderTask } from './clients/images/tasks/IUpscaleRenderTask.js';
@@ -60,21 +60,15 @@ export interface IServiceContainer {
         content: string | null): IAttachRenderTask;
 
     getDecreaseGuidanceScaleRenderTask(interaction: ButtonInteraction): IDecreaseGuidanceScaleRenderTask;
+    getEmojiReactionRenderTask(interaction: Message, emoji: GuildEmoji | ReactionEmoji | ApplicationEmoji, userOverride: User): IEmojiReactionRenderTask;
     getExpandPromptTask(interaction: ButtonInteraction): IExpandPromptTask;
     getIncreaseGuidanceScaleRenderTask(interaction: ButtonInteraction): IIncreaseGuidanceScaleRenderTask;
     getJsonRenderTask(message: Message): IJsonRenderTask;
-    getPromptRenderTask(message: Message): IPromptRenderTask;
     getRandomRenderTask(interaction: ButtonInteraction): IRandomRenderTask;
-
-    getRetryRenderTask(
-        interaction: Message | ButtonInteraction,
-        promptExtension: string | null,
-        promptExtensionType: PromptExtensionType | null,
-        userOverride: User): IRetryRenderTask;
-
+    getReplyRenderTask(message: Message): IReplyRenderTask;
+    getRetryRenderTask(interaction: ButtonInteraction): IRetryRenderTask;
     getShowSourceTask(interaction: ButtonInteraction): IShowSourceTask;
     getUpscaleRenderTask(interaction: ButtonInteraction): IUpscaleRenderTask;
-
     getPromptResponseTask(message: Message, context: Array<number>): IPromptResponseTask;
     getEmojiResponseTask(reaction: MessageReaction, user: User, context: Array<number>): IEmojiResponseTask;
 }

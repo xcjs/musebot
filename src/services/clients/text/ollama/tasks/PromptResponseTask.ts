@@ -77,7 +77,7 @@ export class PromptResponseTask extends BaseTask implements IPromptResponseTask 
 
         const replies = await this.#ollamaReplyService.reply(this.#message, exchange);
 
-        if(this.#featureService.hasFeature(SupportedFeature.ImagesAndText)
+        if(this.#featureService.hasFeature(SupportedFeature.ImageGeneration)
             && replies.length > 0) {
             this.#attachImage(exchange.response.response, replies);
         }
@@ -104,8 +104,6 @@ export class PromptResponseTask extends BaseTask implements IPromptResponseTask 
         let responseBatch = '';
 
         for await (const response of exchange.response) {
-            console.log(`Appending "${response.response}"`);
-
             let replies: Array<Message> = [];
             responseBatch += response.response;
 
@@ -113,9 +111,9 @@ export class PromptResponseTask extends BaseTask implements IPromptResponseTask 
                 >= (1000 / DiscordConstants.MaxRequestsPerSecond) || response.done)
                 // Discord automatically trims message edits that are only whitespace.
                 && !isOnlyWhitespace(responseBatch)) {
-                console.log('Flushing response batch.');
+                this.#logger(LogLevel.Info, `Appending "${responseBatch}"`);
 
-                replies = await this.#ollamaStreamingReplyService.reply(this.#message, responseBatch, !!response.done);
+                replies = await this.#ollamaStreamingReplyService.reply(this.#message, responseBatch, response.done);
                 startTime = performance.now();
 
                 fullResponse += responseBatch;
@@ -125,7 +123,7 @@ export class PromptResponseTask extends BaseTask implements IPromptResponseTask 
             if(response.done) {
                 this.#context = response.context;
 
-                if(this.#featureService.hasFeature(SupportedFeature.ImagesAndText)
+                if(this.#featureService.hasFeature(SupportedFeature.ImageGeneration)
                     && replies.length > 0) {
                     this.#attachImage(fullResponse, replies);
                 }

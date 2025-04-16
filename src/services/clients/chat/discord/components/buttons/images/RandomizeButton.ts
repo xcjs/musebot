@@ -11,7 +11,8 @@ export class RandomizeButton extends BaseComponent<ButtonBuilder> {
     }
 
     override get isSupported(): boolean {
-        return this.featureService.hasFeature(SupportedFeature.ImagesAndText);
+        return this.featureService.hasFeature(SupportedFeature.ImageGeneration)
+            && this.featureService.hasFeature(SupportedFeature.TextGeneration);
     }
 
     override get title(): string {

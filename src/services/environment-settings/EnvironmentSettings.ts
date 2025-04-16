@@ -122,7 +122,7 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         this.#logger(LogLevel.Info, `${EnvironmentKey.NodeEnvironment}: ${this.nodeEnvironment}`);
 
         this.#logger(LogLevel.Info, `${EnvironmentKey.TaskQueueMaxAttempts}: ${this.maxTaskAttempts}`);
-        this.#logger(LogLevel.Info, `${EnvironmentKey.TaskQueueRetryDelayMs}}: ${this.taskRetryDelayMilliseconds}`);
+        this.#logger(LogLevel.Info, `${EnvironmentKey.TaskQueueRetryDelayMs}: ${this.taskRetryDelayMilliseconds}`);
 
         this.#logger(LogLevel.Info, `${EnvironmentKey.BotFunction}: ${this.botFunction}`);
 

@@ -9,15 +9,14 @@ import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
-import { IPromptRenderTask } from '../../tasks/IPromptRenderTask.js';
+import { IReplyRenderTask } from '../../tasks/IReplyRenderTask.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
 import { WorkflowType } from '../enums/WorkflowType.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
-import { ComfyUiJsonRenderTask } from './ComfyUiJsonRenderTask.js';
 import { ComfyUiReplyTask } from './ComfyUiReplyTask.js';
 
-export class ComfyUiPromptRenderTask extends ComfyUiBaseTask implements IPromptRenderTask {
+export class ComfyUiReplyRenderTask extends ComfyUiBaseTask implements IReplyRenderTask {
     #services: IServiceContainer;
 
     #environmentSettings: IEnvironmentSettings;
@@ -60,13 +59,6 @@ export class ComfyUiPromptRenderTask extends ComfyUiBaseTask implements IPromptR
         const prompt = this.#message.type === MessageType.Reply
             ? `${((await this.#getAllAntecedentPrompts()).join(' '))} ${this.#message.content}`.trim()
             : this.#replyService.getMessageWithoutBotMentions(this.#message);
-
-        if (prompt.charAt(0) === '{') {
-            this.#taskQueue.add(new ComfyUiJsonRenderTask(
-                this.#services,
-                this.#message));
-            return Promise.resolve();
-        }
 
         const workflows = this.#workflowService.workflows.filter(x =>
             x.type === WorkflowType.Txt2img
