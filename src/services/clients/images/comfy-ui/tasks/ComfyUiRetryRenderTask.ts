@@ -27,7 +27,6 @@ export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRen
     #taskQueue: ITaskQueue;
 
     #interaction: Message | ButtonInteraction;
-    #userOverride: User | null;
 
     #logger;
 
@@ -69,10 +68,7 @@ export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRen
         const prompts: Prompt[] = [];
         let content: string;
 
-        const username =
-            this.#userOverride !== null
-                ? this.#replyService.mention(this.#userOverride)
-                : this.#interaction.member !== null
+        const username = this.#interaction.member !== null
                     ? this.#replyService.mention(this.#interaction.member.user as User)
                     : 'You';
 
