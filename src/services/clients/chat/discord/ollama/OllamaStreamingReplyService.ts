@@ -45,7 +45,7 @@ export class OllamaStreamingReplyService {
         else {
             const responseBatches = splitText(responseBatch, DiscordConstants.ContentMaxLength);
 
-            for(const response in responseBatches) {
+            for(const response of responseBatches) {
                 this.#replies.push(await message.reply({
                     content: response,
                     components
