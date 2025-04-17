@@ -111,7 +111,12 @@ export class PromptResponseTask extends BaseTask implements IPromptResponseTask 
                 >= (1000 / DiscordConstants.MaxRequestsPerSecond) || response.done)
                 // Discord automatically trims message edits that are only whitespace.
                 && !isOnlyWhitespace(responseBatch)
-                && (!endsWithNewLine(responseBatch) || (endsWithNewLine(responseBatch) && response.done))) {
+                // There _could_ be an issue here where Ollama responses that
+                // are done and have a newline may never get output, but
+                // Ollama/Llama seem to trim their output so this doesn't
+                // happen - unless it does happen, and then we need to take
+                // that into account.
+                && !endsWithNewLine(responseBatch)) {
                 this.#logger(LogLevel.Info, `Appending "${responseBatch}"`);
 
                 replies = await this.#ollamaStreamingReplyService.reply(this.#message, responseBatch, response.done);
