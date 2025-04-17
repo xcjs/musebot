@@ -44,6 +44,6 @@ export function isOnlyWhitespace(text: string): boolean {
     return text.trim().length === 0;
 }
 
-export function endsWithNewLine(text: string): boolean {
-    return text.endsWith('\n');
+export function endsWithWhitespace(text: string): boolean {
+    return text.endsWith('\n') || text.endsWith(' ');
 }

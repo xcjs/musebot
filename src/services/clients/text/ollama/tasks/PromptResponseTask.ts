@@ -1,7 +1,7 @@
 import { Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { endsWithNewLine, isOnlyWhitespace } from '../../../../../utilities/string-utilities.js';
+import { endsWithWhitespace, isOnlyWhitespace } from '../../../../../utilities/string-utilities.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../../../../features/IFeatureService.js';
@@ -116,7 +116,7 @@ export class PromptResponseTask extends BaseTask implements IPromptResponseTask 
                 // Ollama/Llama seem to trim their output so this doesn't
                 // happen - unless it does happen, and then we need to take
                 // that into account.
-                && !endsWithNewLine(responseBatch)) {
+                && !endsWithWhitespace(responseBatch)) {
                 this.#logger(LogLevel.Info, `Appending "${responseBatch}"`);
 
                 replies = await this.#ollamaStreamingReplyService.reply(this.#message, responseBatch, response.done);
