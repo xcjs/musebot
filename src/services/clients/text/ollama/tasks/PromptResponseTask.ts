@@ -111,7 +111,7 @@ export class PromptResponseTask extends BaseTask implements IPromptResponseTask 
                 >= (1000 / DiscordConstants.MaxRequestsPerSecond) || response.done)
                 // Discord automatically trims message edits that are only whitespace.
                 && !isOnlyWhitespace(responseBatch)
-                && !endsWithNewLine(responseBatch)) {
+                && (!endsWithNewLine(responseBatch) && !response.done)) {
                 this.#logger(LogLevel.Info, `Appending "${responseBatch}"`);
 
                 replies = await this.#ollamaStreamingReplyService.reply(this.#message, responseBatch, response.done);
