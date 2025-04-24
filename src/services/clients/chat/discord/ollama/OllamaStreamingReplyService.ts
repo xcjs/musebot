@@ -14,6 +14,7 @@ export class OllamaStreamingReplyService {
     #logger;
 
     #replies: Array<Message> = [];
+    #repliesContent: string[] = [];
 
     constructor(services: IServiceContainer) {
         this.#services = services;
@@ -30,17 +31,29 @@ export class OllamaStreamingReplyService {
         const components = done ? new LargeLanguageModelActionRow(this.#services).build() : null;
 
         if (this.#currentReply() == null && responseBatch.length <= DiscordConstants.ContentMaxLength) {
-            this.#logger(LogLevel.Info, `Replying  "${responseBatch}"`);
+
+            this.#repliesContent.push(responseBatch);
+            const currentReplyContent = this.#repliesContent[this.#repliesContent.length - 1];
+
+            this.#logger(LogLevel.Info, `Replying  "${currentReplyContent}"`);
 
             this.#replies.push(await message.reply({
-                content: responseBatch,
+                content: currentReplyContent,
                 components
             }));
+
         } else if (this.#currentReply().content.length + responseBatch.length <= DiscordConstants.ContentMaxLength) {
+
+            const numReplies = this.#replies.length;
+            const currentMessage = numReplies - 1;
+
+            this.#repliesContent[currentMessage] += responseBatch;
+            const currentReplyContent = this.#repliesContent[currentMessage];
+
             this.#logger(LogLevel.Info, `Appending "${responseBatch}"`);
 
             await this.#currentReply().edit({
-                content: `${this.#currentReply().content}${responseBatch}`,
+                content: currentReplyContent,
                 components
             });
         }
@@ -49,10 +62,13 @@ export class OllamaStreamingReplyService {
 
             if(responseBatches.length > 0) {
                 const response = responseBatches[0];
-                this.#logger(LogLevel.Info, `Replying  "${response}"`);
+
+                this.#repliesContent.push(response);
+                const currentReplyContent = this.#repliesContent[this.#repliesContent.length - 1];
+                this.#logger(LogLevel.Info, `Replying  "${currentReplyContent}"`);
 
                 this.#replies.push(await message.reply({
-                    content: response,
+                    content: currentReplyContent,
                     components
                 }));
             }

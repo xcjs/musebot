@@ -47,3 +47,7 @@ export function isOnlyWhitespace(text: string): boolean {
 export function endsWithWhitespace(text: string): boolean {
     return text.endsWith('\n') || text.endsWith(' ');
 }
+
+export function hasOnly(containingText: string, searchText: string) {
+    return containingText.trim().replaceAll(searchText, '').length == 0;
+}

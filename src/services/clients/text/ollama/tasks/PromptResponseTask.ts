@@ -1,7 +1,7 @@
 import { Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { endsWithWhitespace, isOnlyWhitespace } from '../../../../../utilities/string-utilities.js';
+import { endsWithWhitespace, hasOnly, isOnlyWhitespace } from '../../../../../utilities/string-utilities.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../../../../features/IFeatureService.js';
@@ -121,12 +121,18 @@ export class PromptResponseTask extends BaseTask implements IPromptResponseTask 
                 continue;
             }
 
+            // If the message is appended with whitespace the end, Discord will
+            // trim it, leading to an accumulation for formatting issues.
             if (endsWithWhitespace(responseBatch) && !response.done) {
                 continue;
             }
 
+            //
+            if(hasOnly(responseBatch, '*') && !response.done) {
+                continue;
+            }
+
             try {
-                this.#logger(LogLevel.Info, `Queueing  "${responseBatch}"`);
                 startTime = performance.now();
                 replies = await this.#ollamaStreamingReplyService.reply(this.#message, responseBatch, response.done);
                 responseBatch = '';
