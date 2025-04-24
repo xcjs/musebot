@@ -105,6 +105,7 @@ export class PromptResponseTask extends BaseTask implements IPromptResponseTask 
 
         for await (const response of exchange.response) {
             let replies: Array<Message> = [];
+            fullResponse += response.response;
             responseBatch += response.response;
 
             // Ensure that Musebot isn't spamming the Discord API beyond its
@@ -124,13 +125,15 @@ export class PromptResponseTask extends BaseTask implements IPromptResponseTask 
                 continue;
             }
 
-            this.#logger(LogLevel.Info, `Appending "${responseBatch}"`);
-
-            replies = await this.#ollamaStreamingReplyService.reply(this.#message, responseBatch, response.done);
-            startTime = performance.now();
-
-            fullResponse += responseBatch;
-            responseBatch = '';
+            try {
+                this.#logger(LogLevel.Info, `Queueing  "${responseBatch}"`);
+                startTime = performance.now();
+                replies = await this.#ollamaStreamingReplyService.reply(this.#message, responseBatch, response.done);
+                responseBatch = '';
+            } catch (error) {
+                this.#logger(LogLevel.Error, `An error occurred while streaming the text response: ${error}`);
+                continue;
+            }
 
             if(response.done) {
                 this.#context = response.context;
