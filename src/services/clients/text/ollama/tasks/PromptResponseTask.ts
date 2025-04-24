@@ -127,7 +127,9 @@ export class PromptResponseTask extends BaseTask implements IPromptResponseTask 
                 continue;
             }
 
-            //
+            // Messages that only contain a double asterisk are, under certain
+            // conditions, converted to a newline. This attempts to prevent that
+            // by delaying the batch until additional characters are included.
             if(hasOnly(responseBatch, '*') && !response.done) {
                 continue;
             }
