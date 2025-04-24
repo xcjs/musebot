@@ -1,7 +1,7 @@
 import { Message } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { endsWithWhitespace, isOnlyWhitespace } from '../../../../../utilities/string-utilities.js';
+import { endsWithWhitespace, hasOnly, isOnlyWhitespace } from '../../../../../utilities/string-utilities.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../../../../features/IFeatureService.js';
@@ -105,6 +105,7 @@ export class PromptResponseTask extends BaseTask implements IPromptResponseTask 
 
         for await (const response of exchange.response) {
             let replies: Array<Message> = [];
+            fullResponse += response.response;
             responseBatch += response.response;
 
             // Ensure that Musebot isn't spamming the Discord API beyond its
@@ -120,17 +121,27 @@ export class PromptResponseTask extends BaseTask implements IPromptResponseTask 
                 continue;
             }
 
+            // If the message is appended with whitespace the end, Discord will
+            // trim it, leading to an accumulation for formatting issues.
             if (endsWithWhitespace(responseBatch) && !response.done) {
                 continue;
             }
 
-            this.#logger(LogLevel.Info, `Appending "${responseBatch}"`);
+            // Messages that only contain a double asterisk are, under certain
+            // conditions, converted to a newline. This attempts to prevent that
+            // by delaying the batch until additional characters are included.
+            if(hasOnly(responseBatch, '*') && !response.done) {
+                continue;
+            }
 
-            replies = await this.#ollamaStreamingReplyService.reply(this.#message, responseBatch, response.done);
-            startTime = performance.now();
-
-            fullResponse += responseBatch;
-            responseBatch = '';
+            try {
+                startTime = performance.now();
+                replies = await this.#ollamaStreamingReplyService.reply(this.#message, responseBatch, response.done);
+                responseBatch = '';
+            } catch (error) {
+                this.#logger(LogLevel.Error, `An error occurred while streaming the text response: ${error}`);
+                continue;
+            }
 
             if(response.done) {
                 this.#context = response.context;
