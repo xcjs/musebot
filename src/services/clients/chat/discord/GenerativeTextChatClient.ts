@@ -104,10 +104,10 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
         this.logger(LogLevel.Info, 'Asking confirmation before clearing the large language model context...');
 
         try {
-            await interaction.editReply({
+            await interaction.reply({
                 content: `Are you sure you want to clear the conversational context of ${this.#context.length} tokens?`
                     + ` This will make me forget everything we've discussed up to this point.`,
-                // components: new LargeLanguageModelConfirmClearActionRow(this.#services).build()
+                components: new LargeLanguageModelConfirmClearActionRow(this.#services).build()
             });
         } catch {
             this.logger(LogLevel.Error, 'An error occurred while asking to clear the Ollama context.');
