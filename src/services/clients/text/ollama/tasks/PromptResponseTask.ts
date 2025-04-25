@@ -160,7 +160,7 @@ export class PromptResponseTask extends BaseTask implements IPromptResponseTask 
         prompt = 'The following prompt is a response to a message.'
             + ' Describe an artistic or creative image to go with this response.'
             + ' Keep in mind that the image generation model that will receive this prompt can only accurately include brief snippets of text 2-3 words in length.'
-            + ' If you do decide to include any text in the image, make sure to surround it with quotes and remains brief.'
+            + ' If you do decide to include any text in the image, make sure to surround it with quotes and remain brief.'
             + `\n\n\`\`\`text\n${prompt}\n\`\`\``;
 
         const exchange = await this.#ollamaClient.sendMessage(prompt, this.#context);
