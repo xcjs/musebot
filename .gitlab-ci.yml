@@ -11,6 +11,7 @@ Install Dependencies:
   tags:
     - docker
   script:
+    - npm install -g npm
     - npm install
   artifacts:
     name: node_modules
