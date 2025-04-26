@@ -104,7 +104,7 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
         this.logger(LogLevel.Info, 'Asking confirmation before clearing the large language model context...');
 
         try {
-            await interaction.reply({
+            await interaction.editReply({
                 content: `Are you sure you want to clear the conversational context of ${this.#context.length} tokens?`
                     + ` This will make me forget everything we've discussed up to this point.`,
                 components: new LargeLanguageModelConfirmClearActionRow(this.#services).build()
