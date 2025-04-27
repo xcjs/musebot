@@ -12,6 +12,7 @@ Install Dependencies:
     - docker
   script:
     - npm install
+    - npm list
   artifacts:
     name: node_modules
     paths:
