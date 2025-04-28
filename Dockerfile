@@ -2,7 +2,7 @@ FROM node:20 AS builder
 
 WORKDIR /home/node/app
 COPY . .
-RUN npm install && npm list && npm run build:bin
+RUN npm ci && npm list && npm run build:bin
 
 USER node
 
