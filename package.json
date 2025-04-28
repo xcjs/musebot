@@ -1,6 +1,6 @@
 {
   "name": "musebot",
-  "version": "6.11.9",
+  "version": "6.11.10",
   "description": "A Discord bot that connects to various generative AI APIs.",
   "private": "true",
   "license": "ISC",
@@ -41,7 +41,7 @@
     "mustache": "^4.2.0",
     "ollama": "^0.5.14",
     "parcel": "^2.13.3",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.3"
   },
   "devDependencies": {
     "@babel/preset-typescript": "^7.26.0",

@@ -7,11 +7,12 @@ stages:
 
 Install Dependencies:
   stage: Setup
-  image: node:lts
+  image: node:20
   tags:
     - docker
   script:
-    - npm install
+    - npm ci
+    - npm list
   artifacts:
     name: node_modules
     paths:
@@ -20,7 +21,7 @@ Install Dependencies:
 
 Lint:
   stage: Lint
-  image: node:lts
+  image: node:20
   tags:
     - docker
   script:
@@ -28,7 +29,7 @@ Lint:
 
 Test:
   stage: Test
-  image: node:lts
+  image: node:20
   tags:
     - docker
   script:
@@ -53,7 +54,7 @@ Build Docker Image:
 
 Build Distributable:
   stage: Build
-  image: node:lts
+  image: node:20
   tags:
     - docker
   script:

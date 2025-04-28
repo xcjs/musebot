@@ -148,17 +148,25 @@ export class PromptResponseTask extends BaseTask implements IPromptResponseTask 
 
                 if(this.#featureService.hasFeature(SupportedFeature.ImageGeneration)
                     && replies.length > 0) {
-                    this.#attachImage(fullResponse, replies);
+                    await this.#attachImage(fullResponse, replies);
                 }
             }
         }
     }
 
-    #attachImage(prompt: string, replies: Array<Message>): void {
+    async #attachImage(prompt: string, replies: Array<Message>): Promise<void> {
         this.#logger(LogLevel.Info, 'An image will be attached to the Ollama response.');
 
+        prompt = 'The following prompt is a response to a message.'
+            + ' Describe an artistic or creative image to go with this response.'
+            + ' Keep in mind that the image generation model that will receive this prompt can only accurately include brief snippets of text 2-3 words in length.'
+            + ' If you do decide to include any text in the image, make sure to surround it with quotes and remain brief.'
+            + `\n\n\`\`\`text\n${prompt}\n\`\`\``;
+
+        const exchange = await this.#ollamaClient.sendMessage(prompt, this.#context);
+
         const lastReply = replies[replies.length - 1];
-        const attachTask = this.#services.getAttachRenderTask(lastReply, prompt, lastReply.content) as BaseTask;
+        const attachTask = this.#services.getAttachRenderTask(lastReply, exchange.response.response, lastReply.content) as BaseTask;
 
         this.#taskQueue.add(attachTask);
     }
