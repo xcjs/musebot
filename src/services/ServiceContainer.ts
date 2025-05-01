@@ -302,10 +302,10 @@ export class ServiceContainer implements IServiceContainer {
     constructor() {
         // Singletons instantiated here.
         this.#environmentSettings = new EnvironmentSettings();
+        this.#workflowService = new WorkflowService(this);
         this.#featureService = new FeatureService(this);
         this.#taskQueue = new TaskQueue(this);
         this.#typingService = new TypingService(this);
-        this.#workflowService = new WorkflowService(this);
 
         this.#discordClient = new DiscordClient({
             intents: [
