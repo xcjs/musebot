@@ -4,6 +4,7 @@ import { Logger, LogLevel } from 'meklog';
 
 import { BotInteraction } from '../../../../../enums/BotInteraction.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
+import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
@@ -12,7 +13,6 @@ import { IReplyService } from '../../../chat/IReplyService.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 import { IUpscaleRenderTask } from '../../tasks/IUpscaleRenderTask.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
-import { WorkflowType } from '../enums/WorkflowType.js';
 import { IWorkflow } from '../models/IWorkflow.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
@@ -82,7 +82,7 @@ export class ComfyUiUpscaleRenderTask extends ComfyUiBaseTask implements IUpscal
                 renderRequests.push(null);
             }
 
-            const upscalingWorkflows = this.#workflowService.workflows.filter(x => x.type === WorkflowType.Upscaler);
+            const upscalingWorkflows = this.#workflowService.workflows.filter(x => x.type === SupportedFeature.Img2ImgUpscaling);
             let workflow: IWorkflow;
 
             if (this.#interaction.customId === BotInteraction.UpscaleDetail) {
@@ -95,7 +95,7 @@ export class ComfyUiUpscaleRenderTask extends ComfyUiBaseTask implements IUpscal
 
             if (workflow === undefined) {
                 this.#logger(LogLevel.Error, `The ${this.#interaction.customId} workflow doesn't exist.`
-                    + ` Make sure that ${WorkflowType.Upscaler}/design.json and ${WorkflowType.Upscaler}/detail.json`
+                    + ` Make sure that ${SupportedFeature.Img2ImgUpscaling}/design.json and ${SupportedFeature.Img2ImgUpscaling}/detail.json`
                     + ` exist and accept a Base64 encoded image string in the prompt field.`
                 );
 

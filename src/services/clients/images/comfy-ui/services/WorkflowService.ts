@@ -7,9 +7,9 @@ import * as mustache from 'mustache';
 
 import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
+import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
-import { WorkflowType } from '../enums/WorkflowType.js';
 import { IWorkflow } from '../models/IWorkflow.js';
 import { IWorkflowDefaults } from '../models/IWorkflowDefaults.js';
 import { IWorkflowService } from './IWorkflowService.js';
@@ -43,13 +43,13 @@ export class WorkflowService implements IWorkflowService {
         }
 
         const workflowPathBase = './workflows';
-        const workflowTypes = Object.values(WorkflowType);
+        const workflowTypes = Object.values(SupportedFeature);
 
         try {
             for (const workflowType of workflowTypes) {
-                const workflowDir = path.join(workflowPathBase, workflowType);
-
                 this.#logger(LogLevel.Info, `Checking if the ${workflowType} directory exists...`);
+
+                const workflowDir = path.join(workflowPathBase, workflowType);
 
                 try {
                     await fs.access(workflowDir);
@@ -82,6 +82,10 @@ export class WorkflowService implements IWorkflowService {
             this.#logger(LogLevel.Error, 'Failed to load workflow templates.'
                  + ' Check if Musebot can read and write from ./workflows/ and that it contains workflows.', error);
         }
+    }
+
+    hasWorkflowType(workflowType: SupportedFeature): boolean {
+        return this.#workflows.find(workflow => workflow.type === workflowType) !== undefined;
     }
 
     getWorkflowDefaults(workflow: IWorkflow): SerializableRenderRequest {

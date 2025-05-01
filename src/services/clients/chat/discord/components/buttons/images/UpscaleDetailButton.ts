@@ -11,7 +11,7 @@ export class UpscaleDetailButton extends BaseComponent<ButtonBuilder> {
     }
 
     override get isSupported(): boolean {
-        return this.featureService.hasFeature(SupportedFeature.ImageGeneration);
+        return this.featureService.hasFeature(SupportedFeature.Img2Img);
     }
 
     override get title(): string {

@@ -140,7 +140,7 @@ export class ServiceContainer implements IServiceContainer {
         interaction: ButtonInteraction | Message,
         prompt: string,
         content: string | null = null): IAttachRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)) {
+        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)) {
             throw this.#taskNotConfiguredError;
         }
 
@@ -153,7 +153,7 @@ export class ServiceContainer implements IServiceContainer {
     }
 
     getDecreaseGuidanceScaleRenderTask(interaction: ButtonInteraction): IDecreaseGuidanceScaleRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)) {
+        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)) {
             throw this.#taskNotConfiguredError;
         }
 
@@ -166,8 +166,8 @@ export class ServiceContainer implements IServiceContainer {
     }
 
     getEmojiReactionRenderTask(interaction: Message, emoji: ReactionEmoji, userOverride: User): IEmojiReactionRenderTask {
-        if(!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)
-            || !this.#featureService.hasFeature(SupportedFeature.TextGeneration)) {
+        if(!this.#featureService.hasFeature(SupportedFeature.Txt2Img)
+            || !this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
             throw this.#taskNotConfiguredError;
         }
 
@@ -180,7 +180,7 @@ export class ServiceContainer implements IServiceContainer {
     }
 
     getExpandPromptTask(interaction: ButtonInteraction): IExpandPromptTask {
-        if(!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)) {
+        if(!this.#featureService.hasFeature(SupportedFeature.Txt2Img)) {
             throw this.#taskNotConfiguredError;
         }
 
@@ -193,7 +193,7 @@ export class ServiceContainer implements IServiceContainer {
     }
 
     getIncreaseGuidanceScaleRenderTask(interaction: ButtonInteraction): IIncreaseGuidanceScaleRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)) {
+        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)) {
             throw this.#taskNotConfiguredError;
         }
 
@@ -206,7 +206,7 @@ export class ServiceContainer implements IServiceContainer {
     }
 
     getJsonRenderTask(message: Message): IJsonRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)) {
+        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)) {
             throw this.#taskNotConfiguredError;
         }
 
@@ -219,7 +219,7 @@ export class ServiceContainer implements IServiceContainer {
     }
 
     getRandomRenderTask(interaction: ButtonInteraction): IRandomRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)) {
+        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)) {
             throw this.#taskNotConfiguredError;
         }
 
@@ -232,7 +232,7 @@ export class ServiceContainer implements IServiceContainer {
             }
 
     getReplyRenderTask(message: Message): IReplyRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)) {
+        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)) {
             throw this.#taskNotConfiguredError;
         }
 
@@ -245,7 +245,7 @@ export class ServiceContainer implements IServiceContainer {
     }
 
     getRetryRenderTask(interaction: ButtonInteraction): IRetryRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)) {
+        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)) {
             throw this.#taskNotConfiguredError;
         }
 
@@ -258,7 +258,7 @@ export class ServiceContainer implements IServiceContainer {
     }
 
     getShowSourceTask(interaction: ButtonInteraction): IShowSourceTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)) {
+        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)) {
             throw this.#taskNotConfiguredError;
         }
 
@@ -271,7 +271,7 @@ export class ServiceContainer implements IServiceContainer {
     }
 
     getUpscaleRenderTask(interaction: ButtonInteraction): IUpscaleRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)) {
+        if (!this.#featureService.hasFeature(SupportedFeature.Img2ImgUpscaling)) {
             throw this.#taskNotConfiguredError;
         }
 
@@ -284,7 +284,7 @@ export class ServiceContainer implements IServiceContainer {
     }
 
     getPromptResponseTask(message: Message, context: Array<number>): IPromptResponseTask {
-        if(!this.#featureService.hasFeature(SupportedFeature.TextGeneration)) {
+        if(!this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
             throw this.#taskNotConfiguredError;
         }
 
@@ -292,7 +292,7 @@ export class ServiceContainer implements IServiceContainer {
     }
 
     getEmojiResponseTask(reaction: MessageReaction, user: User, context: Array<number>): IEmojiResponseTask {
-        if(!this.featureService.hasFeature(SupportedFeature.TextGeneration)) {
+        if(!this.featureService.hasFeature(SupportedFeature.Txt2Txt)) {
             throw this.#taskNotConfiguredError;
         }
 

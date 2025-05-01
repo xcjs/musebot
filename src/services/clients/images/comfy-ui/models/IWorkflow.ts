@@ -1,7 +1,7 @@
-import { WorkflowType } from '../enums/WorkflowType.js';
+import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 
 export interface IWorkflow {
     name: string;
     workflowString: string;
-    type: WorkflowType;
+    type: SupportedFeature;
 }

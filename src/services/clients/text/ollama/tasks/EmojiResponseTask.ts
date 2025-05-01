@@ -80,7 +80,7 @@ export class EmojiResponseTask extends BaseTask implements IEmojiResponseTask {
 
         const replies = await this.#ollamaReplyService.reply(this.#reaction.message as Message, exchange, mention);
 
-        if (this.#featureService.hasFeature(SupportedFeature.ImageGeneration)
+        if (this.#featureService.hasFeature(SupportedFeature.Txt2Img)
             && replies.length > 0) {
             this.#attachImage(exchange.response.response, replies);
         }
@@ -126,7 +126,7 @@ export class EmojiResponseTask extends BaseTask implements IEmojiResponseTask {
             if (response.done) {
                 this.#context = response.context;
 
-                if (this.#featureService.hasFeature(SupportedFeature.ImageGeneration)
+                if (this.#featureService.hasFeature(SupportedFeature.Txt2Img)
                     && replies.length > 0) {
                     this.#attachImage(fullResponse, replies);
                 }

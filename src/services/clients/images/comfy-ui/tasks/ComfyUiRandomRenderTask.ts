@@ -6,6 +6,7 @@ import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
 import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
 import { wrapText } from '../../../../../utilities/string-utilities.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
+import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
@@ -13,7 +14,6 @@ import { IReplyService } from '../../../chat/IReplyService.js';
 import { OllamaClient } from '../../../text/ollama/OllamaClient.js';
 import { IRandomRenderTask } from '../../tasks/IRandomRenderTask.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
-import { WorkflowType } from '../enums/WorkflowType.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 import { ComfyUiReplyTask } from './ComfyUiReplyTask.js';
@@ -57,8 +57,8 @@ export class ComfyUiRandomRenderTask extends ComfyUiBaseTask implements IRandomR
         this.#logger(LogLevel.Info, 'Processing a ComfyUiRandomRenderTask...');
 
         const workflows = this.#workflowService.workflows.filter(x =>
-            x.type === WorkflowType.Txt2img
-            || x.type === WorkflowType.Txt2vid);
+            x.type === SupportedFeature.Txt2Img
+            || x.type === SupportedFeature.Txt2Vid);
 
         const workflow = getRandomArrayEntry(workflows);
 

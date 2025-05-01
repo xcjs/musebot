@@ -16,7 +16,7 @@ export class GuidanceScalePlusButton extends BaseComponent<ButtonBuilder> {
     override get isSupported(): boolean {
         let isSupported = true;
 
-        isSupported = this.featureService.hasFeature(SupportedFeature.ImageGeneration);
+        isSupported = this.featureService.hasFeature(SupportedFeature.Txt2Img);
 
         if (this.#renderRequest === null) {
             return false;

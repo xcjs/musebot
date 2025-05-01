@@ -11,7 +11,7 @@ export class ClearContextButton extends BaseComponent<ButtonBuilder> {
     }
 
     override get isSupported(): boolean {
-        return this.featureService.hasFeature(SupportedFeature.TextGeneration);
+        return this.featureService.hasFeature(SupportedFeature.Txt2Txt);
     }
 
     override get title(): string {

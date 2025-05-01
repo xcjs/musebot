@@ -15,7 +15,6 @@ import { OllamaClient } from '../../../text/ollama/OllamaClient.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 import { IEmojiReactionRenderTask } from '../../tasks/IEmojiReactionRenderTask.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
-import { WorkflowType } from '../enums/WorkflowType.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 import { ComfyUiReplyTask } from './ComfyUiReplyTask.js';
@@ -89,7 +88,7 @@ export class ComfyUiEmojiReactionRenderTask extends ComfyUiBaseTask implements I
         let content = '';
         let emojiText = this.#emoji.name;
 
-        if(this.#featureService.hasFeature(SupportedFeature.TextGeneration)) {
+        if(this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
             this.#logger(LogLevel.Info, `Text generation is supported - converting the emoji to plain text for better model compatibility.`);
             const exchange = await this.#ollamaClient.sendMessage(`Tell me the name of the following emoji in as few words as possible: ${this.#emoji.name}.`, []);
             emojiText = exchange.response.response.trim();
@@ -103,8 +102,8 @@ export class ComfyUiEmojiReactionRenderTask extends ComfyUiBaseTask implements I
             content = `${username} re-rendered \`${renderRequest.prompt}\` as ${newPrompt}`.substring(0, DiscordConstants.ContentMaxLength);
 
             const workflows = this.#workflowService.workflows.filter(x =>
-                x.type === WorkflowType.Txt2img
-                || x.type === WorkflowType.Txt2vid);
+                x.type === SupportedFeature.Txt2Img
+                || x.type === SupportedFeature.Txt2Vid);
 
             const workflow = getRandomArrayEntry(workflows);
             const renderDefaults = this.#workflowService.getWorkflowDefaults(workflow);

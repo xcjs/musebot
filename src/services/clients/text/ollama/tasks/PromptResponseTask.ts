@@ -77,7 +77,7 @@ export class PromptResponseTask extends BaseTask implements IPromptResponseTask 
 
         const replies = await this.#ollamaReplyService.reply(this.#message, exchange);
 
-        if(this.#featureService.hasFeature(SupportedFeature.ImageGeneration)
+        if(this.#featureService.hasFeature(SupportedFeature.Txt2Img)
             && replies.length > 0) {
             this.#attachImage(exchange.response.response, replies);
         }
@@ -146,7 +146,7 @@ export class PromptResponseTask extends BaseTask implements IPromptResponseTask 
             if(response.done) {
                 this.#context = response.context;
 
-                if(this.#featureService.hasFeature(SupportedFeature.ImageGeneration)
+                if(this.#featureService.hasFeature(SupportedFeature.Txt2Img)
                     && replies.length > 0) {
                     await this.#attachImage(fullResponse, replies);
                 }
