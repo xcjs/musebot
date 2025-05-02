@@ -40,7 +40,7 @@ export class ActionRowBuilderFactory implements IActionRowBuilderFactory {
         return actionRows;
     }
 
-    async buildDynamiceActionRows(): Promise<ActionRowBuilder<ButtonBuilder>[]> {
+    async buildDynamicActionRows(): Promise<ActionRowBuilder<ButtonBuilder>[]> {
         return [];
     }
 }
