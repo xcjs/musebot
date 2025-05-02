@@ -15,12 +15,14 @@ import { IReplyService } from './clients/chat/IReplyService.js';
 import { ITypingService } from './clients/chat/ITypingService.js';
 import { IReplyTask } from './clients/chat/tasks/IReplyTask.js';
 import { ComfyUiClient } from './clients/images/comfy-ui/ComfyUiClient.js';
+import { IWorkflow } from './clients/images/comfy-ui/models/IWorkflow.js';
 import { IWorkflowService } from './clients/images/comfy-ui/services/IWorkflowService.js';
 import { WorkflowService } from './clients/images/comfy-ui/services/WorkflowService.js';
 import { ComfyUiAttachRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiAttachRenderTask.js';
 import { ComfyUiDecreaseGuidanceScaleRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiDecreaseGuidanceScaleRenderTask.js';
 import { ComfyUiEmojiReactionRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiEmojiReactionRenderTask.js';
 import { ComfyUiExpandPromptTask } from './clients/images/comfy-ui/tasks/ComfyUiExpandPromptTask.js';
+import { ComfyUiImg2Img2ImgRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiImg2ImgRenderTask.js';
 import { ComfyUiIncreaseGuidanceScaleRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiIncreaseGuidanceScaleRenderTask.js';
 import { ComfyUiJsonRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiJsonRenderTask.js';
 import { ComfyUiRandomRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiRandomRenderTask.js';
@@ -187,6 +189,19 @@ export class ServiceContainer implements IServiceContainer {
         switch (this.#environmentSettings.stableDiffusionApiType) {
             case StableDiffusionApiType.ComfyUI:
                 return new ComfyUiExpandPromptTask(this, interaction);
+            default:
+                throw this.#taskNotConfiguredError;
+        }
+    }
+
+    getImg2ImgRenderTask(interaction: ButtonInteraction, workflow: IWorkflow) {
+        if(!this.#featureService.hasFeature(SupportedFeature.Img2Img)) {
+            throw this.#taskNotConfiguredError;
+        }
+
+        switch(this.#environmentSettings.stableDiffusionApiType) {
+            case StableDiffusionApiType.ComfyUI:
+                return new ComfyUiImg2Img2ImgRenderTask(this, interaction, workflow);
             default:
                 throw this.#taskNotConfiguredError;
         }
