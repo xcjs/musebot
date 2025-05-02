@@ -3,6 +3,7 @@ import { maxSeed } from '../constants/constants.js';
 
 export class SerializableRenderRequest {
     label: string | undefined;
+    help: string | undefined;
     prompt: string;
     promptNegative: string | null;
     model: string;
