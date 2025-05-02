@@ -3,6 +3,7 @@ import { AttachmentBuilder, BaseMessageOptions, ButtonInteraction, Message } fro
 import { Logger, LogLevel } from 'meklog';
 
 import { MAX_FILE_NAME_LENGTH } from '../../../../../constants/FileConstants.js';
+import { APPLICATION_NAME } from '../../../../../constants/Globals.js';
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
@@ -116,12 +117,10 @@ export class ComfyUiReplyService {
     }
 
     getFileNameFromPrompt(renderRequest: SerializableRenderRequest | null): string {
-        const namePrefix = 'Musebot'
-
         if(renderRequest === null) {
-            return `${namePrefix}_${new Date().getTime()}_unnamed`;
+            return `${APPLICATION_NAME}_${new Date().getTime()}_unnamed`;
         }
 
-        return `${namePrefix}_${renderRequest.seed}_${renderRequest.prompt}`.substring(0, MAX_FILE_NAME_LENGTH);
+        return `${APPLICATION_NAME}_${renderRequest.seed}_${renderRequest.prompt}`.substring(0, MAX_FILE_NAME_LENGTH);
     }
 }

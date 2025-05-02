@@ -4,5 +4,6 @@ export enum DiscordConstants {
     ShardCountAuto = 'auto',
     MaxRequestsPerSecond = 50,
     MaxButtonsPerActionRow = 5,
-    MaxAttachmentsPerMessage = 10
+    MaxAttachmentsPerMessage = 10,
+    InviteLink = 'https://discord.gg/qZMzFA8Apd'
 }
