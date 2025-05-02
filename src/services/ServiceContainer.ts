@@ -2,6 +2,8 @@ import { BaseMessageOptions, ButtonInteraction, Client as DiscordClient, Gateway
 
 import { BotFunction } from '../enums/BotFunction.js';
 import { ComfyUiReplyService } from './clients/chat/discord/comfy-ui/ComfyUiReplyService.js';
+import { ActionRowBuilderFactory } from './clients/chat/discord/components/ActionRowBuilderFactory.js';
+import { IActionRowBuilderFactory } from './clients/chat/discord/components/IActionRowBuilderFactory.js';
 import { DiscordConstants } from './clients/chat/discord/enums/DiscordConstants.js';
 import { GenerativeImageChatClient } from './clients/chat/discord/GenerativeImageChatClient.js';
 import { GenerativeTextChatClient } from './clients/chat/discord/GenerativeTextChatClient.js';
@@ -123,6 +125,10 @@ export class ServiceContainer implements IServiceContainer {
 
     get ollamaStreamingReplyService(): OllamaStreamingReplyService {
         return new OllamaStreamingReplyService(this);
+    }
+
+    get actionRowBuilderFactory(): IActionRowBuilderFactory {
+        return new ActionRowBuilderFactory(this);
     }
 
     #helpService: IHelpService;

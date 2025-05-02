@@ -1,31 +1,34 @@
 import { ActionRowBuilder, ButtonBuilder } from 'discord.js';
 
 import { IServiceContainer } from '../../../../../IServiceContainer.js';
-import { buildActionRows } from '../ActionRowBuilderFactory.js';
 import { BaseComponent } from '../BaseComponent.js';
 import { HelpButton } from '../buttons/HelpButton.js';
 import { ClearContextButton } from '../buttons/text/ClearContextButton.js';
+import { IActionRowBuilderFactory } from '../IActionRowBuilderFactory.js';
 
-export class LargeLanguageModelActionRow extends BaseComponent<Array<ActionRowBuilder<ButtonBuilder>>> {
-    #services: IServiceContainer;
-
-    #buttons: Array<BaseComponent<ButtonBuilder>> = [];
-    get buttons(): Array<BaseComponent<ButtonBuilder>> {
+export class LargeLanguageModelActionRow extends BaseComponent<ActionRowBuilder<ButtonBuilder>[]> {
+    #buttons: BaseComponent<ButtonBuilder>[] = [];
+    get buttons(): BaseComponent<ButtonBuilder>[] {
         return this.#buttons;
     }
+
+    #services: IServiceContainer;
+
+    #actionRowBuilderFactory: IActionRowBuilderFactory;
 
     constructor(services: IServiceContainer) {
         super(services);
 
         this.#services = services;
+        this.#actionRowBuilderFactory = services.actionRowBuilderFactory;
     }
 
-    override build(): Array<ActionRowBuilder<ButtonBuilder>> {
+    override build(): ActionRowBuilder<ButtonBuilder>[] {
         this.#buttons = [
             new ClearContextButton(this.#services),
             new HelpButton(this.#services)
         ];
 
-        return buildActionRows(this.#buttons);
+        return this.#actionRowBuilderFactory.buildActionRows(this.#buttons);
     }
 }

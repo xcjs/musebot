@@ -1,6 +1,7 @@
 import { ApplicationEmoji, BaseMessageOptions, ButtonInteraction, Client as DiscordClient, GuildEmoji, Message, MessageReaction, ReactionEmoji, User } from 'discord.js';
 
 import { ComfyUiReplyService } from './clients/chat/discord/comfy-ui/ComfyUiReplyService.js';
+import { IActionRowBuilderFactory } from './clients/chat/discord/components/IActionRowBuilderFactory.js';
 import { OllamaReplyService } from './clients/chat/discord/ollama/OllamaReplyService.js';
 import { OllamaStreamingReplyService } from './clients/chat/discord/ollama/OllamaStreamingReplyService.js';
 import { IGenerativeChatClient } from './clients/chat/IGenerativeChatClient.js';
@@ -48,6 +49,7 @@ export interface IServiceContainer {
     ollamaClient: OllamaClient;
     ollamaReplyService: OllamaReplyService;
     ollamaStreamingReplyService: OllamaStreamingReplyService;
+    actionRowBuilderFactory: IActionRowBuilderFactory;
     helpService: IHelpService;
 
     // Factories --------------------------------------------------------------/

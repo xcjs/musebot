@@ -27,4 +27,8 @@ export abstract class BaseComponent<ComponentType> {
     build(): ComponentType {
         throw 'The build() implementation must be overridden.';
     }
+
+    buildAsync(): Promise<ComponentType> {
+        throw 'The buildAsync() implementation must be overridden.';
+    }
 }

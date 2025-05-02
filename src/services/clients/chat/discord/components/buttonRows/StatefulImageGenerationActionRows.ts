@@ -2,7 +2,6 @@ import { ActionRowBuilder, ButtonBuilder } from 'discord.js';
 
 import { IServiceContainer } from '../../../../../IServiceContainer.js';
 import { SerializableRenderRequest } from '../../../../images/stable-diffusion/models/SerializableRenderRequest.js';
-import { buildActionRows } from '../ActionRowBuilderFactory.js';
 import { BaseComponent } from '../BaseComponent.js';
 import { HelpButton } from '../buttons/HelpButton.js';
 import { ExpandPromptButton } from '../buttons/images/ExpandPromptButton.js';
@@ -13,22 +12,27 @@ import { RetryButton } from '../buttons/images/RetryButton.js';
 import { ShowSourceButton } from '../buttons/images/ShowSourceButton.js';
 import { UpscaleDesignButton } from '../buttons/images/UpscaleDesignButton.js';
 import { UpscaleDetailButton } from '../buttons/images/UpscaleDetailButton.js';
+import { IActionRowBuilderFactory } from '../IActionRowBuilderFactory.js';
 
-export class StatefulImageGenerationActionRows extends BaseComponent<Array<ActionRowBuilder<ButtonBuilder>>> {
-    get buttons(): Array<BaseComponent<ButtonBuilder>> {
+export class StatefulImageGenerationActionRows extends BaseComponent<ActionRowBuilder<ButtonBuilder>[]> {
+    #buttons: BaseComponent<ButtonBuilder>[] = [];
+    get buttons(): BaseComponent<ButtonBuilder>[] {
         return this.#buttons;
     }
 
     #services: IServiceContainer;
 
-    #renderRequest: SerializableRenderRequest | null;
+    #actionRowBuilderFactory: IActionRowBuilderFactory;
 
-    #buttons: Array<BaseComponent<ButtonBuilder>> = [];
+    #renderRequest: SerializableRenderRequest | null;
 
     constructor(services: IServiceContainer,
         renderRequest: SerializableRenderRequest | null) {
         super(services);
         this.#services = services;
+
+        this.#actionRowBuilderFactory = services.actionRowBuilderFactory;
+
         this.#renderRequest = renderRequest;
     }
 
@@ -45,6 +49,6 @@ export class StatefulImageGenerationActionRows extends BaseComponent<Array<Actio
             new HelpButton(this.#services)
         ];
 
-        return buildActionRows(this.#buttons);
+        return this.#actionRowBuilderFactory.buildActionRows(this.#buttons);
     }
 }

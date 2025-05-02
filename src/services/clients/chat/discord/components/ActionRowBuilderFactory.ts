@@ -1,28 +1,46 @@
 import { ActionRowBuilder, ButtonBuilder } from 'discord.js'
 
+import { IFeatureService } from '../../../../features/IFeatureService.js';
+import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { IWorkflowService } from '../../../images/comfy-ui/services/IWorkflowService.js';
 import { DiscordConstants } from '../enums/DiscordConstants.js';
 import { BaseComponent } from './BaseComponent.js'
+import { IActionRowBuilderFactory } from './IActionRowBuilderFactory.js';
 
-export function buildActionRows(buttons: Array<BaseComponent<ButtonBuilder>>): Array<ActionRowBuilder<ButtonBuilder>> {
-    const actionRows: Array<ActionRowBuilder<ButtonBuilder>> = [];
-    let actionRow: ActionRowBuilder<ButtonBuilder> | null = null;
+export class ActionRowBuilderFactory implements IActionRowBuilderFactory {
+    #featureService: IFeatureService;
+    #workflowService: IWorkflowService;
 
-    buttons.forEach((button, i) => {
-        if (actionRow === null) {
-            actionRow = new ActionRowBuilder<ButtonBuilder>();
-        }
+    constructor(services: IServiceContainer) {
+        this.#featureService = services.featureService;
+        this.#workflowService = services.workflowService;
+    }
 
-        if(button.isSupported) {
-            actionRow.addComponents(button.build());
-        }
+    buildActionRows(buttons: BaseComponent<ButtonBuilder>[]): ActionRowBuilder<ButtonBuilder>[] {
+        const actionRows: ActionRowBuilder<ButtonBuilder>[] = [];
+        let actionRow: ActionRowBuilder<ButtonBuilder> | null = null;
 
-        if(actionRow.components.length % DiscordConstants.MaxButtonsPerActionRow === 0
-            || buttons.length - 1 === i
-        ) {
-            actionRows.push(actionRow);
-            actionRow = null;
-        }
-    });
+        buttons.forEach((button, i) => {
+            if (actionRow === null) {
+                actionRow = new ActionRowBuilder<ButtonBuilder>();
+            }
 
-    return actionRows;
+            if (button.isSupported) {
+                actionRow.addComponents(button.build());
+            }
+
+            if (actionRow.components.length % DiscordConstants.MaxButtonsPerActionRow === 0
+                || buttons.length - 1 === i
+            ) {
+                actionRows.push(actionRow);
+                actionRow = null;
+            }
+        });
+
+        return actionRows;
+    }
+
+    async buildDynamiceActionRows(): Promise<ActionRowBuilder<ButtonBuilder>[]> {
+        return [];
+    }
 }
