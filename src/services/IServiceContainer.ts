@@ -21,7 +21,6 @@ import { IRandomRenderTask } from './clients/images/tasks/IRandomRenderTask.js';
 import { IReplyRenderTask } from './clients/images/tasks/IReplyRenderTask.js';
 import { IRetryRenderTask } from './clients/images/tasks/IRetryRenderTask.js';
 import { IShowSourceTask } from './clients/images/tasks/IShowSourceTask.js';
-import { IUpscaleRenderTask } from './clients/images/tasks/IUpscaleRenderTask.js';
 import { OllamaClient } from './clients/text/ollama/OllamaClient.js';
 import { IEmojiResponseTask } from './clients/text/tasks/IEmojiResponseTask.js';
 import { IPromptResponseTask } from './clients/text/tasks/IPromptResponseTask.js';
@@ -72,7 +71,6 @@ export interface IServiceContainer {
     getReplyRenderTask(message: Message): IReplyRenderTask;
     getRetryRenderTask(interaction: ButtonInteraction): IRetryRenderTask;
     getShowSourceTask(interaction: ButtonInteraction): IShowSourceTask;
-    getUpscaleRenderTask(interaction: ButtonInteraction): IUpscaleRenderTask;
     getPromptResponseTask(message: Message, context: Array<number>): IPromptResponseTask;
     getEmojiResponseTask(reaction: MessageReaction, user: User, context: Array<number>): IEmojiResponseTask;
 }

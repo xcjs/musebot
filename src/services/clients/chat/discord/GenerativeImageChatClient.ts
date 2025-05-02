@@ -83,12 +83,6 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
             case BotInteraction.Retry:
                 this.#taskQueue.add(this.#services.getRetryRenderTask(interaction) as BaseTask);
                 break;
-            case BotInteraction.UpscaleDetail:
-                this.#taskQueue.add(this.#services.getUpscaleRenderTask(interaction) as BaseTask);
-                break;
-            case BotInteraction.UpscaleDesign:
-                this.#taskQueue.add(this.#services.getUpscaleRenderTask(interaction) as BaseTask)
-                break;
             case BotInteraction.ShowSource:
                 this.#taskQueue.add(this.#services.getShowSourceTask(interaction) as BaseTask);
                 break;

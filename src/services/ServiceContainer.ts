@@ -31,7 +31,6 @@ import { ComfyUiRandomRenderTask } from './clients/images/comfy-ui/tasks/ComfyUi
 import { ComfyUiReplyRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiReplyRenderTask.js';
 import { ComfyUiRetryRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiRetryRenderTask.js';
 import { ComfyUiShowSourceTask } from './clients/images/comfy-ui/tasks/ComfyUiShowSourceTask.js';
-import { ComfyUiUpscaleRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiUpscaleRenderTask.js';
 import { ImageHelpService } from './clients/images/help/ImageHelpService.js';
 import { StableDiffusionApiType } from './clients/images/stable-diffusion/enums/StableDiffusionApiType.js';
 import { IAttachRenderTask } from './clients/images/tasks/IAttachRenderTask.js';
@@ -44,7 +43,6 @@ import { IRandomRenderTask } from './clients/images/tasks/IRandomRenderTask.js';
 import { IReplyRenderTask } from './clients/images/tasks/IReplyRenderTask.js';
 import { IRetryRenderTask } from './clients/images/tasks/IRetryRenderTask.js';
 import { IShowSourceTask } from './clients/images/tasks/IShowSourceTask.js';
-import { IUpscaleRenderTask } from './clients/images/tasks/IUpscaleRenderTask.js';
 import { TextHelpService } from './clients/text/help/TextHelpService.js';
 import { OllamaClient } from './clients/text/ollama/OllamaClient.js';
 import { EmojiResponseTask } from './clients/text/ollama/tasks/EmojiResponseTask.js';
@@ -286,19 +284,6 @@ export class ServiceContainer implements IServiceContainer {
         switch (this.#environmentSettings.stableDiffusionApiType) {
             case StableDiffusionApiType.ComfyUI:
                 return new ComfyUiShowSourceTask(this, interaction);
-            default:
-                throw this.#taskNotConfiguredError;
-        }
-    }
-
-    getUpscaleRenderTask(interaction: ButtonInteraction): IUpscaleRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.Img2ImgUpscaling)) {
-            throw this.#taskNotConfiguredError;
-        }
-
-        switch (this.#environmentSettings.stableDiffusionApiType) {
-            case StableDiffusionApiType.ComfyUI:
-                return new ComfyUiUpscaleRenderTask(this, interaction);
             default:
                 throw this.#taskNotConfiguredError;
         }

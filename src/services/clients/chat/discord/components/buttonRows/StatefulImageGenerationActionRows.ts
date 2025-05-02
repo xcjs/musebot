@@ -10,8 +10,6 @@ import { GuidanceScalePlusButton } from '../buttons/images/GuidanceScalePlusButt
 import { RandomizeButton } from '../buttons/images/RandomizeButton.js';
 import { RetryButton } from '../buttons/images/RetryButton.js';
 import { ShowSourceButton } from '../buttons/images/ShowSourceButton.js';
-import { UpscaleDesignButton } from '../buttons/images/UpscaleDesignButton.js';
-import { UpscaleDetailButton } from '../buttons/images/UpscaleDetailButton.js';
 import { IActionRowBuilderFactory } from '../IActionRowBuilderFactory.js';
 
 export class StatefulImageGenerationActionRows extends BaseComponent<ActionRowBuilder<ButtonBuilder>[]> {
@@ -39,13 +37,11 @@ export class StatefulImageGenerationActionRows extends BaseComponent<ActionRowBu
     override build(): ActionRowBuilder<ButtonBuilder>[] {
         this.#buttons = [
             new RetryButton(this.#services),
-            new UpscaleDetailButton(this.#services),
-            new UpscaleDesignButton(this.#services),
             new GuidanceScaleMinusButton(this.#services, this.#renderRequest),
             new GuidanceScalePlusButton(this.#services, this.#renderRequest),
+            new ShowSourceButton(this.#services),
             new ExpandPromptButton(this.#services),
             new RandomizeButton(this.#services),
-            new ShowSourceButton(this.#services),
             new HelpButton(this.#services)
         ];
 
