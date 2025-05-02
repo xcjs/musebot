@@ -25,6 +25,7 @@ export class Img2ImgActionRow extends BaseComponent<ActionRowBuilder<ButtonBuild
         this.#services = services;
 
         this.#featureService = services.featureService;
+        this.#workflowService = services.workflowService;
         this.#actionRowBuilderFactory = services.actionRowBuilderFactory;
 
         this.#logger = new Logger(services.environmentSettings.isProduction, 'Img2ImgActionRow');

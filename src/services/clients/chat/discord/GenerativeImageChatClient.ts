@@ -34,7 +34,7 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
         this.#discordClient = services.discordClient;
         this.#replyService = services.replyService;
         this.#typingService = services.typingService;
-
+        this.#workflowService = services.workflowService;
         this.#helpService = services.helpService;
         this.#taskQueue = services.taskQueue;
 
