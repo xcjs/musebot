@@ -7,6 +7,9 @@ import { IHelpService } from '../../../help/IHelpService.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
 import { ITaskQueue } from '../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
+import { IWorkflow } from '../../images/comfy-ui/models/IWorkflow.js';
+import { IWorkflowService } from '../../images/comfy-ui/services/IWorkflowService.js';
+import { SerializableRenderRequest } from '../../images/stable-diffusion/models/SerializableRenderRequest.js';
 import { IReplyService } from '../IReplyService.js';
 import { ITypingService } from '../ITypingService.js';
 import { BaseDiscordClient } from './BaseDiscordClient.js';
@@ -18,6 +21,7 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
     #discordClient: DiscordClient;
     #replyService: IReplyService;
     #typingService: ITypingService;
+    #workflowService: IWorkflowService;
     #helpService: IHelpService;
     #taskQueue: ITaskQueue;
 
@@ -30,6 +34,7 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
         this.#discordClient = services.discordClient;
         this.#replyService = services.replyService;
         this.#typingService = services.typingService;
+
         this.#helpService = services.helpService;
         this.#taskQueue = services.taskQueue;
 
@@ -106,7 +111,27 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
                     }) as BaseTask);
                 break;
             default:
-                this.logger(LogLevel.Warning, `An unknown interaction was passed: ${interaction.customId}.`);
+                await this.#workflowService.loadWorkflows();
+                const workflows = this.#workflowService.workflows;
+
+                let workflow: IWorkflow;
+                let renderRequest: SerializableRenderRequest;
+
+                const isWorkflowInteraction = !!workflows.find((workflowInstance) => {
+                    renderRequest = this.#workflowService.getWorkflowDefaults(workflow);
+
+                    if(renderRequest.label === interaction.customId) {
+                        workflow = workflowInstance;
+                        return true;
+                    }
+                });
+
+                if (isWorkflowInteraction) {
+                    this.#taskQueue.add(this.#services.getImg2ImgRenderTask(interaction, workflow) as BaseTask);
+                } else {
+                    this.logger(LogLevel.Warning, `An unknown interaction was passed: ${interaction.customId}.`);
+                }
+
                 break;
         }
 

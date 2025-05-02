@@ -96,7 +96,7 @@ export class WorkflowService implements IWorkflowService {
             if(renderRequestObj !== null && renderRequestObj !== undefined) {
                 return SerializableRenderRequest.fromSerializableRenderRequest(renderRequestObj);
             } else {
-                return new SerializableRenderRequest;
+                return new SerializableRenderRequest();
             }
         } catch (error) {
             this.#logger(LogLevel.Error,
