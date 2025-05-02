@@ -111,25 +111,34 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
                     }) as BaseTask);
                 break;
             default:
-                await this.#workflowService.loadWorkflows();
-                const workflows = this.#workflowService.workflows;
-
+                let isWorkflowInteraction = false;
                 let workflow: IWorkflow;
-                let renderRequest: SerializableRenderRequest;
 
-                const isWorkflowInteraction = !!workflows.find((workflowInstance) => {
-                    renderRequest = this.#workflowService.getWorkflowDefaults(workflow);
+                try {
+                    await this.#workflowService.loadWorkflows();
+                    const workflows = this.#workflowService.workflows;
 
-                    if(renderRequest.label === interaction.customId) {
-                        workflow = workflowInstance;
-                        return true;
-                    }
-                });
+                    let renderRequest: SerializableRenderRequest;
+
+                    isWorkflowInteraction = !!workflows.find((workflowInstance) => {
+                        renderRequest = this.#workflowService.getWorkflowDefaults(workflowInstance);
+
+                        if(renderRequest.label === interaction.customId) {
+                            workflow = workflowInstance;
+                            return true;
+                        }
+                    });
+                } catch(error) {
+                    isWorkflowInteraction = false;
+                    this.logger(LogLevel.Error, `An exception occurred while trying to process the interaction "${interaction.customId}"`);
+                    this.logger(LogLevel.Error, `As this is a custom workflow, verify your workflow defaults are configured correctly.`);
+                    this.logger(LogLevel.Error, `Error: ${error}`);
+                }
 
                 if (isWorkflowInteraction) {
                     this.#taskQueue.add(this.#services.getImg2ImgRenderTask(interaction, workflow) as BaseTask);
                 } else {
-                    this.logger(LogLevel.Warning, `An unknown interaction was passed: ${interaction.customId}.`);
+                    this.logger(LogLevel.Warning, `An unknown or erroneous interaction was passed: ${interaction.customId}.`);
                 }
 
                 break;
