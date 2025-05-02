@@ -31,6 +31,12 @@ export class FeatureService implements IFeatureService {
     }
 
     async loadFeatures(): Promise<void> {
+        if (this.#environmentSettings.ollamaHosts.length > 0
+            && this.#environmentSettings.ollamaModels.length > 0) {
+                this.#logger(LogLevel.Info, `${SupportedFeature.Txt2Txt} supported.`);
+                this.#supportedFeatures.push(SupportedFeature.Txt2Txt);
+        }
+
         await this.#workflowService.loadWorkflows();
 
         if (!this.#workflowService.hasWorkflows) {
@@ -63,12 +69,6 @@ export class FeatureService implements IFeatureService {
                 this.#logger(LogLevel.Info, `${SupportedFeature.Txt2Vid} supported.`);
                 this.#supportedFeatures.push(SupportedFeature.Txt2Vid);
             }
-        }
-
-        if(this.#environmentSettings.ollamaHosts.length > 0
-            && this.#environmentSettings.ollamaModels.length > 0) {
-                this.#logger(LogLevel.Info, `${SupportedFeature.Txt2Txt} supported.`);
-                this.#supportedFeatures.push(SupportedFeature.Txt2Txt);
         }
     }
 }
