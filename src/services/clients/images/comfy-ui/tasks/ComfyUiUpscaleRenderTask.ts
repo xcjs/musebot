@@ -8,7 +8,6 @@ import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js'
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
-import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 import { IUpscaleRenderTask } from '../../tasks/IUpscaleRenderTask.js';
@@ -24,7 +23,6 @@ export class ComfyUiUpscaleRenderTask extends ComfyUiBaseTask implements IUpscal
     #environmentSettings: IEnvironmentSettings;
     #workflowService: IWorkflowService;
     #comfyUiClient: ComfyUiClient;
-    #comfyUiReplyService: ComfyUiReplyService;
     #replyService: IReplyService;
     #taskQueue: ITaskQueue;
 
@@ -44,7 +42,6 @@ export class ComfyUiUpscaleRenderTask extends ComfyUiBaseTask implements IUpscal
         this.#environmentSettings = services.environmentSettings;
         this.#workflowService = services.workflowService;
         this.#comfyUiClient = services.comfyUiClient;
-        this.#comfyUiReplyService = services.comfyUiReplyService;
         this.#replyService = services.replyService;
         this.#taskQueue = services.taskQueue;
 
