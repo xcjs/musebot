@@ -113,7 +113,7 @@ export class ComfyUiReplyService {
                 new StatefulImageGenerationActionRows(this.#services, renderExchange.request[0]).build() :
                 new StatelessImageGenerationActionRow(this.#services).build();
 
-        this.#replyService.reply(interaction, reply, isEdit);
+        await this.#replyService.reply(interaction, reply, isEdit);
     }
 
     getFileNameFromPrompt(renderRequest: SerializableRenderRequest | null): string {
