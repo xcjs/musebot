@@ -10,6 +10,7 @@ import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { ComfyUiClient } from '../../../images/comfy-ui/ComfyUiClient.js';
 import { SerializableRenderRequest } from '../../../images/stable-diffusion/models/SerializableRenderRequest.js';
 import { IReplyService } from '../../IReplyService.js';
+import { Img2ImgActionRow } from '../components/buttonRows/Img2ImgActionRow.js';
 import { StatefulImageGenerationActionRows } from '../components/buttonRows/StatefulImageGenerationActionRows.js';
 import { StatelessImageGenerationActionRow } from '../components/buttonRows/StatelessImageGenerationActionRow.js';
 import { DiscordConstants } from '../enums/DiscordConstants.js';
@@ -110,8 +111,10 @@ export class ComfyUiReplyService {
 
         reply.files = reply.files.concat(imageAttachments);
         reply.components = isStatefulResponse ?
-                new StatefulImageGenerationActionRows(this.#services, renderExchange.request[0]).build() :
-                new StatelessImageGenerationActionRow(this.#services).build();
+                new StatefulImageGenerationActionRows(this.#services, renderExchange.request[0]).build()
+                    .concat(await new Img2ImgActionRow(this.#services).buildAsync()) :
+                new StatelessImageGenerationActionRow(this.#services).build()
+                    .concat(await new Img2ImgActionRow(this.#services).buildAsync());
 
         await this.#replyService.reply(interaction, reply, isEdit);
     }

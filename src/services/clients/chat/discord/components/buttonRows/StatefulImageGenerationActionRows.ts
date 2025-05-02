@@ -36,7 +36,7 @@ export class StatefulImageGenerationActionRows extends BaseComponent<ActionRowBu
         this.#renderRequest = renderRequest;
     }
 
-    override build(): Array<ActionRowBuilder<ButtonBuilder>> {
+    override build(): ActionRowBuilder<ButtonBuilder>[] {
         this.#buttons = [
             new RetryButton(this.#services),
             new UpscaleDetailButton(this.#services),

@@ -10,6 +10,7 @@ import { IActionRowBuilderFactory } from '../IActionRowBuilderFactory.js';
 
 export class StatelessImageGenerationActionRow extends BaseComponent<ActionRowBuilder<ButtonBuilder>[]> {
     #services: IServiceContainer;
+
     #actionRowBuilderFactory: IActionRowBuilderFactory;
 
     constructor(services: IServiceContainer) {
@@ -20,8 +21,8 @@ export class StatelessImageGenerationActionRow extends BaseComponent<ActionRowBu
         this.#actionRowBuilderFactory = services.actionRowBuilderFactory;
     }
 
-    override build(): Array<ActionRowBuilder<ButtonBuilder>> {
-        const buttons: Array<BaseComponent<ButtonBuilder>> = [
+    override build(): ActionRowBuilder<ButtonBuilder>[] {
+        const buttons: BaseComponent<ButtonBuilder>[] = [
             new UpscaleDetailButton(this.#services),
             new UpscaleDesignButton(this.#services),
             new RandomizeButton(this.#services),
