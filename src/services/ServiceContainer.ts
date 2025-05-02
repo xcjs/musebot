@@ -128,7 +128,7 @@ export class ServiceContainer implements IServiceContainer {
     }
 
     get actionRowBuilderFactory(): IActionRowBuilderFactory {
-        return new ActionRowBuilderFactory(this);
+        return new ActionRowBuilderFactory();
     }
 
     #helpService: IHelpService;
