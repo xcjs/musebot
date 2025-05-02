@@ -2,7 +2,7 @@ import { getRandomInt } from '../../../../../utilities/random-utilities.js';
 import { maxSeed } from '../constants/constants.js';
 
 export class SerializableRenderRequest {
-    label: string;
+    label: string | undefined;
     prompt: string;
     promptNegative: string | null;
     model: string;
