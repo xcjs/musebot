@@ -51,6 +51,10 @@ export class SerializableRenderRequest {
         instancedRequest.steps = request.steps;
         instancedRequest.num = request.num || 1;
 
+        instancedRequest.label = request.label;
+        instancedRequest.title = request.title;
+        instancedRequest.helpText = request.helpText;
+
         return instancedRequest;
     }
 }
