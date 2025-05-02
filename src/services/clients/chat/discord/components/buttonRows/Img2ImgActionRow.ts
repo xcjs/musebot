@@ -1,7 +1,6 @@
 import { ActionRowBuilder, ButtonBuilder } from 'discord.js';
 import { Logger, LogLevel } from 'meklog';
 
-import { APPLICATION_NAME } from '../../../../../../constants/Globals.js';
 import { SupportedFeature } from '../../../../../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../../../../../features/IFeatureService.js';
 import { IServiceContainer } from '../../../../../IServiceContainer.js';
@@ -53,7 +52,7 @@ export class Img2ImgActionRow extends BaseComponent<ActionRowBuilder<ButtonBuild
                 || renderRequest.label === undefined
             ) {
                 const error = `The workflow "${workflow.name}" does not contain a usable label. `
-                    + `Add a label and restart ${APPLICATION_NAME}`;
+                    + `Add a label, save your workflow, and try again.`;
 
                 this.#logger(LogLevel.Error, error);
                 throw new Error(error);
