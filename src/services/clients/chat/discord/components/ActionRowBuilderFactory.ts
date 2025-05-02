@@ -1,19 +1,12 @@
 import { ActionRowBuilder, ButtonBuilder } from 'discord.js'
 
-import { IFeatureService } from '../../../../features/IFeatureService.js';
-import { IServiceContainer } from '../../../../IServiceContainer.js';
-import { IWorkflowService } from '../../../images/comfy-ui/services/IWorkflowService.js';
 import { DiscordConstants } from '../enums/DiscordConstants.js';
 import { BaseComponent } from './BaseComponent.js'
 import { IActionRowBuilderFactory } from './IActionRowBuilderFactory.js';
 
 export class ActionRowBuilderFactory implements IActionRowBuilderFactory {
-    #featureService: IFeatureService;
-    #workflowService: IWorkflowService;
+    constructor() {
 
-    constructor(services: IServiceContainer) {
-        this.#featureService = services.featureService;
-        this.#workflowService = services.workflowService;
     }
 
     buildActionRows(buttons: BaseComponent<ButtonBuilder>[]): ActionRowBuilder<ButtonBuilder>[] {
@@ -38,9 +31,5 @@ export class ActionRowBuilderFactory implements IActionRowBuilderFactory {
         });
 
         return actionRows;
-    }
-
-    async buildDynamicActionRows(): Promise<ActionRowBuilder<ButtonBuilder>[]> {
-        return [];
     }
 }
