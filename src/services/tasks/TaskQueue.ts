@@ -45,8 +45,8 @@ export class TaskQueue implements ITaskQueue {
             taskChannel.queue.push(task);
         }
 
-        // Not await intentionally - this allows tasks of different channels to
-        // be processed in parallel.
+        // Not awaited intentionally - this allows tasks of different channels
+        // to be processed in parallel.
         this.#processQueue();
     }
 
