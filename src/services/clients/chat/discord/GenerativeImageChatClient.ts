@@ -71,7 +71,7 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
     }
 
     async #onInteraction(interaction: ButtonInteraction): Promise<void> {
-        this.logger(LogLevel.Info, `Beginning interaction response to custom action ${interaction.customId}...`);
+        this.logger(LogLevel.Info, `Beginning interaction response to custom action "${interaction.customId}"...`);
 
         try {
             await interaction.deferUpdate();
