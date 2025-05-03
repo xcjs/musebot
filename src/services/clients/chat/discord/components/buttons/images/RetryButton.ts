@@ -7,7 +7,7 @@ import { BaseComponent } from '../../BaseComponent.js';
 
 export class RetryButton extends BaseComponent<ButtonBuilder> {
     override get label(): string {
-        return '⠀🔄⠀';
+        return '🔄';
     }
 
     override get isSupported(): boolean {

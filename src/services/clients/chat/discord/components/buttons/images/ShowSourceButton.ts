@@ -7,7 +7,7 @@ import { BaseComponent } from '../../BaseComponent.js';
 
 export class ShowSourceButton extends BaseComponent<ButtonBuilder> {
     override get label(): string {
-        return '⠀{⠀}⠀';
+        return '{⠀}';
     }
 
     override get isSupported(): boolean {
