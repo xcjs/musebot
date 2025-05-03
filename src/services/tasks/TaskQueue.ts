@@ -16,10 +16,9 @@ export class TaskQueue implements ITaskQueue {
     #logger;
 
     #channels: Array<TaskChannel> = [];
-    #isActive: boolean = false;
 
     get isActive() {
-        return this.#isActive;
+        return this.#channels.filter(channel => channel.hasTasks).length > 0;
     }
 
     constructor(services: IServiceContainer) {
@@ -109,8 +108,6 @@ export class TaskQueue implements ITaskQueue {
         tasks.forEach((task) => {
             this.#logger(LogLevel.Info, `Adding task ${task.id} to the queue from ${task.taskChannel}.`);
         });
-
-        this.#isActive = this.#channels.filter(channel => channel.hasTasks).length > 0;
 
         return tasks;
     }
