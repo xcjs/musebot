@@ -187,7 +187,7 @@ export class ReplyService implements IReplyService {
     }
 
     getMessageWithoutBotMentions(message: Message): string {
-        this.#logger(LogLevel.Info, 'Stripping any bot mentions from the message content');
+        this.#logger(LogLevel.Info, 'Stripping any bot mentions from the message content.');
 
         if(message.content === null) {
             this.#logger(LogLevel.Info, 'There is no content in the message - skipping.');
