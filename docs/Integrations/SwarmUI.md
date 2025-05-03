@@ -189,27 +189,14 @@ Musebot supports a limited number of specific workflow types and each are mapped
 to matching directories within `./workflows`:
 
 * `img2img`: These workflows accept a base64 encoded image and process the image
-   into another image. Support is still being developed for these kinds of
-   workflows, so stay tuned!
-* `img2img/upscalers`: Like other `img2img` workflows, these workflows accept
-   a base64 string, but are fully supported. In fact, two workflows of this type
-   are currently **required**. When it comes to the Musebot Defaults (see the
-   section below), the `$musebotDefaults.prompt` property is used as the
-   base64-encoded image.
-
-  * `img2img/upscalers/design.json`: Used for upscaling design-based images with
-     a low number of colors and/or simple contours and shapes. The provided
-     example workflow requires the `RealESRGAN_x4plus_anime_6B.pth` upscaling
-     model which can be downloaded from
-     [GitHub](https://github.com/xinntao/Real-ESRGAN/releases/download/latest/RealESRGAN_x4plus_anime_6B.pth).
-
-     The model should be downloaded to `SwarmUI/Models/upscale_models`.
-  * `img2img/upscalers/detail.json`: Used for upscaling detailed or realistic
-     images featuring a lot of complex detail. This requires the
-     `RealESRGAN_x4plus.pth` upscaling model which can be downloaded from
-     [GitHub](https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth).
-
-     The model should be downloaded to `SwarmUI/Models/upscale_models`.
+   into another image. Each `img2img` workflow will create a custom button in
+   Musebot's interface. Workflows can be named any valid file name, but if you
+   want them in a specific order, consider prefixing them with numbers.
+* `img2vid`: These workflows accept a base64 encoded image and process the image
+   into another image. Each `img2vid` workflow will create a custom button in
+   Musebot's interface. The img2vid output must either be an animated `.gif` or
+   `.webp`. Workflows can be named any valid file name, but if you want them in
+   a specific order, consider prefixing them with numbers.
 * `txt2img`: These workflows accept a text prompt and return one or several
    images. If you provide multiple workflows in this directory, Musebot will
    choose a random one.
@@ -270,18 +257,23 @@ This should look something like:
 
 ```json
 {
+   // txt2img or txt2vid workflows only below here.
   "$musebotDefaults": {
-    "prompt": "",
-    "promptNegative": "",
-    "model": "",
-    "seed": -1,
-    "width": 1024,
-    "height": 1024,
-    "sampler": "dpmpp_sde",
-    "scheduler": "karras",
-    "cfgScale": 2,
-    "steps": 8,
-    "num": 1
+   "prompt": "",
+   "promptNegative": "",
+   "model": "",
+   "seed": -1,
+   "width": 1024,
+   "height": 1024,
+   "sampler": "dpmpp_sde",
+   "scheduler": "karras",
+   "cfgScale": 2,
+   "steps": 8,
+   "num": 1,
+   // img2img workflows only below here.
+   "label": "",
+   "title": "",
+   "helpText": "",
   },
   // The ComfyUI workflow nodes should begin here.
 }
@@ -289,7 +281,7 @@ This should look something like:
 
 * `prompt`: The prompt given to the model that instructs it what to create. As
    mentioned earlier, this is used for the base64 encoded images in all
-   `img2img` workflows, including the `img2img/upscalers`.
+   `img2img` or `img2vid` workflows,`.
 * `promptNegative`: The negative prompt used to "remove" things from the model
    output - not required.
 * `model`: The model being used, though most workflows will have this value
@@ -313,6 +305,14 @@ This should look something like:
 * `num`: This is how many images or videos to output at a time. Consider your
    hardware's average processing time before doing more than one output at a
    time.
+* `label` **(img2img and img2vid workflows only)**: This is used for the
+   displayed text on your custom Musebot button.
+* `title` **(img2img and img2vid workflows only)**: This is used for the title
+  (context tooltip) text for the button and the button title in the generated
+  help article. Optional, but the help article will call it out if it's missing.
+* `helpText` **(img2img and img2vid workflows only)**: This is used as the
+  descriptive help text in the generated help article. Optional, but the help
+  article will call it out if it's missing.
 
 #### Template Placeholders
 
@@ -320,7 +320,7 @@ Each default property documented above can be referenced in the workflow
 template. Each property should be wrapped in quotes and triple curly brackets,
 even if it's numeric. Let's look at two examples:
 
-##### An Input Text Prompt
+##### An Input Text Prompt Example
 
 ```json
 {
@@ -342,7 +342,7 @@ even if it's numeric. Let's look at two examples:
 }
 ```
 
-##### Sampler Settings
+##### Sampler Settings Example
 
 ```json
 {
