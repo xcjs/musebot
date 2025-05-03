@@ -8,8 +8,18 @@ import { IWorkflowService } from '../../../../images/comfy-ui/services/IWorkflow
 import { BaseComponent } from '../BaseComponent.js';
 import { DynamicButton } from '../buttons/DynamicButton.js';
 import { IActionRowBuilderFactory } from '../IActionRowBuilderFactory.js';
+import { IActionRows } from './IActionRows.js';
 
-export class Img2ImgActionRow extends BaseComponent<ActionRowBuilder<ButtonBuilder>[]> {
+export class Img2ImgActionRow extends BaseComponent<ActionRowBuilder<ButtonBuilder>[]> implements IActionRows {
+    #buttons: BaseComponent<ButtonBuilder>[] = [];
+    get buttons(): BaseComponent<ButtonBuilder>[] {
+        return this.#buttons;
+    }
+
+    get isAsync(): boolean {
+        return true;
+    }
+
     #services: IServiceContainer;
 
     #featureService: IFeatureService;
@@ -63,6 +73,8 @@ export class Img2ImgActionRow extends BaseComponent<ActionRowBuilder<ButtonBuild
                 renderRequest.title,
                 renderRequest.helpText);
         });
+
+        this.#buttons = buttons;
 
         return this.#actionRowBuilderFactory.buildActionRows(buttons);
     }

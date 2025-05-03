@@ -5,6 +5,7 @@ import { APPLICATION_NAME, DEVELOPER } from '../../../../constants/Globals.js';
 import { BaseHelpService } from '../../../help/BaseHelpService.js';
 import { IHelpService } from '../../../help/IHelpService.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
+import { Img2ImgActionRow } from '../../chat/discord/components/buttonRows/Img2ImgActionRow.js';
 import { StatefulImageGenerationActionRows } from '../../chat/discord/components/buttonRows/StatefulImageGenerationActionRows.js';
 import { DiscordConstants } from '../../chat/discord/enums/DiscordConstants.js';
 import { IReplyService } from '../../chat/IReplyService.js';
@@ -22,7 +23,7 @@ export class ImageHelpService extends BaseHelpService implements IHelpService {
         this.#replyService = services.replyService;
     }
 
-    buildHelpArticle(interaction: Interaction): string {
+    async buildHelpArticle(interaction: Interaction): Promise<string> {
         let helpArticle = `# ${APPLICATION_NAME} Help`
             + '\n\n'
             + `Thanks for using ${APPLICATION_NAME} \`v${nodePackage.version}\`, ${this.#replyService.mention(interaction.user)}!`
@@ -34,7 +35,10 @@ export class ImageHelpService extends BaseHelpService implements IHelpService {
             + '\n\n';
 
         const actionRows = new StatefulImageGenerationActionRows(this.#services, null);
-        helpArticle += this.buildHelpArticleFromActionRows(actionRows);
+        const img2ImgRows = new Img2ImgActionRow(this.#services);
+
+        helpArticle += await this.buildHelpArticleFromActionRows(actionRows);
+        helpArticle += await this.buildHelpArticleFromActionRows(img2ImgRows);
 
         return helpArticle;
     }

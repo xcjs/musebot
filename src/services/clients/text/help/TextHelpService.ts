@@ -23,7 +23,7 @@ export class TextHelpService extends BaseHelpService implements IHelpService {
         this.#replyService = services.replyService;
     }
 
-    buildHelpArticle(interaction: Interaction): string {
+    async buildHelpArticle(interaction: Interaction): Promise<string> {
         let helpArticle = `# ${APPLICATION_NAME} Help`
             + '\n\n'
             + `Thanks for using ${APPLICATION_NAME} v${nodePackage.version}, ${this.#replyService.mention(interaction.user)}!`
@@ -35,8 +35,8 @@ export class TextHelpService extends BaseHelpService implements IHelpService {
             + ' Additionally, there are various button-based interactions you can use after interacting with the bot at least once: '
             + '\n\n';
 
-        helpArticle += this.buildHelpArticleFromActionRows(new LargeLanguageModelActionRow(this.#services));
-        helpArticle += this.buildHelpArticleFromActionRows(new LargeLanguageModelConfirmClearActionRow(this.#services));
+        helpArticle += await this.buildHelpArticleFromActionRows(new LargeLanguageModelActionRow(this.#services));
+        helpArticle += await this.buildHelpArticleFromActionRows(new LargeLanguageModelConfirmClearActionRow(this.#services));
 
         return helpArticle;
     }

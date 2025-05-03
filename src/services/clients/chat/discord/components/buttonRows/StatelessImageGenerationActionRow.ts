@@ -5,8 +5,18 @@ import { BaseComponent } from '../BaseComponent.js';
 import { HelpButton } from '../buttons/HelpButton.js';
 import { RandomizeButton } from '../buttons/images/RandomizeButton.js';
 import { IActionRowBuilderFactory } from '../IActionRowBuilderFactory.js';
+import { IActionRows } from './IActionRows.js';
 
-export class StatelessImageGenerationActionRow extends BaseComponent<ActionRowBuilder<ButtonBuilder>[]> {
+export class StatelessImageGenerationActionRow extends BaseComponent<ActionRowBuilder<ButtonBuilder>[]> implements IActionRows {
+    #buttons: BaseComponent<ButtonBuilder>[] = [];
+    get buttons(): BaseComponent<ButtonBuilder>[] {
+        return this.#buttons;
+    }
+
+    get isAsync(): boolean {
+        return false;
+    }
+
     #services: IServiceContainer;
 
     #actionRowBuilderFactory: IActionRowBuilderFactory;
@@ -24,6 +34,8 @@ export class StatelessImageGenerationActionRow extends BaseComponent<ActionRowBu
             new RandomizeButton(this.#services),
             new HelpButton(this.#services)
         ];
+
+        this.#buttons = buttons;
 
         return this.#actionRowBuilderFactory.buildActionRows(buttons);
     }

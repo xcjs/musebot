@@ -11,11 +11,16 @@ import { RandomizeButton } from '../buttons/images/RandomizeButton.js';
 import { RetryButton } from '../buttons/images/RetryButton.js';
 import { ShowSourceButton } from '../buttons/images/ShowSourceButton.js';
 import { IActionRowBuilderFactory } from '../IActionRowBuilderFactory.js';
+import { IActionRows } from './IActionRows.js';
 
-export class StatefulImageGenerationActionRows extends BaseComponent<ActionRowBuilder<ButtonBuilder>[]> {
+export class StatefulImageGenerationActionRows extends BaseComponent<ActionRowBuilder<ButtonBuilder>[]> implements IActionRows {
     #buttons: BaseComponent<ButtonBuilder>[] = [];
     get buttons(): BaseComponent<ButtonBuilder>[] {
         return this.#buttons;
+    }
+
+    get isAsync(): boolean {
+        return false;
     }
 
     #services: IServiceContainer;

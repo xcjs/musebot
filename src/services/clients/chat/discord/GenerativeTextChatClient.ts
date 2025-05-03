@@ -91,7 +91,7 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
             case BotInteraction.Help:
                 this.#taskQueue.add(this.#services.getReplyTask(
                     interaction, {
-                        content: this.#helpService.buildHelpArticle(interaction)
+                        content: await this.#helpService.buildHelpArticle(interaction)
                     }) as BaseTask);
                 break;
             default:

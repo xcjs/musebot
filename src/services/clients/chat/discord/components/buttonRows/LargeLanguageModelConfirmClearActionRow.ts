@@ -5,11 +5,16 @@ import { BaseComponent } from '../BaseComponent.js';
 import { ClearContextCancelButton } from '../buttons/text/ClearContextCancelButton.js';
 import { ClearContextConfirmButton } from '../buttons/text/ClearContextConfirmButton.js';
 import { IActionRowBuilderFactory } from '../IActionRowBuilderFactory.js';
+import { IActionRows } from './IActionRows.js';
 
-export class LargeLanguageModelConfirmClearActionRow extends BaseComponent<ActionRowBuilder<ButtonBuilder>[]> {
+export class LargeLanguageModelConfirmClearActionRow extends BaseComponent<ActionRowBuilder<ButtonBuilder>[]> implements IActionRows {
     #buttons: BaseComponent<ButtonBuilder>[] = [];
     get buttons(): BaseComponent<ButtonBuilder>[] {
         return this.#buttons;
+    }
+
+    get isAsync(): boolean {
+        return false;
     }
 
     #services: IServiceContainer;

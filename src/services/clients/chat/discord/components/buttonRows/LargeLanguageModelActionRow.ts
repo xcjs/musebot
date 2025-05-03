@@ -5,11 +5,16 @@ import { BaseComponent } from '../BaseComponent.js';
 import { HelpButton } from '../buttons/HelpButton.js';
 import { ClearContextButton } from '../buttons/text/ClearContextButton.js';
 import { IActionRowBuilderFactory } from '../IActionRowBuilderFactory.js';
+import { IActionRows } from './IActionRows.js';
 
-export class LargeLanguageModelActionRow extends BaseComponent<ActionRowBuilder<ButtonBuilder>[]> {
+export class LargeLanguageModelActionRow extends BaseComponent<ActionRowBuilder<ButtonBuilder>[]> implements IActionRows {
     #buttons: BaseComponent<ButtonBuilder>[] = [];
     get buttons(): BaseComponent<ButtonBuilder>[] {
         return this.#buttons;
+    }
+
+    get isAsync(): boolean {
+        return false;
     }
 
     #services: IServiceContainer;
