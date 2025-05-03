@@ -75,7 +75,6 @@ export class ComfyUiDecreaseGuidanceScaleRenderTask extends ComfyUiBaseTask impl
             cfgScaleValue = renderRequest.cfgScale;
 
             prompts.push(this.#workflowService.renderWorkflow(workflow, renderRequest));
-
         }
 
         const imagesResponse = await this.#comfyUiClient.render(prompts);
