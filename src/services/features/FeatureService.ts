@@ -50,11 +50,6 @@ export class FeatureService implements IFeatureService {
                 this.#supportedFeatures.push(SupportedFeature.Img2Img);
             }
 
-            if (this.#workflowService.hasWorkflowType(SupportedFeature.Img2ImgUpscaling)) {
-                this.#logger(LogLevel.Info, `${SupportedFeature.Img2ImgUpscaling} supported.`);
-                this.#supportedFeatures.push(SupportedFeature.Img2ImgUpscaling);
-            }
-
             if (this.#workflowService.hasWorkflowType(SupportedFeature.Img2Vid)) {
                 this.#logger(LogLevel.Info, `${SupportedFeature.Img2Vid} supported.`);
                 this.#supportedFeatures.push(SupportedFeature.Img2Vid);
