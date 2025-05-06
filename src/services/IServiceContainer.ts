@@ -39,6 +39,7 @@ export interface IServiceContainer {
     typingService: ITypingService;
     discordClient: DiscordClient;
     generativeChatClient: IGenerativeChatClient;
+    helpService: IHelpService;
     workflowService: IWorkflowService;
 
     // Transitives ------------------------------------------------------------/
@@ -50,7 +51,6 @@ export interface IServiceContainer {
     ollamaReplyService: OllamaReplyService;
     ollamaStreamingReplyService: OllamaStreamingReplyService;
     actionRowBuilderFactory: IActionRowBuilderFactory;
-    helpService: IHelpService;
 
     // Factories --------------------------------------------------------------/
     getReplyTask(
