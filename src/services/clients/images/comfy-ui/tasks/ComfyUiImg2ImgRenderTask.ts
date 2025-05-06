@@ -15,7 +15,7 @@ import { IWorkflowService } from '../services/IWorkflowService.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 import { ComfyUiReplyTask } from './ComfyUiReplyTask.js';
 
-export class ComfyUiImg2Img2ImgRenderTask extends ComfyUiBaseTask implements IImg2ImgRenderTask {
+export class ComfyUiImg2ImgRenderTask extends ComfyUiBaseTask implements IImg2ImgRenderTask {
     #services: IServiceContainer;
 
     #environmentSettings: IEnvironmentSettings;
