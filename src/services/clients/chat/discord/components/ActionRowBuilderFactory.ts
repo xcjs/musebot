@@ -13,13 +13,18 @@ export class ActionRowBuilderFactory implements IActionRowBuilderFactory {
         const actionRows: ActionRowBuilder<ButtonBuilder>[] = [];
         let actionRow: ActionRowBuilder<ButtonBuilder> | null = null;
 
+        const addedButtons: BaseComponent<ButtonBuilder>[] = [];
+
         buttons.forEach((button, i) => {
             if (actionRow === null) {
                 actionRow = new ActionRowBuilder<ButtonBuilder>();
             }
 
-            if (button.isSupported) {
+            if (button.isSupported
+                && !addedButtons.find(addedButton => addedButton === button)
+            ) {
                 actionRow.addComponents(button.build());
+                addedButtons.push(button);
             }
 
             if (actionRow.components.length % DiscordConstants.MaxButtonsPerActionRow === 0
