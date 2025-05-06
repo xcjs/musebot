@@ -94,6 +94,11 @@ export class ServiceContainer implements IServiceContainer {
         return this.#generativeChatClient;
     }
 
+    #helpService: IHelpService;
+    get helpService(): IHelpService {
+        return this.#helpService;
+    }
+
     #workflowService: IWorkflowService;
     get workflowService(): IWorkflowService {
         return this.#workflowService;
@@ -127,11 +132,6 @@ export class ServiceContainer implements IServiceContainer {
 
     get actionRowBuilderFactory(): IActionRowBuilderFactory {
         return new ActionRowBuilderFactory();
-    }
-
-    #helpService: IHelpService;
-    get helpService(): IHelpService {
-        return this.#helpService;
     }
 
     // Factories --------------------------------------------------------------/
