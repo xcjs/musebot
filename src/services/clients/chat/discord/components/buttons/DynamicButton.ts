@@ -43,7 +43,7 @@ export class DynamicButton extends BaseComponent<ButtonBuilder> {
     override build(): ButtonBuilder {
         return new ButtonBuilder()
             .setCustomId(this.#label)
-            .setLabel(this.label)
+            .setLabel(this.#label)
             .setStyle(ButtonStyle.Secondary);
     }
 }
