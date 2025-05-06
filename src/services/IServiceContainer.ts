@@ -11,6 +11,7 @@ import { IReplyTask } from './clients/chat/tasks/IReplyTask.js';
 import { ComfyUiClient } from './clients/images/comfy-ui/ComfyUiClient.js';
 import { IWorkflow } from './clients/images/comfy-ui/models/IWorkflow.js';
 import { IWorkflowService } from './clients/images/comfy-ui/services/IWorkflowService.js';
+import { ComfyUiImg2ImgRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiImg2ImgRenderTask.js';
 import { IAttachRenderTask } from './clients/images/tasks/IAttachRenderTask.js';
 import { IDecreaseGuidanceScaleRenderTask } from './clients/images/tasks/IDecreaseGuidanceScaleRenderTask.js';
 import { IEmojiReactionRenderTask } from './clients/images/tasks/IEmojiReactionRenderTask.js';
@@ -64,7 +65,7 @@ export interface IServiceContainer {
     getDecreaseGuidanceScaleRenderTask(interaction: ButtonInteraction): IDecreaseGuidanceScaleRenderTask;
     getEmojiReactionRenderTask(interaction: Message, emoji: GuildEmoji | ReactionEmoji | ApplicationEmoji, userOverride: User): IEmojiReactionRenderTask;
     getExpandPromptTask(interaction: ButtonInteraction): IExpandPromptTask;
-    getImg2ImgRenderTask(interaction: ButtonInteraction, workflow: IWorkflow);
+    getImg2ImgRenderTask(interaction: ButtonInteraction, workflow: IWorkflow): ComfyUiImg2ImgRenderTask;
     getIncreaseGuidanceScaleRenderTask(interaction: ButtonInteraction): IIncreaseGuidanceScaleRenderTask;
     getJsonRenderTask(message: Message): IJsonRenderTask;
     getRandomRenderTask(interaction: ButtonInteraction): IRandomRenderTask;
