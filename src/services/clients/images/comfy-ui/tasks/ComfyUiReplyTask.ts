@@ -23,6 +23,8 @@ export class ComfyUiReplyTask extends BaseTask implements IReplyTask {
     #renderExchange: IHttpExchange<Array<SerializableRenderRequest>, ImagesResponse>;
     #isEdit: boolean;
 
+    #isReplyConstructed: boolean = false;
+
     constructor(services: IServiceContainer,
         interaction: Message | ButtonInteraction,
         reply: BaseMessageOptions,
@@ -40,7 +42,8 @@ export class ComfyUiReplyTask extends BaseTask implements IReplyTask {
     }
 
     async process(): Promise<void> {
-        await this.#comfyUiReplyService.reply(this.#interaction, this.#reply, this.#isEdit, this.#renderExchange);
+        await this.#comfyUiReplyService.reply(this.#interaction, this.#reply, this.#isEdit, this.#renderExchange, this.#isReplyConstructed);
+        this.#isReplyConstructed = true;
     }
 
     override async postProcess(): Promise<void> {
