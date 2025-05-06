@@ -99,7 +99,7 @@ export class TaskQueue implements ITaskQueue {
     }
 
     #getNextTasks(): Array<BaseTask> {
-        this.#logger(LogLevel.Info, 'Retrieving the next task...');
+        this.#logger(LogLevel.Info, 'Retrieving the next tasks...');
 
         this.#cleanChannels();
 
