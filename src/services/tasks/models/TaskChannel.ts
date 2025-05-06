@@ -22,10 +22,14 @@ export class TaskChannel {
     }
 
     get isActive(): boolean {
-        return this.#queue.filter(x => x.taskStatus === TaskStatus.Busy).length > 0;
+        const numBusyTasks = this.#queue.filter(x => x.taskStatus === TaskStatus.Busy).length;
+
+        this.#logger(LogLevel.Info, `The ${this.name} task channel has ${numBusyTasks} busy task(s).`);
+        return numBusyTasks > 0;
     }
 
     get hasTasks(): boolean {
+        this.#logger(LogLevel.Info, `The ${this.name} task channel has ${this.queue.length} task(s) left.`);
         return this.#queue.length > 0;
     }
 
