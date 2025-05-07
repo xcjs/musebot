@@ -29,7 +29,7 @@ export class TaskQueue implements ITaskQueue {
         this.#logger = new Logger(this.#environmentSettings.isProduction, 'TaskQueue');
     }
 
-    async add(task: BaseTask): Promise<void> {
+    add(task: BaseTask): void {
         this.#logger(LogLevel.Info, `Adding task ${task.id} to the ${task.taskChannel} queue.`);
 
         let taskChannel: TaskChannel;
@@ -47,7 +47,7 @@ export class TaskQueue implements ITaskQueue {
 
         // Not awaited intentionally - this allows tasks of different channels
         // to be processed in parallel.
-        this.#processQueue();
+        void this.#processQueue();
     }
 
     async #processQueue(): Promise<void> {

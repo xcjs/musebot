@@ -4,7 +4,15 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  ...tseslint.configs.recommended,
+  ...tseslint.configs.recommendedTypeChecked,
+  {
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+  },
   {
       ignores: ["dist/"]
   },
@@ -19,8 +27,9 @@ export default tseslint.config(
       'simple-import-sort': simpleImportSort,
     },
     rules: {
-      'simple-import-sort/imports': 'error',
+      '@typescript-eslint/no-floating-promises': 'error',
       'simple-import-sort/exports': 'error',
+      'simple-import-sort/imports': 'error'
     }
   }
 );
