@@ -24,7 +24,7 @@ export class GuidanceScalePlusButton extends BaseComponent<ButtonBuilder> {
 
         isSupported = isSupported
             && this.#renderRequest.cfgScale - this.#environmentSettings.stableDiffusionGuidanceScaleInterval
-                <= GuidanceScaleLimit.Max
+                <= GuidanceScaleLimit.Max;
 
         return isSupported;
     }
