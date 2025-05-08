@@ -12,10 +12,7 @@ export default tseslint.config(
         tsconfigRootDir: import.meta.dirname,
       },
     },
-    ignores: ['*.mjs']
-  },
-  {
-      ignores: ["dist/"]
+    ignores: ['dist/', '*.mjs']
   },
   {
     ...pluginJs.configs.recommended,
