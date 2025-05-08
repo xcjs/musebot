@@ -38,13 +38,7 @@ export class ComfyUiReplyService {
     async reply(interaction: Message | ButtonInteraction,
         reply: BaseMessageOptions,
         isEdit: boolean = false,
-        renderExchange: IHttpExchange<Array<SerializableRenderRequest | null>, ImagesResponse>,
-        isReplyConstructed: boolean = false): Promise<void> {
-
-        if(isReplyConstructed) {
-            await this.#replyService.reply(interaction, reply, isEdit);
-            return;
-        }
+        renderExchange: IHttpExchange<Array<SerializableRenderRequest | null>, ImagesResponse>): Promise<void> {
 
         if(reply.content === undefined || reply.content === null) {
             reply.content = '';

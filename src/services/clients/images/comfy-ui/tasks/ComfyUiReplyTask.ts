@@ -44,8 +44,7 @@ export class ComfyUiReplyTask extends BaseTask implements IReplyTask {
     override async process(): Promise<void> {
         await super.process();
 
-        await this.#comfyUiReplyService.reply(this.#interaction, this.#reply, this.#isEdit, this.#renderExchange, this.#isReplyConstructed);
-        this.#isReplyConstructed = true;
+        await this.#comfyUiReplyService.reply(this.#interaction, this.#reply, this.#isEdit, this.#renderExchange);
     }
 
     override async postProcess(): Promise<void> {
