@@ -3,6 +3,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Logger as MekLogger, LogLevel } from 'meklog';
 
+import { JavaScriptType } from '../enums/JavaScriptType.js';
 import { ILogger } from './ILogger.js';
 import { IServiceContainer } from './IServiceContainer.js';
 
@@ -41,7 +42,15 @@ export class Logger implements ILogger {
         args = args || [];
 
         if (args.length > 0) {
-            const argString = args.map(arg => JSON.stringify(arg)).join('\n\n');
+            // eslint-disable-next-line @typescript-eslint/no-base-to-string
+            const argString = args.map((arg) => {
+                if(typeof arg === JavaScriptType.String.toString()) {
+                    return arg;
+                }
+
+                return JSON.stringify(arg);
+            }).join('\n\n');
+
             this.#logger(logLevel, `${argString}`);
         } else {
             this.#logger(logLevel, message);
