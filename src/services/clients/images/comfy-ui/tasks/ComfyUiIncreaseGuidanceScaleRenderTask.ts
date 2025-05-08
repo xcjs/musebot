@@ -1,8 +1,8 @@
 import { Prompt } from 'comfy-ui-client';
 import { ButtonInteraction } from 'discord.js';
-import { Logger, LogLevel } from 'meklog';
 
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
+import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
@@ -25,7 +25,7 @@ export class ComfyUiIncreaseGuidanceScaleRenderTask extends ComfyUiBaseTask impl
 
     #interaction: ButtonInteraction;
 
-    #logger;
+    #logger: ILogger;
 
     override get taskChannel(): string {
         return `${this.#environmentSettings.stableDiffusionTaskChannel}_${this.#comfyUiClient.host}`;
@@ -44,18 +44,18 @@ export class ComfyUiIncreaseGuidanceScaleRenderTask extends ComfyUiBaseTask impl
 
         this.#interaction = interaction;
 
-        this.#logger = new Logger(this.#environmentSettings.isProduction, 'ComfyUiIncreaseGuidanceScaleRenderTask');
+        this.#logger = services.getLogger('ComfyUiIncreaseGuidanceScaleRenderTask');
     }
 
     override async process(): Promise<void> {
         await super.process();
 
-        this.#logger(LogLevel.Info, 'Processing an ComfyUiIncreaseGuidanceScaleRenderTask...');
+        this.#logger.info('Processing an ComfyUiIncreaseGuidanceScaleRenderTask...');
 
         const imageAttachments = this.#replyService.getImageAttachments(this.#interaction);
 
         if (imageAttachments.length == 0) {
-            this.#logger(LogLevel.Warning, 'No attachments were found - exiting the task.');
+            this.#logger.warning('No attachments were found - exiting the task.');
             return;
         }
 
@@ -68,7 +68,7 @@ export class ComfyUiIncreaseGuidanceScaleRenderTask extends ComfyUiBaseTask impl
 
             const workflow = this.#workflowService.workflows.find(x => x.name === renderRequest.model);
 
-            this.#logger(LogLevel.Info, `Using ${workflow.name} as the selected workflow.`);
+            this.#logger.info(`Using ${workflow.name} as the selected workflow.`);
 
             renderRequest.cfgScale += this.#environmentSettings.stableDiffusionGuidanceScaleInterval;
             renderRequests.push(renderRequest);
@@ -79,7 +79,7 @@ export class ComfyUiIncreaseGuidanceScaleRenderTask extends ComfyUiBaseTask impl
 
         const imagesResponse = await this.#comfyUiClient.render(prompts);
 
-        const content = `${this.#interaction.member || 'You'} increased the guidance scale from ${cfgScaleValue
+        const content = `${this.#interaction.member.user.username || 'You'} increased the guidance scale from ${cfgScaleValue
             - this.#environmentSettings.stableDiffusionGuidanceScaleInterval} to ${cfgScaleValue}.`;
 
         const replyTask = new ComfyUiReplyTask(this.#services, this.#interaction, { content }, {

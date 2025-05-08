@@ -1,8 +1,8 @@
 import { Prompt } from 'comfy-ui-client';
 import { ButtonInteraction } from 'discord.js';
-import { Logger, LogLevel } from 'meklog';
 
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
+import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
@@ -27,7 +27,7 @@ export class ComfyUiImg2ImgRenderTask extends ComfyUiBaseTask implements IImg2Im
     #interaction: ButtonInteraction;
     #workflow: IWorkflow;
 
-    #logger;
+    #logger: ILogger;
 
     override get taskChannel(): string {
         return `${this.#environmentSettings.stableDiffusionTaskChannel}_${this.#comfyUiClient.host}`;
@@ -47,13 +47,13 @@ export class ComfyUiImg2ImgRenderTask extends ComfyUiBaseTask implements IImg2Im
         this.#interaction = interaction;
         this.#workflow = workflow;
 
-        this.#logger = new Logger(this.#environmentSettings.isProduction, 'ComfyUiUpscaleRenderTask');
+        this.#logger = services.getLogger('ComfyUiUpscaleRenderTask');
     }
 
     override async process(): Promise<void> {
         await super.process();
 
-        this.#logger(LogLevel.Info, 'Processing a ComfyUiUpscaleRenderTask...');
+        this.#logger.info('Processing a ComfyUiUpscaleRenderTask...');
 
         const imageAttachments = this.#replyService.getImageAttachments(this.#interaction);
         const prompts: Prompt[] = [];
@@ -65,7 +65,7 @@ export class ComfyUiImg2ImgRenderTask extends ComfyUiBaseTask implements IImg2Im
         const imagesAsBase64 = await this.#replyService.getAttachedImagesAsBase64(this.#interaction);
         const renderRequest = this.#workflowService.getWorkflowDefaults(this.#workflow);
 
-        const content = `${this.#interaction.user || 'You'} ran a custom workflow: \`${renderRequest.label}\``;
+        const content = `${this.#interaction.user.username || 'You'} ran a custom workflow: \`${renderRequest.label}\``;
 
         const renderRequests: Array<SerializableRenderRequest | null> = [];
         let i = 0;

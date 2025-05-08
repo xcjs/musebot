@@ -1,7 +1,6 @@
-import { Logger, LogLevel } from 'meklog';
-
 import { PromisedSettledResultStatus } from '../../enums/PromisedSettledResultStatus.js';
 import { IEnvironmentSettings } from '../environment-settings/IEnvironmentSettings.js';
+import { ILogger } from '../ILogger.js';
 import { IServiceContainer } from '../IServiceContainer.js';
 import { TaskStatus } from './enums/TaskStatus.js';
 import { ITaskQueue } from './ITaskQueue.js';
@@ -13,7 +12,7 @@ export class TaskQueue implements ITaskQueue {
 
     #environmentSettings: IEnvironmentSettings;
 
-    #logger;
+    #logger: ILogger;
 
     #channels: Array<TaskChannel> = [];
 
@@ -25,12 +24,11 @@ export class TaskQueue implements ITaskQueue {
         this.#services = services;
 
         this.#environmentSettings = services.environmentSettings;
-
-        this.#logger = new Logger(this.#environmentSettings.isProduction, 'TaskQueue');
+        this.#logger = services.getLogger('TaskQueue');
     }
 
     add(task: BaseTask): void {
-        this.#logger(LogLevel.Info, `Adding task ${task.id} to the ${task.taskChannel} queue.`);
+        this.#logger.info(`Adding task ${task.id} to the ${task.taskChannel} queue.`);
 
         let taskChannel: TaskChannel;
 
@@ -58,8 +56,7 @@ export class TaskQueue implements ITaskQueue {
             const numTasks = this.#channels.map((channel) => channel.queue.length)
                 .reduce((accumulator, value) => accumulator + value);
 
-            this.#logger(LogLevel.Info,
-                `Processing the task queue with ${numChannels} channel(s) and ${numTasks} task(s).`);
+            this.#logger.info(`Processing the task queue with ${numChannels} channel(s) and ${numTasks} task(s).`);
 
             try {
                 const processPromises = tasks
@@ -79,9 +76,9 @@ export class TaskQueue implements ITaskQueue {
                         return task.postProcess();
                     }
 
-                    if(promise.status === PromisedSettledResultStatus.Rejected) {
+                    if(promise.status === PromisedSettledResultStatus.Rejected.toString()) {
                         task.taskStatus = TaskStatus.Failed;
-                        this.#logger(LogLevel.Error, `Task ${task.id} was rejected ${task.numAttempts} time(s): ${promise.reason}`);
+                        this.#logger.error(`Task ${task.id} was rejected ${task.numAttempts} time(s): ${promise.reason}`);
 
                         if(task.numAttempts >= this.#environmentSettings.maxTaskAttempts) {
                             return task.postProcess();
@@ -91,7 +88,7 @@ export class TaskQueue implements ITaskQueue {
 
                 await Promise.allSettled(postProcessingPromises);
             } catch(error) {
-                this.#logger(LogLevel.Error, `An exception occurred while processing a task: ${error}`);
+                this.#logger.error(`An exception occurred while processing a task: ${error}`);
             }
 
             tasks = this.#getNextTasks();
@@ -99,7 +96,7 @@ export class TaskQueue implements ITaskQueue {
     }
 
     #getNextTasks(): Array<BaseTask> {
-        this.#logger(LogLevel.Info, 'Retrieving the next tasks...');
+        this.#logger.info('Retrieving the next tasks...');
 
         this.#cleanChannels();
 
@@ -108,7 +105,7 @@ export class TaskQueue implements ITaskQueue {
             .map(channel => channel.queue[0]);
 
         tasks.forEach((task) => {
-            this.#logger(LogLevel.Info, `Adding task ${task.id} to the queue from ${task.taskChannel}.`);
+            this.#logger.info(`Adding task ${task.id} to the queue from ${task.taskChannel}.`);
         });
 
         return tasks;

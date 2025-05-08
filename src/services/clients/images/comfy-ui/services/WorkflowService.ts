@@ -2,12 +2,11 @@ import fs from 'node:fs/promises'
 import path from 'node:path';
 
 import { Prompt } from 'comfy-ui-client';
-import { Logger, LogLevel } from 'meklog';
 import * as mustache from 'mustache';
 
 import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
-import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
+import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 import { IWorkflow } from '../models/IWorkflow.js';
@@ -23,20 +22,16 @@ export class WorkflowService implements IWorkflowService {
         return this.#workflows;
     }
 
-    #environmentSettings: IEnvironmentSettings;
-
-    #logger;
+    #logger: ILogger;
 
     #workflows: Array<IWorkflow> = [];
 
     public constructor(services: IServiceContainer) {
-        this.#environmentSettings = services.environmentSettings;
-
-        this.#logger = new Logger(this.#environmentSettings.isProduction, 'WorkflowService');
+        this.#logger = services.getLogger('WorkflowService');
     }
 
     async loadWorkflows(): Promise<void> {
-        this.#logger(LogLevel.Info, 'Loading ComfyUI workflows...');
+        this.#logger.info('Loading ComfyUI workflows...');
 
         if(this.#workflows.length > 0) {
             this.#workflows = [];
@@ -47,26 +42,26 @@ export class WorkflowService implements IWorkflowService {
 
         try {
             for (const workflowType of workflowTypes) {
-                this.#logger(LogLevel.Info, `Checking if the ${workflowType} directory exists...`);
+                this.#logger.info(`Checking if the ${workflowType} directory exists...`);
 
                 const workflowDir = path.join(workflowPathBase, workflowType);
 
                 try {
                     await fs.access(workflowDir);
                 } catch {
-                    this.#logger(LogLevel.Warning, `Could not access ${workflowDir}.`
+                    this.#logger.warning(`Could not access ${workflowDir}.`
                         + ` This is fine if if you don't need ${workflowType} workflows.`);
                     continue;
                 }
 
-                this.#logger(LogLevel.Info, `Reading the directory contents of ${workflowType}...`);
+                this.#logger.info(`Reading the directory contents of ${workflowType}...`);
                 const directoryContents = await fs.readdir(workflowDir, { withFileTypes: true });
 
                 for(const fsItem of directoryContents) {
                     if(fsItem.isFile && fsItem.name.endsWith('.json')) {
                         const templatePath = path.join(workflowDir, fsItem.name);
 
-                        this.#logger(LogLevel.Info, `Reading the contents of ${templatePath} as a workflow template...`);
+                        this.#logger.info(`Reading the contents of ${templatePath} as a workflow template...`);
 
                         const fileContents = await fs.readFile(templatePath, BufferEncoding.UTF8);
 
@@ -79,7 +74,7 @@ export class WorkflowService implements IWorkflowService {
                 }
             }
         } catch(error) {
-            this.#logger(LogLevel.Error, 'Failed to load workflow templates.'
+            this.#logger.error('Failed to load workflow templates.'
                  + ' Check if Musebot can read and write from ./workflows/ and that it contains workflows.', error);
         }
     }
@@ -90,7 +85,7 @@ export class WorkflowService implements IWorkflowService {
 
     getWorkflowDefaults(workflow: IWorkflow): SerializableRenderRequest {
         try {
-            const renderRequestObj = (JSON.parse(workflow.workflowString) as IWorkflowDefaults).$musebotDefaults as SerializableRenderRequest;
+            const renderRequestObj = (JSON.parse(workflow.workflowString) as IWorkflowDefaults).$musebotDefaults;
 
             // Not every template will contain defaults.
             if(renderRequestObj !== null && renderRequestObj !== undefined) {
@@ -99,7 +94,7 @@ export class WorkflowService implements IWorkflowService {
                 return new SerializableRenderRequest();
             }
         } catch (error) {
-            this.#logger(LogLevel.Error,
+            this.#logger.error(
                 `Failed to fetch the workflow defaults for ${workflow.name}.`
                 + ` Does the $musebotSerializableRenderRequest property exist, or does it match the documented schema?`
                 , error);
@@ -109,7 +104,7 @@ export class WorkflowService implements IWorkflowService {
     }
 
     renderWorkflow(workflow: IWorkflow, renderRequest: SerializableRenderRequest): Prompt {
-        this.#logger(LogLevel.Info, `Rendering workflow template ${workflow.name}`);
+        this.#logger.info(`Rendering workflow template ${workflow.name}`);
 
         const destructiveRenderRequest = SerializableRenderRequest.fromSerializableRenderRequest(renderRequest);
 
@@ -124,7 +119,8 @@ export class WorkflowService implements IWorkflowService {
             destructiveRenderRequest.promptNegative = destructiveRenderRequest.promptNegative.substring(1, destructiveRenderRequest.promptNegative.length - 1);
         }
 
-        const templateString = mustache.default.render(workflow.workflowString, destructiveRenderRequest);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+        const templateString: string = mustache.default.render(workflow.workflowString, destructiveRenderRequest);
         return JSON.parse(templateString) as Prompt;
     }
 }

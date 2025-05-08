@@ -1,8 +1,6 @@
 import { ButtonInteraction, Client as DiscordClient, Events, Message, MessageReaction, User } from 'discord.js';
-import { Logger, LogLevel } from 'meklog';
 
 import { BotInteraction } from '../../../../enums/BotInteraction.js';
-import { IEnvironmentSettings } from '../../../environment-settings/IEnvironmentSettings.js';
 import { IHelpService } from '../../../help/IHelpService.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
 import { ITaskQueue } from '../../../tasks/ITaskQueue.js';
@@ -15,7 +13,6 @@ import { LargeLanguageModelConfirmClearActionRow } from './components/buttonRows
 export class GenerativeTextChatClient extends BaseDiscordClient {
     #services: IServiceContainer;
 
-    #environmentSettings: IEnvironmentSettings;
     #discordClient: DiscordClient;
     #typingService: ITypingService;
     #replyService: IReplyService;
@@ -29,14 +26,12 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
 
         this.#services = services;
 
-        this.#environmentSettings = services.environmentSettings;
         this.#discordClient = services.discordClient;
         this.#typingService = services.typingService;
         this.#replyService = services.replyService;
         this.#helpService = services.helpService;
         this.#taskQueue = services.taskQueue;
-
-        this.logger = new Logger(this.#environmentSettings.isProduction, 'GenerativeTextChatClient');
+        this.logger = services.getLogger('GenerativeTextChatClient');
 
         this.#registerEvents();
     }
@@ -45,20 +40,20 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this;
 
-        this.#discordClient.once(Events.ClientReady, (event) => this.onClientReady.call(self, event));
-        this.#discordClient.on(Events.MessageCreate, async (message) => await this.#onMessageCreate.call(self, message));
-        this.#discordClient.on(Events.InteractionCreate, async (interaction) => await this.#onInteraction.call(self, interaction));
-        this.#discordClient.on(Events.MessageReactionAdd, async (reaction, user) => await this.#onMessageReactionAdd.call(self, reaction, user));
+        this.#discordClient.once(Events.ClientReady, (event) => void this.onClientReady.call(self, event));
+        this.#discordClient.on(Events.MessageCreate, (message) => void this.#onMessageCreate.call(self, message));
+        this.#discordClient.on(Events.InteractionCreate, (interaction) => void  this.#onInteraction.call(self, interaction));
+        this.#discordClient.on(Events.MessageReactionAdd, (reaction, user) => void this.#onMessageReactionAdd.call(self, reaction, user));
     }
 
     async #onMessageCreate(message: Message): Promise<void> {
-        this.logger(LogLevel.Info, `Discord message created. ${message.author.displayName} (${message.author.username}): "${message}"`);
+        this.logger.info(`Discord message created. ${message.author.displayName} (${message.author.username}): "${message.content}"`);
 
         if(!this.#replyService.shouldReply(message, null)) {
             return;
         }
 
-        this.logger(LogLevel.Info, 'Replying to message...');
+        this.logger.info('Replying to message...');
 
         const promptResponseTask = this.#services.getPromptResponseTask(message, this.#context) as BaseTask;
         promptResponseTask.onSuccess = (context: Array<number>) => { this.#context = context; };
@@ -68,40 +63,40 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
     }
 
      async #onInteraction(interaction: ButtonInteraction): Promise<void> {
-        this.logger(LogLevel.Info, `Beginning interaction response to custom action ${interaction.customId}...`);
+        this.logger.info(`Beginning interaction response to custom action ${interaction.customId}...`);
 
         try {
             await interaction.deferReply();
         } catch(error) {
-            this.logger(LogLevel.Error, `Something went wrong while deferring a reply: ${error}. Ignore this error if the bot is functioning normally.`);
+            this.logger.error(`Something went wrong while deferring a reply: ${error}. Ignore this error if the bot is functioning normally.`);
         }
 
         await this.#typingService.startTyping(interaction);
 
         switch(interaction.customId) {
-            case BotInteraction.ClearContext:
+            case BotInteraction.ClearContext.toString():
                 await this.#clearContextAskConfirmation(interaction);
                 break;
-            case BotInteraction.ClearContextCancel:
+            case BotInteraction.ClearContextCancel.toString():
                 await this.#clearContextCancel(interaction);
                 break;
-            case BotInteraction.ClearContextConfirm:
+            case BotInteraction.ClearContextConfirm.toString():
                 await this.#clearContext(interaction);
                 break;
-            case BotInteraction.Help:
+            case BotInteraction.Help.toString():
                 this.#taskQueue.add(this.#services.getReplyTask(
                     interaction, {
                         content: await this.#helpService.buildHelpArticle(interaction)
                     }) as BaseTask);
                 break;
             default:
-                this.logger(LogLevel.Warning, `An unknown interaction was passed: ${interaction.customId}.`);
+                this.logger.warning(`An unknown interaction was passed: ${interaction.customId}.`);
                 break;
         }
      }
 
     async #clearContextAskConfirmation(interaction: ButtonInteraction): Promise<void> {
-        this.logger(LogLevel.Info, 'Asking confirmation before clearing the large language model context...');
+        this.logger.info('Asking confirmation before clearing the large language model context...');
 
         try {
             await interaction.editReply({
@@ -110,31 +105,31 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
                 components: new LargeLanguageModelConfirmClearActionRow(this.#services).build()
             });
         } catch {
-            this.logger(LogLevel.Error, 'An error occurred while asking to clear the Ollama context.');
+            this.logger.error('An error occurred while asking to clear the Ollama context.');
         }
      }
 
      async #clearContext(interaction: ButtonInteraction): Promise<void> {
-        this.logger(LogLevel.Info, 'Clearing the large language model context...');
+        this.logger.info('Clearing the large language model context...');
         this.#context = [];
 
         try{
-            await interaction.editReply(`The conversational context has been cleared - ${interaction.member} just gave an AI amnesia!`);
+            await interaction.editReply(`The conversational context has been cleared - ${interaction.member.user.username} just gave an AI amnesia!`);
             await interaction.message.delete();
         } catch {
-            this.logger(LogLevel.Error, 'An error occurred while clearing the Ollama context.');
+            this.logger.error('An error occurred while clearing the Ollama context.');
         }
      }
 
     async #clearContextCancel(interaction: ButtonInteraction): Promise<void> {
-         this.logger(LogLevel.Info, 'Cancelling clearing the large language model context...');
+         this.logger.info('Cancelling clearing the large language model context...');
 
         try {
             await interaction.message.delete();
             await interaction.editReply('Cancelling...');
             await interaction.deleteReply();
         } catch {
-            this.logger(LogLevel.Error, 'An error occurred while cancelling clearing the Ollama context.');
+            this.logger.error('An error occurred while cancelling clearing the Ollama context.');
         }
      }
 
@@ -143,7 +138,7 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
             try {
                 reaction = await reaction.fetch();
             } catch (error) {
-                this.logger(LogLevel.Error, `Something went wrong when fetching the MessageReaction: ${error}.`);
+                this.logger.error(`Something went wrong when fetching the MessageReaction: ${error}.`);
                 return;
             }
         }

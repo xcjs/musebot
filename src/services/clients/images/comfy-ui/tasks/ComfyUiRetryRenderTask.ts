@@ -1,10 +1,10 @@
 import { Prompt } from 'comfy-ui-client';
 import { ButtonInteraction, Message, User } from 'discord.js';
-import { Logger, LogLevel } from 'meklog';
 
 import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
+import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
@@ -28,7 +28,7 @@ export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRen
 
     #interaction: Message | ButtonInteraction;
 
-    #logger;
+    #logger: ILogger;
 
     override get taskChannel(): string {
         return `${this.#environmentSettings.stableDiffusionTaskChannel}_${this.#comfyUiClient.host}`;
@@ -49,18 +49,18 @@ export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRen
 
         this.#interaction = interaction;
 
-        this.#logger = new Logger(this.#environmentSettings.isProduction, 'ComfyUiRetryRenderTask');
+        this.#logger = services.getLogger('ComfyUiRetryRenderTask');
     }
 
     override async process(): Promise<void> {
         await super.process();
 
-        this.#logger(LogLevel.Info, 'Processing a ComfyUiRetryRenderTask...');
+        this.#logger.info('Processing a ComfyUiRetryRenderTask...');
 
         const imageAttachments = this.#replyService.getImageAttachments(this.#interaction);
 
         if (imageAttachments.length === 0) {
-            this.#logger(LogLevel.Warning, 'No attachments were found - exiting the task.');
+            this.#logger.warning('No attachments were found - exiting the task.');
             return;
         }
 
@@ -83,7 +83,7 @@ export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRen
             const workflow = getRandomArrayEntry(workflows);
             const renderDefaults = this.#workflowService.getWorkflowDefaults(workflow);
 
-            this.#logger(LogLevel.Info, `Using ${workflow.name} as the selected workflow.`);
+            this.#logger.info(`Using ${workflow.name} as the selected workflow.`);
 
             renderRequest.prompt = renderRequest.prompt;
             renderRequest.refreshSeed();

@@ -1,8 +1,7 @@
 import { randomUUID, UUID } from 'node:crypto';
 
-import { Logger, LogLevel } from 'meklog';
-
 import { IEnvironmentSettings } from '../../environment-settings/IEnvironmentSettings.js';
+import { ILogger } from '../../ILogger.js';
 import { IServiceContainer } from '../../IServiceContainer.js';
 import { TaskStatus } from '../enums/TaskStatus.js';
 
@@ -34,13 +33,13 @@ export abstract class BaseTask {
                 this.#taskStatus = TaskStatus.Delayed;
                 this.#delayUntil = new Date(Date.now() + this.#environmentSettings.taskRetryDelayMilliseconds);
 
-                this.#logger(LogLevel.Info, `Delaying task ${this.#id} until ${this.#delayUntil}.`)
+                this.#logger.info(`Delaying task ${this.#id} until ${this.#delayUntil.toLocaleDateString()}.`)
             }
         } else {
             this.#taskStatus = taskStatus;
         }
 
-        this.#logger(LogLevel.Info, `Setting taskStatus of task ${this.id} to ${taskStatus}.`);
+        this.#logger.info(`Setting taskStatus of task ${this.id} to ${taskStatus}.`);
     }
 
     get taskChannel(): string {
@@ -62,7 +61,7 @@ export abstract class BaseTask {
     set onSuccess(callback: (context: Array<number>) => void) { }
 
     #environmentSettings: IEnvironmentSettings;
-    #logger;
+    #logger: ILogger;
 
     #id: UUID;
     #taskStatus: TaskStatus = TaskStatus.Idle;
@@ -75,7 +74,7 @@ export abstract class BaseTask {
     constructor(services: IServiceContainer) {
         this.#environmentSettings = services.environmentSettings;
 
-        this.#logger = new Logger(this.#environmentSettings.isProduction, 'BaseTask');
+        this.#logger = services.getLogger('BaseTask');
 
         this.#id = randomUUID();
         this.#createdTime = new Date();
@@ -84,11 +83,12 @@ export abstract class BaseTask {
 
     async process(): Promise<void> {
         this.#startedTime = new Date();
-
-        this.#logger(LogLevel.Info, `Starting task ${this.#id} at ${this.startedTime}`);
+        this.#logger.info(`Starting task ${this.#id} at ${this.startedTime.toLocaleDateString()}`);
+        await Promise.resolve();
     }
 
     async postProcess(): Promise<void> {
-
+        this.#logger.info(`Post-processing task $ task ${this.#id} at ${new Date().toLocaleDateString()}`);
+        await Promise.resolve();
     }
 }

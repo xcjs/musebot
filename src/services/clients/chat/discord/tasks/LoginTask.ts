@@ -1,7 +1,7 @@
 import { Client as DiscordClient } from 'discord.js';
-import { Logger, LogLevel } from 'meklog';
 
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
+import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
@@ -18,7 +18,7 @@ export class LoginTask extends BaseTask {
     #discordClient: DiscordClient;
     #taskQueue: ITaskQueue;
 
-    protected logger: Logger;
+    protected logger: ILogger;
 
     constructor(services: IServiceContainer) {
         super(services);
@@ -29,18 +29,20 @@ export class LoginTask extends BaseTask {
         this.#discordClient = services.discordClient;
         this.#taskQueue = services.taskQueue;
 
-        this.logger = new Logger(this.#environmentSettings.isProduction, 'LoginTask');
+        this.logger = services.getLogger('LoginTask');
     }
 
     async process(): Promise<void> {
-        this.logger(LogLevel.Info, 'Attempting Discord login...');
+        this.logger.info('Attempting Discord login...');
         await this.#discordClient.login(this.#environmentSettings.discordToken);
     }
 
-    async postProcess(): Promise<void> {
+    override  async postProcess(): Promise<void> {
         if(this.taskStatus === TaskStatus.Dead) {
-            this.logger(LogLevel.Warning, 'Exhausted the maximum attempts for the login task. Adding a new login task to the queue as the application cannot continue otherwise.');
-            await this.#taskQueue.add(new LoginTask(this.#services));
+            this.logger.warning('Exhausted the maximum attempts for the login task. Adding a new login task to the queue as the application cannot continue otherwise.');
+            this.#taskQueue.add(new LoginTask(this.#services));
         }
+
+        await Promise.resolve();
     }
 }

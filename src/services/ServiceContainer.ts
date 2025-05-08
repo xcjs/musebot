@@ -55,12 +55,14 @@ import { SupportedFeature } from './features/enum/SupportedFeature.js';
 import { FeatureService } from './features/FeatureService.js';
 import { IFeatureService } from './features/IFeatureService.js';
 import { IHelpService } from './help/IHelpService.js';
+import { ILogger } from './ILogger.js';
 import { IServiceContainer } from './IServiceContainer.js';
+import { Logger } from './Logger.js';
 import { ITaskQueue } from './tasks/ITaskQueue.js';
 import { TaskQueue } from './tasks/TaskQueue.js';
 
 export class ServiceContainer implements IServiceContainer {
-    #taskNotConfiguredError = 'The task you are attempting to instantiate is not supported by your current configuration.';
+    #taskNotConfiguredError = new Error('The task you are attempting to instantiate is not supported by your current configuration.');
 
     // Singletons -------------------------------------------------------------/
 
@@ -135,6 +137,10 @@ export class ServiceContainer implements IServiceContainer {
     }
 
     // Factories --------------------------------------------------------------/
+    getLogger(prefix: string): ILogger {
+        return new Logger(this, prefix);
+    }
+
     getReplyTask(
         interaction: Message | ButtonInteraction,
         reply: BaseMessageOptions

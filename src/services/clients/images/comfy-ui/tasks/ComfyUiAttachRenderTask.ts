@@ -1,9 +1,9 @@
 import { BaseMessageOptions, ButtonInteraction, Message } from 'discord.js';
-import { Logger, LogLevel } from 'meklog';
 
 import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
+import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
@@ -28,7 +28,7 @@ export class ComfyUiAttachRenderTask extends ComfyUiBaseTask implements IAttachR
 
     #interaction: Message | ButtonInteraction;
 
-    #logger;
+    #logger: ILogger;
 
     override get taskChannel(): string {
         return `${this.#environmentSettings.stableDiffusionTaskChannel}_${this.#comfyUiClient.host}`;
@@ -53,13 +53,13 @@ export class ComfyUiAttachRenderTask extends ComfyUiBaseTask implements IAttachR
         this.#reply = reply;
         this.#prompt = prompt;
 
-        this.#logger = new Logger(this.#environmentSettings.isProduction, 'ComfyUiAttachRenderTask');
+        this.#logger = services.getLogger('ComfyUiAttachRenderTask');
     }
 
     override async process(): Promise<void> {
         await super.process();
 
-        this.#logger(LogLevel.Info, 'Processing a ComfyUiAttachRenderTask...');
+        this.#logger.info('Processing a ComfyUiAttachRenderTask...');
 
         const workflows = this.#workflowService.workflows.filter(x =>
             x.type === SupportedFeature.Txt2Img
@@ -67,7 +67,7 @@ export class ComfyUiAttachRenderTask extends ComfyUiBaseTask implements IAttachR
 
         const workflow = getRandomArrayEntry(workflows);
 
-        this.#logger(LogLevel.Info, `Using ${workflow.name} as the selected workflow.`);
+        this.#logger.info(`Using ${workflow.name} as the selected workflow.`);
 
         const renderRequest = this.#workflowService.getWorkflowDefaults(workflow);
         renderRequest.prompt = this.#prompt.trim();

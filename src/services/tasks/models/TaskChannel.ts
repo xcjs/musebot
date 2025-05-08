@@ -1,6 +1,5 @@
-import { Logger, LogLevel } from 'meklog';
-
 import { IEnvironmentSettings } from '../../environment-settings/IEnvironmentSettings.js';
+import { ILogger } from '../../ILogger.js';
 import { IServiceContainer } from '../../IServiceContainer.js';
 import { TaskStatus } from '../enums/TaskStatus.js';
 import { BaseTask } from './BaseTask.js';
@@ -11,7 +10,7 @@ export class TaskChannel {
     #name: string;
     #queue: Array<BaseTask> = [];
 
-    #logger;
+    #logger: ILogger;
 
     get name(): string {
         return this.#name;
@@ -24,12 +23,12 @@ export class TaskChannel {
     get isActive(): boolean {
         const numBusyTasks = this.#queue.filter(x => x.taskStatus === TaskStatus.Busy).length;
 
-        this.#logger(LogLevel.Info, `The ${this.name} task channel has ${numBusyTasks} busy task(s).`);
+        this.#logger.info(`The ${this.name} task channel has ${numBusyTasks} busy task(s).`);
         return numBusyTasks > 0;
     }
 
     get hasTasks(): boolean {
-        this.#logger(LogLevel.Info, `The ${this.name} task channel has ${this.queue.length} task(s) left.`);
+        this.#logger.info(`The ${this.name} task channel has ${this.queue.length} task(s) left.`);
         return this.#queue.length > 0;
     }
 
@@ -37,13 +36,13 @@ export class TaskChannel {
         this.#environmentSettings = services.environmentSettings;
         this.#name = name;
 
-        this.#logger = new Logger(this.#environmentSettings.isProduction, 'TaskChannel');
+        this.#logger = services.getLogger('TaskChannel');
 
-        this.#logger(LogLevel.Info, `Created a new task channel called ${name}.`);
+        this.#logger.info(`Created a new task channel called ${name}.`);
     }
 
     cleanQueue(): void {
-        this.#logger(LogLevel.Info, `Removing completed or dead entries from the ${this.#name} channel...`);
+        this.#logger.info(`Removing completed or dead entries from the ${this.#name} channel...`);
 
         const incompleteTasks = this.#queue.filter(task => {
             if(task.taskStatus === TaskStatus.Idle
@@ -56,10 +55,12 @@ export class TaskChannel {
 
         const failedTasks = incompleteTasks.filter(
             x => x.taskStatus === TaskStatus.Failed || x.taskStatus === TaskStatus.Delayed)
+            // eslint-disable-next-line @typescript-eslint/unbound-method
             .sort(this.#compareByDate);
 
         const nonFailedTasks = incompleteTasks.filter(
             x => x.taskStatus !== TaskStatus.Failed && x.taskStatus !== TaskStatus.Delayed)
+            // eslint-disable-next-line @typescript-eslint/unbound-method
             .sort(this.#compareByDate);
 
         this.#queue = [];

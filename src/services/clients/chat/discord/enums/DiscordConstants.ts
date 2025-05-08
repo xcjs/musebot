@@ -1,9 +1,9 @@
-export enum DiscordConstants {
-    ContentMaxLength = 2000,
-    ImageDescriptionMaxLength = 1024,
-    ShardCountAuto = 'auto',
-    MaxRequestsPerSecond = 50,
-    MaxButtonsPerActionRow = 5,
-    MaxAttachmentsPerMessage = 10,
-    InviteLink = 'https://discord.gg/qZMzFA8Apd'
+export class DiscordConstants {
+    public static readonly ContentMaxLength = 2000;
+    public static readonly ImageDescriptionMaxLength = 1024;
+    public static readonly ShardCountAuto = 'auto';
+    public static readonly MaxRequestsPerSecond = 50;
+    public static readonly MaxButtonsPerActionRow = 5;
+    public static readonly MaxAttachmentsPerMessage = 10;
+    public static readonly InviteLink = 'https://discord.gg/qZMzFA8Apd'
 }

@@ -1,10 +1,10 @@
 import { ComfyUIClient, ImagesResponse, Prompt } from 'comfy-ui-client';
-import { Logger, LogLevel } from 'meklog';
 
 import { APPLICATION_NAME } from '../../../../constants/Globals.js';
 import { PromisedSettledResultStatus } from '../../../../enums/PromisedSettledResultStatus.js';
 import { getRandomArrayEntry } from '../../../../utilities/random-utilities.js';
 import { IEnvironmentSettings } from '../../../environment-settings/IEnvironmentSettings.js';
+import { ILogger } from '../../../ILogger.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
 import { IGenerativeChatClient } from '../../chat/IGenerativeChatClient.js';
 
@@ -16,7 +16,7 @@ export class ComfyUiClient {
     #environmentSettings: IEnvironmentSettings;
     #chatClient: IGenerativeChatClient;
 
-    #logger;
+    #logger: ILogger;
 
     #host: URL;
     #client: ComfyUIClient;
@@ -25,7 +25,7 @@ export class ComfyUiClient {
         this.#environmentSettings = services.environmentSettings;
         this.#chatClient = services.generativeChatClient;
 
-        this.#logger = Logger(this.#environmentSettings.isProduction, 'ComfyUiClient');
+        this.#logger = services.getLogger('ComfyUiClient');
 
         this.#host = getRandomArrayEntry(this.#environmentSettings.stableDiffusionHosts);
 
@@ -37,7 +37,7 @@ export class ComfyUiClient {
 
         this.#client = new ComfyUIClient(comfyHost, `${APPLICATION_NAME}_${this.#chatClient.name}`);
 
-        this.#logger(LogLevel.Info, `Selected host: ${this.#host}`);
+        this.#logger.info(`Selected host: ${this.#host}`);
     }
 
     async render(prompts: Prompt[]): Promise<ImagesResponse> {
@@ -47,7 +47,7 @@ export class ComfyUiClient {
         const imagesResponses: ImagesResponse[] = [];
 
         prompts.forEach((prompt) => {
-            this.#logger(LogLevel.Info, 'Sending workflow to ComfyUI:', JSON.stringify(prompt));
+            this.#logger.info('Sending workflow to ComfyUI:', JSON.stringify(prompt));
             delete prompt.$musebotDefaults;
             imagesPromises.push(this.#client.getImages(prompt));
         });
@@ -59,7 +59,7 @@ export class ComfyUiClient {
                 if(result.status === PromisedSettledResultStatus.Fulfilled) {
                     imagesResponses.push(result.value);
                 } else {
-                    return Promise.reject(result.reason);
+                    this.#logger.error(`Error rendering prompt ${prompt.name}:`, result.reason);
                 }
             });
         });
@@ -67,7 +67,7 @@ export class ComfyUiClient {
         const imagesResponse = this.#flattenMultipleImagesResponses(imagesResponses);
 
         if(Object.keys(imagesResponse).length === 0) {
-            return Promise.reject('The render failed but was not reported as a failure by the Comfy UI client.');
+            return Promise.reject(new Error('The render failed but was not reported as a failure by the Comfy UI client.'));
         }
 
         return imagesResponse;

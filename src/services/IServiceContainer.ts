@@ -28,6 +28,7 @@ import { IPromptResponseTask } from './clients/text/tasks/IPromptResponseTask.js
 import { IEnvironmentSettings } from './environment-settings/IEnvironmentSettings.js';
 import { IFeatureService } from './features/IFeatureService.js';
 import { IHelpService } from './help/IHelpService.js';
+import { ILogger } from './ILogger.js';
 import { ITaskQueue } from './tasks/ITaskQueue.js';
 
 export interface IServiceContainer {
@@ -53,6 +54,8 @@ export interface IServiceContainer {
     actionRowBuilderFactory: IActionRowBuilderFactory;
 
     // Factories --------------------------------------------------------------/
+    getLogger(prefix: string): ILogger;
+
     getReplyTask(
         interaction: Message | ButtonInteraction,
         reply: BaseMessageOptions): IReplyTask;

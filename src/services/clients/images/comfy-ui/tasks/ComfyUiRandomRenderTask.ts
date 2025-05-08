@@ -1,5 +1,4 @@
 import { AttachmentBuilder, ButtonInteraction } from 'discord.js';
-import { Logger, LogLevel } from 'meklog';
 
 import { MAX_FILE_NAME_LENGTH,MAX_TEXT_LINE_LENGTH } from '../../../../../constants/FileConstants.js';
 import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
@@ -7,6 +6,7 @@ import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.j
 import { wrapText } from '../../../../../utilities/string-utilities.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
+import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
@@ -26,10 +26,9 @@ export class ComfyUiRandomRenderTask extends ComfyUiBaseTask implements IRandomR
     #comfyUiClient: ComfyUiClient;
     #replyService: IReplyService;
     #taskQueue: ITaskQueue;
+    #logger: ILogger;
 
     #interaction: ButtonInteraction;
-
-    #logger;
 
     override get taskChannel(): string {
         return `${this.#environmentSettings.stableDiffusionTaskChannel}_${this.#comfyUiClient.host}`;
@@ -45,16 +44,15 @@ export class ComfyUiRandomRenderTask extends ComfyUiBaseTask implements IRandomR
         this.#comfyUiClient = services.comfyUiClient;
         this.#replyService = services.replyService;
         this.#taskQueue = services.taskQueue;
+        this.#logger = services.getLogger('ComfyUiRandomRenderTask');
 
         this.#interaction = interaction;
-
-        this.#logger = new Logger(this.#environmentSettings.isProduction, 'ComfyUiRandomRenderTask');
     }
 
     override async process(): Promise<void> {
         await super.process();
 
-        this.#logger(LogLevel.Info, 'Processing a ComfyUiRandomRenderTask...');
+        this.#logger.info('Processing a ComfyUiRandomRenderTask...');
 
         const workflows = this.#workflowService.workflows.filter(x =>
             x.type === SupportedFeature.Txt2Img
@@ -62,7 +60,7 @@ export class ComfyUiRandomRenderTask extends ComfyUiBaseTask implements IRandomR
 
         const workflow = getRandomArrayEntry(workflows);
 
-        this.#logger(LogLevel.Info, `Using ${workflow.name} as the selected workflow.`);
+        this.#logger.info(`Using ${workflow.name} as the selected workflow.`);
 
         const ollamaClient = new OllamaClient(this.#services);
         const ollamaPrompt = getRandomArrayEntry(this.#environmentSettings.stableDiffusionOllamaPrompts);
@@ -82,7 +80,8 @@ export class ComfyUiRandomRenderTask extends ComfyUiBaseTask implements IRandomR
             response: imagesResponse
         };
 
-        const content = `Two AIs whisper to each other over the the ancient \`TCP/IP\` protocol. They present ${this.#interaction.member || 'you'} with this.`;
+        const content = `Two AIs whisper to each other over the the ancient \`TCP/IP\` protocol.` +
+            ` They present ${this.#interaction.member.user.username || 'you'} with this.`;
 
         const promptBuffer = Buffer.from(wrapText(renderRequest.prompt, MAX_TEXT_LINE_LENGTH).trim(),
             BufferEncoding.UTF8);

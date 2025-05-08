@@ -1,10 +1,9 @@
 import { Message } from 'discord.js';
-import { Logger, LogLevel } from 'meklog';
 import { GenerateRequest, GenerateResponse } from 'ollama';
 
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { splitText } from '../../../../../utilities/string-utilities.js';
-import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
+import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { LargeLanguageModelActionRow } from '../components/buttonRows/LargeLanguageModelActionRow.js';
 import { DiscordConstants } from '../enums/DiscordConstants.js';
@@ -12,16 +11,12 @@ import { DiscordConstants } from '../enums/DiscordConstants.js';
 export class OllamaReplyService {
     #services: IServiceContainer;
 
-    #environmentSettings: IEnvironmentSettings;
-
-    #logger;
+    #logger: ILogger;
 
     constructor(services: IServiceContainer) {
         this.#services = services;
 
-        this.#environmentSettings = services.environmentSettings;
-
-        this.#logger = new Logger(this.#environmentSettings.isProduction, 'OllamaReplyService');
+        this.#logger = services.getLogger('OllamaReplyService');
     }
 
     async reply(
@@ -31,7 +26,7 @@ export class OllamaReplyService {
         const responses = splitText(`${prependedText} ${exchange.response.response}`, DiscordConstants.ContentMaxLength);
         const replies: Array<Message> = [];
 
-        this.#logger(LogLevel.Info, `Replying with ${responses.length} messages.`);
+        this.#logger.info(`Replying with ${responses.length} messages.`);
 
         let i = 0;
 

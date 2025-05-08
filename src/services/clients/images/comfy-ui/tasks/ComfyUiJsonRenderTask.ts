@@ -1,8 +1,8 @@
 import { Client as DiscordClient, Message } from 'discord.js';
-import { Logger, LogLevel } from 'meklog';
 
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
+import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
@@ -27,7 +27,7 @@ export class ComfyUiJsonRenderTask extends ComfyUiBaseTask implements IJsonRende
 
     #message: Message;
 
-    #logger;
+    #logger: ILogger;
 
     override get taskChannel(): string {
         return `${this.#environmentSettings.stableDiffusionTaskChannel}_${this.#comfyUiClient.host}`;
@@ -47,13 +47,13 @@ export class ComfyUiJsonRenderTask extends ComfyUiBaseTask implements IJsonRende
 
         this.#message = message;
 
-        this.#logger = new Logger(this.#environmentSettings.isProduction, 'ComfyUiJsonRenderTask');
+        this.#logger = services.getLogger('ComfyUiJsonRenderTask');
     }
 
     override async process(): Promise<void> {
         await super.process();
 
-        this.#logger(LogLevel.Info, 'Processing a ComfyUiJsonRenderTask...');
+        this.#logger.info('Processing a ComfyUiJsonRenderTask...');
 
         const botMention = this.#message.mentions.members?.find(x => x.id === this.#discordClient.user?.id)?.toString() || '';
         const prompt = this.#message.content.replaceAll(botMention, '').trim();

@@ -1,11 +1,10 @@
 import { ImagesResponse } from 'comfy-ui-client';
 import { AttachmentBuilder, BaseMessageOptions, ButtonInteraction, Message } from 'discord.js';
-import { Logger, LogLevel } from 'meklog';
 
 import { MAX_FILE_NAME_LENGTH } from '../../../../../constants/FileConstants.js';
 import { APPLICATION_NAME } from '../../../../../constants/Globals.js';
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
-import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
+import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { ComfyUiClient } from '../../../images/comfy-ui/ComfyUiClient.js';
 import { SerializableRenderRequest } from '../../../images/stable-diffusion/models/SerializableRenderRequest.js';
@@ -18,11 +17,10 @@ import { DiscordConstants } from '../enums/DiscordConstants.js';
 export class ComfyUiReplyService {
     #services: IServiceContainer;
 
-    #environmentSettings: IEnvironmentSettings;
     #comfyUiClient: ComfyUiClient;
     #replyService: IReplyService;
 
-    #logger;
+    #logger: ILogger;
 
     get host(): URL {
         return this.#comfyUiClient.host;
@@ -31,11 +29,10 @@ export class ComfyUiReplyService {
     constructor(services: IServiceContainer) {
         this.#services = services;
 
-        this.#environmentSettings = services.environmentSettings;
         this.#comfyUiClient = services.comfyUiClient;
         this.#replyService = services.replyService;
 
-        this.#logger = new Logger(this.#environmentSettings.isProduction, 'ComfyUiReplyService');
+        this.#logger = services.getLogger('ComfyUiReplyService');
     }
 
     async reply(interaction: Message | ButtonInteraction,
@@ -58,7 +55,7 @@ export class ComfyUiReplyService {
         }
 
         if (Object.values(renderExchange.response).length === 0) {
-            this.#logger(LogLevel.Error, 'A reply was created with no attachments.');
+            this.#logger.error('A reply was created with no attachments.');
             return await this.#replyService.replyWithError(interaction);
         }
 
@@ -80,7 +77,7 @@ export class ComfyUiReplyService {
         const imageAttachments: Array<AttachmentBuilder> = [];
 
         for (const imageResponse of Object.values(renderExchange.response)) {
-            this.#logger(LogLevel.Info, `Attaching render(s):`, JSON.stringify(imageResponse));
+            this.#logger.info(`Attaching render(s):`, imageResponse);
             let i = 0;
 
             for (const imageContainer of imageResponse) {
@@ -95,6 +92,7 @@ export class ComfyUiReplyService {
                         imageContainer.image.filename.lastIndexOf('.'),
                         imageContainer.image.filename.length);
                 } else if(imageContainer.image['content-type'] !== undefined) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     const contentType: string = imageContainer.image['content-type'];
                     extension = `.${contentType.substring(contentType.lastIndexOf('/') + 1, contentType.length)}`;
                 } else {

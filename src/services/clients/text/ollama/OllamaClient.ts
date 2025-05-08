@@ -1,19 +1,18 @@
-import { Logger, LogLevel } from 'meklog';
 import { GenerateRequest, GenerateResponse, Ollama } from 'ollama';
 
 import { IHttpExchange } from '../../../../models/IHttpExchange.js';
 import { getRandomArrayEntry, getRandomInt } from '../../../../utilities/random-utilities.js';
 import { IEnvironmentSettings } from '../../../environment-settings/IEnvironmentSettings.js';
+import { ILogger } from '../../../ILogger.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
 
 export class OllamaClient {
     #environmentSettings: IEnvironmentSettings;
+    #logger: ILogger;
 
     #host: URL;
     #client: Ollama;
     #model: string;
-
-    #logger;
 
     get host(): URL {
         return this.#host;
@@ -22,11 +21,11 @@ export class OllamaClient {
     constructor(services: IServiceContainer) {
         this.#environmentSettings = services.environmentSettings;
 
-        this.#logger = Logger(this.#environmentSettings.isProduction, 'OllamaClient');
+        this.#logger = services.getLogger('OllamaClient');
 
         const host = getRandomArrayEntry(this.#environmentSettings.ollamaHosts);
         this.#host = host;
-        this.#logger(LogLevel.Info, `Selected host: ${host}`);
+        this.#logger.info(`Selected host: ${host}`);
 
         this.#client = new Ollama({
             host: host.toString()
@@ -43,10 +42,10 @@ export class OllamaClient {
             system: this.#environmentSettings.ollamaSystemPrompt
         };
 
-        this.#logger(LogLevel.Info, `Calling Ollama API with the prompt: ${message}`);
+        this.#logger.info(`Calling Ollama API with the prompt: ${message}`);
 
         if(context && context.length) {
-            this.#logger(LogLevel.Info, `A context value of ${context.join(', ')} is provided.`);
+            this.#logger.info(`A context value of ${context.join(', ')} is provided.`);
         }
 
         try {
@@ -57,8 +56,10 @@ export class OllamaClient {
                 response
             };
         } catch(error) {
-            this.#logger(LogLevel.Info, error);
-            throw error;
+            this.#logger.info(`Failed to send Ollama a message: ${error}`);
+
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            throw new Error(error);
         }
     }
 
@@ -70,10 +71,10 @@ export class OllamaClient {
             system: this.#environmentSettings.ollamaSystemPrompt
         };
 
-        this.#logger(LogLevel.Info, `Calling Ollama API at with the prompt: ${message}`);
+        this.#logger.info(`Calling Ollama API at with the prompt: ${message}`);
 
         if(context && context.length) {
-            this.#logger(LogLevel.Info, `A context value of ${context.join(', ')} is provided.`);
+            this.#logger.info(`A context value of ${context.join(', ')} is provided.`);
         }
 
         try {
@@ -84,8 +85,10 @@ export class OllamaClient {
                 response
             };
         } catch(error) {
-            this.#logger(LogLevel.Info, error);
-            throw error;
+            this.#logger.error(`An error occurred while sending Ollama a message and retrieving a stream: ${error}`);
+
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            throw new Error(error);
         }
     }
 
@@ -100,7 +103,7 @@ export class OllamaClient {
 
         const model = models[getRandomInt(0, models.length - 1)];
 
-        this.#logger(LogLevel.Info, `Selected model: ${model}`);
+        this.#logger.info(`Selected model: ${model}`);
 
         return model;
     }

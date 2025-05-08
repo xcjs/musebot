@@ -1,8 +1,7 @@
 import { AttachmentBuilder, ButtonInteraction } from 'discord.js';
-import { Logger, LogLevel } from 'meklog';
 
 import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
-import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
+import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
@@ -12,13 +11,11 @@ import { IShowSourceTask } from '../../tasks/IShowSourceTask.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 
 export class ComfyUiShowSourceTask extends ComfyUiBaseTask implements IShowSourceTask {
-    #environmentSettings: IEnvironmentSettings;
     #comfyUiReplyService: ComfyUiReplyService;
     #replyService: IReplyService;
+    #logger: ILogger;
 
     #interaction: ButtonInteraction;
-
-    #logger;
 
     override get taskChannel(): string {
         return 'Discord';
@@ -27,19 +24,17 @@ export class ComfyUiShowSourceTask extends ComfyUiBaseTask implements IShowSourc
     constructor(services: IServiceContainer, interaction: ButtonInteraction) {
         super(services);
 
-        this.#environmentSettings = services.environmentSettings;
         this.#comfyUiReplyService = services.comfyUiReplyService;
         this.#replyService = services.replyService;
+        this.#logger = services.getLogger('ComfyUiShowSourceTask');
 
         this.#interaction = interaction;
-
-        this.#logger = new Logger(this.#environmentSettings.isProduction, 'ComfyUiShowSourceTask');
     }
 
     override async process(): Promise<void> {
         await super.process();
 
-        this.#logger(LogLevel.Info, 'Processing a ComfyUiShowSourceTask...');
+        this.#logger.info('Processing a ComfyUiShowSourceTask...');
 
         const imageAttachments = this.#replyService.getImageAttachments(this.#interaction);
         let messageContent: string;
@@ -54,10 +49,10 @@ export class ComfyUiShowSourceTask extends ComfyUiBaseTask implements IShowSourc
                 name: `${this.#comfyUiReplyService.getFileNameFromPrompt(renderRequest)}.json`
             }));
 
-            messageContent = `${this.#interaction.member || 'You'} wanted to see the request message for \`${renderRequest.prompt}\``;
+            messageContent = `${this.#interaction.member.user.username || 'You'} wanted to see the request message for \`${renderRequest.prompt}\``;
         }
 
-        this.#logger(LogLevel.Info, messageContent);
+        this.#logger.info(messageContent);
 
         const reply = {
             content: messageContent,

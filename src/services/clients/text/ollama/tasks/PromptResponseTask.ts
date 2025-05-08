@@ -1,10 +1,10 @@
 import { Message } from 'discord.js';
-import { Logger, LogLevel } from 'meklog';
 
 import { endsWithWhitespace, hasOnly, isOnlyWhitespace } from '../../../../../utilities/string-utilities.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../../../../features/IFeatureService.js';
+import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
@@ -34,11 +34,11 @@ export class PromptResponseTask extends BaseTask implements IPromptResponseTask 
     #ollamaStreamingReplyService: OllamaStreamingReplyService;
     #replyService: IReplyService;
     #taskQueue: ITaskQueue;
+    #logger: ILogger;
 
     #message: Message;
     #context: Array<number> = [];
 
-    #logger;
 
     #onSuccess: (context: Array<number>) => void  = () => { };
 
@@ -57,11 +57,10 @@ export class PromptResponseTask extends BaseTask implements IPromptResponseTask 
         this.#ollamaStreamingReplyService = services.ollamaStreamingReplyService;
         this.#replyService = services.replyService;
         this.#taskQueue = services.taskQueue;
+        this.#logger = services.getLogger('PromptResponseTask');
 
         this.#message = message;
         this.#context = context;
-
-        this.#logger = new Logger(this.#environmentSettings.isProduction, 'PromptResponseTask');
     }
 
     override async process(): Promise<void> {
@@ -79,7 +78,7 @@ export class PromptResponseTask extends BaseTask implements IPromptResponseTask 
 
         if(this.#featureService.hasFeature(SupportedFeature.Txt2Img)
             && replies.length > 0) {
-            this.#attachImage(exchange.response.response, replies);
+            await this.#attachImage(exchange.response.response, replies);
         }
     }
 
@@ -139,7 +138,7 @@ export class PromptResponseTask extends BaseTask implements IPromptResponseTask 
                 replies = await this.#ollamaStreamingReplyService.reply(this.#message, responseBatch, response.done);
                 responseBatch = '';
             } catch (error) {
-                this.#logger(LogLevel.Error, `An error occurred while streaming the text response: ${error}`);
+                this.#logger.error(`An error occurred while streaming the text response: ${error}`);
                 continue;
             }
 
@@ -155,7 +154,7 @@ export class PromptResponseTask extends BaseTask implements IPromptResponseTask 
     }
 
     async #attachImage(prompt: string, replies: Array<Message>): Promise<void> {
-        this.#logger(LogLevel.Info, 'An image will be attached to the Ollama response.');
+        this.#logger.info('An image will be attached to the Ollama response.');
 
         prompt = 'The following prompt is a response to a message.'
             + ' Describe an artistic or creative image to go with this response.'
