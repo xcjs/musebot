@@ -9,12 +9,10 @@ export default tseslint.config(
     languageOptions: {
       parserOptions: {
         projectService: true,
-        projectFolderIgnoreList: ['eslint.config.mjs'],
-        tsconfigRootDir: import.meta.dirname,
-        ignores: ['eslint.config.mjs']
+        tsconfigRootDir: import.meta.dirname
       },
     },
-    ignores: ['dist/', 'eslint.config.js']
+    ignores: ['dist/']
   },
   {
     ...pluginJs.configs.recommended,
