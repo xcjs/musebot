@@ -52,7 +52,8 @@ export class TypingService implements ITypingService {
                 void this.#onTypingInterval(interaction);
             }, this.#sendTypingIntervalMilliseconds);
 
-            this.#logger.info(`Registered typing interval as interval #${channelTypingIndicator.typingInterval.ref.toString()}.`);
+            // eslint-disable-next-line @typescript-eslint/no-base-to-string, @typescript-eslint/restrict-template-expressions
+            this.#logger.info(`Registered typing interval as interval #${channelTypingIndicator.typingInterval}.`);
         } catch(error) {
             this.#logger.error(`An error occurred while sending the typing status: ${error}`);
             this.#stopTyping();
@@ -77,7 +78,8 @@ export class TypingService implements ITypingService {
             return;
         }
 
-        this.#logger.info(`StoppingStopped typing and clearing interval #${channelTypingIndicator.typingInterval.ref.toString()}.`);
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string, @typescript-eslint/restrict-template-expressions
+        this.#logger.info(`StoppingStopped typing and clearing interval #${channelTypingIndicator.typingInterval}.`);
         clearInterval(channelTypingIndicator.typingInterval);
         channelTypingIndicator.typingInterval = null;
     }
