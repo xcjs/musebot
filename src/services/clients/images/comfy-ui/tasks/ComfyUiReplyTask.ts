@@ -23,8 +23,6 @@ export class ComfyUiReplyTask extends BaseTask implements IReplyTask {
     #renderExchange: IHttpExchange<Array<SerializableRenderRequest>, ImagesResponse>;
     #isEdit: boolean;
 
-    #isReplyConstructed: boolean = false;
-
     constructor(services: IServiceContainer,
         interaction: Message | ButtonInteraction,
         reply: BaseMessageOptions,
