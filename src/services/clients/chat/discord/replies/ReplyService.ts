@@ -1,11 +1,11 @@
 import { Attachment, BaseMessageOptions, ButtonInteraction, Client as DiscordClient, Message, MessageReaction, MessageType, User  } from 'discord.js';
-import { Logger, LogLevel } from 'meklog';
 
 import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
 import { ContentType } from '../../../../../enums/ContentType.js';
 import { getRandomInt } from '../../../../../utilities/random-utilities.js';
 import { splitText } from '../../../../../utilities/string-utilities.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
+import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { IReplyService } from '../../IReplyService.js';
 import { DiscordConstants } from '../enums/DiscordConstants.js';
@@ -13,39 +13,38 @@ import { DiscordConstants } from '../enums/DiscordConstants.js';
 export class ReplyService implements IReplyService {
     #environmentSettings: IEnvironmentSettings;
     #discordClient: DiscordClient;
-
-    #logger;
+    #logger: ILogger;
 
     constructor(services: IServiceContainer) {
         this.#environmentSettings = services.environmentSettings;
         this.#discordClient = services.discordClient;
 
-        this.#logger = new Logger(this.#environmentSettings.isProduction, 'ReplyService');
+        this.#logger = services.getLogger('ReplyService');
     }
 
     shouldReply(message: Message, reaction: MessageReaction = null): boolean {
         if(reaction !== null) {
             // If the bot is replying to a reaction, it must be to this bot's message.
             if (message.author.id !== this.#discordClient.user?.id) {
-                this.#logger(LogLevel.Info, 'Not replying to a reaction not on my message.');
+                this.#logger.info('Not replying to a reaction not on my message.');
                 return false;
             }
 
             if(reaction.me) {
-                this.#logger(LogLevel.Info, 'Not replying to a reaction from myself.');
+                this.#logger.info('Not replying to a reaction from myself.');
                 return false;
             }
         } else {
             // The message is system message.
             if (message.system) {
-                this.#logger(LogLevel.Info, 'Not replying to a system message.');
+                this.#logger.info('Not replying to a system message.');
                 return false;
             }
 
             // The message is private and not from a member in a private message
             // role.
             if (!message.guild && !(this.#environmentSettings.botPrivateMessageUsers.includes(message.author.username))) {
-                this.#logger(LogLevel.Info, 'Not replying to a non-guild message that\'s not from someone in a private messaging role.');
+                this.#logger.info('Not replying to a non-guild message that\'s not from someone in a private messaging role.');
                 return false;
             }
 
@@ -53,25 +52,25 @@ export class ReplyService implements IReplyService {
             // reply unless it's a reply to an LLM.
             if (message.type !== MessageType.Default
                 && message.type !== MessageType.Reply) {
-                this.#logger(LogLevel.Info, 'Not replying to a non-default or non-reaction message.');
+                this.#logger.info('Not replying to a non-default or non-reaction message.');
                 return false;
             }
 
             // The message has no author.
             if (!message.author.id) {
-                this.#logger(LogLevel.Info, 'Not replying to a message without an author.');
+                this.#logger.info('Not replying to a message without an author.');
                 return false;
             }
 
             // The bot can't reply to itself.
             if (message.author.id === this.#discordClient.user?.id) {
-                this.#logger(LogLevel.Info, 'Not replying to myself.');
+                this.#logger.info('Not replying to myself.');
                 return false;
             }
 
             // The bot can't reply to another bot.
             if (message.author.bot) {
-                this.#logger(LogLevel.Info, 'Not replying to any other bots/apps.');
+                this.#logger.info('Not replying to any other bots/apps.');
                 return false;
             }
 
@@ -83,7 +82,7 @@ export class ReplyService implements IReplyService {
                 const botRole = message.guild.members?.resolve(this.#discordClient.user).roles.botRole;
 
                 if (message.mentions.roles.find(x => x.id === botRole?.id) === undefined) {
-                    this.#logger(LogLevel.Info, 'Not replying to a message that doesn\'t mention or react to this bot or its role.');
+                    this.#logger.info('Not replying to a message that doesn\'t mention or react to this bot or its role.');
                     return false;
                 }
             }
@@ -96,7 +95,7 @@ export class ReplyService implements IReplyService {
             if ((!this.#environmentSettings.botRequiresMention
                 && generatedResponseRate > this.#environmentSettings.botResponseRate)
                 && !message.mentions.members?.find(x => x.id === this.#discordClient.user?.id)) {
-                this.#logger(LogLevel.Info, `Not replying to a message outside the response rate` +
+                this.#logger.info(`Not replying to a message outside the response rate` +
                     ` (${generatedResponseRate} > ${this.#environmentSettings.botResponseRate}).`);
                 return false;
             }
@@ -105,7 +104,7 @@ export class ReplyService implements IReplyService {
             if (message.guild !== null
                 && this.#environmentSettings.discordChannels.length > 0
                 && !this.#environmentSettings.discordChannels.includes(message.channel.id)) {
-                this.#logger(LogLevel.Info, 'Not replying to a message in a channel outside this bot\'s allowed channels.');
+                this.#logger.info('Not replying to a message in a channel outside this bot\'s allowed channels.');
                 return false;
             }
 
@@ -113,13 +112,13 @@ export class ReplyService implements IReplyService {
             if (message.guild !== null
                 && this.#environmentSettings.discordChannelsDisallowed.length > 0
                 && this.#environmentSettings.discordChannelsDisallowed.includes(message.channel.id)) {
-                this.#logger(LogLevel.Info, 'Not replying to a message in a disallowed channel.');
+                this.#logger.info('Not replying to a message in a disallowed channel.');
                 return false;
             }
 
             // The message has no content and is not a reaction.
             if (message.content.length === 0) {
-                this.#logger(LogLevel.Info, 'Not replying to a message with no content.');
+                this.#logger.info('Not replying to a message with no content.');
                 return false;
             }
         }
@@ -177,7 +176,7 @@ export class ReplyService implements IReplyService {
 
                 await interaction.message.reply(replyFragment);
             } else {
-                this.#logger(LogLevel.Warning,
+                this.#logger.warning(
                     `An interaction occurred that did not fit the reply criteria of either being an edited reply to a`
                     + ` ${typeof ButtonInteraction} nor a direct reply to any type of interaction.`);
             }
@@ -187,10 +186,10 @@ export class ReplyService implements IReplyService {
     }
 
     getMessageWithoutBotMentions(message: Message): string {
-        this.#logger(LogLevel.Info, 'Stripping any bot mentions from the message content');
+        this.#logger.info('Stripping any bot mentions from the message content.');
 
         if(message.content === null) {
-            this.#logger(LogLevel.Info, 'There is no content in the message - skipping.');
+            this.#logger.info('There is no content in the message - skipping.');
             return '';
         }
 
@@ -206,7 +205,7 @@ export class ReplyService implements IReplyService {
 
         messageContent = messageContent.trim();
 
-        this.#logger(LogLevel.Info, `Returning "${message.content}" as "${messageContent}".`);
+        this.#logger.info(`Returning "${message.content}" as "${messageContent}".`);
 
         return messageContent;
     }
@@ -216,7 +215,7 @@ export class ReplyService implements IReplyService {
     }
 
     getAttachmentsByType(interaction: Message | ButtonInteraction, contentTypes: Array<ContentType>): Array<Attachment> {
-        this.#logger(LogLevel.Info, 'Looking for attachments of the following types on a message:', contentTypes);
+        this.#logger.info('Looking for attachments of the following types on a message:', contentTypes);
 
         let attachments: Array<Attachment>;
 
@@ -228,7 +227,7 @@ export class ReplyService implements IReplyService {
 
         const matchingAttachments = attachments.filter(attachment =>
             contentTypes.includes(Object.values(ContentType)
-                .find(contentTypeValue => contentTypeValue === attachment.contentType)));
+                .find(contentTypeValue => contentTypeValue.toString() === attachment.contentType)));
 
         return matchingAttachments;
     }

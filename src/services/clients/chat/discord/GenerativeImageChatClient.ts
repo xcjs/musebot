@@ -1,12 +1,13 @@
 import { ButtonInteraction, Client as DiscordClient, Events, Message, MessageReaction, User } from 'discord.js';
-import { Logger, LogLevel } from 'meklog';
 
 import { BotInteraction } from '../../../../enums/BotInteraction.js';
-import { IEnvironmentSettings } from '../../../environment-settings/IEnvironmentSettings.js';
 import { IHelpService } from '../../../help/IHelpService.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
 import { ITaskQueue } from '../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
+import { IWorkflow } from '../../images/comfy-ui/models/IWorkflow.js';
+import { IWorkflowService } from '../../images/comfy-ui/services/IWorkflowService.js';
+import { SerializableRenderRequest } from '../../images/stable-diffusion/models/SerializableRenderRequest.js';
 import { IReplyService } from '../IReplyService.js';
 import { ITypingService } from '../ITypingService.js';
 import { BaseDiscordClient } from './BaseDiscordClient.js';
@@ -14,10 +15,10 @@ import { BaseDiscordClient } from './BaseDiscordClient.js';
 export class GenerativeImageChatClient extends BaseDiscordClient {
     #services: IServiceContainer;
 
-    #environmentSettings: IEnvironmentSettings;
     #discordClient: DiscordClient;
     #replyService: IReplyService;
     #typingService: ITypingService;
+    #workflowService: IWorkflowService;
     #helpService: IHelpService;
     #taskQueue: ITaskQueue;
 
@@ -26,14 +27,14 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
 
         this.#services = services;
 
-        this.#environmentSettings = services.environmentSettings;
         this.#discordClient = services.discordClient;
         this.#replyService = services.replyService;
         this.#typingService = services.typingService;
+        this.#workflowService = services.workflowService;
         this.#helpService = services.helpService;
         this.#taskQueue = services.taskQueue;
 
-        this.logger = new Logger(this.#environmentSettings.isProduction, 'GenerativeImageChatClient');
+        this.logger = services.getLogger('GenerativeImageChatClient');
 
         this.#registerEvents();
     }
@@ -42,20 +43,20 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this;
 
-        this.#discordClient.once(Events.ClientReady, (event) => this.onClientReady.call(self, event));
-        this.#discordClient.on(Events.MessageCreate, async (message) => await this.#onMessageCreate.call(self, message));
-        this.#discordClient.on(Events.InteractionCreate, async (interaction) => await this.#onInteraction.call(self, interaction));
-        this.#discordClient.on(Events.MessageReactionAdd, async (reaction, user) => await this.#onMessageReactionAdd.call(self, reaction, user));
+        this.#discordClient.once(Events.ClientReady, (event) => void this.onClientReady.call(self, event));
+        this.#discordClient.on(Events.MessageCreate, (message) => void this.#onMessageCreate.call(self, message));
+        this.#discordClient.on(Events.InteractionCreate, (interaction) => void this.#onInteraction.call(self, interaction));
+        this.#discordClient.on(Events.MessageReactionAdd, (reaction, user) => void this.#onMessageReactionAdd.call(self, reaction, user));
     }
 
     async #onMessageCreate(message: Message): Promise<void> {
-        this.logger(LogLevel.Info, `Discord message created. ${message.author.displayName} (${message.author.username}): "${message}"`);
+        this.logger.info(`Discord message created. ${message.author.displayName} (${message.author.username}): "${message.content}"`);
 
         if (!this.#replyService.shouldReply(message, null)) {
             return;
         }
 
-        this.logger(LogLevel.Info, 'Replying to message...');
+        this.logger.info('Replying to message...');
         await this.#typingService.startTyping(message);
 
         if(this.#replyService.getMessageWithoutBotMentions(message).startsWith('{')) {
@@ -66,47 +67,69 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
     }
 
     async #onInteraction(interaction: ButtonInteraction): Promise<void> {
-        this.logger(LogLevel.Info, `Beginning interaction response to custom action ${interaction.customId}...`);
+        this.logger.info(`Beginning interaction response to custom action "${interaction.customId}"...`);
 
         try {
             await interaction.deferUpdate();
         } catch (error) {
-            this.logger(LogLevel.Error, `Something went wrong while deferring a reply: ${error}. Ignore this error if the bot is functioning normally.`);
+            this.logger.error(`Something went wrong while deferring a reply: ${error}. Ignore this error if the bot is functioning normally.`);
         }
 
         switch (interaction.customId) {
-            case BotInteraction.Retry:
+            case BotInteraction.Retry.toString():
                 this.#taskQueue.add(this.#services.getRetryRenderTask(interaction) as BaseTask);
                 break;
-            case BotInteraction.UpscaleDetail:
-                this.#taskQueue.add(this.#services.getUpscaleRenderTask(interaction) as BaseTask);
-                break;
-            case BotInteraction.UpscaleDesign:
-                this.#taskQueue.add(this.#services.getUpscaleRenderTask(interaction) as BaseTask)
-                break;
-            case BotInteraction.ShowSource:
+            case BotInteraction.ShowSource.toString():
                 this.#taskQueue.add(this.#services.getShowSourceTask(interaction) as BaseTask);
                 break;
-            case BotInteraction.GuidanceScaleMinus:
+            case BotInteraction.GuidanceScaleMinus.toString():
                 this.#taskQueue.add(this.#services.getDecreaseGuidanceScaleRenderTask(interaction) as BaseTask);
                 break;
-            case BotInteraction.GuidanceScalePlus:
+            case BotInteraction.GuidanceScalePlus.toString():
                 this.#taskQueue.add(this.#services.getIncreaseGuidanceScaleRenderTask(interaction) as BaseTask);
                 break;
-            case BotInteraction.ExpandPrompt:
+            case BotInteraction.ExpandPrompt.toString():
                 this.#taskQueue.add(this.#services.getExpandPromptTask(interaction) as BaseTask);
                 break;
-            case BotInteraction.Randomize:
+            case BotInteraction.Randomize.toString():
                 this.#taskQueue.add(this.#services.getRandomRenderTask(interaction) as BaseTask);
                 break;
-            case BotInteraction.Help:
+            case BotInteraction.Help.toString():
                 this.#taskQueue.add(this.#services.getReplyTask(
                     interaction, {
-                        content: this.#helpService.buildHelpArticle(interaction),
+                        content: await this.#helpService.buildHelpArticle(interaction),
                     }) as BaseTask);
                 break;
             default:
-                this.logger(LogLevel.Warning, `An unknown interaction was passed: ${interaction.customId}.`);
+                let isWorkflowInteraction = false;
+                let workflow: IWorkflow;
+
+                try {
+                    await this.#workflowService.loadWorkflows();
+                    const workflows = this.#workflowService.workflows;
+
+                    let renderRequest: SerializableRenderRequest;
+
+                    isWorkflowInteraction = !!workflows.find((workflowInstance) => {
+                        renderRequest = this.#workflowService.getWorkflowDefaults(workflowInstance);
+
+                        if(renderRequest.label === interaction.customId) {
+                            workflow = workflowInstance;
+                            return true;
+                        }
+                    });
+                } catch(error) {
+                    isWorkflowInteraction = false;
+                    this.logger.error(`An exception occurred while trying to process the interaction "${interaction.customId}"`);
+                    this.logger.error(`As this is a custom workflow, verify your workflow defaults are configured correctly: ${error}`);
+                }
+
+                if (isWorkflowInteraction) {
+                    this.#taskQueue.add(this.#services.getImg2ImgRenderTask(interaction, workflow) as BaseTask);
+                } else {
+                    this.logger.warning(`An unknown or erroneous interaction was passed: ${interaction.customId}.`);
+                }
+
                 break;
         }
 
@@ -118,7 +141,7 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
             try {
                 reaction = await reaction.fetch();
             } catch (error) {
-                this.logger(LogLevel.Error, `Something went wrong when fetching the MessageReaction: ${error}.`);
+                this.logger.error(`Something went wrong when fetching the MessageReaction: ${error}.`);
                 return;
             }
         }

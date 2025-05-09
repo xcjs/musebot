@@ -1,18 +1,20 @@
-import { Prompt } from 'comfy-ui-client';
-import { ButtonInteraction, Message, User } from 'discord.js';
-import { Logger, LogLevel } from 'meklog';
+import { ImagesResponse, Prompt } from 'comfy-ui-client';
+import { BaseMessageOptions, ButtonInteraction, Message, User } from 'discord.js';
 
+import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
+import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
+import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
+import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 import { IRetryRenderTask } from '../../tasks/IRetryRenderTask.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
-import { WorkflowType } from '../enums/WorkflowType.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 import { ComfyUiReplyTask } from './ComfyUiReplyTask.js';
@@ -23,12 +25,12 @@ export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRen
     #environmentSettings: IEnvironmentSettings;
     #workflowService: IWorkflowService;
     #comfyUiClient: ComfyUiClient;
+    #comfyUiReplyService: ComfyUiReplyService;
     #replyService: IReplyService;
     #taskQueue: ITaskQueue;
+    #logger: ILogger;
 
     #interaction: Message | ButtonInteraction;
-
-    #logger;
 
     override get taskChannel(): string {
         return `${this.#environmentSettings.stableDiffusionTaskChannel}_${this.#comfyUiClient.host}`;
@@ -44,23 +46,23 @@ export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRen
         this.#environmentSettings = services.environmentSettings;
         this.#workflowService = services.workflowService;
         this.#comfyUiClient = services.comfyUiClient;
+        this.#comfyUiReplyService = services.comfyUiReplyService;
         this.#replyService = services.replyService;
         this.#taskQueue = services.taskQueue;
+        this.#logger = services.getLogger('ComfyUiRetryRenderTask');
 
         this.#interaction = interaction;
-
-        this.#logger = new Logger(this.#environmentSettings.isProduction, 'ComfyUiRetryRenderTask');
     }
 
     override async process(): Promise<void> {
         await super.process();
 
-        this.#logger(LogLevel.Info, 'Processing a ComfyUiRetryRenderTask...');
+        this.#logger.info('Processing a ComfyUiRetryRenderTask...');
 
         const imageAttachments = this.#replyService.getImageAttachments(this.#interaction);
 
         if (imageAttachments.length === 0) {
-            this.#logger(LogLevel.Warning, 'No attachments were found - exiting the task.');
+            this.#logger.warning('No attachments were found - exiting the task.');
             return;
         }
 
@@ -77,13 +79,13 @@ export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRen
             content = `${username} re-rendered \`${renderRequest.prompt}\``.substring(0, DiscordConstants.ContentMaxLength);
 
             const workflows = this.#workflowService.workflows.filter(x =>
-                x.type === WorkflowType.Txt2img
-                || x.type === WorkflowType.Txt2vid);
+                x.type === SupportedFeature.Txt2Img
+                || x.type === SupportedFeature.Txt2Vid);
 
             const workflow = getRandomArrayEntry(workflows);
             const renderDefaults = this.#workflowService.getWorkflowDefaults(workflow);
 
-            this.#logger(LogLevel.Info, `Using ${workflow.name} as the selected workflow.`);
+            this.#logger.info(`Using ${workflow.name} as the selected workflow.`);
 
             renderRequest.prompt = renderRequest.prompt;
             renderRequest.refreshSeed();
@@ -105,12 +107,18 @@ export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRen
 
         const imagesResponse = await this.#comfyUiClient.render(prompts);
 
-        const replyTask = new ComfyUiReplyTask(this.#services, this.#interaction, { content }, {
+        const reply: BaseMessageOptions = { content };
+        const exchange: IHttpExchange<SerializableRenderRequest[], ImagesResponse> = {
             request: renderRequests,
             response: imagesResponse
-        });
+        };
 
-        this.#taskQueue.add(replyTask);
+        if (this.#environmentSettings.hasStableDiffusionOutputAsSeparateTask) {
+            const replyTask = new ComfyUiReplyTask(this.#services, this.#interaction, reply, exchange, true);
+            this.#taskQueue.add(replyTask);
+        } else {
+            await this.#comfyUiReplyService.reply(this.#interaction, reply, true, exchange);
+        }
     }
 
     override async postProcess(): Promise<void> {

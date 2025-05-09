@@ -1,11 +1,13 @@
-import { Prompt } from 'comfy-ui-client';
-import { ButtonInteraction } from 'discord.js';
-import { Logger, LogLevel } from 'meklog';
+import { ImagesResponse, Prompt } from 'comfy-ui-client';
+import { BaseMessageOptions, ButtonInteraction } from 'discord.js';
 
+import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
+import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
+import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 import { IDecreaseGuidanceScaleRenderTask } from '../../tasks/IDecreaseGuidanceScaleRenderTask.js';
@@ -20,12 +22,12 @@ export class ComfyUiDecreaseGuidanceScaleRenderTask extends ComfyUiBaseTask impl
     #environmentSettings: IEnvironmentSettings;
     #workflowService: IWorkflowService;
     #comfyUiClient: ComfyUiClient;
+    #comfyUiReplyService: ComfyUiReplyService;
     #replyService: IReplyService;
     #taskQueue: ITaskQueue;
+    #logger: ILogger;
 
     #interaction: ButtonInteraction;
-
-    #logger;
 
     override get taskChannel(): string {
         return `${this.#environmentSettings.stableDiffusionTaskChannel}_${this.#comfyUiClient.host}`;
@@ -39,23 +41,24 @@ export class ComfyUiDecreaseGuidanceScaleRenderTask extends ComfyUiBaseTask impl
         this.#environmentSettings = services.environmentSettings;
         this.#workflowService = services.workflowService;
         this.#comfyUiClient = services.comfyUiClient;
+        this.#comfyUiReplyService = services.comfyUiReplyService;
         this.#replyService = services.replyService;
         this.#taskQueue = services.taskQueue;
 
         this.#interaction = interaction;
 
-        this.#logger = new Logger(this.#environmentSettings.isProduction, 'ComfyUiDecreaseGuidanceScaleRenderTask');
+        this.#logger = services.getLogger('ComfyUiDecreaseGuidanceScaleRenderTask');
     }
 
     override async process(): Promise<void> {
         await super.process();
 
-        this.#logger(LogLevel.Info, 'Processing a ComfyUiDecreaseGuidanceScaleRenderTask...');
+        this.#logger.info('Processing a ComfyUiDecreaseGuidanceScaleRenderTask...');
 
         const imageAttachments = this.#replyService.getImageAttachments(this.#interaction);
 
         if (imageAttachments.length == 0) {
-            this.#logger(LogLevel.Warning, 'No attachments were found - exiting the task.');
+            this.#logger.warning('No attachments were found - exiting the task.');
             return;
         }
 
@@ -68,27 +71,32 @@ export class ComfyUiDecreaseGuidanceScaleRenderTask extends ComfyUiBaseTask impl
 
             const workflow = this.#workflowService.workflows.find(x => x.name === renderRequest.model);
 
-            this.#logger(LogLevel.Info, `Using ${workflow.name} as the selected workflow.`);
+            this.#logger.info(`Using ${workflow.name} as the selected workflow.`);
 
             renderRequest.cfgScale -= this.#environmentSettings.stableDiffusionGuidanceScaleInterval;
             renderRequests.push(renderRequest);
             cfgScaleValue = renderRequest.cfgScale;
 
             prompts.push(this.#workflowService.renderWorkflow(workflow, renderRequest));
-
         }
 
         const imagesResponse = await this.#comfyUiClient.render(prompts);
 
-        const content = `${this.#interaction.member || 'You'} decreased the guidance scale from ${cfgScaleValue
+        const content = `${this.#interaction.member.user.username || 'You'} decreased the guidance scale from ${cfgScaleValue
             + this.#environmentSettings.stableDiffusionGuidanceScaleInterval} to ${cfgScaleValue}.`;
 
-        const replyTask = new ComfyUiReplyTask(this.#services, this.#interaction, { content }, {
+        const reply: BaseMessageOptions = { content };
+        const exchange: IHttpExchange<SerializableRenderRequest[], ImagesResponse> = {
             request: renderRequests,
             response: imagesResponse
-        });
+        };
 
-        this.#taskQueue.add(replyTask);
+        if (this.#environmentSettings.hasStableDiffusionOutputAsSeparateTask) {
+            const replyTask = new ComfyUiReplyTask(this.#services, this.#interaction, reply, exchange);
+            this.#taskQueue.add(replyTask);
+        } else {
+            await this.#comfyUiReplyService.reply(this.#interaction, reply, false, exchange);
+        }
     }
 
     override async postProcess(): Promise<void> {

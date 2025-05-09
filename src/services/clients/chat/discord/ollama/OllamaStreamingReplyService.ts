@@ -1,17 +1,15 @@
 import { Message } from 'discord.js';
-import { Logger, LogLevel } from 'meklog';
 
 import { splitText } from '../../../../../utilities/string-utilities.js';
-import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
+import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { LargeLanguageModelActionRow } from '../components/buttonRows/LargeLanguageModelActionRow.js';
 import { DiscordConstants } from '../enums/DiscordConstants.js';
 
 export class OllamaStreamingReplyService {
     #services: IServiceContainer;
-    #environmentSettings: IEnvironmentSettings;
 
-    #logger;
+    #logger: ILogger;
 
     #replies: Array<Message> = [];
     #repliesContent: string[] = [];
@@ -19,9 +17,7 @@ export class OllamaStreamingReplyService {
     constructor(services: IServiceContainer) {
         this.#services = services;
 
-        this.#environmentSettings = services.environmentSettings;
-
-        this.#logger = new Logger(this.#environmentSettings.isProduction, 'OllamaStreamingReplyService');
+        this.#logger = services.getLogger('OllamaStreamingReplyService');
     }
 
     async reply(
@@ -35,7 +31,7 @@ export class OllamaStreamingReplyService {
             this.#repliesContent.push(responseBatch);
             const currentReplyContent = this.#repliesContent[this.#repliesContent.length - 1];
 
-            this.#logger(LogLevel.Info, `Replying  "${currentReplyContent}"`);
+            this.#logger.info(`Replying  "${currentReplyContent}"`);
 
             this.#replies.push(await message.reply({
                 content: currentReplyContent,
@@ -50,7 +46,7 @@ export class OllamaStreamingReplyService {
             this.#repliesContent[currentMessage] += responseBatch;
             const currentReplyContent = this.#repliesContent[currentMessage];
 
-            this.#logger(LogLevel.Info, `Appending "${responseBatch}"`);
+            this.#logger.info(`Appending "${responseBatch}"`);
 
             await this.#currentReply().edit({
                 content: currentReplyContent,
@@ -65,7 +61,7 @@ export class OllamaStreamingReplyService {
 
                 this.#repliesContent.push(response);
                 const currentReplyContent = this.#repliesContent[this.#repliesContent.length - 1];
-                this.#logger(LogLevel.Info, `Replying  "${currentReplyContent}"`);
+                this.#logger.info(`Replying  "${currentReplyContent}"`);
 
                 this.#replies.push(await message.reply({
                     content: currentReplyContent,

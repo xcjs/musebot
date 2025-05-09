@@ -7,11 +7,11 @@ import { BaseComponent } from '../../BaseComponent.js';
 
 export class ShowSourceButton extends BaseComponent<ButtonBuilder> {
     override get label(): string {
-        return '⠀{⠀}⠀';
+        return '{⠀}';
     }
 
     override get isSupported(): boolean {
-        return this.featureService.hasFeature(SupportedFeature.ImageGeneration);
+        return this.featureService.hasFeature(SupportedFeature.Txt2Img);
     }
 
     override get title(): string {

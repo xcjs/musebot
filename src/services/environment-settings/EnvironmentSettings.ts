@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import process from 'node:process';
 
 import dotenv from 'dotenv';
@@ -38,6 +41,10 @@ export class EnvironmentSettings implements IEnvironmentSettings {
     stableDiffusionGuidanceScaleInterval: number = .5;
     stableDiffusionTaskChannel: string = '';
 
+    get hasStableDiffusionOutputAsSeparateTask() {
+        return false;
+    }
+
     ollamaHosts: URL[] = [];
     ollamaModels: string[] = [];
     ollamaSystemPrompt: string;
@@ -56,7 +63,7 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         // If this loads environment variables during a test, it can pollute
         // the results.
         /* c8 ignore start */
-        if(process.env.NODE_ENV !== NodeEnvironment.Test) {
+        if(process.env.NODE_ENV !== NodeEnvironment.Test.toString()) {
             dotenv.config();
         }
         /* c8 ignore stop */

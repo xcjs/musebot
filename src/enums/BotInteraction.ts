@@ -8,7 +8,5 @@ export enum BotInteraction {
     Help = 'help',
     Randomize = 'randomize',
     Retry = 'retry',
-    ShowSource = 'showSource',
-    UpscaleDesign= 'upscaleDesign',
-    UpscaleDetail = 'upscaleDetail'
+    ShowSource = 'showSource'
 }

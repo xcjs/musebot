@@ -1,11 +1,16 @@
+import { IWorkflowService } from '../clients/images/comfy-ui/services/IWorkflowService.js';
 import { StableDiffusionApiType } from '../clients/images/stable-diffusion/enums/StableDiffusionApiType.js';
 import { IEnvironmentSettings } from '../environment-settings/IEnvironmentSettings.js';
+import { ILogger } from '../ILogger.js';
 import { IServiceContainer } from '../IServiceContainer.js';
 import { SupportedFeature } from './enum/SupportedFeature.js';
 import { IFeatureService } from './IFeatureService.js';
 
 export class FeatureService implements IFeatureService {
     #environmentSettings: IEnvironmentSettings;
+    #workflowService: IWorkflowService;
+
+    #logger: ILogger;
 
     #supportedFeatures: Array<SupportedFeature> = [];
 
@@ -15,23 +20,49 @@ export class FeatureService implements IFeatureService {
 
     constructor(services: IServiceContainer) {
         this.#environmentSettings = services.environmentSettings;
+        this.#workflowService = services.workflowService;
 
-        this.#determineSupportedFeatures();
+        this.#logger = services.getLogger('FeatureService');
     }
 
     hasFeature(feature: SupportedFeature): boolean {
         return this.#supportedFeatures.includes(feature);
     }
 
-    #determineSupportedFeatures() {
-        if (this.#environmentSettings.stableDiffusionApiType !== StableDiffusionApiType.None
-            && this.#environmentSettings.stableDiffusionHosts.length > 0) {
-            this.#supportedFeatures.push(SupportedFeature.ImageGeneration);
+    async loadFeatures(): Promise<void> {
+        if (this.#environmentSettings.ollamaHosts.length > 0
+            && this.#environmentSettings.ollamaModels.length > 0) {
+                this.#logger.info(`${SupportedFeature.Txt2Txt} supported.`);
+                this.#supportedFeatures.push(SupportedFeature.Txt2Txt);
         }
 
-        if(this.#environmentSettings.ollamaHosts.length > 0
-            && this.#environmentSettings.ollamaModels.length > 0) {
-            this.#supportedFeatures.push(SupportedFeature.TextGeneration);
+        await this.#workflowService.loadWorkflows();
+
+        if (!this.#workflowService.hasWorkflows) {
+            return;
+        }
+
+        if (this.#environmentSettings.stableDiffusionApiType !== StableDiffusionApiType.None
+            && this.#environmentSettings.stableDiffusionHosts.length > 0) {
+            if (this.#workflowService.hasWorkflowType(SupportedFeature.Img2Img)) {
+                this.#logger.info(`${SupportedFeature.Img2Img} supported.`);
+                this.#supportedFeatures.push(SupportedFeature.Img2Img);
+            }
+
+            if (this.#workflowService.hasWorkflowType(SupportedFeature.Img2Vid)) {
+                this.#logger.info(`${SupportedFeature.Img2Vid} supported.`);
+                this.#supportedFeatures.push(SupportedFeature.Img2Vid);
+            }
+
+            if (this.#workflowService.hasWorkflowType(SupportedFeature.Txt2Img)) {
+                this.#logger.info(`${SupportedFeature.Txt2Img} supported.`);
+                this.#supportedFeatures.push(SupportedFeature.Txt2Img);
+            }
+
+            if (this.#workflowService.hasWorkflowType(SupportedFeature.Txt2Vid)) {
+                this.#logger.info(`${SupportedFeature.Txt2Vid} supported.`);
+                this.#supportedFeatures.push(SupportedFeature.Txt2Vid);
+            }
         }
     }
 }

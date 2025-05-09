@@ -1,24 +1,23 @@
-import { Prompt } from 'comfy-ui-client';
-import { ButtonInteraction } from 'discord.js';
-import { Logger, LogLevel } from 'meklog';
+import { ImagesResponse, Prompt } from 'comfy-ui-client';
+import { BaseMessageOptions, ButtonInteraction } from 'discord.js';
 
-import { BotInteraction } from '../../../../../enums/BotInteraction.js';
+import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
+import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
-import { IUpscaleRenderTask } from '../../tasks/IUpscaleRenderTask.js';
+import { IImg2ImgRenderTask } from '../../tasks/IImg2ImgRenderTask.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
-import { WorkflowType } from '../enums/WorkflowType.js';
 import { IWorkflow } from '../models/IWorkflow.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 import { ComfyUiReplyTask } from './ComfyUiReplyTask.js';
 
-export class ComfyUiUpscaleRenderTask extends ComfyUiBaseTask implements IUpscaleRenderTask {
+export class ComfyUiImg2ImgRenderTask extends ComfyUiBaseTask implements IImg2ImgRenderTask {
     #services: IServiceContainer;
 
     #environmentSettings: IEnvironmentSettings;
@@ -27,16 +26,16 @@ export class ComfyUiUpscaleRenderTask extends ComfyUiBaseTask implements IUpscal
     #comfyUiReplyService: ComfyUiReplyService;
     #replyService: IReplyService;
     #taskQueue: ITaskQueue;
+    #logger: ILogger;
 
     #interaction: ButtonInteraction;
-
-    #logger;
+    #workflow: IWorkflow;
 
     override get taskChannel(): string {
         return `${this.#environmentSettings.stableDiffusionTaskChannel}_${this.#comfyUiClient.host}`;
     }
 
-    constructor(services: IServiceContainer, interaction: ButtonInteraction) {
+    constructor(services: IServiceContainer, interaction: ButtonInteraction, workflow: IWorkflow) {
         super(services);
 
         this.#services = services;
@@ -47,76 +46,60 @@ export class ComfyUiUpscaleRenderTask extends ComfyUiBaseTask implements IUpscal
         this.#comfyUiReplyService = services.comfyUiReplyService;
         this.#replyService = services.replyService;
         this.#taskQueue = services.taskQueue;
+        this.#logger = services.getLogger('ComfyUiUpscaleRenderTask');
 
         this.#interaction = interaction;
-
-        this.#logger = new Logger(this.#environmentSettings.isProduction, 'ComfyUiUpscaleRenderTask');
+        this.#workflow = workflow;
     }
 
     override async process(): Promise<void> {
         await super.process();
 
-        this.#logger(LogLevel.Info, 'Processing a ComfyUiUpscaleRenderTask...');
+        this.#logger.info('Processing a ComfyUiUpscaleRenderTask...');
 
         const imageAttachments = this.#replyService.getImageAttachments(this.#interaction);
         const prompts: Prompt[] = [];
 
-        if(imageAttachments.length === 0) {
+        if (imageAttachments.length === 0) {
             await this.#replyService.replyWithError(this.#interaction);
         }
 
         const imagesAsBase64 = await this.#replyService.getAttachedImagesAsBase64(this.#interaction);
+        const renderRequest = this.#workflowService.getWorkflowDefaults(this.#workflow);
 
-        const templateKey = '{{ upscalerType }}';
-        let content = `${this.#interaction.user || 'You'} upscaled an image using ${templateKey} upscaler.`;
+        const content = `${this.#interaction.user.username || 'You'} ran a custom workflow: \`${renderRequest.label}\``;
 
         const renderRequests: Array<SerializableRenderRequest | null> = [];
         let i = 0;
 
-        for(const imageAsBase64 of imagesAsBase64) {
+        for (const imageAsBase64 of imagesAsBase64) {
             const description = imageAttachments[i].description;
 
-            if(description?.length > 0) {
+            if (description?.length > 0) {
                 renderRequests.push(SerializableRenderRequest.fromJson(description));
             } else {
                 renderRequests.push(null);
             }
 
-            const upscalingWorkflows = this.#workflowService.workflows.filter(x => x.type === WorkflowType.Upscaler);
-            let workflow: IWorkflow;
-
-            if (this.#interaction.customId === BotInteraction.UpscaleDetail) {
-                workflow = upscalingWorkflows.find(x => x.name.toLowerCase().includes('detail'));
-                content = content.replace(templateKey, 'a realistic');
-            } else {
-                workflow = upscalingWorkflows.find(x => x.name.toLowerCase().includes('design'));
-                content = content.replace(templateKey, 'an artistic');
-            }
-
-            if (workflow === undefined) {
-                this.#logger(LogLevel.Error, `The ${this.#interaction.customId} workflow doesn't exist.`
-                    + ` Make sure that ${WorkflowType.Upscaler}/design.json and ${WorkflowType.Upscaler}/detail.json`
-                    + ` exist and accept a Base64 encoded image string in the prompt field.`
-                );
-
-                await this.#replyService.replyWithError(this.#interaction);
-            }
-
-            const renderRequest = new SerializableRenderRequest();
             renderRequest.prompt = imageAsBase64;
-
-            prompts.push(this.#workflowService.renderWorkflow(workflow, renderRequest));
+            prompts.push(this.#workflowService.renderWorkflow(this.#workflow, renderRequest));
             i++;
         }
 
         const imagesResponse = await this.#comfyUiClient.render(prompts);
 
-        const replyTask = new ComfyUiReplyTask(this.#services, this.#interaction, { content }, {
+        const reply: BaseMessageOptions = { content };
+        const exchange: IHttpExchange<SerializableRenderRequest[], ImagesResponse> = {
             request: renderRequests,
             response: imagesResponse
-        });
+        };
 
-        this.#taskQueue.add(replyTask);
+        if (this.#environmentSettings.hasStableDiffusionOutputAsSeparateTask) {
+            const replyTask = new ComfyUiReplyTask(this.#services, this.#interaction, reply, exchange);
+            this.#taskQueue.add(replyTask);
+        } else {
+            await this.#comfyUiReplyService.reply(this.#interaction, reply, false, exchange);
+        }
     }
 
     override async postProcess(): Promise<void> {

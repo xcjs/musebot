@@ -13,9 +13,14 @@ export abstract class BaseHelpService {
         this.replyService = services.replyService;
     }
 
-    protected buildHelpArticleFromActionRows(actionRows: IActionRows): string {
+    protected async buildHelpArticleFromActionRows(actionRows: IActionRows): Promise<string> {
         let helpArticle = '';
-        actionRows.build();
+
+        if(!actionRows.isAsync) {
+            actionRows.build();
+        } else {
+            await actionRows.buildAsync();
+        }
 
         actionRows.buttons.forEach(button => {
             helpArticle += `* **\`${button.label}\` ${button.title}**`;

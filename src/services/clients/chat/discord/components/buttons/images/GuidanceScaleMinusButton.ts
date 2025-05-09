@@ -16,7 +16,7 @@ export class GuidanceScaleMinusButton extends BaseComponent<ButtonBuilder> {
     override get isSupported(): boolean {
         let isSupported = true;
 
-        isSupported = this.featureService.hasFeature(SupportedFeature.ImageGeneration);
+        isSupported = this.featureService.hasFeature(SupportedFeature.Txt2Img);
 
         if(this.#renderRequest === null) {
             return false;
@@ -24,7 +24,7 @@ export class GuidanceScaleMinusButton extends BaseComponent<ButtonBuilder> {
 
         isSupported = isSupported
             && this.#renderRequest.cfgScale - this.#environmentSettings.stableDiffusionGuidanceScaleInterval
-            >= GuidanceScaleLimit.Min
+            >= GuidanceScaleLimit.Min;
 
         return isSupported;
     }

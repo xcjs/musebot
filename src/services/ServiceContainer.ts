@@ -2,6 +2,8 @@ import { BaseMessageOptions, ButtonInteraction, Client as DiscordClient, Gateway
 
 import { BotFunction } from '../enums/BotFunction.js';
 import { ComfyUiReplyService } from './clients/chat/discord/comfy-ui/ComfyUiReplyService.js';
+import { ActionRowBuilderFactory } from './clients/chat/discord/components/ActionRowBuilderFactory.js';
+import { IActionRowBuilderFactory } from './clients/chat/discord/components/IActionRowBuilderFactory.js';
 import { DiscordConstants } from './clients/chat/discord/enums/DiscordConstants.js';
 import { GenerativeImageChatClient } from './clients/chat/discord/GenerativeImageChatClient.js';
 import { GenerativeTextChatClient } from './clients/chat/discord/GenerativeTextChatClient.js';
@@ -15,19 +17,20 @@ import { IReplyService } from './clients/chat/IReplyService.js';
 import { ITypingService } from './clients/chat/ITypingService.js';
 import { IReplyTask } from './clients/chat/tasks/IReplyTask.js';
 import { ComfyUiClient } from './clients/images/comfy-ui/ComfyUiClient.js';
+import { IWorkflow } from './clients/images/comfy-ui/models/IWorkflow.js';
 import { IWorkflowService } from './clients/images/comfy-ui/services/IWorkflowService.js';
 import { WorkflowService } from './clients/images/comfy-ui/services/WorkflowService.js';
 import { ComfyUiAttachRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiAttachRenderTask.js';
 import { ComfyUiDecreaseGuidanceScaleRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiDecreaseGuidanceScaleRenderTask.js';
 import { ComfyUiEmojiReactionRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiEmojiReactionRenderTask.js';
 import { ComfyUiExpandPromptTask } from './clients/images/comfy-ui/tasks/ComfyUiExpandPromptTask.js';
+import { ComfyUiImg2ImgRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiImg2ImgRenderTask.js';
 import { ComfyUiIncreaseGuidanceScaleRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiIncreaseGuidanceScaleRenderTask.js';
 import { ComfyUiJsonRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiJsonRenderTask.js';
 import { ComfyUiRandomRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiRandomRenderTask.js';
 import { ComfyUiReplyRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiReplyRenderTask.js';
 import { ComfyUiRetryRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiRetryRenderTask.js';
 import { ComfyUiShowSourceTask } from './clients/images/comfy-ui/tasks/ComfyUiShowSourceTask.js';
-import { ComfyUiUpscaleRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiUpscaleRenderTask.js';
 import { ImageHelpService } from './clients/images/help/ImageHelpService.js';
 import { StableDiffusionApiType } from './clients/images/stable-diffusion/enums/StableDiffusionApiType.js';
 import { IAttachRenderTask } from './clients/images/tasks/IAttachRenderTask.js';
@@ -40,7 +43,6 @@ import { IRandomRenderTask } from './clients/images/tasks/IRandomRenderTask.js';
 import { IReplyRenderTask } from './clients/images/tasks/IReplyRenderTask.js';
 import { IRetryRenderTask } from './clients/images/tasks/IRetryRenderTask.js';
 import { IShowSourceTask } from './clients/images/tasks/IShowSourceTask.js';
-import { IUpscaleRenderTask } from './clients/images/tasks/IUpscaleRenderTask.js';
 import { TextHelpService } from './clients/text/help/TextHelpService.js';
 import { OllamaClient } from './clients/text/ollama/OllamaClient.js';
 import { EmojiResponseTask } from './clients/text/ollama/tasks/EmojiResponseTask.js';
@@ -53,12 +55,14 @@ import { SupportedFeature } from './features/enum/SupportedFeature.js';
 import { FeatureService } from './features/FeatureService.js';
 import { IFeatureService } from './features/IFeatureService.js';
 import { IHelpService } from './help/IHelpService.js';
+import { ILogger } from './ILogger.js';
 import { IServiceContainer } from './IServiceContainer.js';
+import { Logger } from './Logger.js';
 import { ITaskQueue } from './tasks/ITaskQueue.js';
 import { TaskQueue } from './tasks/TaskQueue.js';
 
 export class ServiceContainer implements IServiceContainer {
-    #taskNotConfiguredError = 'The task you are attempting to instantiate is not supported by your current configuration.';
+    #taskNotConfiguredError = new Error('The task you are attempting to instantiate is not supported by your current configuration.');
 
     // Singletons -------------------------------------------------------------/
 
@@ -92,6 +96,11 @@ export class ServiceContainer implements IServiceContainer {
         return this.#generativeChatClient;
     }
 
+    #helpService: IHelpService;
+    get helpService(): IHelpService {
+        return this.#helpService;
+    }
+
     #workflowService: IWorkflowService;
     get workflowService(): IWorkflowService {
         return this.#workflowService;
@@ -123,12 +132,15 @@ export class ServiceContainer implements IServiceContainer {
         return new OllamaStreamingReplyService(this);
     }
 
-    #helpService: IHelpService;
-    get helpService(): IHelpService {
-        return this.#helpService;
+    get actionRowBuilderFactory(): IActionRowBuilderFactory {
+        return new ActionRowBuilderFactory();
     }
 
     // Factories --------------------------------------------------------------/
+    getLogger(prefix: string): ILogger {
+        return new Logger(this, prefix);
+    }
+
     getReplyTask(
         interaction: Message | ButtonInteraction,
         reply: BaseMessageOptions
@@ -140,7 +152,7 @@ export class ServiceContainer implements IServiceContainer {
         interaction: ButtonInteraction | Message,
         prompt: string,
         content: string | null = null): IAttachRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)) {
+        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)) {
             throw this.#taskNotConfiguredError;
         }
 
@@ -153,7 +165,7 @@ export class ServiceContainer implements IServiceContainer {
     }
 
     getDecreaseGuidanceScaleRenderTask(interaction: ButtonInteraction): IDecreaseGuidanceScaleRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)) {
+        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)) {
             throw this.#taskNotConfiguredError;
         }
 
@@ -166,8 +178,8 @@ export class ServiceContainer implements IServiceContainer {
     }
 
     getEmojiReactionRenderTask(interaction: Message, emoji: ReactionEmoji, userOverride: User): IEmojiReactionRenderTask {
-        if(!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)
-            || !this.#featureService.hasFeature(SupportedFeature.TextGeneration)) {
+        if(!this.#featureService.hasFeature(SupportedFeature.Txt2Img)
+            || !this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
             throw this.#taskNotConfiguredError;
         }
 
@@ -180,7 +192,7 @@ export class ServiceContainer implements IServiceContainer {
     }
 
     getExpandPromptTask(interaction: ButtonInteraction): IExpandPromptTask {
-        if(!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)) {
+        if(!this.#featureService.hasFeature(SupportedFeature.Txt2Img)) {
             throw this.#taskNotConfiguredError;
         }
 
@@ -192,8 +204,21 @@ export class ServiceContainer implements IServiceContainer {
         }
     }
 
+    getImg2ImgRenderTask(interaction: ButtonInteraction, workflow: IWorkflow) {
+        if(!this.#featureService.hasFeature(SupportedFeature.Img2Img)) {
+            throw this.#taskNotConfiguredError;
+        }
+
+        switch(this.#environmentSettings.stableDiffusionApiType) {
+            case StableDiffusionApiType.ComfyUI:
+                return new ComfyUiImg2ImgRenderTask(this, interaction, workflow);
+            default:
+                throw this.#taskNotConfiguredError;
+        }
+    }
+
     getIncreaseGuidanceScaleRenderTask(interaction: ButtonInteraction): IIncreaseGuidanceScaleRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)) {
+        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)) {
             throw this.#taskNotConfiguredError;
         }
 
@@ -206,7 +231,7 @@ export class ServiceContainer implements IServiceContainer {
     }
 
     getJsonRenderTask(message: Message): IJsonRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)) {
+        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)) {
             throw this.#taskNotConfiguredError;
         }
 
@@ -219,7 +244,7 @@ export class ServiceContainer implements IServiceContainer {
     }
 
     getRandomRenderTask(interaction: ButtonInteraction): IRandomRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)) {
+        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)) {
             throw this.#taskNotConfiguredError;
         }
 
@@ -232,7 +257,7 @@ export class ServiceContainer implements IServiceContainer {
             }
 
     getReplyRenderTask(message: Message): IReplyRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)) {
+        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)) {
             throw this.#taskNotConfiguredError;
         }
 
@@ -245,7 +270,7 @@ export class ServiceContainer implements IServiceContainer {
     }
 
     getRetryRenderTask(interaction: ButtonInteraction): IRetryRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)) {
+        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)) {
             throw this.#taskNotConfiguredError;
         }
 
@@ -258,7 +283,7 @@ export class ServiceContainer implements IServiceContainer {
     }
 
     getShowSourceTask(interaction: ButtonInteraction): IShowSourceTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)) {
+        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)) {
             throw this.#taskNotConfiguredError;
         }
 
@@ -270,21 +295,8 @@ export class ServiceContainer implements IServiceContainer {
         }
     }
 
-    getUpscaleRenderTask(interaction: ButtonInteraction): IUpscaleRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.ImageGeneration)) {
-            throw this.#taskNotConfiguredError;
-        }
-
-        switch (this.#environmentSettings.stableDiffusionApiType) {
-            case StableDiffusionApiType.ComfyUI:
-                return new ComfyUiUpscaleRenderTask(this, interaction);
-            default:
-                throw this.#taskNotConfiguredError;
-        }
-    }
-
     getPromptResponseTask(message: Message, context: Array<number>): IPromptResponseTask {
-        if(!this.#featureService.hasFeature(SupportedFeature.TextGeneration)) {
+        if(!this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
             throw this.#taskNotConfiguredError;
         }
 
@@ -292,7 +304,7 @@ export class ServiceContainer implements IServiceContainer {
     }
 
     getEmojiResponseTask(reaction: MessageReaction, user: User, context: Array<number>): IEmojiResponseTask {
-        if(!this.featureService.hasFeature(SupportedFeature.TextGeneration)) {
+        if(!this.featureService.hasFeature(SupportedFeature.Txt2Txt)) {
             throw this.#taskNotConfiguredError;
         }
 
@@ -302,10 +314,10 @@ export class ServiceContainer implements IServiceContainer {
     constructor() {
         // Singletons instantiated here.
         this.#environmentSettings = new EnvironmentSettings();
+        this.#workflowService = new WorkflowService(this);
         this.#featureService = new FeatureService(this);
         this.#taskQueue = new TaskQueue(this);
         this.#typingService = new TypingService(this);
-        this.#workflowService = new WorkflowService(this);
 
         this.#discordClient = new DiscordClient({
             intents: [

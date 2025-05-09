@@ -27,6 +27,7 @@ export interface IEnvironmentSettings {
     stableDiffusionModels: Array<string>;
     stableDiffusionGuidanceScaleInterval: number;
     stableDiffusionTaskChannel: string;
+    hasStableDiffusionOutputAsSeparateTask: boolean;
 
     ollamaHosts: Array<URL>;
     ollamaModels: Array<string>;
@@ -35,7 +36,6 @@ export interface IEnvironmentSettings {
     ollamaTaskChannel: string;
 
     stableDiffusionOllamaPrompts: Array<string>;
-
 
     isProduction: boolean;
 }

@@ -1,7 +1,8 @@
 import { Client as DiscordClient, Message } from 'discord.js';
-import { Logger, LogLevel } from 'meklog';
 
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
+import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
+import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
@@ -10,7 +11,6 @@ import { IReplyService } from '../../../chat/IReplyService.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 import { IJsonRenderTask } from '../../tasks/IJsonRenderTask.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
-import { WorkflowType } from '../enums/WorkflowType.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 import { ComfyUiReplyTask } from './ComfyUiReplyTask.js';
@@ -27,7 +27,7 @@ export class ComfyUiJsonRenderTask extends ComfyUiBaseTask implements IJsonRende
 
     #message: Message;
 
-    #logger;
+    #logger: ILogger;
 
     override get taskChannel(): string {
         return `${this.#environmentSettings.stableDiffusionTaskChannel}_${this.#comfyUiClient.host}`;
@@ -47,13 +47,13 @@ export class ComfyUiJsonRenderTask extends ComfyUiBaseTask implements IJsonRende
 
         this.#message = message;
 
-        this.#logger = new Logger(this.#environmentSettings.isProduction, 'ComfyUiJsonRenderTask');
+        this.#logger = services.getLogger('ComfyUiJsonRenderTask');
     }
 
     override async process(): Promise<void> {
         await super.process();
 
-        this.#logger(LogLevel.Info, 'Processing a ComfyUiJsonRenderTask...');
+        this.#logger.info('Processing a ComfyUiJsonRenderTask...');
 
         const botMention = this.#message.mentions.members?.find(x => x.id === this.#discordClient.user?.id)?.toString() || '';
         const prompt = this.#message.content.replaceAll(botMention, '').trim();
@@ -70,8 +70,8 @@ export class ComfyUiJsonRenderTask extends ComfyUiBaseTask implements IJsonRende
         }
 
         const workflows = this.#workflowService.workflows.filter(x =>
-            x.type === WorkflowType.Txt2img
-            || x.type === WorkflowType.Txt2vid);
+            x.type === SupportedFeature.Txt2Img
+            || x.type === SupportedFeature.Txt2Vid);
 
         const workflow = workflows.find(x => x.name === renderRequest.model);
 

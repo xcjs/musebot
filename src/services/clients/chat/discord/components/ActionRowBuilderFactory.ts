@@ -2,27 +2,39 @@ import { ActionRowBuilder, ButtonBuilder } from 'discord.js'
 
 import { DiscordConstants } from '../enums/DiscordConstants.js';
 import { BaseComponent } from './BaseComponent.js'
+import { IActionRowBuilderFactory } from './IActionRowBuilderFactory.js';
 
-export function buildActionRows(buttons: Array<BaseComponent<ButtonBuilder>>): Array<ActionRowBuilder<ButtonBuilder>> {
-    const actionRows: Array<ActionRowBuilder<ButtonBuilder>> = [];
-    let actionRow: ActionRowBuilder<ButtonBuilder> | null = null;
+export class ActionRowBuilderFactory implements IActionRowBuilderFactory {
+    constructor() {
 
-    buttons.forEach((button, i) => {
-        if (actionRow === null) {
-            actionRow = new ActionRowBuilder<ButtonBuilder>();
-        }
+    }
 
-        if(button.isSupported) {
-            actionRow.addComponents(button.build());
-        }
+    buildActionRows(buttons: BaseComponent<ButtonBuilder>[]): ActionRowBuilder<ButtonBuilder>[] {
+        const actionRows: ActionRowBuilder<ButtonBuilder>[] = [];
+        let actionRow: ActionRowBuilder<ButtonBuilder> | null = null;
 
-        if(actionRow.components.length % DiscordConstants.MaxButtonsPerActionRow === 0
-            || buttons.length - 1 === i
-        ) {
-            actionRows.push(actionRow);
-            actionRow = null;
-        }
-    });
+        const addedButtons: BaseComponent<ButtonBuilder>[] = [];
 
-    return actionRows;
+        buttons.forEach((button, i) => {
+            if (actionRow === null) {
+                actionRow = new ActionRowBuilder<ButtonBuilder>();
+            }
+
+            if (button.isSupported
+                && !addedButtons.find(addedButton => addedButton === button)
+            ) {
+                actionRow.addComponents(button.build());
+                addedButtons.push(button);
+            }
+
+            if (actionRow.components.length % DiscordConstants.MaxButtonsPerActionRow === 0
+                || i === buttons.length - 1
+            ) {
+                actionRows.push(actionRow);
+                actionRow = null;
+            }
+        });
+
+        return actionRows;
+    }
 }

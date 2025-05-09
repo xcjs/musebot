@@ -1,4 +1,4 @@
-export enum GuidanceScaleLimit {
-    Min = 0,
-    Max = 30
+export class GuidanceScaleLimit {
+    public static readonly Min = 0;
+    public static readonly Max = 30;
 }

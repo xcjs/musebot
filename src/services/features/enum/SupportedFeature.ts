@@ -1,5 +1,8 @@
 export enum SupportedFeature {
     // Core Features
-    ImageGeneration = "imageGeneration",
-    TextGeneration = "textGeneration"
+    Txt2Img = "txt2img",
+    Img2Img = 'img2img',
+    Img2Vid = 'img2vid',
+    Txt2Txt = 'txt2txt',
+    Txt2Vid = 'txt2vid'
 }

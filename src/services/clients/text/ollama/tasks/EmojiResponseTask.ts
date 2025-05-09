@@ -1,9 +1,9 @@
 import { Message, MessageReaction, User } from 'discord.js';
-import { Logger, LogLevel } from 'meklog';
 
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../../../../features/IFeatureService.js';
+import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
@@ -38,7 +38,7 @@ export class EmojiResponseTask extends BaseTask implements IEmojiResponseTask {
     #user: User;
     #context: Array<number>;
 
-    #logger;
+    #logger: ILogger;
 
     #onSuccess: (context: Array<number>) => void = () => { };
 
@@ -63,7 +63,7 @@ export class EmojiResponseTask extends BaseTask implements IEmojiResponseTask {
         this.#user = user;
         this.#context = context;
 
-        this.#logger = new Logger(this.#environmentSettings.isProduction, 'PromptResponseTask');
+        this.#logger = services.getLogger('PromptResponseTask');
     }
 
     override async process(): Promise<void> {
@@ -80,7 +80,7 @@ export class EmojiResponseTask extends BaseTask implements IEmojiResponseTask {
 
         const replies = await this.#ollamaReplyService.reply(this.#reaction.message as Message, exchange, mention);
 
-        if (this.#featureService.hasFeature(SupportedFeature.ImageGeneration)
+        if (this.#featureService.hasFeature(SupportedFeature.Txt2Img)
             && replies.length > 0) {
             this.#attachImage(exchange.response.response, replies);
         }
@@ -126,7 +126,7 @@ export class EmojiResponseTask extends BaseTask implements IEmojiResponseTask {
             if (response.done) {
                 this.#context = response.context;
 
-                if (this.#featureService.hasFeature(SupportedFeature.ImageGeneration)
+                if (this.#featureService.hasFeature(SupportedFeature.Txt2Img)
                     && replies.length > 0) {
                     this.#attachImage(fullResponse, replies);
                 }
@@ -135,7 +135,7 @@ export class EmojiResponseTask extends BaseTask implements IEmojiResponseTask {
     }
 
     #attachImage(prompt: string, replies: Array<Message>): void {
-        this.#logger(LogLevel.Info, 'An image will be attached to the Ollama response.');
+        this.#logger.info('An image will be attached to the Ollama response.');
 
         const lastReply = replies[replies.length - 1];
         const attachTask = this.#services.getAttachRenderTask(lastReply, prompt, lastReply.content) as BaseTask;
