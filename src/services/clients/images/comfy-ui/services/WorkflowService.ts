@@ -18,13 +18,13 @@ export class WorkflowService implements IWorkflowService {
         return this.#workflows.length > 0;
     }
 
-    get workflows(): Array<IWorkflow> {
+    get workflows(): IWorkflow[] {
         return this.#workflows;
     }
 
     #logger: ILogger;
 
-    #workflows: Array<IWorkflow> = [];
+    #workflows: IWorkflow[] = [];
 
     public constructor(services: IServiceContainer) {
         this.#logger = services.getLogger('WorkflowService');
