@@ -41,6 +41,10 @@ export class EnvironmentSettings implements IEnvironmentSettings {
     stableDiffusionGuidanceScaleInterval: number = .5;
     stableDiffusionTaskChannel: string = '';
 
+    get hasStableDiffusionOutputAsSeparateTask() {
+        return false;
+    }
+
     ollamaHosts: URL[] = [];
     ollamaModels: string[] = [];
     ollamaSystemPrompt: string;
