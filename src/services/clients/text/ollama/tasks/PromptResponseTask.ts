@@ -110,27 +110,28 @@ export class PromptResponseTask extends BaseTask implements IPromptResponseTask 
             // Ensure that Musebot isn't spamming the Discord API beyond its
             // rate limits.
             if (((performance.now() - startTime)
-                <= (1000 / DiscordConstants.MaxRequestsPerSecond))
-                    && !response.done) {
+                <= (1000 / DiscordConstants.MaxRequestsPerSecond))) {
+                continue;
+            }
+
+            if(!response.done) {
+                // Discord automatically trims message edits that are only whitespace.
+                if (isOnlyWhitespace(responseBatch)) {
                     continue;
-            }
+                }
 
-            // Discord automatically trims message edits that are only whitespace.
-            if (isOnlyWhitespace(responseBatch) && !response.done) {
-                continue;
-            }
+                // If the message is appended with whitespace the end, Discord will
+                // trim it, leading to an accumulation for formatting issues.
+                if (endsWithWhitespace(responseBatch)) {
+                    continue;
+                }
 
-            // If the message is appended with whitespace the end, Discord will
-            // trim it, leading to an accumulation for formatting issues.
-            if (endsWithWhitespace(responseBatch) && !response.done) {
-                continue;
-            }
-
-            // Messages that only contain a double asterisk are, under certain
-            // conditions, converted to a newline. This attempts to prevent that
-            // by delaying the batch until additional characters are included.
-            if(hasOnly(responseBatch, '*') && !response.done) {
-                continue;
+                // Messages that only contain a double asterisk are, under certain
+                // conditions, converted to a newline. This attempts to prevent that
+                // by delaying the batch until additional characters are included.
+                if (hasOnly(responseBatch, '*')) {
+                    continue;
+                }
             }
 
             try {
@@ -145,7 +146,7 @@ export class PromptResponseTask extends BaseTask implements IPromptResponseTask 
             if(response.done) {
                 this.#context = response.context;
 
-                if(this.#featureService.hasFeature(SupportedFeature.Txt2Img)
+                if (this.#featureService.hasFeature(SupportedFeature.Txt2Img)
                     && replies.length > 0) {
                     await this.#attachImage(fullResponse, replies);
                 }
