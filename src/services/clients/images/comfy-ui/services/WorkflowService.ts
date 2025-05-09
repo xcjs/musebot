@@ -2,7 +2,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path';
 
 import { Prompt } from 'comfy-ui-client';
-import * as mustache from 'mustache';
+import Handlebars from 'handlebars';
 
 import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
@@ -119,8 +119,9 @@ export class WorkflowService implements IWorkflowService {
             destructiveRenderRequest.promptNegative = destructiveRenderRequest.promptNegative.substring(1, destructiveRenderRequest.promptNegative.length - 1);
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-        const templateString: string = mustache.default.render(workflow.workflowString, destructiveRenderRequest);
+        const template = Handlebars.compile(workflow.workflowString);
+        const templateString = template(destructiveRenderRequest);
+
         return JSON.parse(templateString) as Prompt;
     }
 }
