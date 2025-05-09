@@ -41,6 +41,7 @@
     "meklog": "^1.0.2",
     "ollama": "^0.5.14",
     "parcel": "^2.13.3",
+    "sharp": "^0.34.1",
     "typescript": "^5.8.3"
   },
   "devDependencies": {
