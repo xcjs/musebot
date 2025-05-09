@@ -81,7 +81,8 @@ export class ComfyUiIncreaseGuidanceScaleRenderTask extends ComfyUiBaseTask impl
 
         const imagesResponse = await this.#comfyUiClient.render(prompts);
 
-        const content = `${this.#interaction.member.user.username || 'You'} increased the guidance scale from ${cfgScaleValue
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string
+        const content = `${this.#interaction.member.user.toString() || 'You'} increased the guidance scale from ${cfgScaleValue
             - this.#environmentSettings.stableDiffusionGuidanceScaleInterval} to ${cfgScaleValue}.`;
 
         const reply: BaseMessageOptions = { content };

@@ -62,7 +62,8 @@ export class ComfyUiExpandPromptTask extends ComfyUiBaseTask implements IExpandP
         const exchange = await this.#ollamaClient.sendMessage(prompt, null);
         this.#logger.info(`Ollama responded with ${exchange.response.response}`);
 
-        const content = `${this.#interaction.member.user.username || 'You'} expanded the detail in the prompt: \`${originalRequest.prompt}\``;
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string
+        const content = `${this.#interaction.member.user.toString() || 'You'} expanded the detail in the prompt: \`${originalRequest.prompt}\``;
 
         this.#taskQueue.add(new ComfyUiAttachRenderTask(
             this.#services,

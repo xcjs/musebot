@@ -114,7 +114,8 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
         this.#context = [];
 
         try{
-            await interaction.editReply(`The conversational context has been cleared - ${interaction.member.user.username} just gave an AI amnesia!`);
+            // eslint-disable-next-line @typescript-eslint/no-base-to-string
+            await interaction.editReply(`The conversational context has been cleared - ${interaction.member.user.toString()} just gave an AI amnesia!`);
             await interaction.message.delete();
         } catch {
             this.logger.error('An error occurred while clearing the Ollama context.');

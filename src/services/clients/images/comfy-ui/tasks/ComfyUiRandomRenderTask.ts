@@ -87,7 +87,8 @@ export class ComfyUiRandomRenderTask extends ComfyUiBaseTask implements IRandomR
         };
 
         const content = `Two AIs whisper to each other over the the ancient \`TCP/IP\` protocol.` +
-            ` They present ${this.#interaction.member.user.username || 'you'} with this.`;
+            // eslint-disable-next-line @typescript-eslint/no-base-to-string
+            ` They present ${this.#interaction.member.user.toString() || 'you'} with this.`;
 
         const promptBuffer = Buffer.from(wrapText(renderRequest.prompt, MAX_TEXT_LINE_LENGTH).trim(),
             BufferEncoding.UTF8);
