@@ -1,5 +1,7 @@
+import { ImagesResponse } from 'comfy-ui-client';
 import { BaseMessageOptions, ButtonInteraction, Message } from 'discord.js';
 
+import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
@@ -7,7 +9,9 @@ import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
+import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
+import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 import { IAttachRenderTask } from '../../tasks/IAttachRenderTask.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
@@ -20,15 +24,15 @@ export class ComfyUiAttachRenderTask extends ComfyUiBaseTask implements IAttachR
     #environmentSettings: IEnvironmentSettings;
     #workflowService: IWorkflowService;
     #comfyUiClient: ComfyUiClient;
+    #comfyUiReplyService: ComfyUiReplyService;
     #replyService: IReplyService;
     #taskQueue: ITaskQueue;
+    #logger: ILogger;
 
     #reply: BaseMessageOptions;
     #prompt: string;
 
     #interaction: Message | ButtonInteraction;
-
-    #logger: ILogger;
 
     override get taskChannel(): string {
         return `${this.#environmentSettings.stableDiffusionTaskChannel}_${this.#comfyUiClient.host}`;
@@ -46,14 +50,14 @@ export class ComfyUiAttachRenderTask extends ComfyUiBaseTask implements IAttachR
         this.#environmentSettings = services.environmentSettings;
         this.#workflowService = services.workflowService;
         this.#comfyUiClient = services.comfyUiClient;
+        this.#comfyUiReplyService = services.comfyUiReplyService;
         this.#replyService = services.replyService;
         this.#taskQueue = services.taskQueue;
+        this.#logger = services.getLogger('ComfyUiAttachRenderTask');
 
         this.#interaction = interaction;
         this.#reply = reply;
         this.#prompt = prompt;
-
-        this.#logger = services.getLogger('ComfyUiAttachRenderTask');
     }
 
     override async process(): Promise<void> {
@@ -76,14 +80,18 @@ export class ComfyUiAttachRenderTask extends ComfyUiBaseTask implements IAttachR
         const prompt = this.#workflowService.renderWorkflow(workflow, renderRequest);
         const imagesResponse = await this.#comfyUiClient.render([prompt]);
 
-        const replyTask = new ComfyUiReplyTask(this.#services, this.#interaction, {
-            content: this.#reply.content
-        }, {
+        const reply: BaseMessageOptions = { content: this.#reply.content };
+        const exchange: IHttpExchange<SerializableRenderRequest[], ImagesResponse> = {
             request: [renderRequest],
             response: imagesResponse
-        }, true);
+        };
 
-        this.#taskQueue.add(replyTask);
+        if(this.#environmentSettings.hasStableDiffusionOutputAsSeparateTask) {
+            const replyTask = new ComfyUiReplyTask(this.#services, this.#interaction, reply, exchange, true);
+            this.#taskQueue.add(replyTask);
+        } else {
+            await this.#comfyUiReplyService.reply(this.#interaction, reply, true, exchange);
+        }
     }
 
     override async postProcess(): Promise<void> {

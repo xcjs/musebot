@@ -1,6 +1,7 @@
-import { Prompt } from 'comfy-ui-client';
-import { ButtonInteraction, Message, ReactionEmoji, User } from 'discord.js';
+import { ImagesResponse, Prompt } from 'comfy-ui-client';
+import { BaseMessageOptions, ButtonInteraction, Message, ReactionEmoji, User } from 'discord.js';
 
+import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
@@ -9,6 +10,7 @@ import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
+import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { OllamaClient } from '../../../text/ollama/OllamaClient.js';
@@ -26,15 +28,15 @@ export class ComfyUiEmojiReactionRenderTask extends ComfyUiBaseTask implements I
     #featureService: IFeatureService;
     #workflowService: IWorkflowService;
     #comfyUiClient: ComfyUiClient;
+    #comfyUiReplyService: ComfyUiReplyService;
     #replyService: IReplyService;
     #ollamaClient: OllamaClient;
     #taskQueue: ITaskQueue;
+    #logger: ILogger;
 
     #interaction: Message | ButtonInteraction;
     #emoji: ReactionEmoji;
     #userOverride: User | null;
-
-    #logger: ILogger;
 
     override get taskChannel(): string {
         return `${this.#environmentSettings.stableDiffusionTaskChannel}_${this.#comfyUiClient.host}`;
@@ -53,15 +55,15 @@ export class ComfyUiEmojiReactionRenderTask extends ComfyUiBaseTask implements I
         this.#featureService = services.featureService;
         this.#workflowService = services.workflowService;
         this.#comfyUiClient = services.comfyUiClient;
+        this.#comfyUiReplyService = services.comfyUiReplyService;
         this.#replyService = services.replyService;
         this.#ollamaClient = services.ollamaClient;
         this.#taskQueue = services.taskQueue;
+        this.#logger = services.getLogger('ComfyUiEmojiReactionRenderTask');
 
         this.#interaction = interaction;
         this.#emoji = emoji;
         this.#userOverride = userOverride;
-
-        this.#logger = services.getLogger('ComfyUiEmojiReactionRenderTask');
     }
 
     override async process(): Promise<void> {
@@ -130,12 +132,18 @@ export class ComfyUiEmojiReactionRenderTask extends ComfyUiBaseTask implements I
 
         const imagesResponse = await this.#comfyUiClient.render(prompts);
 
-        const replyTask = new ComfyUiReplyTask(this.#services, this.#interaction, { content }, {
+        const reply: BaseMessageOptions = { content };
+        const exchange: IHttpExchange<SerializableRenderRequest[], ImagesResponse> = {
             request: renderRequests,
             response: imagesResponse
-        });
+        };
 
-        this.#taskQueue.add(replyTask);
+        if (this.#environmentSettings.hasStableDiffusionOutputAsSeparateTask) {
+            const replyTask = new ComfyUiReplyTask(this.#services, this.#interaction, reply, exchange);
+            this.#taskQueue.add(replyTask);
+        } else {
+            await this.#comfyUiReplyService.reply(this.#interaction, reply, false, exchange);
+        }
     }
 
     override async postProcess(): Promise<void> {

@@ -1,11 +1,13 @@
-import { Prompt } from 'comfy-ui-client';
-import { ButtonInteraction } from 'discord.js';
+import { ImagesResponse, Prompt } from 'comfy-ui-client';
+import { BaseMessageOptions, ButtonInteraction } from 'discord.js';
 
+import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
+import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 import { IImg2ImgRenderTask } from '../../tasks/IImg2ImgRenderTask.js';
@@ -21,13 +23,13 @@ export class ComfyUiImg2ImgRenderTask extends ComfyUiBaseTask implements IImg2Im
     #environmentSettings: IEnvironmentSettings;
     #workflowService: IWorkflowService;
     #comfyUiClient: ComfyUiClient;
+    #comfyUiReplyService: ComfyUiReplyService;
     #replyService: IReplyService;
     #taskQueue: ITaskQueue;
+    #logger: ILogger;
 
     #interaction: ButtonInteraction;
     #workflow: IWorkflow;
-
-    #logger: ILogger;
 
     override get taskChannel(): string {
         return `${this.#environmentSettings.stableDiffusionTaskChannel}_${this.#comfyUiClient.host}`;
@@ -41,13 +43,13 @@ export class ComfyUiImg2ImgRenderTask extends ComfyUiBaseTask implements IImg2Im
         this.#environmentSettings = services.environmentSettings;
         this.#workflowService = services.workflowService;
         this.#comfyUiClient = services.comfyUiClient;
+        this.#comfyUiReplyService = services.comfyUiReplyService;
         this.#replyService = services.replyService;
         this.#taskQueue = services.taskQueue;
+        this.#logger = services.getLogger('ComfyUiUpscaleRenderTask');
 
         this.#interaction = interaction;
         this.#workflow = workflow;
-
-        this.#logger = services.getLogger('ComfyUiUpscaleRenderTask');
     }
 
     override async process(): Promise<void> {
@@ -86,12 +88,18 @@ export class ComfyUiImg2ImgRenderTask extends ComfyUiBaseTask implements IImg2Im
 
         const imagesResponse = await this.#comfyUiClient.render(prompts);
 
-        const replyTask = new ComfyUiReplyTask(this.#services, this.#interaction, { content }, {
+        const reply: BaseMessageOptions = { content };
+        const exchange: IHttpExchange<SerializableRenderRequest[], ImagesResponse> = {
             request: renderRequests,
             response: imagesResponse
-        });
+        };
 
-        this.#taskQueue.add(replyTask);
+        if (this.#environmentSettings.hasStableDiffusionOutputAsSeparateTask) {
+            const replyTask = new ComfyUiReplyTask(this.#services, this.#interaction, reply, exchange);
+            this.#taskQueue.add(replyTask);
+        } else {
+            await this.#comfyUiReplyService.reply(this.#interaction, reply, false, exchange);
+        }
     }
 
     override async postProcess(): Promise<void> {

@@ -1,7 +1,9 @@
-import { AttachmentBuilder, ButtonInteraction } from 'discord.js';
+import { ImagesResponse } from 'comfy-ui-client';
+import { AttachmentBuilder, BaseMessageOptions, ButtonInteraction } from 'discord.js';
 
 import { MAX_FILE_NAME_LENGTH,MAX_TEXT_LINE_LENGTH } from '../../../../../constants/FileConstants.js';
 import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
+import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
 import { wrapText } from '../../../../../utilities/string-utilities.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
@@ -10,8 +12,10 @@ import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
+import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { OllamaClient } from '../../../text/ollama/OllamaClient.js';
+import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 import { IRandomRenderTask } from '../../tasks/IRandomRenderTask.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
@@ -24,6 +28,7 @@ export class ComfyUiRandomRenderTask extends ComfyUiBaseTask implements IRandomR
     #environmentSettings: IEnvironmentSettings;
     #workflowService: IWorkflowService;
     #comfyUiClient: ComfyUiClient;
+    #comfyUiReplyService: ComfyUiReplyService;
     #replyService: IReplyService;
     #taskQueue: ITaskQueue;
     #logger: ILogger;
@@ -42,6 +47,7 @@ export class ComfyUiRandomRenderTask extends ComfyUiBaseTask implements IRandomR
         this.#environmentSettings = services.environmentSettings;
         this.#workflowService = services.workflowService;
         this.#comfyUiClient = services.comfyUiClient;
+        this.#comfyUiReplyService = services.comfyUiReplyService;
         this.#replyService = services.replyService;
         this.#taskQueue = services.taskQueue;
         this.#logger = services.getLogger('ComfyUiRandomRenderTask');
@@ -75,7 +81,7 @@ export class ComfyUiRandomRenderTask extends ComfyUiBaseTask implements IRandomR
         const prompt = this.#workflowService.renderWorkflow(workflow, renderRequest);
         const imagesResponse = await this.#comfyUiClient.render([prompt]);
 
-        const exchange = {
+        const exchange: IHttpExchange<SerializableRenderRequest[], ImagesResponse> = {
             request: [renderRequest],
             response: imagesResponse
         };
@@ -90,8 +96,17 @@ export class ComfyUiRandomRenderTask extends ComfyUiBaseTask implements IRandomR
             name: `${renderRequest.prompt.substring(0, MAX_FILE_NAME_LENGTH)}.md`
         });
 
-        const replyTask = new ComfyUiReplyTask(this.#services, this.#interaction, {content, files: [promptAttachment] }, exchange);
-        this.#taskQueue.add(replyTask);
+        const reply: BaseMessageOptions = {
+            content,
+            files: [promptAttachment]
+         };
+
+        if (this.#environmentSettings.hasStableDiffusionOutputAsSeparateTask) {
+            const replyTask = new ComfyUiReplyTask(this.#services, this.#interaction, reply, exchange);
+            this.#taskQueue.add(replyTask);
+        } else {
+            await this.#comfyUiReplyService.reply(this.#interaction, reply, false, exchange);
+        }
     }
 
     override async postProcess(): Promise<void> {

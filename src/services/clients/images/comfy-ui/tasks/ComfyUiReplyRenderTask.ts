@@ -1,6 +1,7 @@
-import { Prompt } from 'comfy-ui-client';
+import { ImagesResponse, Prompt } from 'comfy-ui-client';
 import { Message, MessageType } from 'discord.js';
 
+import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
@@ -8,6 +9,7 @@ import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
+import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 import { IReplyRenderTask } from '../../tasks/IReplyRenderTask.js';
@@ -23,12 +25,13 @@ export class ComfyUiReplyRenderTask extends ComfyUiBaseTask implements IReplyRen
 
     #workflowService: IWorkflowService;
     #comfyUiClient: ComfyUiClient;
+    #comfyUiReplyService: ComfyUiReplyService;
     #replyService: IReplyService;
     #taskQueue: ITaskQueue;
+    #logger: ILogger;
 
     #message: Message;
 
-    #logger: ILogger;
 
     override get taskChannel(): string {
         return `${this.#environmentSettings.stableDiffusionTaskChannel}_${this.#comfyUiClient.host}`;
@@ -43,12 +46,13 @@ export class ComfyUiReplyRenderTask extends ComfyUiBaseTask implements IReplyRen
 
         this.#workflowService = services.workflowService;
         this.#comfyUiClient = services.comfyUiClient;
+        this.#comfyUiReplyService = services.comfyUiReplyService;
         this.#replyService = services.replyService;
+
         this.#taskQueue = services.taskQueue;
+        this.#logger = services.getLogger('ComfyUiPromptRenderTask');
 
         this.#message = message;
-
-        this.#logger = services.getLogger('ComfyUiPromptRenderTask');
     }
 
     override async process(): Promise<void> {
@@ -92,12 +96,17 @@ export class ComfyUiReplyRenderTask extends ComfyUiBaseTask implements IReplyRen
         } while(i < numRenders);
 
         const imagesResponse = await this.#comfyUiClient.render(prompts);
-        const replyTask = new ComfyUiReplyTask(this.#services, this.#message, { }, {
+        const exchange: IHttpExchange<SerializableRenderRequest[], ImagesResponse> = {
             request: renderRequests,
             response: imagesResponse
-        });
+        };
 
-        this.#taskQueue.add(replyTask);
+        if (this.#environmentSettings.hasStableDiffusionOutputAsSeparateTask) {
+            const replyTask = new ComfyUiReplyTask(this.#services, this.#message, { }, exchange);
+            this.#taskQueue.add(replyTask);
+        } else {
+            await this.#comfyUiReplyService.reply(this.#message, { }, false, exchange);
+        }
     }
 
     override async postProcess(): Promise<void> {
