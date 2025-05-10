@@ -3,7 +3,7 @@ FROM node:20 AS builder
 WORKDIR /home/node/app
 COPY . .
 
-RUN npm ci && npm install --cpu=x64 --os=linux --libc=glibc sharp && npm run build:bin
+RUN npm uninstall sharp && npm ci && npm install --save --cpu=x64 --os=linux --libc=glibc sharp && npm run build:bin
 
 USER node
 
