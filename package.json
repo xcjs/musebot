@@ -8,6 +8,9 @@
   "main": "build/parcel/musebot.cjs",
   "type": "module",
   "pkg": {
+    "assets": [
+      "node_modules/@img/**/**"
+    ],
     "targets": [
       "node20-linux-x64",
       "node20-win-x64",
