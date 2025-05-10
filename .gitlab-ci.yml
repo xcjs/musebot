@@ -62,6 +62,8 @@ Build Distributable:
     - npm run build:docs
     - cp -f .env.example build/pkg/.env
     - cp -rf build/docs/ build/pkg/docs/
+    - mkdir -p build/pkg/workflows/img2img/
+    - mkdir -p build/pkg/workflows/img2vid/
     - mkdir -p build/pkg/workflows/txt2img/
     - mkdir -p build/pkg/workflows/txt2vid/
     - cp -f workflows/production/director/txt2vid/mochi.json build/pkg/workflows/txt2vid/mochi.json
