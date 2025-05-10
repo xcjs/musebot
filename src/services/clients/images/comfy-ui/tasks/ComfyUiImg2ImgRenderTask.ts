@@ -94,7 +94,7 @@ export class ComfyUiImg2ImgRenderTask extends ComfyUiBaseTask implements IImg2Im
                 }
 
                 if(height > maxHeight) {
-                    const ratio = maxHeight/ height;
+                    const ratio = maxHeight / height;
                     width *= ratio;
                     height = maxHeight;
                 }
