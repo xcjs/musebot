@@ -193,7 +193,7 @@ to matching directories within `./workflows`:
    Musebot's interface. Workflows can be named any valid file name, but if you
    want them in a specific order, consider prefixing them with numbers.
 * `img2vid`: These workflows accept a base64 encoded image and process the image
-   into another image. Each `img2vid` workflow will create a custom button in
+   into a video. Each `img2vid` workflow will create a custom button in
    Musebot's interface. The img2vid output must either be an animated `.gif` or
    `.webp`. Workflows can be named any valid file name, but if you want them in
    a specific order, consider prefixing them with numbers.
@@ -274,6 +274,8 @@ This should look something like:
    "label": "",
    "title": "",
    "helpText": "",
+   "maxWidth": 1024,
+   "maxHeight": 1024
   },
   // The ComfyUI workflow nodes should begin here.
 }
@@ -313,6 +315,18 @@ This should look something like:
 * `helpText` **(img2img and img2vid workflows only)**: This is used as the
   descriptive help text in the generated help article. Optional, but the help
   article will call it out if it's missing.
+* `maxWidth` **(img2img and img2vid workflows only)**: Some workflows based on
+  existing imagery may have resolution limits, particularly in the case of
+  video models that output to specific resolutions. This places an upper limit
+  on the width of the image input. Both `maxWidth` and `maxHeight` must be
+  specified before this feature will work. Image aspect ratio will always be
+  preserved.
+* `maxHeight` **(img2img and img2vid workflows only)** Some workflows based on
+  existing imagery may have resolution limits, particularly in the case of
+  video models that output to specific resolutions. This places an upper limit
+  on the width of the image input. Both `maxWidth` and `maxHeight` must be
+  specified before this feature will work. Image aspect ratio will always be
+  preserved.
 
 #### Template Placeholders
 

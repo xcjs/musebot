@@ -1,6 +1,8 @@
 import { ImagesResponse, Prompt } from 'comfy-ui-client';
 import { BaseMessageOptions, ButtonInteraction } from 'discord.js';
+import sharp from 'sharp';
 
+import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { ILogger } from '../../../../ILogger.js';
@@ -70,20 +72,44 @@ export class ComfyUiImg2ImgRenderTask extends ComfyUiBaseTask implements IImg2Im
         const content = `${this.#interaction.user.toString() || 'You'} ran a custom workflow: \`${renderRequest.label}\``;
 
         const renderRequests: Array<SerializableRenderRequest | null> = [];
-        let i = 0;
 
         for (const imageAsBase64 of imagesAsBase64) {
-            const description = imageAttachments[i].description;
+            const defaults = this.#workflowService.getWorkflowDefaults(this.#workflow);
+            const renderRequest = SerializableRenderRequest.fromSerializableRenderRequest(defaults);
 
-            if (description?.length > 0) {
-                renderRequests.push(SerializableRenderRequest.fromJson(description));
-            } else {
-                renderRequests.push(null);
+            const image = sharp(Buffer.from(imageAsBase64, BufferEncoding.Base64));
+            const imageMetadata = await image.metadata();
+
+            renderRequest.refreshSeed();
+            renderRequest.prompt = imageAsBase64;
+            renderRequest.width = imageMetadata.width;
+            renderRequest.height = imageMetadata.height;
+
+            if(renderRequest.maxWidth !== undefined && renderRequest.maxHeight !== undefined) {
+                const maxWidth = renderRequest.maxWidth;
+                const maxHeight = renderRequest.maxHeight;
+                let width = imageMetadata.width;
+                let height = imageMetadata.height;
+
+                if(width > maxWidth ) {
+                    const ratio = maxWidth / width;
+                    width = maxWidth;
+                    height = Math.ceil(height * ratio);
+                }
+
+                if(height > maxHeight) {
+                    const ratio = maxHeight / height;
+                    width = Math.ceil(width * ratio);
+                    height = maxHeight;
+                }
+
+                renderRequest.width = width;
+                renderRequest.height = height;
             }
 
-            renderRequest.prompt = imageAsBase64;
+            renderRequests.push(renderRequest);
+
             prompts.push(this.#workflowService.renderWorkflow(this.#workflow, renderRequest));
-            i++;
         }
 
         const imagesResponse = await this.#comfyUiClient.render(prompts);

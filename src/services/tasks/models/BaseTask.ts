@@ -88,7 +88,7 @@ export abstract class BaseTask {
     }
 
     async postProcess(): Promise<void> {
-        this.#logger.info(`Post-processing task $ task ${this.#id} at ${new Date().toLocaleDateString()}`);
+        this.#logger.info(`Post-processing task ${this.#id} at ${new Date().toLocaleDateString()}`);
         await Promise.resolve();
     }
 }
