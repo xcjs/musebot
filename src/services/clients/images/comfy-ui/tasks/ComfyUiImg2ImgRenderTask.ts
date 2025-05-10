@@ -2,6 +2,7 @@ import { ImagesResponse, Prompt } from 'comfy-ui-client';
 import { BaseMessageOptions, ButtonInteraction } from 'discord.js';
 import sharp from 'sharp';
 
+import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { ILogger } from '../../../../ILogger.js';
@@ -71,17 +72,20 @@ export class ComfyUiImg2ImgRenderTask extends ComfyUiBaseTask implements IImg2Im
         const content = `${this.#interaction.user.toString() || 'You'} ran a custom workflow: \`${renderRequest.label}\``;
 
         const renderRequests: Array<SerializableRenderRequest | null> = [];
-        let i = 0;
 
         for (const imageAsBase64 of imagesAsBase64) {
-            const description = imageAttachments[i].description;
-            const renderRequest = SerializableRenderRequest.fromJson(description);
+            const defaults = this.#workflowService.getWorkflowDefaults(this.#workflow);
+            const renderRequest = SerializableRenderRequest.fromSerializableRenderRequest(defaults);
+
+            const image = sharp(Buffer.from(imageAsBase64, BufferEncoding.Base64));
+            const imageMetadata = await image.metadata();
+
             renderRequest.refreshSeed();
+            renderRequest.prompt = imageAsBase64;
+            renderRequest.width = imageMetadata.width;
+            renderRequest.height = imageMetadata.height;
 
             if(renderRequest.maxWidth !== undefined && renderRequest.maxHeight !== undefined) {
-                const image = sharp(imageAsBase64);
-                const imageMetadata = await image.metadata();
-
                 const maxWidth = renderRequest.maxWidth;
                 const maxHeight = renderRequest.maxHeight;
                 let width = imageMetadata.width;
@@ -90,12 +94,12 @@ export class ComfyUiImg2ImgRenderTask extends ComfyUiBaseTask implements IImg2Im
                 if(width > maxWidth ) {
                     const ratio = maxWidth / width;
                     width = maxWidth;
-                    height *= ratio;
+                    height = Math.ceil(height * ratio);
                 }
 
                 if(height > maxHeight) {
                     const ratio = maxHeight / height;
-                    width *= ratio;
+                    width = Math.ceil(width * ratio);
                     height = maxHeight;
                 }
 
@@ -103,15 +107,9 @@ export class ComfyUiImg2ImgRenderTask extends ComfyUiBaseTask implements IImg2Im
                 renderRequest.height = height;
             }
 
-            if (description?.length > 0) {
-                renderRequests.push(renderRequest);
-            } else {
-                renderRequests.push(null);
-            }
+            renderRequests.push(renderRequest);
 
-            renderRequest.prompt = imageAsBase64;
             prompts.push(this.#workflowService.renderWorkflow(this.#workflow, renderRequest));
-            i++;
         }
 
         const imagesResponse = await this.#comfyUiClient.render(prompts);
