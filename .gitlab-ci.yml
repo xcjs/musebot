@@ -58,7 +58,15 @@ Build Distributable:
   tags:
     - docker
   script:
+    - npm install --cpu=x64 --os=linux --libc=glibc sharp
     - npm run build:bin
+    - mv build/pkg/musebot-linux build/pkg/musebot-linux-x86_64
+    - npm install --cpu=x64 --os=darwin sharp
+    - npm run build:bin
+    - mv build/pkg/musebot-macos build/pkg/musebot-macos-x86_64
+    - npm install --cpu=x64 --os=win2 sharp
+    - npm run build:bin
+    - mv build/pkg/musebot-win.exe build/pkg/musebot-win-x86_64.exe
     - npm run build:docs
     - cp -f .env.example build/pkg/.env
     - cp -rf build/docs/ build/pkg/docs/
@@ -80,9 +88,6 @@ Build Distributable:
     - cp -f musebot.ico build/pkg/musebot.ico
     - cp -f Dockerfile_dist build/pkg/Dockerfile
     - cp -f docker-compose.yml build/pkg/docker-compose.yml
-    - mv build/pkg/musebot-linux build/pkg/musebot-linux-x86_64
-    - mv build/pkg/musebot-macos build/pkg/musebot-macos-x86_64
-    - mv build/pkg/musebot-win.exe build/pkg/musebot-win-x86_64.exe
   artifacts:
     name: musebot
     paths:
