@@ -1,5 +1,6 @@
 import { ImagesResponse, Prompt } from 'comfy-ui-client';
 import { BaseMessageOptions, ButtonInteraction } from 'discord.js';
+import sharp from 'sharp';
 
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
@@ -74,9 +75,36 @@ export class ComfyUiImg2ImgRenderTask extends ComfyUiBaseTask implements IImg2Im
 
         for (const imageAsBase64 of imagesAsBase64) {
             const description = imageAttachments[i].description;
+            const renderRequest = SerializableRenderRequest.fromJson(description);
+            renderRequest.refreshSeed();
+
+            if(renderRequest.maxWidth !== undefined && renderRequest.maxHeight !== undefined) {
+                const image = sharp(imageAsBase64);
+                const imageMetadata = await image.metadata();
+
+                const maxWidth = renderRequest.maxWidth;
+                const maxHeight = renderRequest.maxHeight;
+                let width = imageMetadata.width;
+                let height = imageMetadata.height;
+
+                if(width > maxWidth ) {
+                    const ratio = maxWidth / width;
+                    width = maxWidth;
+                    height *= ratio;
+                }
+
+                if(height > maxHeight) {
+                    const ratio = maxHeight/ height;
+                    width *= ratio;
+                    height = maxHeight;
+                }
+
+                renderRequest.width = width;
+                renderRequest.height = height;
+            }
 
             if (description?.length > 0) {
-                renderRequests.push(SerializableRenderRequest.fromJson(description));
+                renderRequests.push(renderRequest);
             } else {
                 renderRequests.push(null);
             }
