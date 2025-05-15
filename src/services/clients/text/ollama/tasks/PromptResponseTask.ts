@@ -39,7 +39,6 @@ export class PromptResponseTask extends BaseTask implements IPromptResponseTask 
     #message: Message;
     #context: Array<number> = [];
 
-
     #onSuccess: (context: Array<number>) => void  = () => { };
 
     constructor(
