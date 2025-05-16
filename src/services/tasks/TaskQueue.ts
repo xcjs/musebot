@@ -102,7 +102,8 @@ export class TaskQueue implements ITaskQueue {
 
         const tasks = this.#channels
             .filter(channel => channel.queue.length > 0 && !channel.isActive)
-            .map(channel => channel.queue[0]);
+            .map(channel => channel.queue[0])
+            .filter(task => task.taskStatus !== TaskStatus.Busy);
 
         tasks.forEach((task) => {
             this.#logger.info(`Adding task ${task.id} to the queue from ${task.taskChannel}.`);
