@@ -105,7 +105,7 @@ export class TaskQueue implements ITaskQueue {
             .map(channel => channel.queue[0]);
 
         tasks.forEach((task) => {
-            this.#logger.info(`Adding task ${task.id} to the queue from ${task.taskChannel}.`);
+            this.#logger.info(`Adding task ${task.id} to the primary queue from ${task.taskChannel}.`);
         });
 
         return tasks;
