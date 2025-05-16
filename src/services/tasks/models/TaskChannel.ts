@@ -1,12 +1,9 @@
-import { IEnvironmentSettings } from '../../environment-settings/IEnvironmentSettings.js';
 import { ILogger } from '../../ILogger.js';
 import { IServiceContainer } from '../../IServiceContainer.js';
 import { TaskStatus } from '../enums/TaskStatus.js';
 import { BaseTask } from './BaseTask.js';
 
 export class TaskChannel {
-    #environmentSettings: IEnvironmentSettings;
-
     #name: string;
     #queue: Array<BaseTask> = [];
 
@@ -23,17 +20,16 @@ export class TaskChannel {
     get isActive(): boolean {
         const numBusyTasks = this.#queue.filter(x => x.taskStatus === TaskStatus.Busy).length;
 
-        // this.#logger.info(`The ${this.name} task channel has ${numBusyTasks} busy task(s).`);
+        this.#logger.info(`The ${this.name} task channel has ${numBusyTasks} busy task(s).`);
         return numBusyTasks > 0;
     }
 
     get hasTasks(): boolean {
-        // this.#logger.info(`The ${this.name} task channel has ${this.queue.length} task(s) left.`);
+        this.#logger.info(`The ${this.name} task channel has ${this.queue.length} task(s) left.`);
         return this.#queue.length > 0;
     }
 
     constructor(services: IServiceContainer, name: string) {
-        this.#environmentSettings = services.environmentSettings;
         this.#name = name;
 
         this.#logger = services.getLogger('TaskChannel');
@@ -63,7 +59,6 @@ export class TaskChannel {
             // eslint-disable-next-line @typescript-eslint/unbound-method
             .sort(this.#compareByDate);
 
-        this.#queue = [];
         this.#queue = nonFailedTasks.concat(failedTasks).filter((task) => {
             if(this.#queue.find(x => x.id === task.id) === undefined) {
                 return task;
