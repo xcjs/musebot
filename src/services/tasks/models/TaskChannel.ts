@@ -1,12 +1,9 @@
-import { IEnvironmentSettings } from '../../environment-settings/IEnvironmentSettings.js';
 import { ILogger } from '../../ILogger.js';
 import { IServiceContainer } from '../../IServiceContainer.js';
 import { TaskStatus } from '../enums/TaskStatus.js';
 import { BaseTask } from './BaseTask.js';
 
 export class TaskChannel {
-    #environmentSettings: IEnvironmentSettings;
-
     #name: string;
     #queue: Array<BaseTask> = [];
 
@@ -33,7 +30,6 @@ export class TaskChannel {
     }
 
     constructor(services: IServiceContainer, name: string) {
-        this.#environmentSettings = services.environmentSettings;
         this.#name = name;
 
         this.#logger = services.getLogger('TaskChannel');
