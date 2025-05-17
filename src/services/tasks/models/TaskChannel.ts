@@ -62,7 +62,7 @@ export class TaskChannel {
         this.#queue = [];
 
         nonFailedTasks.concat(failedTasks).forEach((task) => {
-            if(!this.#queue.find(queueTask => queueTask.id === task.id) === undefined) {
+            if(this.#queue.find(queueTask => queueTask.id === task.id) === undefined) {
                 this.#queue.push(task);
             }
         });
