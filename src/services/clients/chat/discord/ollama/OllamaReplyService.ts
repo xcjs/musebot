@@ -31,6 +31,7 @@ export class OllamaReplyService {
         let i = 0;
 
         for (const response of responses) {
+            // If it's the last reply, include the action row.
             if(i === responses.length - 1) {
                 replies.push(await message.reply({
                     content: response,

@@ -1,12 +1,9 @@
-import { IEnvironmentSettings } from '../../environment-settings/IEnvironmentSettings.js';
 import { ILogger } from '../../ILogger.js';
 import { IServiceContainer } from '../../IServiceContainer.js';
 import { TaskStatus } from '../enums/TaskStatus.js';
 import { BaseTask } from './BaseTask.js';
 
 export class TaskChannel {
-    #environmentSettings: IEnvironmentSettings;
-
     #name: string;
     #queue: Array<BaseTask> = [];
 
@@ -23,17 +20,16 @@ export class TaskChannel {
     get isActive(): boolean {
         const numBusyTasks = this.#queue.filter(x => x.taskStatus === TaskStatus.Busy).length;
 
-        // this.#logger.info(`The ${this.name} task channel has ${numBusyTasks} busy task(s).`);
+        this.#logger.info(`The ${this.name} task channel has ${numBusyTasks} busy task(s).`);
         return numBusyTasks > 0;
     }
 
     get hasTasks(): boolean {
-        // this.#logger.info(`The ${this.name} task channel has ${this.queue.length} task(s) left.`);
+        this.#logger.info(`The ${this.name} task channel has ${this.queue.length} task(s) left.`);
         return this.#queue.length > 0;
     }
 
     constructor(services: IServiceContainer, name: string) {
-        this.#environmentSettings = services.environmentSettings;
         this.#name = name;
 
         this.#logger = services.getLogger('TaskChannel');
@@ -45,11 +41,11 @@ export class TaskChannel {
         this.#logger.info(`Removing completed or dead entries from the ${this.#name} channel...`);
 
         const incompleteTasks = this.#queue.filter(task => {
-            if(task.taskStatus === TaskStatus.Idle
+            if (task.taskStatus === TaskStatus.Idle
                 || task.taskStatus === TaskStatus.Busy
                 || task.taskStatus === TaskStatus.Delayed
                 || task.taskStatus === TaskStatus.Failed) {
-                    return task;
+                return task;
             }
         });
 
@@ -64,15 +60,16 @@ export class TaskChannel {
             .sort(this.#compareByDate);
 
         this.#queue = [];
-        this.#queue = nonFailedTasks.concat(failedTasks).filter((task) => {
-            if(this.#queue.find(x => x.id === task.id) === undefined) {
-                return task;
+
+        nonFailedTasks.concat(failedTasks).forEach((task) => {
+            if(this.#queue.find(queueTask => queueTask.id === task.id) === undefined) {
+                this.#queue.push(task);
             }
         });
     }
 
     #compareByDate(a: BaseTask, b: BaseTask): number {
-        if(a.createdTime < b.createdTime) {
+        if (a.createdTime < b.createdTime) {
             return -1;
         } else {
             return 1;

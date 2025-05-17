@@ -32,14 +32,14 @@ export class TaskQueue implements ITaskQueue {
 
         let taskChannel: TaskChannel;
 
-        if(this.#channels.filter(x => x.name === task.taskChannel).length === 0) {
+        if (this.#channels.filter(x => x.name === task.taskChannel).length === 0) {
             taskChannel = new TaskChannel(this.#services, task.taskChannel);
             this.#channels.push(taskChannel);
         } else {
             taskChannel = this.#channels.find(x => x.name === task.taskChannel);
         }
 
-        if(taskChannel.queue.find(x => x.id === task.id) === undefined) {
+        if (taskChannel.queue.find(x => x.id === task.id) === undefined) {
             taskChannel.queue.push(task);
         }
 
@@ -51,7 +51,7 @@ export class TaskQueue implements ITaskQueue {
     async #processQueue(): Promise<void> {
         let tasks = this.#getNextTasks();
 
-        while(tasks.length > 0) {
+        while (tasks.length > 0) {
             const numChannels = this.#channels.length;
             const numTasks = this.#channels.map((channel) => channel.queue.length)
                 .reduce((accumulator, value) => accumulator + value);
@@ -71,23 +71,23 @@ export class TaskQueue implements ITaskQueue {
                 const postProcessingPromises = processPromisesResults.map((promise, i) => {
                     const task = tasks[i];
 
-                    if(promise.status === PromisedSettledResultStatus.Fulfilled) {
+                    if (promise.status === PromisedSettledResultStatus.Fulfilled) {
                         task.taskStatus = TaskStatus.Successful;
                         return task.postProcess();
                     }
 
-                    if(promise.status === PromisedSettledResultStatus.Rejected.toString()) {
+                    if (promise.status === PromisedSettledResultStatus.Rejected.toString()) {
                         task.taskStatus = TaskStatus.Failed;
                         this.#logger.error(`Task ${task.id} was rejected ${task.numAttempts} time(s): ${promise.reason}`);
 
-                        if(task.numAttempts >= this.#environmentSettings.maxTaskAttempts) {
+                        if (task.numAttempts >= this.#environmentSettings.maxTaskAttempts) {
                             return task.postProcess();
                         }
                     }
                 });
 
                 await Promise.allSettled(postProcessingPromises);
-            } catch(error) {
+            } catch (error) {
                 this.#logger.error(`An exception occurred while processing a task: ${error}`);
             }
 

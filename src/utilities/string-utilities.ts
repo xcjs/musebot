@@ -9,11 +9,16 @@ export function splitText(text: string, lineLength: number): Array<string> {
                 splitPosition = text.substring(0, lineLength).lastIndexOf(' ');
             }
 
+            if(splitPosition === -1) {
+                // If no newline or space is found, split at the lineLength.
+                splitPosition = lineLength;
+            }
+
             splitText.push(text.substring(0, splitPosition));
             text = text.substring(splitPosition);
         } else {
             splitText.push(text);
-            return splitText;
+            text = '';
         }
     }
 
@@ -35,9 +40,11 @@ export function wrapText(text: string, lineLength: number): string {
             text = text.substring(lineBreakPosition);
         } else {
             wrappedText += text + '\n';
-            return wrappedText;
+            text = '';
         }
     }
+
+    return wrappedText;
 }
 
 export function isOnlyWhitespace(text: string): boolean {
