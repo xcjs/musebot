@@ -66,7 +66,8 @@ export class PromptResponseTask extends BaseTask implements IPromptResponseTask 
         const formattedMessage = `${this.#message.author.displayName}: ${this.#replyService.getMessageWithoutBotMentions(this.#message)}`;
 
         if(this.#environmentSettings.ollamaStreamsResponse) {
-            return await this.#processAsStream(formattedMessage, this.#context);
+            await this.#processAsStream(formattedMessage, this.#context);
+            return;
         }
 
         const exchange = await this.#ollamaClient.sendMessage(formattedMessage, this.#context);
