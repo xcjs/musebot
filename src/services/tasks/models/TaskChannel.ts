@@ -60,9 +60,10 @@ export class TaskChannel {
             .sort(this.#compareByDate);
 
         this.#queue = [];
-        this.#queue = nonFailedTasks.concat(failedTasks).filter((task) => {
-            if (this.#queue.find(x => x.id === task.id) === undefined) {
-                return task;
+
+        nonFailedTasks.concat(failedTasks).forEach((task) => {
+            if(!this.#queue.find(queueTask => queueTask.id === task.id) === undefined) {
+                this.#queue.push(task);
             }
         });
     }
