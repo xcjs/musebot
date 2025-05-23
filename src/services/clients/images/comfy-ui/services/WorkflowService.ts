@@ -66,7 +66,8 @@ export class WorkflowService implements IWorkflowService {
                         const fileContents = await fs.readFile(templatePath, BufferEncoding.UTF8);
 
                         this.#workflows.push({
-                            name: templatePath,
+                            // Windows hosts need the double backslash replaced.
+                            name: templatePath.replaceAll('\\', '/'),
                             type: workflowType,
                             workflowString: fileContents
                         });
