@@ -45,8 +45,8 @@ import { IRetryRenderTask } from './clients/images/tasks/IRetryRenderTask.js';
 import { IShowSourceTask } from './clients/images/tasks/IShowSourceTask.js';
 import { TextHelpService } from './clients/text/help/TextHelpService.js';
 import { OllamaClient } from './clients/text/ollama/OllamaClient.js';
-import { EmojiResponseTask } from './clients/text/ollama/tasks/EmojiResponseTask.js';
-import { PromptResponseTask } from './clients/text/ollama/tasks/PromptResponseTask.js';
+import { OllamaEmojiResponseTask } from './clients/text/ollama/tasks/OllamaEmojiResponseTask.js';
+import { OllamaPromptResponseTask } from './clients/text/ollama/tasks/OllamaPromptResponseTask.js';
 import { IEmojiResponseTask } from './clients/text/tasks/IEmojiResponseTask.js';
 import { IPromptResponseTask } from './clients/text/tasks/IPromptResponseTask.js';
 import { EnvironmentSettings } from './environment-settings/EnvironmentSettings.js';
@@ -152,7 +152,8 @@ export class ServiceContainer implements IServiceContainer {
         interaction: ButtonInteraction | Message,
         prompt: string,
         content: string | null = null): IAttachRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)) {
+        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)
+            && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
             throw this.#taskNotConfiguredError;
         }
 
@@ -165,7 +166,8 @@ export class ServiceContainer implements IServiceContainer {
     }
 
     getDecreaseGuidanceScaleRenderTask(interaction: ButtonInteraction): IDecreaseGuidanceScaleRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)) {
+        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)
+            && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
             throw this.#taskNotConfiguredError;
         }
 
@@ -192,7 +194,8 @@ export class ServiceContainer implements IServiceContainer {
     }
 
     getExpandPromptTask(interaction: ButtonInteraction): IExpandPromptTask {
-        if(!this.#featureService.hasFeature(SupportedFeature.Txt2Img)) {
+        if(!this.#featureService.hasFeature(SupportedFeature.Txt2Img)
+            && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
             throw this.#taskNotConfiguredError;
         }
 
@@ -205,7 +208,8 @@ export class ServiceContainer implements IServiceContainer {
     }
 
     getImg2ImgRenderTask(interaction: ButtonInteraction, workflow: IWorkflow) {
-        if(!this.#featureService.hasFeature(SupportedFeature.Img2Img)) {
+        if(!this.#featureService.hasFeature(SupportedFeature.Img2Img)
+            && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
             throw this.#taskNotConfiguredError;
         }
 
@@ -218,7 +222,8 @@ export class ServiceContainer implements IServiceContainer {
     }
 
     getIncreaseGuidanceScaleRenderTask(interaction: ButtonInteraction): IIncreaseGuidanceScaleRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)) {
+        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)
+            && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
             throw this.#taskNotConfiguredError;
         }
 
@@ -231,7 +236,8 @@ export class ServiceContainer implements IServiceContainer {
     }
 
     getJsonRenderTask(message: Message): IJsonRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)) {
+        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)
+            && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
             throw this.#taskNotConfiguredError;
         }
 
@@ -244,7 +250,8 @@ export class ServiceContainer implements IServiceContainer {
     }
 
     getRandomRenderTask(interaction: ButtonInteraction): IRandomRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)) {
+        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)
+            && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
             throw this.#taskNotConfiguredError;
         }
 
@@ -257,7 +264,8 @@ export class ServiceContainer implements IServiceContainer {
             }
 
     getReplyRenderTask(message: Message): IReplyRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)) {
+        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)
+            && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
             throw this.#taskNotConfiguredError;
         }
 
@@ -270,7 +278,8 @@ export class ServiceContainer implements IServiceContainer {
     }
 
     getRetryRenderTask(interaction: ButtonInteraction): IRetryRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)) {
+        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)
+            && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
             throw this.#taskNotConfiguredError;
         }
 
@@ -283,7 +292,8 @@ export class ServiceContainer implements IServiceContainer {
     }
 
     getShowSourceTask(interaction: ButtonInteraction): IShowSourceTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)) {
+        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)
+            && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
             throw this.#taskNotConfiguredError;
         }
 
@@ -295,20 +305,20 @@ export class ServiceContainer implements IServiceContainer {
         }
     }
 
-    getPromptResponseTask(message: Message, context: Array<number>): IPromptResponseTask {
+    getLlmPromptResponseTask(message: Message, context: Array<number>): IPromptResponseTask {
         if(!this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
             throw this.#taskNotConfiguredError;
         }
 
-        return new PromptResponseTask(this, message, context);
+        return new OllamaPromptResponseTask(this, message, context);
     }
 
-    getEmojiResponseTask(reaction: MessageReaction, user: User, context: Array<number>): IEmojiResponseTask {
+    getLlmEmojiResponseTask(reaction: MessageReaction, user: User, context: Array<number>): IEmojiResponseTask {
         if(!this.featureService.hasFeature(SupportedFeature.Txt2Txt)) {
             throw this.#taskNotConfiguredError;
         }
 
-        return new EmojiResponseTask(this, reaction, user, context);
+        return new OllamaEmojiResponseTask(this, reaction, user, context);
     }
 
     constructor() {

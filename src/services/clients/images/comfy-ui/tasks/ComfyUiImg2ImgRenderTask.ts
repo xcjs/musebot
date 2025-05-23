@@ -81,7 +81,7 @@ export class ComfyUiImg2ImgRenderTask extends ComfyUiBaseTask implements IImg2Im
             const imageMetadata = await image.metadata();
 
             renderRequest.refreshSeed();
-            renderRequest.prompt = imageAsBase64;
+            renderRequest.image = imageAsBase64;
             renderRequest.width = imageMetadata.width;
             renderRequest.height = imageMetadata.height;
 

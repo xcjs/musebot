@@ -55,7 +55,7 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
 
         this.logger.info('Replying to message...');
 
-        const promptResponseTask = this.#services.getPromptResponseTask(message, this.#context) as BaseTask;
+        const promptResponseTask = this.#services.getLlmPromptResponseTask(message, this.#context) as BaseTask;
         promptResponseTask.onSuccess = (context: Array<number>) => { this.#context = context; };
 
         this.#taskQueue.add(promptResponseTask);
@@ -148,7 +148,7 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
             return;
         }
 
-        const emojiResponseTask = this.#services.getEmojiResponseTask(reaction, user, this.#context);
+        const emojiResponseTask = this.#services.getLlmEmojiResponseTask(reaction, user, this.#context);
         this.#taskQueue.add(emojiResponseTask as BaseTask);
 
         await this.#typingService.startTyping(reaction.message as Message);

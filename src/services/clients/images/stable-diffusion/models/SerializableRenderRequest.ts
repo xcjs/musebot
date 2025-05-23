@@ -2,9 +2,9 @@ import { getRandomInt } from '../../../../../utilities/random-utilities.js';
 import { maxSeed } from '../constants/constants.js';
 
 export class SerializableRenderRequest {
-    prompt: string;
+    prompt: string | null;
     promptNegative: string | null;
-    model: string;
+    workflow: string;
     seed: number;
     width: number;
     height: number;
@@ -14,6 +14,8 @@ export class SerializableRenderRequest {
     steps: number;
     num: number = 1;
 
+    image: string | undefined;
+    model: string | undefined;
     maxWidth: number | undefined;
     maxHeight: number | undefined;
 
@@ -45,7 +47,7 @@ export class SerializableRenderRequest {
 
         instancedRequest.prompt = request.prompt;
         instancedRequest.promptNegative = request.promptNegative;
-        instancedRequest.model = request.model;
+        instancedRequest.workflow = request.workflow || request.model;
         instancedRequest.seed = request.seed;
         instancedRequest.width = request.width;
         instancedRequest.height = request.height;
@@ -55,6 +57,7 @@ export class SerializableRenderRequest {
         instancedRequest.steps = request.steps;
         instancedRequest.num = request.num || 1;
 
+        instancedRequest.image = request.image;
         instancedRequest.maxHeight = request.maxHeight;
         instancedRequest.maxWidth = request.maxWidth;
 

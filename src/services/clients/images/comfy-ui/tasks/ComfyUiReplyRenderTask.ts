@@ -84,7 +84,7 @@ export class ComfyUiReplyRenderTask extends ComfyUiBaseTask implements IReplyRen
                 numRenders = renderRequest.num;
             }
 
-            renderRequest.model = workflow.name;
+            renderRequest.workflow = workflow.name;
             renderRequest.prompt = prompt;
             renderRequest.num = 1;
             renderRequest.refreshSeed();
