@@ -16,7 +16,7 @@ import { IReplyService } from '../../../chat/IReplyService.js';
 import { IPromptResponseTask } from '../../tasks/IPromptResponseTask.js';
 import { OllamaClient } from '../OllamaClient.js';
 
-export class PromptResponseTask extends BaseTask implements IPromptResponseTask {
+export class OllamaPromptResponseTask extends BaseTask implements IPromptResponseTask {
     override get taskChannel(): string {
         return `${this.#environmentSettings.ollamaTaskChannel}_${this.#ollamaClient.host}`;
     }

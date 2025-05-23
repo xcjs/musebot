@@ -15,7 +15,7 @@ import { IReplyService } from '../../../chat/IReplyService.js';
 import { IEmojiResponseTask } from '../../tasks/IEmojiResponseTask.js';
 import { OllamaClient } from '../OllamaClient.js';
 
-export class EmojiResponseTask extends BaseTask implements IEmojiResponseTask {
+export class OllamaEmojiResponseTask extends BaseTask implements IEmojiResponseTask {
     override get taskChannel(): string {
         return `${this.#environmentSettings.ollamaTaskChannel}_${this.#ollamaClient.host}`;
     }

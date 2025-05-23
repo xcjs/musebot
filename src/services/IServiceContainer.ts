@@ -75,6 +75,6 @@ export interface IServiceContainer {
     getReplyRenderTask(message: Message): IReplyRenderTask;
     getRetryRenderTask(interaction: ButtonInteraction): IRetryRenderTask;
     getShowSourceTask(interaction: ButtonInteraction): IShowSourceTask;
-    getPromptResponseTask(message: Message, context: Array<number>): IPromptResponseTask;
-    getEmojiResponseTask(reaction: MessageReaction, user: User, context: Array<number>): IEmojiResponseTask;
+    getLlmPromptResponseTask(message: Message, context: Array<number>): IPromptResponseTask;
+    getLlmEmojiResponseTask(reaction: MessageReaction, user: User, context: Array<number>): IEmojiResponseTask;
 }
