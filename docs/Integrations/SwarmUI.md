@@ -285,8 +285,6 @@ This should look something like:
 * `prompt`: The text prompt given to the model that instructs it what to create.
 * `promptNegative`: The negative prompt used to "remove" things from the model
    output - not required.
-* `model`: The model being used, though most workflows will have this value
-   hardcoded. Feel free to leave this blank as in the above example.
 * `seed`: A number used for randomization in the model - `-1` can be used as a
    placeholder, but this is always overridden by Musebot at this time.
 * `width`: The resolution of any graphical output - this is usually dependent on
