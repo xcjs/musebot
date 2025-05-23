@@ -69,7 +69,8 @@ export class ComfyUiImg2ImgRenderTask extends ComfyUiBaseTask implements IImg2Im
         const imagesAsBase64 = await this.#replyService.getAttachedImagesAsBase64(this.#interaction);
         const renderRequest = this.#workflowService.getWorkflowDefaults(this.#workflow);
 
-        const content = `${this.#interaction.user.toString() || 'You'} ran a custom workflow: \`${renderRequest.label}\``;
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string
+        const content = `${this.#interaction.member?.user.toString() || 'You'} ran a custom workflow: \`${renderRequest.label}\``;
 
         const renderRequests: Array<SerializableRenderRequest | null> = [];
 

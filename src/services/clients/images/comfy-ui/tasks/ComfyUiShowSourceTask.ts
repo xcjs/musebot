@@ -50,7 +50,7 @@ export class ComfyUiShowSourceTask extends ComfyUiBaseTask implements IShowSourc
             }));
 
             // eslint-disable-next-line @typescript-eslint/no-base-to-string
-            messageContent = `${this.#interaction.member.user.toString() || 'You'} wanted to see the request message for \`${renderRequest.prompt}\``;
+            messageContent = `${this.#interaction.member?.user.toString() || 'You'} wanted to see the request message for \`${renderRequest.prompt}\``;
         }
 
         this.#logger.info(messageContent);
