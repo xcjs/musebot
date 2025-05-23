@@ -98,6 +98,10 @@ export class ComfyUiEmojiReactionRenderTask extends ComfyUiBaseTask implements I
         }
 
         for (const imageAttachment of imageAttachments) {
+            if(imageAttachment.description === null || imageAttachment.description.length === 0) {
+                continue;
+            }
+
             const renderRequest = SerializableRenderRequest.fromJson(imageAttachment.description);
             const newPrompt = `${renderRequest.prompt}, ${emojiText}`;
 
@@ -128,6 +132,11 @@ export class ComfyUiEmojiReactionRenderTask extends ComfyUiBaseTask implements I
 
             renderRequests.push(renderRequest);
             prompts.push(this.#workflowService.renderWorkflow(workflow, renderRequest));
+        }
+
+        if(prompts.length === 0) {
+            // No prompts were provided, so we can return early.
+            return;
         }
 
         const imagesResponse = await this.#comfyUiClient.render(prompts);
