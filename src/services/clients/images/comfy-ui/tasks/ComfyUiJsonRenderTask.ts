@@ -73,7 +73,7 @@ export class ComfyUiJsonRenderTask extends ComfyUiBaseTask implements IJsonRende
             x.type === SupportedFeature.Txt2Img
             || x.type === SupportedFeature.Txt2Vid);
 
-        const workflow = workflows.find(x => x.name === renderRequest.model);
+        const workflow = workflows.find(x => x.name === renderRequest.workflow);
 
         if(renderRequest.seed === -1) {
             renderRequest.refreshSeed();

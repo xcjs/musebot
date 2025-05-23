@@ -34,7 +34,7 @@
   },
   "104": {
     "inputs": {
-      "image": "{{{ prompt }}}"
+      "image": "{{{ image }}}"
     },
     "class_type": "ETN_LoadImageBase64",
     "_meta": {

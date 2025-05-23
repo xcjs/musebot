@@ -261,7 +261,7 @@ This should look something like:
   "$musebotDefaults": {
    "prompt": "",
    "promptNegative": "",
-   "model": "",
+   "workflow": "",
    "seed": -1,
    "width": 1024,
    "height": 1024,
@@ -274,6 +274,7 @@ This should look something like:
    "label": "",
    "title": "",
    "helpText": "",
+   "image": "",
    "maxWidth": 1024,
    "maxHeight": 1024
   },
@@ -281,9 +282,7 @@ This should look something like:
 }
 ```
 
-* `prompt`: The prompt given to the model that instructs it what to create. As
-   mentioned earlier, this is used for the base64 encoded images in all
-   `img2img` or `img2vid` workflows,`.
+* `prompt`: The text prompt given to the model that instructs it what to create.
 * `promptNegative`: The negative prompt used to "remove" things from the model
    output - not required.
 * `model`: The model being used, though most workflows will have this value
@@ -315,6 +314,8 @@ This should look something like:
 * `helpText` **(img2img and img2vid workflows only)**: This is used as the
   descriptive help text in the generated help article. Optional, but the help
   article will call it out if it's missing.
+* `image` **(img2img and img2vid workflows only)**: A base64 encoded image used
+  in `img2img` and `img2vid` workflows.
 * `maxWidth` **(img2img and img2vid workflows only)**: Some workflows based on
   existing imagery may have resolution limits, particularly in the case of
   video models that output to specific resolutions. This places an upper limit

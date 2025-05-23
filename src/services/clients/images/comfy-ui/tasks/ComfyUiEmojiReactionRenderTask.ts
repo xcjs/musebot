@@ -114,14 +114,14 @@ export class ComfyUiEmojiReactionRenderTask extends ComfyUiBaseTask implements I
 
             renderRequest.prompt = newPrompt;
             renderRequest.refreshSeed();
-            renderRequest.model = workflow.name;
+            renderRequest.workflow = workflow.name;
             renderRequest.num = 1;
             renderRequest.cfgScale = renderDefaults.cfgScale;
             renderRequest.sampler = renderDefaults.sampler;
             renderRequest.scheduler = renderDefaults.scheduler;
             renderRequest.steps = renderDefaults.steps;
 
-            if(renderRequest.model !== workflow.name) {
+            if(renderRequest.workflow !== workflow.name) {
                 renderRequest.height = renderDefaults.height;
                 renderRequest.width = renderDefaults.width;
             }

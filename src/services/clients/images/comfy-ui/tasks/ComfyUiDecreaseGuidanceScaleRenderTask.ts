@@ -69,7 +69,7 @@ export class ComfyUiDecreaseGuidanceScaleRenderTask extends ComfyUiBaseTask impl
         for (const imageAttachment of imageAttachments) {
             const renderRequest = SerializableRenderRequest.fromJson(imageAttachment.description);
 
-            const workflow = this.#workflowService.workflows.find(x => x.name === renderRequest.model);
+            const workflow = this.#workflowService.workflows.find(x => x.name === renderRequest.workflow);
 
             this.#logger.info(`Using ${workflow.name} as the selected workflow.`);
 
