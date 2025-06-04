@@ -60,17 +60,19 @@ export class OllamaStreamingReplyService {
                 const response = responseBatches[0];
 
                 this.#repliesContent.push(response);
-                const currentReplyContent = this.#repliesContent[this.#repliesContent.length - 1];
-                this.#logger.info(`Replying  "${currentReplyContent}"`);
+                this.#logger.info(`Replying  "${response}"`);
 
                 this.#replies.push(await message.reply({
-                    content: currentReplyContent,
+                    content: response,
                     components
                 }));
             }
 
-            for(const response of responseBatches) {
-                if(response === responseBatches[0]) {
+            let firstResponse = true;
+
+            for (const response of responseBatches) {
+                if (firstResponse) {
+                    firstResponse = false;
                     continue;
                 }
 
