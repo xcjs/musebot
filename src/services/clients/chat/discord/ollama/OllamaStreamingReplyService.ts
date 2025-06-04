@@ -1,4 +1,4 @@
-import { Message } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, Message } from 'discord.js';
 
 import { splitText } from '../../../../../utilities/string-utilities.js';
 import { ILogger } from '../../../../ILogger.js';
@@ -80,6 +80,8 @@ export class OllamaStreamingReplyService {
             }
         }
 
+        await this.#rebalanceReplies(message, components);
+
         return this.#replies;
     }
 
@@ -93,5 +95,27 @@ export class OllamaStreamingReplyService {
         }
 
         return this.#replies[this.#replies.length - 1];
+    }
+
+    async #rebalanceReplies(message: Message, components: ActionRowBuilder<ButtonBuilder>[] | null): Promise<void> {
+        this.#repliesContent = splitText(this.#repliesContent.join(' '), DiscordConstants.ContentMaxLength);
+
+        let i = 0;
+
+        for (const replyContent of this.#repliesContent) {
+            if(this.#replies[i] !== undefined) {
+                await this.#replies[i].edit({
+                    content: replyContent,
+                    components
+                });
+            } else {
+                this.#replies.push(await message.reply({
+                    content: replyContent,
+                    components
+                }));
+            }
+
+            i++;
+        }
     }
 }
