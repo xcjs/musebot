@@ -120,7 +120,7 @@ export class OllamaPromptResponseTask extends BaseTask implements IPromptRespons
                 }
 
                 // If the message is appended with whitespace the end, Discord will
-                // trim it, leading to an accumulation for formatting issues.
+                // trim it, leading to an accumulation of formatting issues.
                 if (endsWithWhitespace(responseBatch)) {
                     continue;
                 }
