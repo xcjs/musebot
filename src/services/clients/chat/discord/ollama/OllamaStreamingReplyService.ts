@@ -102,6 +102,7 @@ export class OllamaStreamingReplyService {
 
         let i = 0;
 
+        // TODO: Ensure that components are only added to the last reply.
         for (const replyContent of this.#repliesContent) {
             if(this.#replies[i] !== undefined) {
                 await this.#replies[i].edit({
