@@ -1,59 +1,77 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { Logger as MekLogger, LogLevel } from 'meklog';
-
-import { JavaScriptType } from '../enums/JavaScriptType.js';
 import { ILogger } from './ILogger.js';
-import { IServiceContainer } from './IServiceContainer.js';
 
 export class Logger implements ILogger {
-    #logger;
+    static longestPrefix = 0;
 
-    constructor(services: IServiceContainer, prefix: string) {
-        this.#logger = new MekLogger(services.environmentSettings.isProduction, prefix);
+    get prefix() {
+        let paddedPrefix = `${this.#prefix}`;
+
+        while (paddedPrefix.length < Logger.longestPrefix) {
+            paddedPrefix += ' ';
+        }
+
+        return `${paddedPrefix} | `;
+    }
+
+    #prefix: string = '';
+
+    constructor(prefix: string) {
+        this.#prefix = prefix;
+
+        if (Logger.longestPrefix < prefix.length) {
+            Logger.longestPrefix = prefix.length;
+        }
     }
 
     debug(message: string, ...args: unknown[]) {
-        this.#log(LogLevel.Warning, message, args);
+        if (args.length > 0) {
+            console.debug(this.#formatMessage(message), args);
+        } else {
+            console.debug(this.#formatMessage(message));
+        }
     }
 
     info(message: string, ...args: unknown[]) {
-        this.#log(LogLevel.Info, message, args);
+        if (args.length > 0) {
+            console.info(this.#formatMessage(message), args);
+        } else {
+            console.info(this.#formatMessage(message));
+        }
     }
 
     success(message: string, ...args: unknown[]) {
-        this.#log(LogLevel.Success, message, args);
+        if (args.length > 0) {
+            console.log(this.#formatMessage(message), args);
+        } else {
+            console.log(this.#formatMessage(message));
+        }
     }
 
-    warning(message: string, ...args: unknown[]) {
-        this.#log(LogLevel.Warning, message, args);
+    warn(message: string, ...args: unknown[]) {
+        if (args.length > 0) {
+            console.warn(this.#formatMessage(message), args);
+        } else {
+            console.warn(this.#formatMessage(message));
+        }
     }
 
     error(message: string, ...args: unknown[]) {
-        this.#log(LogLevel.Error, message, args);
+        if (args.length > 0) {
+            console.error(this.#formatMessage(message), args);
+        } else {
+            console.error(this.#formatMessage(message));
+        }
     }
 
     fatal(message: string, ...args: unknown[]) {
-        this.#log(LogLevel.Fatal, message, args);
+        if (args.length > 0) {
+            console.error(this.#formatMessage(message), args);
+        } else {
+            console.error(this.#formatMessage(message));
+        }
     }
 
-    #log(logLevel: LogLevel, message: string, args: unknown[]) {
-        args = args || [];
-
-        if (args.length > 0) {
-            // eslint-disable-next-line @typescript-eslint/no-base-to-string
-            const argString = args.map((arg) => {
-                if(typeof arg === JavaScriptType.String.toString()) {
-                    return arg;
-                }
-
-                return JSON.stringify(arg);
-            }).join('\n\n');
-
-            this.#logger(logLevel, `${argString}`);
-        } else {
-            this.#logger(logLevel, message);
-        }
+    #formatMessage(message: string): string {
+        return `${this.prefix}${message}`
     }
 }

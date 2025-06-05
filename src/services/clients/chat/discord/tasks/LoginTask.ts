@@ -39,7 +39,7 @@ export class LoginTask extends BaseTask {
 
     override  async postProcess(): Promise<void> {
         if(this.taskStatus === TaskStatus.Dead) {
-            this.logger.warning('Exhausted the maximum attempts for the login task. Adding a new login task to the queue as the application cannot continue otherwise.');
+            this.logger.warn('Exhausted the maximum attempts for the login task. Adding a new login task to the queue as the application cannot continue otherwise.');
             this.#taskQueue.add(new LoginTask(this.#services));
         }
 
