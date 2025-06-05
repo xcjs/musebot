@@ -138,7 +138,7 @@ export class ServiceContainer implements IServiceContainer {
 
     // Factories --------------------------------------------------------------/
     getLogger(prefix: string): ILogger {
-        return new Logger(this, prefix);
+        return new Logger(prefix);
     }
 
     getReplyTask(

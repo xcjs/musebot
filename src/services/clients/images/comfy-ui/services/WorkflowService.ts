@@ -49,7 +49,7 @@ export class WorkflowService implements IWorkflowService {
                 try {
                     await fs.access(workflowDir);
                 } catch {
-                    this.#logger.warning(`Could not access ${workflowDir}.`
+                    this.#logger.warn(`Could not access ${workflowDir}.`
                         + ` This is fine if if you don't need ${workflowType} workflows.`);
                     continue;
                 }
