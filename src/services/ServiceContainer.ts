@@ -140,7 +140,7 @@ export class ServiceContainer implements IServiceContainer {
 
     // Factories --------------------------------------------------------------/
     getLogger(prefix: string): ILogger {
-        if(this.#environmentSettings.nodeEnvironment == NodeEnvironment.Production) {
+        if(this.#environmentSettings.nodeEnvironment === NodeEnvironment.Production) {
             return new Logger(prefix);
         }
 
