@@ -4,13 +4,13 @@ export class DebugLogger implements ILogger {
     static longestPrefix = 0;
 
     get prefix() {
-        let paddedPrefix = `[${this.#prefix}]`;
+        let paddedPrefix = `${this.#prefix}`;
 
         while(paddedPrefix.length < DebugLogger.longestPrefix) {
             paddedPrefix += ' ';
         }
 
-        return `${paddedPrefix} `;
+        return `${paddedPrefix} | `;
     }
 
     #prefix: string = '';
