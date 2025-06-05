@@ -49,7 +49,7 @@ export class EnvironmentSettings implements IEnvironmentSettings {
     ollamaStreamsResponse: boolean = false;
     ollamaTaskChannel: string = '';
 
-    stableDiffusionOllamaPrompts: Array<string> = ['Describe something or someone with extraordinary detail.'];
+    stableDiffusionOllamaPrompts: string[] = ['Describe something or someone with extraordinary detail.'];
 
     #logger: ILogger;
 
