@@ -138,13 +138,8 @@ export class OllamaPromptResponseTask extends BaseTask implements IPromptRespons
                 }
             }
 
-            try {
-                replies = await this.#ollamaStreamingReplyService.reply(this.#message, responseBatch, response.done);
-                responseBatch = '';
-            } catch (error) {
-                this.#logger.error(`An error occurred while streaming the text response: ${error}`);
-                continue;
-            }
+            replies = await this.#ollamaStreamingReplyService.reply(this.#message, responseBatch, response.done);
+            responseBatch = '';
 
             if(response.done) {
                 this.#context = response.context;
