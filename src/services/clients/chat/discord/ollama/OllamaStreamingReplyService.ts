@@ -107,12 +107,12 @@ export class OllamaStreamingReplyService {
             if(this.#replies[i] !== undefined) {
                 await this.#replies[i].edit({
                     content: replyContent,
-                    components
+                    components: i + 1 === this.#repliesContent.length ? components : []
                 });
             } else {
                 this.#replies.push(await message.reply({
                     content: replyContent,
-                    components
+                    components: i + 1 === this.#repliesContent.length ? components : []
                 }));
             }
 
