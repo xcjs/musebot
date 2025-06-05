@@ -176,7 +176,7 @@ export class ReplyService implements IReplyService {
 
                 await interaction.message.reply(replyFragment);
             } else {
-                this.#logger.warning(
+                this.#logger.warn(
                     `An interaction occurred that did not fit the reply criteria of either being an edited reply to a`
                     + ` ${typeof ButtonInteraction} nor a direct reply to any type of interaction.`);
             }
