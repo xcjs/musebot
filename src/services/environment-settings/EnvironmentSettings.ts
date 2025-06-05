@@ -1,6 +1,5 @@
 import process from 'node:process';
 
-import { consola } from 'consola';
 import dotenv from 'dotenv';
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -9,6 +8,9 @@ import nodePackage from '../../../package.json' with { type: 'json' };
 import { BotFunction } from '../../enums/BotFunction.js';
 import { NodeEnvironment } from '../../enums/NodeEnvironment.js';
 import { StableDiffusionApiType } from '../clients/images/stable-diffusion/enums/StableDiffusionApiType.js';
+import { DebugLogger } from '../DebugLogger.js';
+import { ILogger } from '../ILogger.js';
+import { Logger } from '../Logger.js';
 import { EnvironmentKey } from './constants/EnvironmentKey.js';
 import { IEnvironmentSettings } from './IEnvironmentSettings.js';
 
@@ -50,7 +52,8 @@ export class EnvironmentSettings implements IEnvironmentSettings {
 
     stableDiffusionOllamaPrompts: Array<string> = ['Describe something or someone with extraordinary detail.'];
 
-    #logger = consola.withTag('EnvironmentSettings');
+    #loggerPrefix: string = 'EnvironmentSettings';
+    #logger: ILogger = this.isProduction ? new Logger(this.#loggerPrefix) : new DebugLogger(this.#loggerPrefix);
 
     get isProduction() {
         return this.nodeEnvironment === NodeEnvironment.Production;

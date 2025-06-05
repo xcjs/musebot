@@ -1,14 +1,11 @@
 import { consola } from 'consola';
 
 import { ILogger } from './ILogger.js';
-import { IServiceContainer } from './IServiceContainer.js';
 
 export class Logger implements ILogger {
-    static longestPrefix = 0;
-
     #logger: consola.ConsolaInstance;
 
-    constructor(services: IServiceContainer, prefix: string) {
+    constructor(prefix: string) {
         this.#logger = consola.withTag(prefix);
     }
 
