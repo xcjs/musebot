@@ -26,7 +26,8 @@ export class OllamaStreamingReplyService {
         done: boolean): Promise<Message[]> {
         const components = done ? new LargeLanguageModelActionRow(this.#services).build() : null;
 
-        if (this.#currentReply() == null && responseBatch.length <= DiscordConstants.ContentMaxLength) {
+        if (this.#currentReply() == null
+            && responseBatch.length <= DiscordConstants.ContentMaxLength) {
 
             this.#repliesContent.push(responseBatch);
             const currentReplyContent = this.#repliesContent[this.#repliesContent.length - 1];
@@ -39,7 +40,8 @@ export class OllamaStreamingReplyService {
             }));
 
             await this.#rebalanceReplies(message, components);
-        } else if (this.#currentReply().content.length + responseBatch.length <= DiscordConstants.ContentMaxLength) {
+        } else if (this.#currentReply() !== null
+                && this.#currentReply().content.length + responseBatch.length <= DiscordConstants.ContentMaxLength) {
 
             const numReplies = this.#replies.length;
             const currentMessage = numReplies - 1;
@@ -100,7 +102,7 @@ export class OllamaStreamingReplyService {
     }
 
     async #rebalanceReplies(message: Message, components: ActionRowBuilder<ButtonBuilder>[] | null): Promise<void> {
-        this.#repliesContent = splitText(this.#repliesContent.join(' '), DiscordConstants.ContentMaxLength);
+        this.#repliesContent = splitText(this.#repliesContent.join(''), DiscordConstants.ContentMaxLength);
 
         let i = 0;
 
