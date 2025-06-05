@@ -112,7 +112,7 @@ export class OllamaPromptResponseTask extends BaseTask implements IPromptRespons
 
             if(!response.done) {
                 // Ensure we're not sending requests faster than Discord can
-                // allow or allow them.
+                // allow or process them.
                 if (startTime - endTime <= (DiscordConstants.MaxRequestsPerSecond / 1000)
                     || startTime - endTime < averageResponseInMs
                 ) {
