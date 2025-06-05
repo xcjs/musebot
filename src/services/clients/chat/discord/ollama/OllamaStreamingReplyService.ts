@@ -32,7 +32,7 @@ export class OllamaStreamingReplyService {
             this.#repliesContent.push(responseBatch);
             const currentReplyContent = this.#repliesContent[this.#repliesContent.length - 1];
 
-            this.#logger.info(`Replying  "${currentReplyContent}"`);
+            this.#logger.info(`Replying  "${responseBatch}"`);
 
             this.#replies.push(await message.reply({
                 content: currentReplyContent,
@@ -107,15 +107,17 @@ export class OllamaStreamingReplyService {
         let i = 0;
 
         for (const replyContent of this.#repliesContent) {
+            const isLastReply = i + 1 === this.#repliesContent.length;
+
             if(this.#replies[i] !== undefined) {
                 await this.#replies[i].edit({
                     content: replyContent,
-                    components: i + 1 === this.#repliesContent.length ? components : []
+                    components: isLastReply ? components : []
                 });
             } else {
                 this.#replies.push(await message.reply({
                     content: replyContent,
-                    components: i + 1 === this.#repliesContent.length ? components : []
+                    components: isLastReply ? components : []
                 }));
             }
 
