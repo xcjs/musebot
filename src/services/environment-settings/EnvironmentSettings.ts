@@ -53,7 +53,9 @@ export class EnvironmentSettings implements IEnvironmentSettings {
     stableDiffusionOllamaPrompts: Array<string> = ['Describe something or someone with extraordinary detail.'];
 
     #loggerPrefix: string = 'EnvironmentSettings';
-    #logger: ILogger = this.isProduction ? new Logger(this.#loggerPrefix) : new DebugLogger(this.#loggerPrefix);
+    #logger: ILogger = this.isProduction
+        ? new Logger(this.#loggerPrefix)
+        : new DebugLogger(this.#loggerPrefix);
 
     get isProduction() {
         return this.nodeEnvironment === NodeEnvironment.Production;
