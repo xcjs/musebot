@@ -90,7 +90,7 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
                     }) as BaseTask);
                 break;
             default:
-                this.logger.warn(`An unknown interaction was passed: ${interaction.customId}.`);
+                this.logger.warning(`An unknown interaction was passed: ${interaction.customId}.`);
                 break;
         }
      }

@@ -285,7 +285,7 @@ This should look something like:
 * `prompt`: The text prompt given to the model that instructs it what to create.
 * `promptNegative`: The negative prompt used to "remove" things from the model
    output - not required.
-* `workflow`: The workflow being used, though this is only used during JSON
+* `workflow`: The workflow being used, those this is only used during JSON
   prompts delivered via Discord. This can be set to an empty string in
   templates.
 * `seed`: A number used for randomization in the model - `-1` can be used as a
@@ -326,7 +326,7 @@ This should look something like:
 * `maxHeight` **(img2img and img2vid workflows only)** Some workflows based on
   existing imagery may have resolution limits, particularly in the case of
   video models that output to specific resolutions. This places an upper limit
-  on the height of the image input. Both `maxWidth` and `maxHeight` must be
+  on the width of the image input. Both `maxWidth` and `maxHeight` must be
   specified before this feature will work. Image aspect ratio will always be
   preserved.
 

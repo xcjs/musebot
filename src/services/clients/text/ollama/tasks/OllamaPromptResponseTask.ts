@@ -97,35 +97,30 @@ export class OllamaPromptResponseTask extends BaseTask implements IPromptRespons
     async #processAsStream(formattedMessage: string, context: Array<number>): Promise<void> {
         const exchange = await this.#ollamaClient.sendMessageAndGetStream(formattedMessage, context);
 
-        let averageResponseInMs = 0;
-        let endTime = performance.now();
-
+        let startTime = performance.now();
         let fullResponse = '';
         let responseBatch = '';
 
         for await (const response of exchange.response) {
-            const startTime = performance.now();
             let replies: Array<Message> = [];
-
             fullResponse += response.response;
             responseBatch += response.response;
 
-            if(!response.done) {
-                // Ensure we're not sending requests faster than Discord can
-                // allow or process them.
-                if (startTime - endTime <= (DiscordConstants.MaxRequestsPerSecond / 1000)
-                    || startTime - endTime < averageResponseInMs
-                ) {
-                    continue;
-                }
+            // Ensure that Musebot isn't spamming the Discord API beyond its
+            // rate limits.
+            if (((performance.now() - startTime)
+                <= (1000 / DiscordConstants.MaxRequestsPerSecond))) {
+                continue;
+            }
 
+            if(!response.done) {
                 // Discord automatically trims message edits that are only whitespace.
                 if (isOnlyWhitespace(responseBatch)) {
                     continue;
                 }
 
                 // If the message is appended with whitespace the end, Discord will
-                // trim it, leading to an accumulation of formatting issues.
+                // trim it, leading to an accumulation for formatting issues.
                 if (endsWithWhitespace(responseBatch)) {
                     continue;
                 }
@@ -138,8 +133,14 @@ export class OllamaPromptResponseTask extends BaseTask implements IPromptRespons
                 }
             }
 
-            replies = await this.#ollamaStreamingReplyService.reply(this.#message, responseBatch, response.done);
-            responseBatch = '';
+            try {
+                startTime = performance.now();
+                replies = await this.#ollamaStreamingReplyService.reply(this.#message, responseBatch, response.done);
+                responseBatch = '';
+            } catch (error) {
+                this.#logger.error(`An error occurred while streaming the text response: ${error}`);
+                continue;
+            }
 
             if(response.done) {
                 this.#context = response.context;
@@ -149,10 +150,6 @@ export class OllamaPromptResponseTask extends BaseTask implements IPromptRespons
                     await this.#attachImage(fullResponse, replies);
                 }
             }
-
-            endTime = performance.now();
-            averageResponseInMs = (averageResponseInMs + endTime - startTime) / 2;
-            this.#logger.debug(`The average streaming response time is ${averageResponseInMs}ms.`);
         }
     }
 

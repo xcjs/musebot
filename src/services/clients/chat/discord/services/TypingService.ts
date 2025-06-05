@@ -62,19 +62,19 @@ export class TypingService implements ITypingService {
 
     #stopTyping(): void {
         if(this.#interaction === null) {
-            this.#logger.warn('Cannot stop a typing indicator with no matching interaction.');
+            this.#logger.warning('Cannot stop a typing indicator with no matching interaction.');
             return;
         }
 
         const channelTypingIndicator = this.#typingIndicators.find(x => x.channelId === this.#interaction.channelId);
 
         if (channelTypingIndicator === undefined || channelTypingIndicator.typingInterval === null) {
-            this.#logger.warn('Cannot stop a typing indicator with no matching interval.');
+            this.#logger.warning('Cannot stop a typing indicator with no matching interval.');
             return;
         }
 
         if (this.#taskQueue.isActive) {
-            this.#logger.warn('Cannot stop a typing indicator while the task queue is active.');
+            this.#logger.warning('Cannot stop a typing indicator while the task queue is active.');
             return;
         }
 

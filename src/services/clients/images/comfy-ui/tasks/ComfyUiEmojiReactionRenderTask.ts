@@ -74,7 +74,7 @@ export class ComfyUiEmojiReactionRenderTask extends ComfyUiBaseTask implements I
         const imageAttachments = this.#replyService.getImageAttachments(this.#interaction);
 
         if (imageAttachments.length === 0) {
-            this.#logger.warn('No attachments were found - exiting the task.');
+            this.#logger.warning('No attachments were found - exiting the task.');
             return;
         }
 

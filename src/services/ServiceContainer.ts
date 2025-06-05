@@ -1,7 +1,6 @@
 import { BaseMessageOptions, ButtonInteraction, Client as DiscordClient, GatewayIntentBits, Message, MessageReaction, Partials, ReactionEmoji, User } from 'discord.js';
 
 import { BotFunction } from '../enums/BotFunction.js';
-import { NodeEnvironment } from '../enums/NodeEnvironment.js';
 import { ComfyUiReplyService } from './clients/chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { ActionRowBuilderFactory } from './clients/chat/discord/components/ActionRowBuilderFactory.js';
 import { IActionRowBuilderFactory } from './clients/chat/discord/components/IActionRowBuilderFactory.js';
@@ -50,7 +49,6 @@ import { OllamaEmojiResponseTask } from './clients/text/ollama/tasks/OllamaEmoji
 import { OllamaPromptResponseTask } from './clients/text/ollama/tasks/OllamaPromptResponseTask.js';
 import { IEmojiResponseTask } from './clients/text/tasks/IEmojiResponseTask.js';
 import { IPromptResponseTask } from './clients/text/tasks/IPromptResponseTask.js';
-import { DebugLogger } from './DebugLogger.js';
 import { EnvironmentSettings } from './environment-settings/EnvironmentSettings.js';
 import { IEnvironmentSettings } from './environment-settings/IEnvironmentSettings.js';
 import { SupportedFeature } from './features/enum/SupportedFeature.js';
@@ -140,11 +138,7 @@ export class ServiceContainer implements IServiceContainer {
 
     // Factories --------------------------------------------------------------/
     getLogger(prefix: string): ILogger {
-        if(this.#environmentSettings.nodeEnvironment === NodeEnvironment.Production) {
-            return new Logger(prefix);
-        }
-
-        return new DebugLogger(prefix);
+        return new Logger(this, prefix);
     }
 
     getReplyTask(

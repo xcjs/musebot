@@ -58,7 +58,7 @@ export class ComfyUiDecreaseGuidanceScaleRenderTask extends ComfyUiBaseTask impl
         const imageAttachments = this.#replyService.getImageAttachments(this.#interaction);
 
         if (imageAttachments.length == 0) {
-            this.#logger.warn('No attachments were found - exiting the task.');
+            this.#logger.warning('No attachments were found - exiting the task.');
             return;
         }
 
