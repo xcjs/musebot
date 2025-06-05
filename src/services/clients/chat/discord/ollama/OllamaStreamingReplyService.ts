@@ -30,12 +30,10 @@ export class OllamaStreamingReplyService {
             && responseBatch.length <= DiscordConstants.ContentMaxLength) {
 
             this.#repliesContent.push(responseBatch);
-            const currentReplyContent = this.#repliesContent[this.#repliesContent.length - 1];
-
-            this.#logger.info(`Replying  "${currentReplyContent}"`);
+            this.#logger.info(`Replying  "${responseBatch}"`);
 
             this.#replies.push(await message.reply({
-                content: currentReplyContent,
+                content: responseBatch,
                 components
             }));
 
@@ -45,14 +43,12 @@ export class OllamaStreamingReplyService {
 
             const numReplies = this.#replies.length;
             const currentMessage = numReplies - 1;
-
             this.#repliesContent[currentMessage] += responseBatch;
-            const currentReplyContent = this.#repliesContent[currentMessage];
 
             this.#logger.info(`Appending "${responseBatch}"`);
 
             await this.#currentReply().edit({
-                content: currentReplyContent,
+                content: responseBatch,
                 components
             });
         }
