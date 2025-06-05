@@ -326,7 +326,7 @@ This should look something like:
 * `maxHeight` **(img2img and img2vid workflows only)** Some workflows based on
   existing imagery may have resolution limits, particularly in the case of
   video models that output to specific resolutions. This places an upper limit
-  on the width of the image input. Both `maxWidth` and `maxHeight` must be
+  on the height of the image input. Both `maxWidth` and `maxHeight` must be
   specified before this feature will work. Image aspect ratio will always be
   preserved.
 
