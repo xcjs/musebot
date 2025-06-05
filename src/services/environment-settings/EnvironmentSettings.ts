@@ -1,10 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import process from 'node:process';
 
 import dotenv from 'dotenv';
-import { Logger, LogLevel } from 'meklog';
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -12,6 +8,9 @@ import nodePackage from '../../../package.json' with { type: 'json' };
 import { BotFunction } from '../../enums/BotFunction.js';
 import { NodeEnvironment } from '../../enums/NodeEnvironment.js';
 import { StableDiffusionApiType } from '../clients/images/stable-diffusion/enums/StableDiffusionApiType.js';
+import { DebugLogger } from '../DebugLogger.js';
+import { ILogger } from '../ILogger.js';
+import { Logger } from '../Logger.js';
 import { EnvironmentKey } from './constants/EnvironmentKey.js';
 import { IEnvironmentSettings } from './IEnvironmentSettings.js';
 
@@ -51,9 +50,12 @@ export class EnvironmentSettings implements IEnvironmentSettings {
     ollamaStreamsResponse: boolean = false;
     ollamaTaskChannel: string = '';
 
-    stableDiffusionOllamaPrompts: Array<string> = ['Describe something or someone with extraordinary detail.'];
+    stableDiffusionOllamaPrompts: string[] = ['Describe something or someone with extraordinary detail.'];
 
-    #logger;
+    #loggerPrefix: string = 'EnvironmentSettings';
+    #logger: ILogger = this.isProduction
+        ? new Logger(this.#loggerPrefix)
+        : new DebugLogger(this.#loggerPrefix);
 
     get isProduction() {
         return this.nodeEnvironment === NodeEnvironment.Production;
@@ -104,8 +106,6 @@ export class EnvironmentSettings implements IEnvironmentSettings {
 
         this.stableDiffusionOllamaPrompts = this.#readDelimitedList(EnvironmentKey.StableDiffusionOllamaPrompts, '|');
 
-        this.#logger = new Logger(this.isProduction, 'EnvironmentSettings');
-
         this.#validate();
 
         this.#logConfiguration();
@@ -123,34 +123,34 @@ export class EnvironmentSettings implements IEnvironmentSettings {
             return;
         }
 
-        this.#logger(LogLevel.Info, `Package Name: ${this.packageName}`);
-        this.#logger(LogLevel.Info, `Package Version: ${this.version}`);
+        this.#logger.info(`Package Name: ${this.packageName}`);
+        this.#logger.info(`Package Version: ${this.version}`);
 
-        this.#logger(LogLevel.Info, `${EnvironmentKey.NodeEnvironment}: ${this.nodeEnvironment}`);
+        this.#logger.info(`${EnvironmentKey.NodeEnvironment}: ${this.nodeEnvironment}`);
 
-        this.#logger(LogLevel.Info, `${EnvironmentKey.TaskQueueMaxAttempts}: ${this.maxTaskAttempts}`);
-        this.#logger(LogLevel.Info, `${EnvironmentKey.TaskQueueRetryDelayMs}: ${this.taskRetryDelayMilliseconds}`);
+        this.#logger.info(`${EnvironmentKey.TaskQueueMaxAttempts}: ${this.maxTaskAttempts}`);
+        this.#logger.info(`${EnvironmentKey.TaskQueueRetryDelayMs}: ${this.taskRetryDelayMilliseconds}`);
 
-        this.#logger(LogLevel.Info, `${EnvironmentKey.BotFunction}: ${this.botFunction}`);
+        this.#logger.info(`${EnvironmentKey.BotFunction}: ${this.botFunction}`);
 
-        this.#logger(LogLevel.Info, `${EnvironmentKey.ChatChannels}: ${this.discordChannels.join(', ')}`);
-        this.#logger(LogLevel.Info, `${EnvironmentKey.ChatChannelsDisallowed}: ${this.discordChannelsDisallowed.join(', ')}`);
-        this.#logger(LogLevel.Info, `${EnvironmentKey.BotRequiresMention}: ${this.botRequiresMention}`);
-        this.#logger(LogLevel.Info, `${EnvironmentKey.BotResponseRate}: ${this.botResponseRate}`);
-        this.#logger(LogLevel.Info, `${EnvironmentKey.BotPrivateMessageUsers}: ${this.botPrivateMessageUsers.join(', ')}`);
-        this.#logger(LogLevel.Info, `${EnvironmentKey.BotErrorMessage}: ${this.errorMessage}`);
+        this.#logger.info(`${EnvironmentKey.ChatChannels}: ${this.discordChannels.join(', ')}`);
+        this.#logger.info(`${EnvironmentKey.ChatChannelsDisallowed}: ${this.discordChannelsDisallowed.join(', ')}`);
+        this.#logger.info(`${EnvironmentKey.BotRequiresMention}: ${this.botRequiresMention}`);
+        this.#logger.info(`${EnvironmentKey.BotResponseRate}: ${this.botResponseRate}`);
+        this.#logger.info(`${EnvironmentKey.BotPrivateMessageUsers}: ${this.botPrivateMessageUsers.join(', ')}`);
+        this.#logger.info(`${EnvironmentKey.BotErrorMessage}: ${this.errorMessage}`);
 
-        this.#logger(LogLevel.Info, `${EnvironmentKey.StableDiffusionApiType}: ${this.stableDiffusionApiType}`);
-        this.#logger(LogLevel.Info, `${EnvironmentKey.StableDiffusionHosts}: ${this.stableDiffusionHosts.join(', ')}`);
-        this.#logger(LogLevel.Info, `${EnvironmentKey.StableDiffusionTaskChannel}: ${this.stableDiffusionTaskChannel}`);
+        this.#logger.info(`${EnvironmentKey.StableDiffusionApiType}: ${this.stableDiffusionApiType}`);
+        this.#logger.info(`${EnvironmentKey.StableDiffusionHosts}: ${this.stableDiffusionHosts.join(', ')}`);
+        this.#logger.info(`${EnvironmentKey.StableDiffusionTaskChannel}: ${this.stableDiffusionTaskChannel}`);
 
-        this.#logger(LogLevel.Info, `${EnvironmentKey.OllamaHosts}: ${this.ollamaHosts.join(', ')}`);
-        this.#logger(LogLevel.Info, `${EnvironmentKey.OllamaModels}: ${this.ollamaModels.join(', ')}`);
-        this.#logger(LogLevel.Info, `${EnvironmentKey.OllamaSystemPrompt}: ${this.ollamaSystemPrompt}`);
-        this.#logger(LogLevel.Info, `${EnvironmentKey.OllamaStreamsResponse}: ${this.ollamaStreamsResponse}`);
-        this.#logger(LogLevel.Info, `${EnvironmentKey.OllamaTaskChannel}: ${this.ollamaTaskChannel}`);
+        this.#logger.info(`${EnvironmentKey.OllamaHosts}: ${this.ollamaHosts.join(', ')}`);
+        this.#logger.info(`${EnvironmentKey.OllamaModels}: ${this.ollamaModels.join(', ')}`);
+        this.#logger.info(`${EnvironmentKey.OllamaSystemPrompt}: ${this.ollamaSystemPrompt}`);
+        this.#logger.info(`${EnvironmentKey.OllamaStreamsResponse}: ${this.ollamaStreamsResponse}`);
+        this.#logger.info(`${EnvironmentKey.OllamaTaskChannel}: ${this.ollamaTaskChannel}`);
 
-        this.#logger(LogLevel.Info, `${EnvironmentKey.StableDiffusionOllamaPrompts}: ${this.stableDiffusionOllamaPrompts.join(' | ')}`);
+        this.#logger.info(`${EnvironmentKey.StableDiffusionOllamaPrompts}: ${this.stableDiffusionOllamaPrompts.join(' | ')}`);
     }
 
     /**
@@ -169,7 +169,7 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         }
 
         if(this.ollamaModels.length === 0) {
-            this.#logger(LogLevel.Error,
+            this.#logger.error(
                 `${EnvironmentKey.OllamaModels} had no value - random model selection is not yet supported.`);
         }
     }

@@ -1,59 +1,59 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { Logger as MekLogger, LogLevel } from 'meklog';
+import { consola } from 'consola';
 
-import { JavaScriptType } from '../enums/JavaScriptType.js';
 import { ILogger } from './ILogger.js';
-import { IServiceContainer } from './IServiceContainer.js';
 
 export class Logger implements ILogger {
-    #logger;
+    #logger: consola.ConsolaInstance;
 
-    constructor(services: IServiceContainer, prefix: string) {
-        this.#logger = new MekLogger(services.environmentSettings.isProduction, prefix);
+    constructor(prefix: string) {
+        this.#logger = consola.withTag(prefix);
     }
 
     debug(message: string, ...args: unknown[]) {
-        this.#log(LogLevel.Warning, message, args);
+        if(args.length > 0) {
+            this.#logger.debug(message, args);
+        } else {
+            this.#logger.debug(message);
+        }
     }
 
     info(message: string, ...args: unknown[]) {
-        this.#log(LogLevel.Info, message, args);
+        if (args.length > 0) {
+            this.#logger.info(message, args);
+        } else {
+            this.#logger.info(message);
+        }
     }
 
     success(message: string, ...args: unknown[]) {
-        this.#log(LogLevel.Success, message, args);
+        if (args.length > 0) {
+            this.#logger.success(message, args);
+        } else {
+            this.#logger.success(message);
+        }
     }
 
-    warning(message: string, ...args: unknown[]) {
-        this.#log(LogLevel.Warning, message, args);
+    warn(message: string, ...args: unknown[]) {
+        if (args.length > 0) {
+            this.#logger.warn(message, args);
+        } else {
+            this.#logger.warn(message);
+        }
     }
 
     error(message: string, ...args: unknown[]) {
-        this.#log(LogLevel.Error, message, args);
+        if (args.length > 0) {
+            this.#logger.error(message, args);
+        } else {
+            this.#logger.error(message);
+        }
     }
 
     fatal(message: string, ...args: unknown[]) {
-        this.#log(LogLevel.Fatal, message, args);
-    }
-
-    #log(logLevel: LogLevel, message: string, args: unknown[]) {
-        args = args || [];
-
         if (args.length > 0) {
-            // eslint-disable-next-line @typescript-eslint/no-base-to-string
-            const argString = args.map((arg) => {
-                if(typeof arg === JavaScriptType.String.toString()) {
-                    return arg;
-                }
-
-                return JSON.stringify(arg);
-            }).join('\n\n');
-
-            this.#logger(logLevel, `${argString}`);
+            this.#logger.fatal(message, args);
         } else {
-            this.#logger(logLevel, message);
+            this.#logger.fatal(message);
         }
     }
 }

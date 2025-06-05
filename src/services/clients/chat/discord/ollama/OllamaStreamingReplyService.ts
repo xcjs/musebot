@@ -1,4 +1,4 @@
-import { Message } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, Message } from 'discord.js';
 
 import { splitText } from '../../../../../utilities/string-utilities.js';
 import { ILogger } from '../../../../ILogger.js';
@@ -26,7 +26,8 @@ export class OllamaStreamingReplyService {
         done: boolean): Promise<Message[]> {
         const components = done ? new LargeLanguageModelActionRow(this.#services).build() : null;
 
-        if (this.#currentReply() == null && responseBatch.length <= DiscordConstants.ContentMaxLength) {
+        if (this.#currentReply() == null
+            && responseBatch.length <= DiscordConstants.ContentMaxLength) {
 
             this.#repliesContent.push(responseBatch);
             const currentReplyContent = this.#repliesContent[this.#repliesContent.length - 1];
@@ -38,7 +39,9 @@ export class OllamaStreamingReplyService {
                 components
             }));
 
-        } else if (this.#currentReply().content.length + responseBatch.length <= DiscordConstants.ContentMaxLength) {
+            await this.#rebalanceReplies(message, components);
+        } else if (this.#currentReply() !== null
+                && this.#currentReply().content.length + responseBatch.length <= DiscordConstants.ContentMaxLength) {
 
             const numReplies = this.#replies.length;
             const currentMessage = numReplies - 1;
@@ -60,20 +63,25 @@ export class OllamaStreamingReplyService {
                 const response = responseBatches[0];
 
                 this.#repliesContent.push(response);
-                const currentReplyContent = this.#repliesContent[this.#repliesContent.length - 1];
-                this.#logger.info(`Replying  "${currentReplyContent}"`);
+                this.#logger.info(`Replying "${response}"`);
 
                 this.#replies.push(await message.reply({
-                    content: currentReplyContent,
+                    content: response,
                     components
                 }));
+
+                await this.#rebalanceReplies(message, components);
             }
 
-            for(const response of responseBatches) {
-                if(response === responseBatches[0]) {
+            let firstResponse = true;
+
+            for (const response of responseBatches) {
+                if (firstResponse) {
+                    firstResponse = false;
                     continue;
                 }
 
+                this.#logger.info(`Recursing "${response}"`);
                 await this.reply(message, response, done);
             }
         }
@@ -91,5 +99,27 @@ export class OllamaStreamingReplyService {
         }
 
         return this.#replies[this.#replies.length - 1];
+    }
+
+    async #rebalanceReplies(message: Message, components: ActionRowBuilder<ButtonBuilder>[] | null): Promise<void> {
+        this.#repliesContent = splitText(this.#repliesContent.join(''), DiscordConstants.ContentMaxLength);
+
+        let i = 0;
+
+        for (const replyContent of this.#repliesContent) {
+            if(this.#replies[i] !== undefined) {
+                await this.#replies[i].edit({
+                    content: replyContent,
+                    components: i + 1 === this.#repliesContent.length ? components : []
+                });
+            } else {
+                this.#replies.push(await message.reply({
+                    content: replyContent,
+                    components: i + 1 === this.#repliesContent.length ? components : []
+                }));
+            }
+
+            i++;
+        }
     }
 }
