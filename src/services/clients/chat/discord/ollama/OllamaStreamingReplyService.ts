@@ -60,7 +60,7 @@ export class OllamaStreamingReplyService {
                 const response = responseBatches[0];
 
                 this.#repliesContent.push(response);
-                this.#logger.info(`Replying  "${response}"`);
+                this.#logger.info(`Replying "${response}"`);
 
                 this.#replies.push(await message.reply({
                     content: response,
@@ -76,6 +76,7 @@ export class OllamaStreamingReplyService {
                     continue;
                 }
 
+                this.#logger.info(`Recursing "${response}"`);
                 await this.reply(message, response, done);
             }
         }
