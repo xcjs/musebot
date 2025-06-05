@@ -38,6 +38,7 @@ export class OllamaStreamingReplyService {
                 components
             }));
 
+            await this.#rebalanceReplies(message, components);
         } else if (this.#currentReply().content.length + responseBatch.length <= DiscordConstants.ContentMaxLength) {
 
             const numReplies = this.#replies.length;
@@ -66,6 +67,8 @@ export class OllamaStreamingReplyService {
                     content: response,
                     components
                 }));
+
+                await this.#rebalanceReplies(message, components);
             }
 
             let firstResponse = true;
@@ -80,8 +83,6 @@ export class OllamaStreamingReplyService {
                 await this.reply(message, response, done);
             }
         }
-
-        await this.#rebalanceReplies(message, components);
 
         return this.#replies;
     }
