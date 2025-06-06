@@ -146,7 +146,7 @@ export class OllamaPromptResponseTask extends BaseTask<OllamaMessage[]> implemen
             if (response.done) {
                 this.#context = [...exchange.data, {
                     role: OllamaRole.Assistant,
-                    content: fullResponse.trim()
+                    content: fullResponse
                 }];
 
                 if (this.#featureService.hasFeature(SupportedFeature.Txt2Img)
