@@ -15,6 +15,7 @@ import { OllamaReplyService } from '../../../chat/discord/ollama/OllamaReplyServ
 import { OllamaStreamingReplyService } from '../../../chat/discord/ollama/OllamaStreamingReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { IPromptResponseTask } from '../../tasks/IPromptResponseTask.js';
+import { OllamaRole } from '../enums/OllamaRole.js';
 import { OllamaClient } from '../OllamaClient.js';
 
 export class OllamaPromptResponseTask extends BaseTask<OllamaMessage[]> implements IPromptResponseTask {
@@ -143,12 +144,17 @@ export class OllamaPromptResponseTask extends BaseTask<OllamaMessage[]> implemen
             responseBatch = '';
 
             if (response.done) {
-                this.#context = [...context, response.message];
+                this.#context = [...exchange.data, {
+                    role: OllamaRole.Assistant,
+                    content: fullResponse.trim()
+                }];
 
                 if (this.#featureService.hasFeature(SupportedFeature.Txt2Img)
                     && replies.length > 0) {
                     await this.#attachImage(fullResponse, replies);
                 }
+
+                return;
             }
 
             endTime = performance.now();
