@@ -10,7 +10,7 @@ import { IReplyService } from '../../../chat/IReplyService.js';
 import { IReplyTask } from '../../../chat/tasks/IReplyTask.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 
-export class ComfyUiReplyTask extends BaseTask implements IReplyTask {
+export class ComfyUiReplyTask extends BaseTask<void> implements IReplyTask {
     get taskChannel(): string {
         return 'Discord';
     }

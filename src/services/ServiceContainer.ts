@@ -1,4 +1,5 @@
-import { BaseMessageOptions, ButtonInteraction, Client as DiscordClient, GatewayIntentBits, Message, MessageReaction, Partials, ReactionEmoji, User } from 'discord.js';
+import { BaseMessageOptions, ButtonInteraction, Client as DiscordClient, GatewayIntentBits, Message as DiscordMessage, MessageReaction, Partials, ReactionEmoji, User } from 'discord.js';
+import { Message as OllamaMessage } from 'ollama';
 
 import { BotFunction } from '../enums/BotFunction.js';
 import { ComfyUiReplyService } from './clients/chat/discord/comfy-ui/ComfyUiReplyService.js';
@@ -142,14 +143,14 @@ export class ServiceContainer implements IServiceContainer {
     }
 
     getReplyTask(
-        interaction: Message | ButtonInteraction,
+        interaction: DiscordMessage | ButtonInteraction,
         reply: BaseMessageOptions
         ): IReplyTask {
         return new ReplyTask(this, interaction, reply);
     }
 
     getAttachRenderTask(
-        interaction: ButtonInteraction | Message,
+        interaction: ButtonInteraction | DiscordMessage,
         prompt: string,
         content: string | null = null): IAttachRenderTask {
         if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)
@@ -179,7 +180,7 @@ export class ServiceContainer implements IServiceContainer {
         }
     }
 
-    getEmojiReactionRenderTask(interaction: Message, emoji: ReactionEmoji, userOverride: User): IEmojiReactionRenderTask {
+    getEmojiReactionRenderTask(interaction: DiscordMessage, emoji: ReactionEmoji, userOverride: User): IEmojiReactionRenderTask {
         if(!this.#featureService.hasFeature(SupportedFeature.Txt2Img)
             || !this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
             throw this.#taskNotConfiguredError;
@@ -235,7 +236,7 @@ export class ServiceContainer implements IServiceContainer {
         }
     }
 
-    getJsonRenderTask(message: Message): IJsonRenderTask {
+    getJsonRenderTask(message: DiscordMessage): IJsonRenderTask {
         if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)
             && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
             throw this.#taskNotConfiguredError;
@@ -263,7 +264,7 @@ export class ServiceContainer implements IServiceContainer {
                 }
             }
 
-    getReplyRenderTask(message: Message): IReplyRenderTask {
+    getReplyRenderTask(message: DiscordMessage): IReplyRenderTask {
         if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)
             && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
             throw this.#taskNotConfiguredError;
@@ -305,7 +306,7 @@ export class ServiceContainer implements IServiceContainer {
         }
     }
 
-    getLlmPromptResponseTask(message: Message, context: Array<number>): IPromptResponseTask {
+    getLlmPromptResponseTask(message: DiscordMessage, context: OllamaMessage[]): IPromptResponseTask {
         if(!this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
             throw this.#taskNotConfiguredError;
         }
@@ -313,7 +314,7 @@ export class ServiceContainer implements IServiceContainer {
         return new OllamaPromptResponseTask(this, message, context);
     }
 
-    getLlmEmojiResponseTask(reaction: MessageReaction, user: User, context: Array<number>): IEmojiResponseTask {
+    getLlmEmojiResponseTask(reaction: MessageReaction, user: User, context: OllamaMessage[]): IEmojiResponseTask {
         if(!this.featureService.hasFeature(SupportedFeature.Txt2Txt)) {
             throw this.#taskNotConfiguredError;
         }

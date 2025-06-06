@@ -5,7 +5,7 @@ import { ILogger } from '../../ILogger.js';
 import { IServiceContainer } from '../../IServiceContainer.js';
 import { TaskStatus } from '../enums/TaskStatus.js';
 
-export abstract class BaseTask {
+export abstract class BaseTask<T> {
     get id(): UUID {
         return this.#id;
     }
@@ -58,7 +58,7 @@ export abstract class BaseTask {
         return this.#startedTime;
     }
 
-    set onSuccess(callback: (context: Array<number>) => void) { }
+    set onSuccess(callback: (context: T) => void) { }
 
     #environmentSettings: IEnvironmentSettings;
     #logger: ILogger;
