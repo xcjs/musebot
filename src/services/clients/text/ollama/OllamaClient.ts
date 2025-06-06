@@ -1,5 +1,6 @@
-import { ChatRequest, ChatResponse, Message, Ollama } from 'ollama';
+import { ChatRequest, ChatResponse, GenerateRequest, GenerateResponse, Message, Ollama } from 'ollama';
 
+import { IHttpExchange } from '../../../../models/IHttpExchange.js';
 import { IHttpExchangeWithAttachedData } from '../../../../models/IHttpExchangeWithAttachedData.js';
 import { getRandomArrayEntry, getRandomInt } from '../../../../utilities/random-utilities.js';
 import { IEnvironmentSettings } from '../../../environment-settings/IEnvironmentSettings.js';
@@ -35,7 +36,30 @@ export class OllamaClient {
         this.#model = this.#selectModel(this.#environmentSettings.ollamaModels);
     }
 
-    async sendMessage(prompt: string, context: Message[], outOfContext: boolean = false): Promise<IHttpExchangeWithAttachedData<ChatRequest, ChatResponse, Message[]>> {
+    async generate(prompt: string): Promise<IHttpExchange<GenerateRequest, GenerateResponse>> {
+        const request: GenerateRequest = {
+            prompt,
+            model: this.#model
+        };
+
+        this.#logger.info(`Calling Ollama API with the prompt: ${prompt}`);
+
+        try {
+            const response = await this.#client.generate({ ...request, stream: false });
+
+            return {
+                request,
+                response
+            };
+        } catch (error) {
+            this.#logger.error(`Failed to send Ollama a message: ${error}`);
+
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            throw new Error(error);
+        }
+    }
+
+    async sendMessage(prompt: string, context: Message[]): Promise<IHttpExchangeWithAttachedData<ChatRequest, ChatResponse, Message[]>> {
         const messages = this.#buildChatContext(prompt, context);
 
         const request: ChatRequest = {
@@ -51,10 +75,7 @@ export class OllamaClient {
 
         try {
             const response = await this.#client.chat({ ...request, stream: false });
-
-            if(!outOfContext) {
-                messages.push(response.message);
-            }
+            messages.push(response.message);
 
             return {
                 exchange: {
