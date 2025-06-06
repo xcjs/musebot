@@ -158,12 +158,12 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
     }
 
     #mergeContexts(oldContext: OllamaMessage[], newContext: OllamaMessage[]): OllamaMessage[] {
-        const mergedContext: OllamaMessage[] = [...oldContext];
+        const mergedContext = [...oldContext];
 
         newContext.forEach((newMessage) => {
             if (!mergedContext.find(x =>
-                x.content === newMessage.content
-                && x.role === newMessage.role)) {
+                    x.content === newMessage.content
+                    && x.role === newMessage.role)) {
                 mergedContext.push(newMessage);
             }
         });
