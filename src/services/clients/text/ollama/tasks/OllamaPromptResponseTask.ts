@@ -166,7 +166,7 @@ export class OllamaPromptResponseTask extends BaseTask<OllamaMessage[]> implemen
             + ' If you do decide to include any text in the image, make sure to surround it with quotes and remain brief.'
             + `\n\n\`\`\`text\n${prompt}\n\`\`\``;
 
-        const exchange = await this.#ollamaClient.sendMessage(prompt, this.#context);
+        const exchange = await this.#ollamaClient.sendMessage(prompt, this.#context, true);
 
         const lastReply = replies[replies.length - 1];
         const attachTask = this.#services.getAttachRenderTask(lastReply, exchange.exchange.response.message.content, lastReply.content) as BaseTask<void>;

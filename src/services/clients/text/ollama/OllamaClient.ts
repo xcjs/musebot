@@ -35,7 +35,7 @@ export class OllamaClient {
         this.#model = this.#selectModel(this.#environmentSettings.ollamaModels);
     }
 
-    async sendMessage(prompt: string, context: Message[]): Promise<IHttpExchangeWithAttachedData<ChatRequest, ChatResponse, Message[]>> {
+    async sendMessage(prompt: string, context: Message[], outOfContext: boolean = false): Promise<IHttpExchangeWithAttachedData<ChatRequest, ChatResponse, Message[]>> {
         const messages = this.#buildChatContext(prompt, context);
 
         const request: ChatRequest = {
@@ -51,7 +51,10 @@ export class OllamaClient {
 
         try {
             const response = await this.#client.chat({ ...request, stream: false });
-            messages.push(response.message);
+
+            if(!outOfContext) {
+                messages.push(response.message);
+            }
 
             return {
                 exchange: {
