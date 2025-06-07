@@ -65,6 +65,8 @@ export class OllamaPromptResponseTask extends BaseTask<OllamaMessage[]> implemen
     }
 
     override async process(): Promise<void> {
+        await super.process();
+
         const formattedMessage = `${this.#message.author.displayName}: ${this.#replyService.getMessageWithoutBotMentions(this.#message)}`;
 
         if (this.#environmentSettings.ollamaStreamsResponse) {
@@ -84,6 +86,8 @@ export class OllamaPromptResponseTask extends BaseTask<OllamaMessage[]> implemen
     }
 
     override async postProcess(): Promise<void> {
+        await super.postProcess();
+
         switch (this.taskStatus) {
             case TaskStatus.Dead:
                 await this.#replyService.replyWithError(this.#message);
@@ -153,8 +157,6 @@ export class OllamaPromptResponseTask extends BaseTask<OllamaMessage[]> implemen
                     && replies.length > 0) {
                     await this.#attachImage(fullResponse, replies);
                 }
-
-                return;
             }
 
             endTime = performance.now();
