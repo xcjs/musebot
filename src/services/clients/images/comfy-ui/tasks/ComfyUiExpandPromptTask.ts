@@ -59,8 +59,8 @@ export class ComfyUiExpandPromptTask extends ComfyUiBaseTask implements IExpandP
 
         const prompt = `The following is a prompt used to generate an image - expand it with meticulous detail so it can be rendered better: ${originalRequest.prompt}`;
         this.#logger.info(`Calling Ollama with "${prompt}" to get an expanded prompt.`);
-        const exchange = await this.#ollamaClient.sendMessage(prompt, null);
-        this.#logger.info(`Ollama responded with ${exchange.exchange.response.message.content}`);
+        const exchange = await this.#ollamaClient.generate(prompt);
+        this.#logger.info(`Ollama responded with ${exchange.response.response}`);
 
         // eslint-disable-next-line @typescript-eslint/no-base-to-string
         const content = `${this.#interaction.member?.user.toString() || 'You'} expanded the detail in the prompt: \`${originalRequest.prompt}\``;
@@ -69,7 +69,7 @@ export class ComfyUiExpandPromptTask extends ComfyUiBaseTask implements IExpandP
             this.#services,
             this.#interaction,
             { content },
-            exchange.exchange.response.message.content,
+            exchange.response.response,
         ));
     }
 
