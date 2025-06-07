@@ -26,7 +26,7 @@ export class OllamaStreamingReplyService {
         done: boolean): Promise<Message[]> {
         const components = done ? new LargeLanguageModelActionRow(this.#services).build() : null;
 
-        if (this.#currentReply() == null
+        if (this.#currentReply() === null
             && responseBatch.length <= DiscordConstants.ContentMaxLength) {
 
             this.#repliesContent.push(responseBatch);

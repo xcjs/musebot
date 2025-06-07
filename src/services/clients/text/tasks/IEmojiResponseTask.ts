@@ -1,5 +1,7 @@
+import { Message } from 'ollama';
+
 export interface IEmojiResponseTask {
-    onSuccess: (context: number[]) => void;
+    onSuccess: (context: Message[]) => void;
     taskChannel: string;
     process(): Promise<void>;
 }

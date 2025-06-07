@@ -4,7 +4,7 @@ import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
 
-export abstract class ComfyUiBaseTask extends BaseTask {
+export abstract class ComfyUiBaseTask extends BaseTask<void> {
     comfyUiClient: ComfyUiClient;
 
     #workflowService: IWorkflowService;

@@ -1,4 +1,5 @@
-import { ButtonInteraction, Client as DiscordClient, Events, Message, MessageReaction, User } from 'discord.js';
+import { ButtonInteraction, Client as DiscordClient, Events, Message as DiscordMessage, MessageReaction, User } from 'discord.js';
+import { Message as OllamaMessage } from 'ollama';
 
 import { BotInteraction } from '../../../../enums/BotInteraction.js';
 import { IHelpService } from '../../../help/IHelpService.js';
@@ -19,7 +20,7 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
     #helpService: IHelpService;
     #taskQueue: ITaskQueue;
 
-    #context: Array<number> = [];
+    #context: OllamaMessage[] = [];
 
     constructor(services: IServiceContainer) {
         super(services);
@@ -46,7 +47,7 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
         this.#discordClient.on(Events.MessageReactionAdd, (reaction, user) => void this.#onMessageReactionAdd.call(self, reaction, user));
     }
 
-    async #onMessageCreate(message: Message): Promise<void> {
+    async #onMessageCreate(message: DiscordMessage): Promise<void> {
         this.logger.info(`Discord message created. ${message.author.displayName} (${message.author.username}): "${message.content}"`);
 
         if(!this.#replyService.shouldReply(message, null)) {
@@ -55,8 +56,8 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
 
         this.logger.info('Replying to message...');
 
-        const promptResponseTask = this.#services.getLlmPromptResponseTask(message, this.#context) as BaseTask;
-        promptResponseTask.onSuccess = (context: Array<number>) => { this.#context = context; };
+        const promptResponseTask = this.#services.getLlmPromptResponseTask(message, this.#context) as BaseTask<OllamaMessage[]>;
+        promptResponseTask.onSuccess = (context: OllamaMessage[]) => { this.#context = this.#mergeContexts(this.#context, context); };
 
         this.#taskQueue.add(promptResponseTask);
         await this.#typingService.startTyping(message);
@@ -87,7 +88,7 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
                 this.#taskQueue.add(this.#services.getReplyTask(
                     interaction, {
                         content: await this.#helpService.buildHelpArticle(interaction)
-                    }) as BaseTask);
+                    }) as BaseTask<void>);
                 break;
             default:
                 this.logger.warn(`An unknown interaction was passed: ${interaction.customId}.`);
@@ -100,7 +101,7 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
 
         try {
             await interaction.editReply({
-                content: `Are you sure you want to clear the conversational context of ${this.#context.length} tokens?`
+                content: `Are you sure you want to clear the conversational context of ${this.#context.length} messages?`
                     + ` This will make me forget everything we've discussed up to this point.`,
                 components: new LargeLanguageModelConfirmClearActionRow(this.#services).build()
             });
@@ -144,15 +145,29 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
             }
         }
 
-        if (!this.#replyService.shouldReply(reaction.message as Message, reaction)) {
+        if (!this.#replyService.shouldReply(reaction.message as DiscordMessage, reaction)) {
             return;
         }
 
         const emojiResponseTask = this.#services.getLlmEmojiResponseTask(reaction, user, this.#context);
-        this.#taskQueue.add(emojiResponseTask as BaseTask);
+        this.#taskQueue.add(emojiResponseTask as BaseTask<OllamaMessage[]>);
 
-        await this.#typingService.startTyping(reaction.message as Message);
+        await this.#typingService.startTyping(reaction.message as DiscordMessage);
 
-        emojiResponseTask.onSuccess = (context: Array<number>) => { this.#context = context; };
+        emojiResponseTask.onSuccess = (context: OllamaMessage[]) => { this.#context = this.#mergeContexts(this.#context, context); };
+    }
+
+    #mergeContexts(oldContext: OllamaMessage[], newContext: OllamaMessage[]): OllamaMessage[] {
+        const mergedContext = [...oldContext];
+
+        newContext.forEach((newMessage) => {
+            if (!mergedContext.find(x =>
+                    x.content === newMessage.content
+                    && x.role === newMessage.role)) {
+                mergedContext.push(newMessage);
+            }
+        });
+
+        return mergedContext;
     }
 }

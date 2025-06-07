@@ -5,7 +5,7 @@ import { BaseTask } from './BaseTask.js';
 
 export class TaskChannel {
     #name: string;
-    #queue: Array<BaseTask> = [];
+    #queue: BaseTask<unknown>[] = [];
 
     #logger: ILogger;
 
@@ -13,7 +13,7 @@ export class TaskChannel {
         return this.#name;
     }
 
-    get queue(): Array<BaseTask> {
+    get queue(): BaseTask<unknown>[] {
         return this.#queue;
     }
 
@@ -68,7 +68,7 @@ export class TaskChannel {
         });
     }
 
-    #compareByDate(a: BaseTask, b: BaseTask): number {
+    #compareByDate(a: BaseTask<unknown>, b: BaseTask<unknown>): number {
         if (a.createdTime < b.createdTime) {
             return -1;
         } else {

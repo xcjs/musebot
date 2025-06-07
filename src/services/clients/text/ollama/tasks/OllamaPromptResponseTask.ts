@@ -1,4 +1,5 @@
-import { Message } from 'discord.js';
+import { Message as DiscordMessage } from 'discord.js';
+import { Message as OllamaMessage } from 'ollama';
 
 import { endsWithWhitespace, hasOnly, isOnlyWhitespace } from '../../../../../utilities/string-utilities.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
@@ -14,14 +15,15 @@ import { OllamaReplyService } from '../../../chat/discord/ollama/OllamaReplyServ
 import { OllamaStreamingReplyService } from '../../../chat/discord/ollama/OllamaStreamingReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { IPromptResponseTask } from '../../tasks/IPromptResponseTask.js';
+import { OllamaRole } from '../enums/OllamaRole.js';
 import { OllamaClient } from '../OllamaClient.js';
 
-export class OllamaPromptResponseTask extends BaseTask implements IPromptResponseTask {
+export class OllamaPromptResponseTask extends BaseTask<OllamaMessage[]> implements IPromptResponseTask {
     override get taskChannel(): string {
         return `${this.#environmentSettings.ollamaTaskChannel}_${this.#ollamaClient.host}`;
     }
 
-    override set onSuccess(callback: (context: Array<number>) => void) {
+    override set onSuccess(callback: (context: OllamaMessage[]) => void) {
         this.#onSuccess = callback;
     }
 
@@ -36,15 +38,15 @@ export class OllamaPromptResponseTask extends BaseTask implements IPromptRespons
     #taskQueue: ITaskQueue;
     #logger: ILogger;
 
-    #message: Message;
-    #context: Array<number> = [];
+    #message: DiscordMessage;
+    #context: OllamaMessage[] = [];
 
-    #onSuccess: (context: Array<number>) => void = () => { };
+    #onSuccess: (context: OllamaMessage[]) => void = () => { };
 
     constructor(
         services: IServiceContainer,
-        message: Message,
-        context: Array<number>) {
+        message: DiscordMessage,
+        context: OllamaMessage[]) {
         super(services);
 
         this.#services = services;
@@ -71,13 +73,13 @@ export class OllamaPromptResponseTask extends BaseTask implements IPromptRespons
         }
 
         const exchange = await this.#ollamaClient.sendMessage(formattedMessage, this.#context);
-        this.#context = exchange.response.context;
+        this.#context = exchange.data;
 
-        const replies = await this.#ollamaReplyService.reply(this.#message, exchange);
+        const replies = await this.#ollamaReplyService.reply(this.#message, exchange.exchange);
 
         if (this.#featureService.hasFeature(SupportedFeature.Txt2Img)
             && replies.length > 0) {
-            await this.#attachImage(exchange.response.response, replies);
+            await this.#attachImage(exchange.exchange.response.message.content, replies);
         }
     }
 
@@ -94,7 +96,7 @@ export class OllamaPromptResponseTask extends BaseTask implements IPromptRespons
         this.#ollamaStreamingReplyService.clearState();
     }
 
-    async #processAsStream(formattedMessage: string, context: Array<number>): Promise<void> {
+    async #processAsStream(formattedMessage: string, context: OllamaMessage[]): Promise<void> {
         const exchange = await this.#ollamaClient.sendMessageAndGetStream(formattedMessage, context);
 
         let averageResponseInMs = 0;
@@ -103,16 +105,16 @@ export class OllamaPromptResponseTask extends BaseTask implements IPromptRespons
         let fullResponse = '';
         let responseBatch = '';
 
-        for await (const response of exchange.response) {
+        for await (const response of exchange.exchange.response) {
             const startTime = performance.now();
-            let replies: Array<Message> = [];
+            let replies: Array<DiscordMessage> = [];
 
-            fullResponse += response.response;
-            responseBatch += response.response;
+            fullResponse += response.message.content;
+            responseBatch += response.message.content;
 
             if (!response.done) {
                 // Ensure we're not sending requests faster than Discord can
-                // allow or allow them.
+                // allow or process them.
                 if (startTime - endTime <= (DiscordConstants.MaxRequestsPerSecond / 1000)
                     || startTime - endTime < averageResponseInMs
                 ) {
@@ -142,12 +144,17 @@ export class OllamaPromptResponseTask extends BaseTask implements IPromptRespons
             responseBatch = '';
 
             if (response.done) {
-                this.#context = response.context;
+                this.#context = [...exchange.data, {
+                    role: OllamaRole.Assistant,
+                    content: fullResponse
+                }];
 
                 if (this.#featureService.hasFeature(SupportedFeature.Txt2Img)
                     && replies.length > 0) {
                     await this.#attachImage(fullResponse, replies);
                 }
+
+                return;
             }
 
             endTime = performance.now();
@@ -156,7 +163,7 @@ export class OllamaPromptResponseTask extends BaseTask implements IPromptRespons
         }
     }
 
-    async #attachImage(prompt: string, replies: Array<Message>): Promise<void> {
+    async #attachImage(prompt: string, replies: Array<DiscordMessage>): Promise<void> {
         this.#logger.info('An image will be attached to the Ollama response.');
 
         prompt = 'The following prompt is a response to a message.'
@@ -165,10 +172,10 @@ export class OllamaPromptResponseTask extends BaseTask implements IPromptRespons
             + ' If you do decide to include any text in the image, make sure to surround it with quotes and remain brief.'
             + `\n\n\`\`\`text\n${prompt}\n\`\`\``;
 
-        const exchange = await this.#ollamaClient.sendMessage(prompt, this.#context);
+        const exchange = await this.#ollamaClient.generate(prompt);
 
         const lastReply = replies[replies.length - 1];
-        const attachTask = this.#services.getAttachRenderTask(lastReply, exchange.response.response, lastReply.content) as BaseTask;
+        const attachTask = this.#services.getAttachRenderTask(lastReply, exchange.response.response, lastReply.content) as BaseTask<void>;
 
         this.#taskQueue.add(attachTask);
     }

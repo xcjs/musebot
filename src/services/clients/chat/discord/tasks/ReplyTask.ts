@@ -5,7 +5,7 @@ import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { IReplyService } from '../../IReplyService.js';
 import { IReplyTask } from '../../tasks/IReplyTask.js';
 
-export class ReplyTask extends BaseTask implements IReplyTask {
+export class ReplyTask extends BaseTask<void> implements IReplyTask {
     get taskChannel(): string {
         return 'Discord';
     }

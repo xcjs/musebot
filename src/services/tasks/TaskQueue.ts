@@ -27,7 +27,7 @@ export class TaskQueue implements ITaskQueue {
         this.#logger = services.getLogger('TaskQueue');
     }
 
-    add(task: BaseTask): void {
+    add(task: BaseTask<unknown>): void {
         this.#logger.info(`Adding task ${task.id} to the ${task.taskChannel} queue.`);
 
         let taskChannel: TaskChannel;
@@ -95,7 +95,7 @@ export class TaskQueue implements ITaskQueue {
         }
     }
 
-    #getNextTasks(): Array<BaseTask> {
+    #getNextTasks(): BaseTask<unknown>[] {
         this.#logger.info('Retrieving the next tasks...');
 
         this.#cleanChannels();

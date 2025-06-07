@@ -1,4 +1,5 @@
-import { ApplicationEmoji, BaseMessageOptions, ButtonInteraction, Client as DiscordClient, GuildEmoji, Message, MessageReaction, ReactionEmoji, User } from 'discord.js';
+import { ApplicationEmoji, BaseMessageOptions, ButtonInteraction, Client as DiscordClient, GuildEmoji, Message as DiscordMessage, MessageReaction, ReactionEmoji, User } from 'discord.js';
+import { Message as OllamaMessage } from 'ollama';
 
 import { ComfyUiReplyService } from './clients/chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IActionRowBuilderFactory } from './clients/chat/discord/components/IActionRowBuilderFactory.js';
@@ -57,24 +58,24 @@ export interface IServiceContainer {
     getLogger(prefix: string): ILogger;
 
     getReplyTask(
-        interaction: Message | ButtonInteraction,
+        interaction: DiscordMessage | ButtonInteraction,
         reply: BaseMessageOptions): IReplyTask;
 
     getAttachRenderTask(
-        interaction: ButtonInteraction | Message,
+        interaction: ButtonInteraction | DiscordMessage,
         prompt: string,
         content: string | null): IAttachRenderTask;
 
     getDecreaseGuidanceScaleRenderTask(interaction: ButtonInteraction): IDecreaseGuidanceScaleRenderTask;
-    getEmojiReactionRenderTask(interaction: Message, emoji: GuildEmoji | ReactionEmoji | ApplicationEmoji, userOverride: User): IEmojiReactionRenderTask;
+    getEmojiReactionRenderTask(interaction: DiscordMessage, emoji: GuildEmoji | ReactionEmoji | ApplicationEmoji, userOverride: User): IEmojiReactionRenderTask;
     getExpandPromptTask(interaction: ButtonInteraction): IExpandPromptTask;
     getImg2ImgRenderTask(interaction: ButtonInteraction, workflow: IWorkflow): ComfyUiImg2ImgRenderTask;
     getIncreaseGuidanceScaleRenderTask(interaction: ButtonInteraction): IIncreaseGuidanceScaleRenderTask;
-    getJsonRenderTask(message: Message): IJsonRenderTask;
+    getJsonRenderTask(message: DiscordMessage): IJsonRenderTask;
     getRandomRenderTask(interaction: ButtonInteraction): IRandomRenderTask;
-    getReplyRenderTask(message: Message): IReplyRenderTask;
+    getReplyRenderTask(message: DiscordMessage): IReplyRenderTask;
     getRetryRenderTask(interaction: ButtonInteraction): IRetryRenderTask;
     getShowSourceTask(interaction: ButtonInteraction): IShowSourceTask;
-    getLlmPromptResponseTask(message: Message, context: Array<number>): IPromptResponseTask;
-    getLlmEmojiResponseTask(reaction: MessageReaction, user: User, context: Array<number>): IEmojiResponseTask;
+    getLlmPromptResponseTask(message: DiscordMessage, context: OllamaMessage[]): IPromptResponseTask;
+    getLlmEmojiResponseTask(reaction: MessageReaction, user: User, context: OllamaMessage[]): IEmojiResponseTask;
 }

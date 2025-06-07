@@ -1,10 +1,12 @@
-import { GenerateRequest, GenerateResponse, Ollama } from 'ollama';
+import { ChatRequest, ChatResponse, GenerateRequest, GenerateResponse, Message, Ollama } from 'ollama';
 
 import { IHttpExchange } from '../../../../models/IHttpExchange.js';
+import { IHttpExchangeWithAttachedData } from '../../../../models/IHttpExchangeWithAttachedData.js';
 import { getRandomArrayEntry, getRandomInt } from '../../../../utilities/random-utilities.js';
 import { IEnvironmentSettings } from '../../../environment-settings/IEnvironmentSettings.js';
 import { ILogger } from '../../../ILogger.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
+import { OllamaRole } from './enums/OllamaRole.js';
 
 export class OllamaClient {
     #environmentSettings: IEnvironmentSettings;
@@ -34,19 +36,13 @@ export class OllamaClient {
         this.#model = this.#selectModel(this.#environmentSettings.ollamaModels);
     }
 
-    async sendMessage(message: string, context: Array<number> | null): Promise<IHttpExchange<GenerateRequest, GenerateResponse | null>> {
+    async generate(prompt: string): Promise<IHttpExchange<GenerateRequest, GenerateResponse>> {
         const request: GenerateRequest = {
-            context,
-            model: this.#model,
-            prompt: message,
-            system: this.#environmentSettings.ollamaSystemPrompt
+            prompt,
+            model: this.#model
         };
 
-        this.#logger.info(`Calling Ollama API with the prompt: ${message}`);
-
-        if(context && context.length) {
-            this.#logger.info(`A context value of ${context.join(', ')} is provided.`);
-        }
+        this.#logger.info(`Calling Ollama API with the prompt: ${prompt}`);
 
         try {
             const response = await this.#client.generate({ ...request, stream: false });
@@ -55,34 +51,70 @@ export class OllamaClient {
                 request,
                 response
             };
-        } catch(error) {
-            this.#logger.info(`Failed to send Ollama a message: ${error}`);
+        } catch (error) {
+            this.#logger.error(`Failed to send Ollama a message: ${error}`);
 
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             throw new Error(error);
         }
     }
 
-    async sendMessageAndGetStream(message: string, context: Array<number> | null): Promise<IHttpExchange<GenerateRequest, AsyncIterable<GenerateResponse>> | null> {
-        const request: GenerateRequest = {
-            context,
-            model: this.#model,
-            prompt: message,
-            system: this.#environmentSettings.ollamaSystemPrompt
+    async sendMessage(prompt: string, context: Message[]): Promise<IHttpExchangeWithAttachedData<ChatRequest, ChatResponse, Message[]>> {
+        const messages = this.#buildChatContext(prompt, context);
+
+        const request: ChatRequest = {
+            messages,
+            model: this.#model
         };
 
-        this.#logger.info(`Calling Ollama API at with the prompt: ${message}`);
+        this.#logger.info(`Calling Ollama API with the prompt: ${prompt}`);
 
-        if(context && context.length) {
-            this.#logger.info(`A context value of ${context.join(', ')} is provided.`);
+        if (context.length > 0) {
+            this.#logger.info(`A context of ${context.length} messages is provided.`);
         }
 
         try {
-            const response = await this.#client.generate({ ...request, stream: true });
+            const response = await this.#client.chat({ ...request, stream: false });
+            messages.push(response.message);
 
             return {
-                request,
-                response
+                exchange: {
+                    request,
+                    response
+                },
+                data: messages
+            };
+        } catch(error) {
+            this.#logger.error(`Failed to send Ollama a message: ${error}`);
+
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            throw new Error(error);
+        }
+    }
+
+    async sendMessageAndGetStream(prompt: string, context: Message[]): Promise<IHttpExchangeWithAttachedData<ChatRequest, AsyncIterable<ChatResponse>, Message[]> | null> {
+        const messages = this.#buildChatContext(prompt, context);
+
+        const request: ChatRequest = {
+            messages,
+            model: this.#model
+        };
+
+        this.#logger.info(`Calling Ollama API at with the prompt: ${prompt}`);
+
+        if (context.length > 0) {
+            this.#logger.info(`A context of ${context.length} messages is provided.`);
+        }
+
+        try {
+            const response = await this.#client.chat({ ...request, stream: true });
+
+            return {
+                exchange: {
+                    request,
+                    response
+                },
+                data: messages
             };
         } catch(error) {
             this.#logger.error(`An error occurred while sending Ollama a message and retrieving a stream: ${error}`);
@@ -92,7 +124,7 @@ export class OllamaClient {
         }
     }
 
-    static calculateTokensPerSecond(response: GenerateResponse): number {
+    static calculateTokensPerSecond(response: ChatResponse): number {
         return response.eval_count / response.eval_duration * (10 ** 9);
     }
 
@@ -106,5 +138,25 @@ export class OllamaClient {
         this.#logger.info(`Selected model: ${model}`);
 
         return model;
+    }
+
+    #buildChatContext(prompt: string, context: Message[]): Message[] {
+        let chatMessages: Message[] = [];
+
+        if (!context.find(x => x.role === OllamaRole.System.toString())) {
+            chatMessages.push({
+                role: OllamaRole.System.toString(),
+                content: this.#environmentSettings.ollamaSystemPrompt,
+            });
+        }
+
+        chatMessages = chatMessages.concat(context);
+
+        chatMessages.push({
+            role: OllamaRole.User.toString(),
+            content: prompt
+        });
+
+        return chatMessages;
     }
 }

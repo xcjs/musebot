@@ -7,7 +7,7 @@ import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 
-export class LoginTask extends BaseTask {
+export class LoginTask extends BaseTask<void> {
     get taskChannel(): string {
         return 'Discord';
     }
@@ -37,7 +37,7 @@ export class LoginTask extends BaseTask {
         await this.#discordClient.login(this.#environmentSettings.discordToken);
     }
 
-    override  async postProcess(): Promise<void> {
+    override async postProcess(): Promise<void> {
         if(this.taskStatus === TaskStatus.Dead) {
             this.logger.warn('Exhausted the maximum attempts for the login task. Adding a new login task to the queue as the application cannot continue otherwise.');
             this.#taskQueue.add(new LoginTask(this.#services));

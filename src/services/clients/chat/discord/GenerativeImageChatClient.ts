@@ -1,4 +1,5 @@
-import { ButtonInteraction, Client as DiscordClient, Events, Message, MessageReaction, User } from 'discord.js';
+import { ButtonInteraction, Client as DiscordClient, Events, Message as DiscordMessage, MessageReaction, User } from 'discord.js';
+import { Message as OllamaMessage } from 'ollama';
 
 import { BotInteraction } from '../../../../enums/BotInteraction.js';
 import { IHelpService } from '../../../help/IHelpService.js';
@@ -49,7 +50,7 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
         this.#discordClient.on(Events.MessageReactionAdd, (reaction, user) => void this.#onMessageReactionAdd.call(self, reaction, user));
     }
 
-    async #onMessageCreate(message: Message): Promise<void> {
+    async #onMessageCreate(message: DiscordMessage): Promise<void> {
         this.logger.info(`Discord message created. ${message.author.displayName} (${message.author.username}): "${message.content}"`);
 
         if (!this.#replyService.shouldReply(message, null)) {
@@ -60,9 +61,9 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
         await this.#typingService.startTyping(message);
 
         if(this.#replyService.getMessageWithoutBotMentions(message).startsWith('{')) {
-            this.#taskQueue.add(this.#services.getJsonRenderTask(message) as BaseTask);
+            this.#taskQueue.add(this.#services.getJsonRenderTask(message) as BaseTask<void>);
         } else {
-            this.#taskQueue.add(this.#services.getReplyRenderTask(message) as BaseTask);
+            this.#taskQueue.add(this.#services.getReplyRenderTask(message) as BaseTask<void>);
         }
     }
 
@@ -77,28 +78,28 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
 
         switch (interaction.customId) {
             case BotInteraction.Retry.toString():
-                this.#taskQueue.add(this.#services.getRetryRenderTask(interaction) as BaseTask);
+                this.#taskQueue.add(this.#services.getRetryRenderTask(interaction) as BaseTask<void>);
                 break;
             case BotInteraction.ShowSource.toString():
-                this.#taskQueue.add(this.#services.getShowSourceTask(interaction) as BaseTask);
+                this.#taskQueue.add(this.#services.getShowSourceTask(interaction) as BaseTask<void>);
                 break;
             case BotInteraction.GuidanceScaleMinus.toString():
-                this.#taskQueue.add(this.#services.getDecreaseGuidanceScaleRenderTask(interaction) as BaseTask);
+                this.#taskQueue.add(this.#services.getDecreaseGuidanceScaleRenderTask(interaction) as BaseTask<void>);
                 break;
             case BotInteraction.GuidanceScalePlus.toString():
-                this.#taskQueue.add(this.#services.getIncreaseGuidanceScaleRenderTask(interaction) as BaseTask);
+                this.#taskQueue.add(this.#services.getIncreaseGuidanceScaleRenderTask(interaction) as BaseTask<void>);
                 break;
             case BotInteraction.ExpandPrompt.toString():
-                this.#taskQueue.add(this.#services.getExpandPromptTask(interaction) as BaseTask);
+                this.#taskQueue.add(this.#services.getExpandPromptTask(interaction) as BaseTask<void>);
                 break;
             case BotInteraction.Randomize.toString():
-                this.#taskQueue.add(this.#services.getRandomRenderTask(interaction) as BaseTask);
+                this.#taskQueue.add(this.#services.getRandomRenderTask(interaction) as BaseTask<void>);
                 break;
             case BotInteraction.Help.toString():
                 this.#taskQueue.add(this.#services.getReplyTask(
                     interaction, {
                         content: await this.#helpService.buildHelpArticle(interaction),
-                    }) as BaseTask);
+                    }) as BaseTask<void>);
                 break;
             default:
                 let isWorkflowInteraction = false;
@@ -125,7 +126,7 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
                 }
 
                 if (isWorkflowInteraction) {
-                    this.#taskQueue.add(this.#services.getImg2ImgRenderTask(interaction, workflow) as BaseTask);
+                    this.#taskQueue.add(this.#services.getImg2ImgRenderTask(interaction, workflow) as BaseTask<void>);
                 } else {
                     this.logger.warn(`An unknown or erroneous interaction was passed: ${interaction.customId}.`);
                 }
@@ -146,15 +147,15 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
             }
         }
 
-        if (!this.#replyService.shouldReply(reaction.message as Message, reaction)) {
+        if (!this.#replyService.shouldReply(reaction.message as DiscordMessage, reaction)) {
             return;
         }
 
-        await this.#typingService.startTyping(reaction.message as Message);
+        await this.#typingService.startTyping(reaction.message as DiscordMessage);
 
         this.#taskQueue.add(this.#services.getEmojiReactionRenderTask(
-            reaction.message as Message,
+            reaction.message as DiscordMessage,
             reaction.emoji,
-            user) as BaseTask);
+            user) as BaseTask<OllamaMessage[]>);
     }
 }

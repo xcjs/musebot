@@ -93,7 +93,7 @@ export class ComfyUiEmojiReactionRenderTask extends ComfyUiBaseTask implements I
         if(this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
             this.#logger.info(`Text generation is supported - converting the emoji to plain text for better model compatibility.`);
             const exchange = await this.#ollamaClient.sendMessage(`Tell me the name of the following emoji in as few words as possible: ${this.#emoji.name}.`, []);
-            emojiText = exchange.response.response.trim();
+            emojiText = exchange.exchange.response.message.content.trim();
             this.#logger.info(`The LLM responded with ${emojiText} as the converted text.`);
         }
 

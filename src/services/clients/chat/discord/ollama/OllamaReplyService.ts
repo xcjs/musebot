@@ -1,5 +1,5 @@
 import { Message } from 'discord.js';
-import { GenerateRequest, GenerateResponse } from 'ollama';
+import { ChatRequest, ChatResponse } from 'ollama';
 
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { splitText } from '../../../../../utilities/string-utilities.js';
@@ -21,9 +21,9 @@ export class OllamaReplyService {
 
     async reply(
         message: Message,
-        exchange: IHttpExchange<GenerateRequest, GenerateResponse>,
+        exchange: IHttpExchange<ChatRequest, ChatResponse>,
         prependedText: string = ''): Promise<Array<Message>> {
-        const responses = splitText(`${prependedText} ${exchange.response.response}`, DiscordConstants.ContentMaxLength);
+        const responses = splitText(`${prependedText} ${exchange.response.message.content}`, DiscordConstants.ContentMaxLength);
         const replies: Array<Message> = [];
 
         this.#logger.info(`Replying with ${responses.length} messages.`);
