@@ -100,7 +100,7 @@ export class OllamaClient {
             model: this.#model
         };
 
-        this.#logger.info(`Calling Ollama API at with the prompt: ${prompt}`);
+        this.#logger.info(`Calling Ollama API with the prompt: ${prompt}`);
 
         if (context.length > 0) {
             this.#logger.info(`A context of ${context.length} messages is provided.`);
