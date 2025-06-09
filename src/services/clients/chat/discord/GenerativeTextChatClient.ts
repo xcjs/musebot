@@ -116,10 +116,10 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
 
         try{
             // eslint-disable-next-line @typescript-eslint/no-base-to-string
-            await interaction.editReply(`The conversational context has been cleared - ${interaction.member.user.toString()} just gave an AI amnesia!`);
+            await interaction.editReply(`The conversational context has been cleared - ${interaction.member?.user.toString() ?? 'you'} just gave an AI amnesia!`);
             await interaction.message.delete();
-        } catch {
-            this.logger.error('An error occurred while clearing the Ollama context.');
+        } catch(error) {
+            this.logger.error('An error occurred while clearing the Ollama context: ', error);
         }
      }
 
@@ -130,8 +130,8 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
             await interaction.message.delete();
             await interaction.editReply('Cancelling...');
             await interaction.deleteReply();
-        } catch {
-            this.logger.error('An error occurred while cancelling clearing the Ollama context.');
+        } catch(error) {
+            this.logger.error('An error occurred while cancelling clearing the Ollama context: ', error);
         }
      }
 
@@ -140,7 +140,7 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
             try {
                 reaction = await reaction.fetch();
             } catch (error) {
-                this.logger.error(`Something went wrong when fetching the MessageReaction: ${error}.`);
+                this.logger.error(`Something went wrong when fetching the MessageReaction: `, error);
                 return;
             }
         }

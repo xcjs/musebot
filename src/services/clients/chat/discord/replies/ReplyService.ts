@@ -195,7 +195,7 @@ export class ReplyService implements IReplyService {
 
         let messageContent = message.content;
 
-        const botMention = message.mentions.members?.find(x => x.id === this.#discordClient.user?.id)?.toString() || '';
+        const botMention = this.mention(this.#discordClient.user) ?? '';
         messageContent = message.content.replaceAll(botMention, '').trim();
 
         const botRole = message.guild?.members.resolve(this.#discordClient.user).roles.botRole || null;
@@ -210,7 +210,11 @@ export class ReplyService implements IReplyService {
         return messageContent;
     }
 
-    mention(user: User): string {
+    mention(user: User | null | undefined): string {
+        if(user === null || user === undefined) {
+            return '';
+        }
+
         return `<@${user.id}>`;
     }
 
