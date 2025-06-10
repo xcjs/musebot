@@ -1,3 +1,4 @@
+import { NodeEnvironment } from '../enums/NodeEnvironment.js';
 import { ILogger } from './ILogger.js';
 
 export class Logger implements ILogger {
@@ -24,6 +25,10 @@ export class Logger implements ILogger {
     }
 
     debug(message: string, ...args: unknown[]) {
+        if (process.env.NODE_ENV !== NodeEnvironment.Development.toString()) {
+            return;
+        }
+
         if (args.length > 0) {
             console.debug(this.#formatMessage(message), args);
         } else {
