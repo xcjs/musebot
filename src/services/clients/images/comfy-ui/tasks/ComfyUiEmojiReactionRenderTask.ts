@@ -105,7 +105,7 @@ export class ComfyUiEmojiReactionRenderTask extends ComfyUiBaseTask implements I
             const renderRequest = SerializableRenderRequest.fromJson(imageAttachment.description);
             const newPrompt = `${renderRequest.prompt}, ${emojiText}`;
 
-            content = `${username} re-rendered \`${renderRequest.prompt}\` as ${newPrompt}`.substring(0, DiscordConstants.ContentMaxLength);
+            content = `${username} re-rendered \`${renderRequest.prompt}\` as \`${newPrompt}\``.substring(0, DiscordConstants.ContentMaxLength);
 
             const workflows = this.#workflowService.workflows.filter(x =>
                 x.type === SupportedFeature.Txt2Img
