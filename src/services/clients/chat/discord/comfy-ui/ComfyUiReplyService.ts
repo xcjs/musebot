@@ -119,7 +119,7 @@ export class ComfyUiReplyService {
 
     getFileNameFromPrompt(renderRequest: SerializableRenderRequest | null): string {
         if(renderRequest === null) {
-            return `${APPLICATION_NAME}_${new Date().getTime()}_unnamed`;
+            return `${APPLICATION_NAME}_${new Date().getTime()}_stateless`;
         }
 
         return `${APPLICATION_NAME}_${renderRequest.seed}_${renderRequest.prompt}`.substring(0, MAX_FILE_NAME_LENGTH);
