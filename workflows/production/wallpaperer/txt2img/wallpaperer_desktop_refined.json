@@ -25,7 +25,7 @@
     "inputs": {
       "width": "{{{ width }}}",
       "height": "{{{ height }}}",
-      "batch_size": 1
+      "batch_size": "{{{ num }}}"
     },
     "class_type": "EmptySD3LatentImage",
     "_meta": {
@@ -136,34 +136,15 @@
       "title": "Save Image"
     }
   },
-  "104": {
-    "inputs": {
-      "upscale_model": ["105", 0],
-      "image": ["8", 0]
-    },
-    "class_type": "ImageUpscaleWithModel",
-    "_meta": {
-      "title": "Upscale Image (using Model)"
-    }
-  },
-  "105": {
-    "inputs": {
-      "model_name": "SwinIR_4x.pth"
-    },
-    "class_type": "UpscaleModelLoader",
-    "_meta": {
-      "title": "Load Upscale Model"
-    }
-  },
   "106": {
     "inputs": {
       "width": 1920,
       "height": 1080,
-      "upscale_method": "nearest-exact",
+      "upscale_method": "bicubic",
       "keep_proportion": false,
       "divisible_by": 8,
       "crop": "disabled",
-      "image": ["104", 0]
+      "image": ["8", 0]
     },
     "class_type": "ImageResizeKJ",
     "_meta": {
