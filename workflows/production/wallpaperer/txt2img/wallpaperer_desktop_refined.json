@@ -126,34 +126,28 @@
       "title": "Load VAE"
     }
   },
-  "103": {
+  "138": {
     "inputs": {
-      "filename_prefix": "Musebot_Wallpaperer_16x9",
-      "images": ["121", 0]
+      "model_name": "SwinIR_4x.pth"
     },
-    "class_type": "SaveImage",
+    "class_type": "UpscaleModelLoader",
     "_meta": {
-      "title": "Save Image"
+      "title": "Load Upscale Model"
     }
   },
-  "106": {
+  "139": {
     "inputs": {
-      "width": 1920,
-      "height": 1080,
-      "upscale_method": "bicubic",
-      "keep_proportion": false,
-      "divisible_by": 8,
-      "crop": "disabled",
+      "upscale_model": ["138", 0],
       "image": ["8", 0]
     },
-    "class_type": "ImageResizeKJ",
+    "class_type": "ImageUpscaleWithModel",
     "_meta": {
-      "title": "Resize Image"
+      "title": "Upscale Image (using Model)"
     }
   },
-  "116": {
+  "140": {
     "inputs": {
-      "pixels": ["106", 0],
+      "pixels": ["145", 0],
       "vae": ["101", 0]
     },
     "class_type": "VAEEncode",
@@ -161,30 +155,7 @@
       "title": "VAE Encode"
     }
   },
-  "120": {
-    "inputs": {
-      "tile_size": 1024,
-      "overlap": 64,
-      "temporal_size": 64,
-      "temporal_overlap": 8,
-      "samples": ["122", 0],
-      "vae": ["101", 0]
-    },
-    "class_type": "VAEDecodeTiled",
-    "_meta": {
-      "title": "VAE Decode (Tiled)"
-    }
-  },
-  "121": {
-    "inputs": {
-      "value": ["120", 0]
-    },
-    "class_type": "UnloadAllModels",
-    "_meta": {
-      "title": "UnloadAllModels"
-    }
-  },
-  "122": {
+  "141": {
     "inputs": {
       "seed": "{{{ seed }}}",
       "steps": "{{{ steps }}}",
@@ -195,11 +166,59 @@
       "model": ["4", 0],
       "positive": ["6", 0],
       "negative": ["7", 0],
-      "latent_image": ["116", 0]
+      "latent_image": ["140", 0]
     },
     "class_type": "KSampler",
     "_meta": {
       "title": "KSampler"
+    }
+  },
+  "142": {
+    "inputs": {
+      "tile_size": 1024,
+      "overlap": 64,
+      "temporal_size": 64,
+      "temporal_overlap": 8,
+      "samples": ["141", 0],
+      "vae": ["101", 0]
+    },
+    "class_type": "VAEDecodeTiled",
+    "_meta": {
+      "title": "VAE Decode (Tiled)"
+    }
+  },
+  "143": {
+    "inputs": {
+      "value": ["142", 0]
+    },
+    "class_type": "UnloadAllModels",
+    "_meta": {
+      "title": "UnloadAllModels"
+    }
+  },
+  "144": {
+    "inputs": {
+      "filename_prefix": "Musebot_Wallpaperer_16x9_Refined",
+      "images": ["143", 0]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
+    }
+  },
+  "145": {
+    "inputs": {
+      "width": 1920,
+      "height": 1080,
+      "upscale_method": "lanczos",
+      "keep_proportion": false,
+      "divisible_by": 8,
+      "crop": "disabled",
+      "image": ["139", 0]
+    },
+    "class_type": "ImageResizeKJ",
+    "_meta": {
+      "title": "Resize Image"
     }
   }
 }

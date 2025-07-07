@@ -136,15 +136,34 @@
       "title": "Save Image"
     }
   },
+  "104": {
+    "inputs": {
+      "upscale_model": ["105", 0],
+      "image": ["8", 0]
+    },
+    "class_type": "ImageUpscaleWithModel",
+    "_meta": {
+      "title": "Upscale Image (using Model)"
+    }
+  },
+  "105": {
+    "inputs": {
+      "model_name": "SwinIR_4x.pth"
+    },
+    "class_type": "UpscaleModelLoader",
+    "_meta": {
+      "title": "Load Upscale Model"
+    }
+  },
   "106": {
     "inputs": {
       "width": 1080,
       "height": 2400,
-      "upscale_method": "bicubic",
+      "upscale_method": "lanczos",
       "keep_proportion": false,
       "divisible_by": 8,
       "crop": "disabled",
-      "image": ["8", 0]
+      "image": ["104", 0]
     },
     "class_type": "ImageResizeKJ",
     "_meta": {
