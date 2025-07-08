@@ -30,7 +30,7 @@ export class Logger implements ILogger {
         }
 
         if (args.length > 0) {
-            console.debug(this.#formatMessage(message), args);
+            console.debug(this.#formatMessage(message), ...args);
         } else {
             console.debug(this.#formatMessage(message));
         }
@@ -38,7 +38,7 @@ export class Logger implements ILogger {
 
     info(message: string, ...args: unknown[]) {
         if (args.length > 0) {
-            console.info(this.#formatMessage(message), args);
+            console.info(this.#formatMessage(message), ...args);
         } else {
             console.info(this.#formatMessage(message));
         }
@@ -46,7 +46,7 @@ export class Logger implements ILogger {
 
     success(message: string, ...args: unknown[]) {
         if (args.length > 0) {
-            console.log(this.#formatMessage(message), args);
+            console.log(this.#formatMessage(message), ...args);
         } else {
             console.log(this.#formatMessage(message));
         }
@@ -54,7 +54,7 @@ export class Logger implements ILogger {
 
     warn(message: string, ...args: unknown[]) {
         if (args.length > 0) {
-            console.warn(this.#formatMessage(message), args);
+            console.warn(this.#formatMessage(message), ...args);
         } else {
             console.warn(this.#formatMessage(message));
         }
@@ -62,7 +62,7 @@ export class Logger implements ILogger {
 
     error(message: string, ...args: unknown[]) {
         if (args.length > 0) {
-            console.error(this.#formatMessage(message), args);
+            console.error(this.#formatMessage(message), ...args);
         } else {
             console.error(this.#formatMessage(message));
         }
@@ -70,7 +70,7 @@ export class Logger implements ILogger {
 
     fatal(message: string, ...args: unknown[]) {
         if (args.length > 0) {
-            console.error(this.#formatMessage(message), args);
+            console.error(this.#formatMessage(message), ...args);
         } else {
             console.error(this.#formatMessage(message));
         }
