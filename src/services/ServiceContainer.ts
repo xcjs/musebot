@@ -107,7 +107,7 @@ export class ServiceContainer implements IServiceContainer {
         return this.#workflowService;
     }
 
-    // Transitives ------------------------------------------------------------/
+    // Transients -------------------------------------------------------------/
 
     get replyService(): IReplyService {
         return new ReplyService(this);
