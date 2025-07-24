@@ -47,7 +47,7 @@ export class ComfyUiClient {
         const imagesResponses: ImagesResponse[] = [];
 
         prompts.forEach((prompt) => {
-            this.#logger.info('Sending workflow to ComfyUI:', JSON.stringify(prompt));
+            this.#logger.info('Sending workflow to ComfyUI:', prompt);
             delete prompt.$musebotDefaults;
             imagesPromises.push(this.#client.getImages(prompt));
         });
