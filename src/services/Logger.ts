@@ -82,7 +82,7 @@ export class Logger implements ILogger {
 
     #jsonifyArgs(args: unknown[]): string[] {
         return args.map((arg) => {
-            return JSON.stringify(arg);
+            return JSON.stringify(arg, null, 2);
         });
     }
 }
