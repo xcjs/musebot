@@ -1,6 +1,7 @@
 import { ButtonInteraction, Client as DiscordClient, Events, Message as DiscordMessage, MessageReaction, User } from 'discord.js';
 import { Message as OllamaMessage } from 'ollama';
 
+import { APPLICATION_NAME } from '../../../../constants/Globals.js';
 import { BotInteraction } from '../../../../enums/BotInteraction.js';
 import { IHelpService } from '../../../help/IHelpService.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
@@ -51,7 +52,7 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
     }
 
     async #onMessageCreate(message: DiscordMessage): Promise<void> {
-        this.logger.info(`Discord message created. ${message.author.displayName} (${message.author.username}): "${message.content}"`);
+        this.logger.info('Discord message created:', message);
 
         if (!this.#replyService.shouldReply(message, null)) {
             return;
@@ -68,12 +69,12 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
     }
 
     async #onInteraction(interaction: ButtonInteraction): Promise<void> {
-        this.logger.info(`Beginning interaction response to custom action "${interaction.customId}"...`);
+        this.logger.info('Beginning interaction response to custom action:', interaction);
 
         try {
             await interaction.deferUpdate();
         } catch (error) {
-            this.logger.error(`Something went wrong while deferring a reply: ${error}. Ignore this error if the bot is functioning normally.`);
+            this.logger.error(`Error while deferring a reply. Ignore this error if the ${APPLICATION_NAME} is functioning normally:`, error);
         }
 
         switch (interaction.customId) {
@@ -121,14 +122,14 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
                     });
                 } catch(error) {
                     isWorkflowInteraction = false;
-                    this.logger.error(`An exception occurred while trying to process the interaction "${interaction.customId}"`);
-                    this.logger.error(`As this is a custom workflow, verify your workflow defaults are configured correctly: ${error}`);
+                    this.logger.error('An exception occurred while trying to process the interaction:', interaction);
+                    this.logger.error('As this is a custom workflow, verify your workflow defaults are configured correctly:', error);
                 }
 
                 if (isWorkflowInteraction) {
                     this.#taskQueue.add(this.#services.getImg2ImgRenderTask(interaction, workflow) as BaseTask<void>);
                 } else {
-                    this.logger.warn(`An unknown or erroneous interaction was passed: ${interaction.customId}.`);
+                    this.logger.warn('An unknown or erroneous interaction was passed:', interaction);
                 }
 
                 break;
@@ -142,7 +143,7 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
             try {
                 reaction = await reaction.fetch();
             } catch (error) {
-                this.logger.error(`Something went wrong when fetching the MessageReaction: ${error}.`);
+                this.logger.error('An error occurred while fetching the MessageReaction:', error);
                 return;
             }
         }

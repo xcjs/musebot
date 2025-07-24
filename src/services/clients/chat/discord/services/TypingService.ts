@@ -52,10 +52,9 @@ export class TypingService implements ITypingService {
                 void this.#onTypingInterval(interaction);
             }, this.#sendTypingIntervalMilliseconds);
 
-            // eslint-disable-next-line @typescript-eslint/no-base-to-string, @typescript-eslint/restrict-template-expressions
-            this.#logger.info(`Registered typing interval as interval #${channelTypingIndicator.typingInterval}.`);
+            this.#logger.info('Registered typing interval as interval:', channelTypingIndicator.typingInterval);
         } catch(error) {
-            this.#logger.error(`An error occurred while sending the typing status: ${error}`);
+            this.#logger.error('An error occurred while sending the typing status:', error);
             this.#stopTyping();
         }
     }
@@ -92,7 +91,7 @@ export class TypingService implements ITypingService {
             try {
                 await message.channel.sendTyping();
             } catch(error) {
-                this.#logger.error(`Something went wrong while setting the typing indicator: ${error}. Ignore this error if the bot is functioning normally.`);
+                this.#logger.error('Something went wrong while setting the typing indicator. Ignore this error if the bot is functioning normally:', error);
             }
         } else {
             this.#stopTyping();

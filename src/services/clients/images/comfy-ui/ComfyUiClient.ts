@@ -59,7 +59,7 @@ export class ComfyUiClient {
                 if(result.status === PromisedSettledResultStatus.Fulfilled) {
                     imagesResponses.push(result.value);
                 } else {
-                    this.#logger.error(`Error rendering prompt ${prompt.name}:`, result.reason);
+                    this.#logger.error('Error rendering prompt:', prompt, result);
                 }
             });
         });

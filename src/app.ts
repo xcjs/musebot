@@ -9,5 +9,5 @@ featureService.loadFeatures().then(() => {
     client.login();
 }).catch((error) => {
     console.error(`Failed to load supported features.`
-        + ` Check your workflows/workflow permissions and restart ${APPLICATION_NAME}: ${error}`);
+        + ` Check your workflows/workflow permissions and restart ${APPLICATION_NAME}:`, error);
 });
