@@ -44,7 +44,7 @@ export interface IServiceContainer {
     helpService: IHelpService;
     workflowService: IWorkflowService;
 
-    // Transitives ------------------------------------------------------------/
+    // Transients -------------------------------------------------------------/
 
     replyService: IReplyService;
     comfyUiClient: ComfyUiClient;

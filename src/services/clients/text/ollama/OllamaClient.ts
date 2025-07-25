@@ -52,7 +52,7 @@ export class OllamaClient {
                 response
             };
         } catch (error) {
-            this.#logger.error(`Failed to send Ollama a message: ${error}`);
+            this.#logger.error('Failed to send Ollama a message:', error);
 
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             throw new Error(error);
@@ -67,7 +67,7 @@ export class OllamaClient {
             model: this.#model
         };
 
-        this.#logger.info(`Calling Ollama API with the prompt: ${prompt}`);
+        this.#logger.info('Calling Ollama API with the prompt:', prompt);
 
         if (context.length > 0) {
             this.#logger.info(`A context of ${context.length} messages is provided.`);
@@ -85,7 +85,7 @@ export class OllamaClient {
                 data: messages
             };
         } catch(error) {
-            this.#logger.error(`Failed to send Ollama a message: ${error}`);
+            this.#logger.error('Failed to send Ollama a message:', error);
 
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             throw new Error(error);
@@ -117,7 +117,7 @@ export class OllamaClient {
                 data: messages
             };
         } catch(error) {
-            this.#logger.error(`An error occurred while sending Ollama a message and retrieving a stream: ${error}`);
+            this.#logger.error('An error occurred while sending Ollama a message and retrieving a stream:', error);
 
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             throw new Error(error);

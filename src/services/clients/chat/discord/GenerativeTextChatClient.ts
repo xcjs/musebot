@@ -64,12 +64,12 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
     }
 
      async #onInteraction(interaction: ButtonInteraction): Promise<void> {
-        this.logger.info(`Beginning interaction response to custom action ${interaction.customId}...`);
+        this.logger.info('Beginning interaction response to custom action:', interaction);
 
         try {
             await interaction.deferReply();
         } catch(error) {
-            this.logger.error(`Something went wrong while deferring a reply: ${error}. Ignore this error if the bot is functioning normally.`);
+            this.logger.error('An error occurred while deferring a reply. Ignore this error if the bot is functioning normally:', error);
         }
 
         await this.#typingService.startTyping(interaction);
@@ -91,7 +91,7 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
                     }) as BaseTask<void>);
                 break;
             default:
-                this.logger.warn(`An unknown interaction was passed: ${interaction.customId}.`);
+                this.logger.warn('An unknown interaction was passed:', interaction);
                 break;
         }
      }
@@ -140,7 +140,7 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
             try {
                 reaction = await reaction.fetch();
             } catch (error) {
-                this.logger.error(`Something went wrong when fetching the MessageReaction: `, error);
+                this.logger.error('An error occurred while fetching the MessageReaction:', error);
                 return;
             }
         }

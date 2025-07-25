@@ -168,16 +168,28 @@ export class OllamaPromptResponseTask extends BaseTask<OllamaMessage[]> implemen
     async #attachImage(prompt: string, replies: Array<DiscordMessage>): Promise<void> {
         this.#logger.info('An image will be attached to the Ollama response.');
 
-        prompt = 'The following prompt is a response to a message.'
+        const llmImagePrompt = 'The following prompt is a response to a message.'
             + ' Describe an artistic or creative image to go with this response.'
             + ' Keep in mind that the image generation model that will receive this prompt can only accurately include brief snippets of text 2-3 words in length.'
             + ' If you do decide to include any text in the image, make sure to surround it with quotes and remain brief.'
             + `\n\n\`\`\`text\n${prompt}\n\`\`\``;
 
-        const exchange = await this.#ollamaClient.generate(prompt);
+        let imagePrompt = '';
+
+        // TODO: Consider creating an OllamaGenerateResponseTask to do this instead.
+        try
+        {
+            const exchange = await this.#ollamaClient.generate(llmImagePrompt);
+            imagePrompt = exchange.response.response;
+        }
+        catch(error)
+        {
+            this.#logger.error('Failed to generate an image for the prompt. Falling back to the original Ollama response to generate an image instead.', error);
+            imagePrompt = prompt;
+        }
 
         const lastReply = replies[replies.length - 1];
-        const attachTask = this.#services.getAttachRenderTask(lastReply, exchange.response.response, lastReply.content) as BaseTask<void>;
+        const attachTask = this.#services.getAttachRenderTask(lastReply, imagePrompt, lastReply.content) as BaseTask<void>;
 
         this.#taskQueue.add(attachTask);
     }

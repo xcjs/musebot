@@ -88,7 +88,7 @@ export class TaskQueue implements ITaskQueue {
 
                 await Promise.allSettled(postProcessingPromises);
             } catch (error) {
-                this.#logger.error(`An exception occurred while processing a task: ${error}`);
+                this.#logger.error('An exception occurred while processing a task:', error);
             }
 
             tasks = this.#getNextTasks();
