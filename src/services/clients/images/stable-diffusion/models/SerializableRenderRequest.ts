@@ -3,6 +3,7 @@ import { maxSeed } from '../constants/constants.js';
 
 export class SerializableRenderRequest {
     prompt: string | null;
+    prompt2: string | undefined;
     promptNegative: string | null;
     workflow: string;
     seed: number;
@@ -18,6 +19,8 @@ export class SerializableRenderRequest {
     model: string | undefined;
     maxWidth: number | undefined;
     maxHeight: number | undefined;
+    durationMin: number | undefined;
+    durationMax: number | undefined;
 
     label: string | undefined;
     title: string | undefined;

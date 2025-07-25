@@ -1,5 +1,5 @@
 import { ImagesResponse, Prompt } from 'comfy-ui-client';
-import { Message, MessageType } from 'discord.js';
+import { Message } from 'discord.js';
 
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
@@ -18,7 +18,7 @@ import { IWorkflowService } from '../services/IWorkflowService.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 import { ComfyUiReplyTask } from './ComfyUiReplyTask.js';
 
-export class ComfyUiReplyRenderTask extends ComfyUiBaseTask implements IReplyRenderTask {
+export class ComfyUiReplyAudioTask extends ComfyUiBaseTask implements IReplyRenderTask {
     #services: IServiceContainer;
 
     #environmentSettings: IEnvironmentSettings;
@@ -50,7 +50,7 @@ export class ComfyUiReplyRenderTask extends ComfyUiBaseTask implements IReplyRen
         this.#replyService = services.replyService;
 
         this.#taskQueue = services.taskQueue;
-        this.#logger = services.getLogger('ComfyUiReplyRenderTask');
+        this.#logger = services.getLogger('ComfyUiReplyAudioTask');
 
         this.#message = message;
     }
@@ -58,15 +58,12 @@ export class ComfyUiReplyRenderTask extends ComfyUiBaseTask implements IReplyRen
     override async process(): Promise<void> {
         await super.process();
 
-        this.#logger.info('Processing a ComfyUiReplyRenderTask...');
+        this.#logger.info('Processing a ComfyUiReplyAudioTask...');
 
-        const prompt = this.#message.type === MessageType.Reply
-            ? `${((await this.#getAllAntecedentPrompts()).join(' '))} ${this.#message.content}`.trim()
-            : this.#replyService.getMessageWithoutBotMentions(this.#message);
+        const prompt = this.#replyService.getMessageWithoutBotMentions(this.#message);
 
         const workflows = this.#workflowService.workflows.filter(x =>
-            x.type === SupportedFeature.Txt2Img
-            || x.type === SupportedFeature.Txt2Vid);
+            x.type === SupportedFeature.Txt2Audio);
 
         const renderRequests: SerializableRenderRequest[] = [];
         const prompts: Prompt[] = [];
@@ -80,7 +77,7 @@ export class ComfyUiReplyRenderTask extends ComfyUiBaseTask implements IReplyRen
 
             const renderRequest = this.#workflowService.getWorkflowDefaults(workflow);
 
-            if(i === 0) {
+            if (i === 0) {
                 numRenders = renderRequest.num;
             }
 
@@ -93,7 +90,7 @@ export class ComfyUiReplyRenderTask extends ComfyUiBaseTask implements IReplyRen
 
             prompts.push(this.#workflowService.renderWorkflow(workflow, renderRequest));
             i++;
-        } while(i < numRenders);
+        } while (i < numRenders);
 
         const imagesResponse = await this.#comfyUiClient.render(prompts);
         const exchange: IHttpExchange<SerializableRenderRequest[], ImagesResponse> = {
@@ -102,35 +99,18 @@ export class ComfyUiReplyRenderTask extends ComfyUiBaseTask implements IReplyRen
         };
 
         if (this.#environmentSettings.hasStableDiffusionOutputAsSeparateTask) {
-            const replyTask = new ComfyUiReplyTask(this.#services, this.#message, { }, exchange);
+            const replyTask = new ComfyUiReplyTask(this.#services, this.#message, {}, exchange);
             this.#taskQueue.add(replyTask);
         } else {
-            await this.#comfyUiReplyService.reply(this.#message, { }, false, exchange);
+            await this.#comfyUiReplyService.reply(this.#message, {}, false, exchange);
         }
     }
 
     override async postProcess(): Promise<void> {
         await super.postProcess();
 
-        if(this.taskStatus === TaskStatus.Dead) {
+        if (this.taskStatus === TaskStatus.Dead) {
             await this.#replyService.replyWithError(this.#message);
         }
-    }
-
-    async #getAllAntecedentPrompts(): Promise<Array<string>> {
-        const prompts: Array<string> = [];
-        let currentMessage = this.#message;
-
-        while (currentMessage.reference !== null) {
-            const antecedentMessage = await currentMessage.fetchReference();
-
-            if (antecedentMessage.content !== null && antecedentMessage.content.length > 0) {
-                prompts.push(this.#replyService.getMessageWithoutBotMentions(antecedentMessage));
-            }
-
-            currentMessage = antecedentMessage;
-        }
-
-        return prompts.reverse();
     }
 }
