@@ -52,7 +52,8 @@ export class TypingService implements ITypingService {
                 void this.#onTypingInterval(interaction);
             }, this.#sendTypingIntervalMilliseconds);
 
-            this.#logger.info('Registered typing interval as interval:', channelTypingIndicator.typingInterval);
+            this.#logger.info('Registered typing interval as interval:',
+                channelTypingIndicator.typingInterval[Symbol.toPrimitive]());
         } catch(error) {
             this.#logger.error('An error occurred while sending the typing status:', error);
             this.#stopTyping();
