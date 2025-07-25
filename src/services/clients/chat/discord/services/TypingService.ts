@@ -90,7 +90,7 @@ export class TypingService implements ITypingService {
             try {
                 await message.channel.sendTyping();
             } catch(error) {
-                this.#logger.error('Something went wrong while setting the typing indicator. Ignore this error if the bot is functioning normally:', error);
+                this.#logger.error('An error occurred while setting the typing indicator. Ignore this error if the bot is functioning normally:', error);
             }
         } else {
             this.#stopTyping();
