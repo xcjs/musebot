@@ -77,8 +77,7 @@ export class TypingService implements ITypingService {
             return;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-base-to-string, @typescript-eslint/restrict-template-expressions
-        this.#logger.info(`Stopped typing and clearing interval #${channelTypingIndicator.typingInterval}.`);
+        this.#logger.info('Stopped typing and clearing interval:', channelTypingIndicator);
         clearInterval(channelTypingIndicator.typingInterval);
         channelTypingIndicator.typingInterval = null;
     }
