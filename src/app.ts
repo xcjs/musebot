@@ -1,3 +1,5 @@
+import './polyfills.js';
+
 import { APPLICATION_NAME } from './constants/Globals.js';
 import { ServiceContainer } from './services/ServiceContainer.js';
 
