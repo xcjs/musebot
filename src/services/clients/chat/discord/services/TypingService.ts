@@ -67,7 +67,7 @@ export class TypingService implements ITypingService {
 
         const channelTypingIndicator = this.#typingIndicators.find(x => x.channelId === this.#interaction.channelId);
 
-        if (channelTypingIndicator === undefined || channelTypingIndicator.typingInterval === null) {
+        if (channelTypingIndicator === undefined) {
             this.#logger.warn('Cannot stop a typing indicator with no matching interval.');
             return;
         }
