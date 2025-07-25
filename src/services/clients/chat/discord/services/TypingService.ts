@@ -52,7 +52,8 @@ export class TypingService implements ITypingService {
                 void this.#onTypingInterval(interaction);
             }, this.#sendTypingIntervalMilliseconds);
 
-            this.#logger.info('Registered typing interval as interval:', channelTypingIndicator.typingInterval);
+            this.#logger.info('Registered typing interval as interval:',
+                channelTypingIndicator.typingInterval[Symbol.toPrimitive]());
         } catch(error) {
             this.#logger.error('An error occurred while sending the typing status:', error);
             this.#stopTyping();
@@ -67,7 +68,7 @@ export class TypingService implements ITypingService {
 
         const channelTypingIndicator = this.#typingIndicators.find(x => x.channelId === this.#interaction.channelId);
 
-        if (channelTypingIndicator === undefined || channelTypingIndicator.typingInterval === null) {
+        if (channelTypingIndicator === undefined) {
             this.#logger.warn('Cannot stop a typing indicator with no matching interval.');
             return;
         }
@@ -77,8 +78,7 @@ export class TypingService implements ITypingService {
             return;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-base-to-string, @typescript-eslint/restrict-template-expressions
-        this.#logger.info(`Stopped typing and clearing interval #${channelTypingIndicator.typingInterval}.`);
+        this.#logger.info('Stopped typing and clearing interval:', channelTypingIndicator);
         clearInterval(channelTypingIndicator.typingInterval);
         channelTypingIndicator.typingInterval = null;
     }
@@ -91,7 +91,7 @@ export class TypingService implements ITypingService {
             try {
                 await message.channel.sendTyping();
             } catch(error) {
-                this.#logger.error('Something went wrong while setting the typing indicator. Ignore this error if the bot is functioning normally:', error);
+                this.#logger.error('An error occurred while setting the typing indicator. Ignore this error if the bot is functioning normally:', error);
             }
         } else {
             this.#stopTyping();
