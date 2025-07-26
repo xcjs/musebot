@@ -81,7 +81,7 @@
       "return_with_leftover_noise": "disable",
       "previews": "animate",
       "tile_sample": false,
-      "tile_size": "{{{ width` }}}",
+      "tile_size": "{{{ width }}}",
       "model": ["4", 0],
       "positive": ["6", 0],
       "negative": ["7", 0],
