@@ -19,6 +19,7 @@ export class SerializableRenderRequest {
     model: string | undefined;
     maxWidth: number | undefined;
     maxHeight: number | undefined;
+    duration: number | undefined;
     durationMin: number | undefined;
     durationMax: number | undefined;
 
@@ -49,6 +50,7 @@ export class SerializableRenderRequest {
         const instancedRequest = new SerializableRenderRequest();
 
         instancedRequest.prompt = request.prompt;
+        instancedRequest.prompt2 = request.prompt2;
         instancedRequest.promptNegative = request.promptNegative;
         instancedRequest.workflow = request.workflow || request.model;
         instancedRequest.seed = request.seed;
@@ -63,6 +65,9 @@ export class SerializableRenderRequest {
         instancedRequest.image = request.image;
         instancedRequest.maxHeight = request.maxHeight;
         instancedRequest.maxWidth = request.maxWidth;
+        instancedRequest.duration = request.duration;
+        instancedRequest.durationMin = request.durationMin;
+        instancedRequest.durationMax = request.durationMax;
 
         instancedRequest.label = request.label;
         instancedRequest.title = request.title;
