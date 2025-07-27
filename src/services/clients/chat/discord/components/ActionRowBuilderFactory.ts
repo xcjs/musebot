@@ -27,7 +27,8 @@ export class ActionRowBuilderFactory implements IActionRowBuilderFactory {
                 addedButtons.push(button);
             }
 
-            if (actionRow.components.length % DiscordConstants.MaxButtonsPerActionRow === 0
+            if (actionRow.components.length > 0
+                && actionRow.components.length % DiscordConstants.MaxButtonsPerActionRow === 0
                 || i === buttons.length - 1
             ) {
                 actionRows.push(actionRow);
