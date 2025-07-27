@@ -54,6 +54,11 @@ export class FeatureService implements IFeatureService {
                 this.#supportedFeatures.push(SupportedFeature.Img2Vid);
             }
 
+            if (this.#workflowService.hasWorkflowType(SupportedFeature.Txt2Audio)) {
+                this.#logger.info(`${SupportedFeature.Txt2Audio} supported.`);
+                this.#supportedFeatures.push(SupportedFeature.Txt2Audio);
+            }
+
             if (this.#workflowService.hasWorkflowType(SupportedFeature.Txt2Img)) {
                 this.#logger.info(`${SupportedFeature.Txt2Img} supported.`);
                 this.#supportedFeatures.push(SupportedFeature.Txt2Img);

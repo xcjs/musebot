@@ -116,6 +116,12 @@ export class WorkflowService implements IWorkflowService {
                 .substring(1, destructiveRenderRequest.prompt.length - 1);
         }
 
+        if (destructiveRenderRequest.prompt2?.length > 0) {
+            destructiveRenderRequest.prompt2 = JSON.stringify(destructiveRenderRequest.prompt2);
+            destructiveRenderRequest.prompt2 = destructiveRenderRequest.prompt2
+                .substring(1, destructiveRenderRequest.prompt2.length - 1);
+        }
+
         if(destructiveRenderRequest.promptNegative?.length > 0) {
             destructiveRenderRequest.promptNegative = JSON.stringify(destructiveRenderRequest.promptNegative);
             destructiveRenderRequest.promptNegative = destructiveRenderRequest.promptNegative

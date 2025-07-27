@@ -88,8 +88,7 @@ export class ComfyUiReplyAudioTask extends ComfyUiBaseTask implements IReplyRend
             if(prompt.indexOf(promptSeparator) > 0) {
                 renderRequest.prompt = prompt.split(promptSeparator)[0].trim();
                 renderRequest.prompt2 = prompt.substring(
-                    prompt.indexOf(promptSeparator),
-                    prompt.length - promptSeparator.length).trim();
+                    prompt.indexOf(promptSeparator), prompt.length).trim();
             } else {
                 renderRequest.prompt = prompt;
             }
