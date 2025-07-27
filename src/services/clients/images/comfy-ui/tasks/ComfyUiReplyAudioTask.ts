@@ -2,7 +2,7 @@ import { ImagesResponse, Prompt } from 'comfy-ui-client';
 import { Message } from 'discord.js';
 
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
-import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
+import { getRandomArrayEntry, getRandomInt } from '../../../../../utilities/random-utilities.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { ILogger } from '../../../../ILogger.js';
@@ -81,8 +81,25 @@ export class ComfyUiReplyAudioTask extends ComfyUiBaseTask implements IReplyRend
                 numRenders = renderRequest.num;
             }
 
+            // Some audio models that are music models accept separate prompts
+            // for music genre and lyrics.
+            const promptSeparator = '\n\n';
+
+            if(prompt.indexOf(promptSeparator) > 0) {
+                renderRequest.prompt = prompt.split(promptSeparator)[0].trim();
+                renderRequest.prompt2 = prompt.substring(
+                    prompt.indexOf(promptSeparator),
+                    prompt.length - promptSeparator.length).trim();
+            } else {
+                renderRequest.prompt = prompt;
+            }
+
+            if(renderRequest.durationMin !== undefined
+                && renderRequest.durationMax !== undefined) {
+                renderRequest.duration = getRandomInt(renderRequest.durationMin, renderRequest.durationMax);
+            }
+
             renderRequest.workflow = workflow.name;
-            renderRequest.prompt = prompt;
             renderRequest.num = 1;
             renderRequest.refreshSeed();
 
