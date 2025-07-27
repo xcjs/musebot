@@ -1,13 +1,25 @@
 {
+  "$musebotDefaults": {
+    "prompt": "",
+    "prompt2": "",
+    "promptNegative": "",
+    "workflow": "",
+    "seed": -1,
+    "sampler": "euler",
+    "scheduler": "simple",
+    "cfgScale": 5,
+    "steps": 50,
+    "num": 1,
+    "duration": null,
+    "durationMin": 150,
+    "durationMax": 240
+  },
   "14": {
     "inputs": {
       "tags": "prompt",
       "lyrics": "prompt",
       "lyrics_strength": 0.9900000000000002,
-      "clip": [
-        "40",
-        1
-      ]
+      "clip": ["40", 1]
     },
     "class_type": "TextEncodeAceStepAudio",
     "_meta": {
@@ -26,14 +38,8 @@
   },
   "18": {
     "inputs": {
-      "samples": [
-        "52",
-        0
-      ],
-      "vae": [
-        "40",
-        2
-      ]
+      "samples": ["52", 0],
+      "vae": ["40", 2]
     },
     "class_type": "VAEDecodeAudio",
     "_meta": {
@@ -51,10 +57,7 @@
   },
   "44": {
     "inputs": {
-      "conditioning": [
-        "14",
-        0
-      ]
+      "conditioning": ["14", 0]
     },
     "class_type": "ConditioningZeroOut",
     "_meta": {
@@ -63,14 +66,8 @@
   },
   "49": {
     "inputs": {
-      "model": [
-        "51",
-        0
-      ],
-      "operation": [
-        "50",
-        0
-      ]
+      "model": ["51", 0],
+      "operation": ["50", 0]
     },
     "class_type": "LatentApplyOperationCFG",
     "_meta": {
@@ -89,10 +86,7 @@
   "51": {
     "inputs": {
       "shift": 5.000000000000001,
-      "model": [
-        "40",
-        0
-      ]
+      "model": ["40", 0]
     },
     "class_type": "ModelSamplingSD3",
     "_meta": {
@@ -107,22 +101,10 @@
       "sampler_name": "euler",
       "scheduler": "simple",
       "denoise": 1,
-      "model": [
-        "49",
-        0
-      ],
-      "positive": [
-        "14",
-        0
-      ],
-      "negative": [
-        "44",
-        0
-      ],
-      "latent_image": [
-        "17",
-        0
-      ]
+      "model": ["49", 0],
+      "positive": ["14", 0],
+      "negative": ["44", 0],
+      "latent_image": ["17", 0]
     },
     "class_type": "KSampler",
     "_meta": {
@@ -134,10 +116,7 @@
       "filename_prefix": "audio/ComfyUI",
       "quality": "V0",
       "audioUI": "",
-      "audio": [
-        "18",
-        0
-      ]
+      "audio": ["18", 0]
     },
     "class_type": "SaveAudioMP3",
     "_meta": {
