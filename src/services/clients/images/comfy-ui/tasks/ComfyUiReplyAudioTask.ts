@@ -32,7 +32,6 @@ export class ComfyUiReplyAudioTask extends ComfyUiBaseTask implements IReplyRend
 
     #message: Message;
 
-
     override get taskChannel(): string {
         return `${this.#environmentSettings.stableDiffusionTaskChannel}_${this.#comfyUiClient.host}`;
     }
