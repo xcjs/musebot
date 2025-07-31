@@ -91,7 +91,6 @@ export class ComfyUiReplyAudioTask extends ComfyUiBaseTask implements IReplyRend
                     prompt.indexOf(promptSeparator), prompt.length).trim();
             } else {
                 renderRequest.prompt = prompt;
-                renderRequest.cfgScale2 = 0;
             }
 
             if(renderRequest.durationMin !== undefined
