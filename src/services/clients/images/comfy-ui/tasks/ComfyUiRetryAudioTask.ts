@@ -2,7 +2,7 @@ import { Prompt } from 'comfy-ui-client';
 import { BaseMessageOptions, ButtonInteraction, Message, User } from 'discord.js';
 
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
-import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
+import { getRandomArrayEntry, getRandomInt } from '../../../../../utilities/random-utilities.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { ILogger } from '../../../../ILogger.js';
@@ -95,6 +95,11 @@ export class ComfyUiRetryAudioTask extends ComfyUiBaseTask implements IRetryRend
             renderRequest.sampler = renderDefaults.sampler;
             renderRequest.scheduler = renderDefaults.scheduler;
             renderRequest.steps = renderDefaults.steps;
+
+            if(renderRequest.durationMin !== undefined
+                && renderRequest.durationMax !== undefined) {
+                renderRequest.duration = getRandomInt(renderRequest.durationMin, renderRequest.durationMax);
+            }
 
             if (renderRequest.workflow !== workflow.name) {
                 renderRequest.height = renderDefaults.height;
