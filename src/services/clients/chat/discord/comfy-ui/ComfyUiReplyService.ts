@@ -1,5 +1,5 @@
 import { ImageContainer, ImagesResponse } from 'comfy-ui-client';
-import { AttachmentBuilder, BaseMessageOptions, ButtonInteraction, Message } from 'discord.js';
+import { ActionRowBuilder, AttachmentBuilder, BaseMessageOptions, ButtonBuilder, ButtonInteraction, Message } from 'discord.js';
 
 import { MAX_FILE_NAME_LENGTH } from '../../../../../constants/FileConstants.js';
 import { APPLICATION_NAME } from '../../../../../constants/Globals.js';
@@ -11,6 +11,7 @@ import { AudioContainer, AudiosResponse } from '../../../images/comfy-ui/extensi
 import { SerializableRenderRequest } from '../../../images/stable-diffusion/models/SerializableRenderRequest.js';
 import { IReplyService } from '../../IReplyService.js';
 import { Img2ImgActionRow } from '../components/buttonRows/Img2ImgActionRow.js';
+import { StatefulAudioGenerationActionRow } from '../components/buttonRows/StatefulAudioGenerationActionRow.js';
 import { StatefulImageGenerationActionRows } from '../components/buttonRows/StatefulImageGenerationActionRows.js';
 import { StatelessImageGenerationActionRow } from '../components/buttonRows/StatelessImageGenerationActionRow.js';
 import { DiscordConstants } from '../enums/DiscordConstants.js';
@@ -70,6 +71,7 @@ export class ComfyUiReplyService {
         }).length === renderExchange.request.length;
 
         const fileAttachments: Array<AttachmentBuilder> = [];
+        let components: ActionRowBuilder<ButtonBuilder>[] = [];
 
         for (const mediaResponse of Object.values(renderExchange.response)) {
             this.#logger.info(`Attaching render(s):`, mediaResponse);
@@ -100,6 +102,10 @@ export class ComfyUiReplyService {
                         // If all else fails, it's most likely an MP3 sound.
                         extension = '.mp3';
                     }
+
+                    components = isStatefulResponse
+                        ? new StatefulAudioGenerationActionRow(this.#services, renderExchange.request[0]).build()
+                        : [];
                 } else if(imageContainer !== null) {
                     file = Buffer.from(await (mediaContainer as ImageContainer).blob.arrayBuffer());
 
@@ -115,6 +121,12 @@ export class ComfyUiReplyService {
                         // If all else fails, it's most likely a PNG image.
                         extension = '.png';
                     }
+
+                    components = isStatefulResponse ?
+                        new StatefulImageGenerationActionRows(this.#services, renderExchange.request[0]).build()
+                            .concat(await new Img2ImgActionRow(this.#services).buildAsync()) :
+                        new StatelessImageGenerationActionRow(this.#services).build()
+                            .concat(await new Img2ImgActionRow(this.#services).buildAsync());
                 } else {
                     throw new Error('Unsupported media container was used.');
                 }
@@ -136,11 +148,7 @@ export class ComfyUiReplyService {
         }
 
         reply.files = reply.files.concat(fileAttachments);
-        reply.components = isStatefulResponse ?
-                new StatefulImageGenerationActionRows(this.#services, renderExchange.request[0]).build()
-                    .concat(await new Img2ImgActionRow(this.#services).buildAsync()) :
-                new StatelessImageGenerationActionRow(this.#services).build()
-                    .concat(await new Img2ImgActionRow(this.#services).buildAsync());
+        reply.components = components;
 
         await this.#replyService.reply(interaction, reply, isEdit);
     }
