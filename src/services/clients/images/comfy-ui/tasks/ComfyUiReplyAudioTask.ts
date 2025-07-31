@@ -1,4 +1,4 @@
-import { ImagesResponse, Prompt } from 'comfy-ui-client';
+import { Prompt } from 'comfy-ui-client';
 import { Message } from 'discord.js';
 
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
@@ -14,6 +14,7 @@ import { IReplyService } from '../../../chat/IReplyService.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 import { IReplyRenderTask } from '../../tasks/IReplyRenderTask.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
+import { AudiosResponse } from '../extensions/AudioResponse.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 import { ComfyUiReplyTask } from './ComfyUiReplyTask.js';
@@ -107,10 +108,10 @@ export class ComfyUiReplyAudioTask extends ComfyUiBaseTask implements IReplyRend
             i++;
         } while (i < numRenders);
 
-        const imagesResponse = await this.#comfyUiClient.render(prompts);
-        const exchange: IHttpExchange<SerializableRenderRequest[], ImagesResponse> = {
+        const audiosResponse = await this.#comfyUiClient.renderAudios(prompts);
+        const exchange: IHttpExchange<SerializableRenderRequest[], AudiosResponse> = {
             request: renderRequests,
-            response: imagesResponse
+            response: audiosResponse
         };
 
         if (this.#environmentSettings.hasStableDiffusionOutputAsSeparateTask) {

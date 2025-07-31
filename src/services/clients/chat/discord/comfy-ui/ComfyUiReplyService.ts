@@ -1,4 +1,4 @@
-import { ImagesResponse } from 'comfy-ui-client';
+import { ImageContainer, ImagesResponse } from 'comfy-ui-client';
 import { AttachmentBuilder, BaseMessageOptions, ButtonInteraction, Message } from 'discord.js';
 
 import { MAX_FILE_NAME_LENGTH } from '../../../../../constants/FileConstants.js';
@@ -7,6 +7,7 @@ import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { ComfyUiClient } from '../../../images/comfy-ui/ComfyUiClient.js';
+import { AudioContainer, AudiosResponse } from '../../../images/comfy-ui/extensions/AudioResponse.js';
 import { SerializableRenderRequest } from '../../../images/stable-diffusion/models/SerializableRenderRequest.js';
 import { IReplyService } from '../../IReplyService.js';
 import { Img2ImgActionRow } from '../components/buttonRows/Img2ImgActionRow.js';
@@ -38,7 +39,7 @@ export class ComfyUiReplyService {
     async reply(interaction: Message | ButtonInteraction,
         reply: BaseMessageOptions,
         isEdit: boolean = false,
-        renderExchange: IHttpExchange<Array<SerializableRenderRequest | null>, ImagesResponse>): Promise<void> {
+        renderExchange: IHttpExchange<Array<SerializableRenderRequest | null>, ImagesResponse | AudiosResponse>): Promise<void> {
 
         if(reply.content === undefined || reply.content === null) {
             reply.content = '';
@@ -68,34 +69,61 @@ export class ComfyUiReplyService {
             }
         }).length === renderExchange.request.length;
 
-        const imageAttachments: Array<AttachmentBuilder> = [];
+        const fileAttachments: Array<AttachmentBuilder> = [];
 
-        for (const imageResponse of Object.values(renderExchange.response)) {
-            this.#logger.info(`Attaching render(s):`, imageResponse);
+        for (const mediaResponse of Object.values(renderExchange.response)) {
+            this.#logger.info(`Attaching render(s):`, mediaResponse);
             let i = 0;
 
-            for (const imageContainer of imageResponse) {
-                const image = Buffer.from(await imageContainer.blob.arrayBuffer());
+            for (const mediaContainer of mediaResponse) {
+                let file: Buffer<ArrayBuffer>;
+                let extension = '';
+
+                const audioContainer = (mediaContainer as AudioContainer).audio !== undefined
+                    ? (mediaContainer as AudioContainer) : null;
+
+                const imageContainer = (mediaContainer as ImageContainer).image !== undefined
+                    ? (mediaContainer as ImageContainer) : null;
+
+                if(audioContainer !== null) {
+                    file = Buffer.from(await (mediaContainer as AudioContainer).blob.arrayBuffer());
+
+                    if (audioContainer.audio.filename !== undefined) {
+                        extension = audioContainer.audio.filename.substring(
+                            audioContainer.audio.filename.lastIndexOf('.'),
+                            audioContainer.audio.filename.length);
+                    } else if (audioContainer.audio['content-type'] !== undefined) {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                        const contentType: string = audioContainer.audio['content-type'];
+                        extension = `.${contentType.substring(contentType.lastIndexOf('/') + 1, contentType.length)}`;
+                    } else {
+                        // If all else fails, it's most likely an MP3 sound.
+                        extension = '.mp3';
+                    }
+                } else if(imageContainer !== null) {
+                    file = Buffer.from(await (mediaContainer as ImageContainer).blob.arrayBuffer());
+
+                    if (imageContainer.image.filename !== undefined) {
+                        extension = imageContainer.image.filename.substring(
+                            imageContainer.image.filename.lastIndexOf('.'),
+                            imageContainer.image.filename.length);
+                    } else if (imageContainer.image['content-type'] !== undefined) {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                        const contentType: string = imageContainer.image['content-type'];
+                        extension = `.${contentType.substring(contentType.lastIndexOf('/') + 1, contentType.length)}`;
+                    } else {
+                        // If all else fails, it's most likely a PNG image.
+                        extension = '.png';
+                    }
+                } else {
+                    throw new Error('Unsupported media container was used.');
+                }
+
                 const filename = this.getFileNameFromPrompt(renderExchange.request[i]
                     || renderExchange.request[0]);
 
-                let extension = '';
-
-                if (imageContainer.image.filename !== undefined) {
-                    extension = imageContainer.image.filename.substring(
-                        imageContainer.image.filename.lastIndexOf('.'),
-                        imageContainer.image.filename.length);
-                } else if(imageContainer.image['content-type'] !== undefined) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                    const contentType: string = imageContainer.image['content-type'];
-                    extension = `.${contentType.substring(contentType.lastIndexOf('/') + 1, contentType.length)}`;
-                } else {
-                    // If all else fails, it's most likely a PNG image.
-                    extension = '.png';
-                }
-
-                imageAttachments.push(new AttachmentBuilder(
-                    image, {
+                fileAttachments.push(new AttachmentBuilder(
+                    file, {
                         name: `${filename}${extension}`,
                         description: isStatefulResponse
                             ? jsonDescriptions[i] || jsonDescriptions[0]
@@ -107,7 +135,7 @@ export class ComfyUiReplyService {
             }
         }
 
-        reply.files = reply.files.concat(imageAttachments);
+        reply.files = reply.files.concat(fileAttachments);
         reply.components = isStatefulResponse ?
                 new StatefulImageGenerationActionRows(this.#services, renderExchange.request[0]).build()
                     .concat(await new Img2ImgActionRow(this.#services).buildAsync()) :
