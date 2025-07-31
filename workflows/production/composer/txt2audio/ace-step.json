@@ -8,7 +8,7 @@
     "sampler": "euler",
     "scheduler": "simple",
     "cfgScale": 5,
-    "cfgScale2": 99,
+    "cfgScale2": 0.99,
     "steps": 50,
     "num": 1,
     "duration": null,
