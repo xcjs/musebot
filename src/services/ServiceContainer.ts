@@ -32,6 +32,7 @@ import { ComfyUiJsonRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiJs
 import { ComfyUiRandomRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiRandomRenderTask.js';
 import { ComfyUiReplyAudioTask } from './clients/images/comfy-ui/tasks/ComfyUiReplyAudioTask.js';
 import { ComfyUiReplyRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiReplyRenderTask.js';
+import { ComfyUiRetryAudioTask } from './clients/images/comfy-ui/tasks/ComfyUiRetryAudioTask.js';
 import { ComfyUiRetryRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiRetryRenderTask.js';
 import { ComfyUiShowSourceTask } from './clients/images/comfy-ui/tasks/ComfyUiShowSourceTask.js';
 import { ImageHelpService } from './clients/images/help/ImageHelpService.js';
@@ -289,13 +290,20 @@ export class ServiceContainer implements IServiceContainer {
 
     getRetryRenderTask(interaction: ButtonInteraction): IRetryRenderTask {
         if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)
-            && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
+            && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)
+            && !this.#featureService.hasFeature(SupportedFeature.Txt2Audio)) {
             throw this.#taskNotConfiguredError;
         }
 
         switch (this.#environmentSettings.stableDiffusionApiType) {
             case StableDiffusionApiType.ComfyUI:
-                return new ComfyUiRetryRenderTask(this, interaction);
+                if(this.#featureService.hasFeature(SupportedFeature.Txt2Img)) {
+                    return new ComfyUiRetryRenderTask(this, interaction);
+                } else if(this.#featureService.hasFeature(SupportedFeature.Txt2Audio)) {
+                    return new ComfyUiRetryAudioTask(this, interaction);
+                } else {
+                    throw this.#taskNotConfiguredError;
+                }
             default:
                 throw this.#taskNotConfiguredError;
         }
