@@ -11,7 +11,8 @@ export class ExpandPromptButton extends BaseComponent<ButtonBuilder> {
     }
 
     override get isSupported(): boolean {
-        return this.featureService.hasFeature(SupportedFeature.Txt2Img)
+        return (this.featureService.hasFeature(SupportedFeature.Txt2Img)
+            || this.featureService.hasFeature(SupportedFeature.Txt2Vid))
             && this.featureService.hasFeature(SupportedFeature.Txt2Txt);
     }
 
