@@ -29,7 +29,7 @@
   "17": {
     "inputs": {
       "seconds": "{{{ duration }}}",
-      "batch_size": 1
+      "batch_size": "{{{ num }}}"
     },
     "class_type": "EmptyAceStepLatentAudio",
     "_meta": {
@@ -95,11 +95,11 @@
   },
   "52": {
     "inputs": {
-      "seed": 801458315986567,
-      "steps": 50,
-      "cfg": 5,
-      "sampler_name": "euler",
-      "scheduler": "simple",
+      "seed": "{{{ seed }}}",
+      "steps": "{{{ steps }}}",
+      "cfg": "{{{ cfgScale }}}",
+      "sampler_name": "{{{ sampler }}}",
+      "scheduler": "{{{ scheduler }}}",
       "denoise": 1,
       "model": ["49", 0],
       "positive": ["14", 0],
