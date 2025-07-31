@@ -9,6 +9,7 @@ import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReply
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { IReplyTask } from '../../../chat/tasks/IReplyTask.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
+import { AudiosResponse } from '../extensions/AudioResponse.js';
 
 export class ComfyUiReplyTask extends BaseTask<void> implements IReplyTask {
     get taskChannel(): string {
@@ -20,13 +21,13 @@ export class ComfyUiReplyTask extends BaseTask<void> implements IReplyTask {
 
     #interaction: Message | ButtonInteraction;
     #reply: BaseMessageOptions;
-    #renderExchange: IHttpExchange<Array<SerializableRenderRequest>, ImagesResponse>;
+    #renderExchange: IHttpExchange<Array<SerializableRenderRequest>, ImagesResponse | AudiosResponse>;
     #isEdit: boolean;
 
     constructor(services: IServiceContainer,
         interaction: Message | ButtonInteraction,
         reply: BaseMessageOptions,
-        renderExchange: IHttpExchange<Array<SerializableRenderRequest>, ImagesResponse>,
+        renderExchange: IHttpExchange<Array<SerializableRenderRequest>, ImagesResponse | AudiosResponse>,
         isEdit: boolean = false) {
         super(services);
 

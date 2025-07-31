@@ -6,6 +6,7 @@ import { ComfyUiReplyService } from './clients/chat/discord/comfy-ui/ComfyUiRepl
 import { ActionRowBuilderFactory } from './clients/chat/discord/components/ActionRowBuilderFactory.js';
 import { IActionRowBuilderFactory } from './clients/chat/discord/components/IActionRowBuilderFactory.js';
 import { DiscordConstants } from './clients/chat/discord/enums/DiscordConstants.js';
+import { GenerativeAudioChatClient } from './clients/chat/discord/GenerativeAudioChatClient.js';
 import { GenerativeImageChatClient } from './clients/chat/discord/GenerativeImageChatClient.js';
 import { GenerativeTextChatClient } from './clients/chat/discord/GenerativeTextChatClient.js';
 import { OllamaReplyService } from './clients/chat/discord/ollama/OllamaReplyService.js';
@@ -29,7 +30,9 @@ import { ComfyUiImg2ImgRenderTask } from './clients/images/comfy-ui/tasks/ComfyU
 import { ComfyUiIncreaseGuidanceScaleRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiIncreaseGuidanceScaleRenderTask.js';
 import { ComfyUiJsonRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiJsonRenderTask.js';
 import { ComfyUiRandomRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiRandomRenderTask.js';
+import { ComfyUiReplyAudioTask } from './clients/images/comfy-ui/tasks/ComfyUiReplyAudioTask.js';
 import { ComfyUiReplyRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiReplyRenderTask.js';
+import { ComfyUiRetryAudioTask } from './clients/images/comfy-ui/tasks/ComfyUiRetryAudioTask.js';
 import { ComfyUiRetryRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiRetryRenderTask.js';
 import { ComfyUiShowSourceTask } from './clients/images/comfy-ui/tasks/ComfyUiShowSourceTask.js';
 import { ImageHelpService } from './clients/images/help/ImageHelpService.js';
@@ -265,14 +268,21 @@ export class ServiceContainer implements IServiceContainer {
             }
 
     getReplyRenderTask(message: DiscordMessage): IReplyRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)
+        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Audio)
+            && !this.#featureService.hasFeature(SupportedFeature.Txt2Img)
             && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
             throw this.#taskNotConfiguredError;
         }
 
         switch (this.#environmentSettings.stableDiffusionApiType) {
             case StableDiffusionApiType.ComfyUI:
-                return new ComfyUiReplyRenderTask(this, message);
+                if(this.#environmentSettings.botFunction === BotFunction.Audio) {
+                    return new ComfyUiReplyAudioTask(this, message);
+                } else if(this.#environmentSettings.botFunction === BotFunction.Images) {
+                    return new ComfyUiReplyRenderTask(this, message);
+                } else {
+                    throw this.#taskNotConfiguredError;
+                }
             default:
                 throw this.#taskNotConfiguredError;
         }
@@ -280,13 +290,20 @@ export class ServiceContainer implements IServiceContainer {
 
     getRetryRenderTask(interaction: ButtonInteraction): IRetryRenderTask {
         if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)
-            && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
+            && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)
+            && !this.#featureService.hasFeature(SupportedFeature.Txt2Audio)) {
             throw this.#taskNotConfiguredError;
         }
 
         switch (this.#environmentSettings.stableDiffusionApiType) {
             case StableDiffusionApiType.ComfyUI:
-                return new ComfyUiRetryRenderTask(this, interaction);
+                if(this.#featureService.hasFeature(SupportedFeature.Txt2Img)) {
+                    return new ComfyUiRetryRenderTask(this, interaction);
+                } else if(this.#featureService.hasFeature(SupportedFeature.Txt2Audio)) {
+                    return new ComfyUiRetryAudioTask(this, interaction);
+                } else {
+                    throw this.#taskNotConfiguredError;
+                }
             default:
                 throw this.#taskNotConfiguredError;
         }
@@ -349,6 +366,9 @@ export class ServiceContainer implements IServiceContainer {
         });
 
         switch (this.#environmentSettings.botFunction) {
+            case BotFunction.Audio:
+                this.#generativeChatClient = new GenerativeAudioChatClient(this);
+                break;
             case BotFunction.Images:
                 this.#helpService = new ImageHelpService(this);
                 this.#generativeChatClient = new GenerativeImageChatClient(this);

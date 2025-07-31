@@ -236,6 +236,14 @@ export class ReplyService implements IReplyService {
         return matchingAttachments;
     }
 
+    getAudioAttachments(interaction: Message | ButtonInteraction): Array<Attachment> {
+        const audioTypes = [
+            ContentType.Mp3
+        ];
+
+        return this.getAttachmentsByType(interaction, audioTypes);
+    }
+
     getImageAttachments(interaction: Message | ButtonInteraction): Array<Attachment> {
         const imageTypes = [
             ContentType.Jpeg,
