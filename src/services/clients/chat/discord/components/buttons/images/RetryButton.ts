@@ -12,7 +12,8 @@ export class RetryButton extends BaseComponent<ButtonBuilder> {
 
     override get isSupported(): boolean {
         return this.featureService.hasFeature(SupportedFeature.Txt2Audio)
-            || this.featureService.hasFeature(SupportedFeature.Txt2Img);
+            || this.featureService.hasFeature(SupportedFeature.Txt2Img)
+            || this.featureService.hasFeature(SupportedFeature.Txt2Vid);
     }
 
     override get title(): string {
