@@ -80,8 +80,7 @@ export class ComfyUiRetryAudioTask extends ComfyUiBaseTask implements IRetryRend
             content = `${username} re-rendered \`${renderRequest.prompt}\``.substring(0, DiscordConstants.ContentMaxLength);
 
             const workflows = this.#workflowService.workflows.filter(x =>
-                x.type === SupportedFeature.Txt2Img
-                || x.type === SupportedFeature.Txt2Vid);
+                x.type === SupportedFeature.Txt2Audio);
 
             const workflow = getRandomArrayEntry(workflows);
             const renderDefaults = this.#workflowService.getWorkflowDefaults(workflow);
