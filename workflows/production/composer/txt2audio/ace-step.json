@@ -8,7 +8,6 @@
     "sampler": "euler",
     "scheduler": "simple",
     "cfgScale": 5,
-    "cfgScale2": 0.99,
     "steps": 50,
     "num": 1,
     "duration": null,
@@ -19,7 +18,7 @@
     "inputs": {
       "tags": "{{{ prompt }}}",
       "lyrics": "{{{ prompt2 }}}",
-      "lyrics_strength": "{{{ cfgScale2 }}}",
+      "lyrics_strength": 0.9900000000000002,
       "clip": ["40", 1]
     },
     "class_type": "TextEncodeAceStepAudio",
