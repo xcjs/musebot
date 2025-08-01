@@ -1,7 +1,7 @@
 {
   "$musebotDefaults": {
     "prompt": "",
-    "prompt2": "",
+    "prompt2": "[inst]",
     "promptNegative": "",
     "workflow": "",
     "seed": -1,
