@@ -1,10 +1,10 @@
 import { ComfyUIClient, Prompt } from 'comfy-ui-client';
 import WebSocket from 'ws';
 
-import { AudioContainer, AudiosResponse } from './AudioResponse.js';
+import { MediaContainer, MultiMediaContainer, MultiMediaResponse } from './MediaResponse.js';
 
 export class ExtendedComfyUIClient extends ComfyUIClient {
-    async getAudios(prompt: Prompt): Promise<AudiosResponse> {
+    async getMultiMedia(prompt: Prompt): Promise<MultiMediaResponse> {
         if (!this.ws) {
             throw new Error(
                 'WebSocket client is not connected. Please call connect() before interacting.',
@@ -14,8 +14,8 @@ export class ExtendedComfyUIClient extends ComfyUIClient {
         const queue = await this.queuePrompt(prompt);
         const promptId = queue.prompt_id;
 
-        return new Promise<AudiosResponse>((resolve, reject) => {
-            const outputAudios: AudiosResponse = {};
+        return new Promise<MultiMediaResponse>((resolve, reject) => {
+            const multiMediaResponse: MultiMediaResponse = {};
 
             const onMessage = async (data: WebSocket.RawData, isBinary: boolean) => {
                 // Previews are binary data
@@ -37,43 +37,37 @@ export class ExtendedComfyUIClient extends ComfyUIClient {
                             // Execution is done
                             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                             if (messageData.prompt_id === promptId) {
-                                // Get history
                                 const historyRes = await this.getHistory(promptId);
                                 const history = historyRes[promptId];
 
-                                // Populate output images
                                 for (const nodeId of Object.keys(history.outputs)) {
-                                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                                    const nodeOutput = history.outputs[nodeId];
-                                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                                    if (nodeOutput.audio) {
-                                        const audioOutput: AudioContainer[] = [];
-                                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                                        for (const audio of nodeOutput.audio) {
-                                            const blob = await this.getAudio(
-                                                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+                                    const mediaContainer = history.outputs[nodeId] as MultiMediaContainer;
+
+                                    if (mediaContainer.audio !== undefined) {
+                                        const audioOutputs: MediaContainer[] = [];
+
+                                        for (const audio of mediaContainer.audio) {
+                                            const blob = await this.getMedia(
                                                 audio.filename,
-                                                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                                                 audio.subfolder,
-                                                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
                                                 audio.type,
                                             );
 
-                                            audioOutput.push({
+                                            audioOutputs.push({
                                                 blob,
-                                                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                                                 audio,
+                                                image: undefined
                                             });
                                         }
 
-                                        outputAudios[nodeId] = audioOutput;
+                                        multiMediaResponse[nodeId] = audioOutputs;
                                     }
                                 }
 
                                 // Remove listener
                                 // eslint-disable-next-line @typescript-eslint/no-misused-promises
                                 this.ws?.off('message', onMessage);
-                                return resolve(outputAudios);
+                                return resolve(multiMediaResponse);
                             }
                         }
                     }
@@ -89,7 +83,7 @@ export class ExtendedComfyUIClient extends ComfyUIClient {
         });
     }
 
-    async getAudio(
+    async getMedia(
         filename: string,
         subfolder: string,
         type: string,

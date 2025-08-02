@@ -7,8 +7,8 @@ import { IEnvironmentSettings } from '../../../environment-settings/IEnvironment
 import { ILogger } from '../../../ILogger.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
 import { IGenerativeChatClient } from '../../chat/IGenerativeChatClient.js';
-import { AudiosResponse } from './extensions/AudioResponse.js';
 import { ExtendedComfyUIClient } from './extensions/ExtendedComfyUIClient.js';
+import { MultiMediaResponse } from './extensions/MediaResponse.js';
 
 export class ComfyUiClient {
     get host(): URL {
@@ -75,37 +75,37 @@ export class ComfyUiClient {
         return imagesResponse;
     }
 
-    async renderAudios(prompts: Prompt[]): Promise<AudiosResponse> {
+    async renderMedia(prompts: Prompt[]): Promise<MultiMediaResponse> {
         await this.#client.connect();
 
-        const audiosPromises: Promise<AudiosResponse>[] = [];
-        const audiosResponses: AudiosResponse[] = [];
+        const multiMediaPromises: Promise<MultiMediaResponse>[] = [];
+        const multiMediaResponses: MultiMediaResponse[] = [];
 
         prompts.forEach((prompt) => {
             this.#logger.info('Sending workflow to ComfyUI:', prompt);
             delete prompt.$musebotDefaults;
-            audiosPromises.push(this.#client.getAudios(prompt));
+            multiMediaPromises.push(this.#client.getMultiMedia(prompt));
         });
 
-        await Promise.allSettled(audiosPromises).then(async (results) => {
+        await Promise.allSettled(multiMediaPromises).then(async (results) => {
             await this.#client.disconnect();
 
             results.forEach(result => {
                 if (result.status === PromisedSettledResultStatus.Fulfilled) {
-                    audiosResponses.push(result.value);
+                    multiMediaResponses.push(result.value);
                 } else {
                     this.#logger.error('Error rendering prompt:', prompt, result);
                 }
             });
         });
 
-        const imagesResponse = this.#flattenMultipleAudiosResponses(audiosResponses);
+        const multiMediaResponse = this.#flattenMultipleMediaResponses(multiMediaResponses);
 
-        if (Object.keys(imagesResponse).length === 0) {
+        if (Object.keys(multiMediaResponse).length === 0) {
             return Promise.reject(new Error('The render failed but was not reported as a failure by the Comfy UI client.'));
         }
 
-        return imagesResponse;
+        return multiMediaResponse;
     }
 
     async disconnect(): Promise<void> {
@@ -134,19 +134,19 @@ export class ComfyUiClient {
         return imagesResponse;
     }
 
-    #flattenMultipleAudiosResponses(imagesResponses: AudiosResponse[]): AudiosResponse {
-        const audiosResponse: AudiosResponse = {};
+    #flattenMultipleMediaResponses(multiMediaResponses: MultiMediaResponse[]): MultiMediaResponse {
+        const responseDictionary: MultiMediaResponse = {};
 
-        for (const imageResponse of imagesResponses) {
-            for (const [key, value] of Object.entries(imageResponse)) {
-                if (audiosResponse[key] === undefined) {
-                    audiosResponse[key] = [];
+        for (const multiMediaResponse of multiMediaResponses) {
+            for (const [key, value] of Object.entries(multiMediaResponse)) {
+                if (responseDictionary[key] === undefined) {
+                    responseDictionary[key] = [];
                 }
 
-                audiosResponse[key] = audiosResponse[key].concat(value);
+                responseDictionary[key] = responseDictionary[key].concat(value);
             }
         }
 
-        return audiosResponse;
+        return responseDictionary;
     }
 }

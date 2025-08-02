@@ -1,4 +1,4 @@
-import { ImageContainer, ImagesResponse } from 'comfy-ui-client';
+import { ImagesResponse } from 'comfy-ui-client';
 import { ActionRowBuilder, AttachmentBuilder, BaseMessageOptions, ButtonBuilder, ButtonInteraction, Message } from 'discord.js';
 
 import { MAX_FILE_NAME_LENGTH } from '../../../../../constants/FileConstants.js';
@@ -7,7 +7,7 @@ import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { ComfyUiClient } from '../../../images/comfy-ui/ComfyUiClient.js';
-import { AudioContainer, AudiosResponse } from '../../../images/comfy-ui/extensions/AudioResponse.js';
+import { MediaContainer, MultiMediaResponse } from '../../../images/comfy-ui/extensions/MediaResponse.js';
 import { SerializableRenderRequest } from '../../../images/stable-diffusion/models/SerializableRenderRequest.js';
 import { IReplyService } from '../../IReplyService.js';
 import { Img2ImgActionRow } from '../components/buttonRows/Img2ImgActionRow.js';
@@ -40,7 +40,7 @@ export class ComfyUiReplyService {
     async reply(interaction: Message | ButtonInteraction,
         reply: BaseMessageOptions,
         isEdit: boolean = false,
-        renderExchange: IHttpExchange<Array<SerializableRenderRequest | null>, ImagesResponse | AudiosResponse>): Promise<void> {
+        renderExchange: IHttpExchange<Array<SerializableRenderRequest | null>, ImagesResponse | MultiMediaResponse>): Promise<void> {
 
         if(reply.content === undefined || reply.content === null) {
             reply.content = '';
@@ -81,22 +81,20 @@ export class ComfyUiReplyService {
                 let file: Buffer<ArrayBuffer>;
                 let extension = '';
 
-                const audioContainer = (mediaContainer as AudioContainer).audio !== undefined
-                    ? (mediaContainer as AudioContainer) : null;
+                const audioContainer = (mediaContainer as MediaContainer).audio !== undefined
+                    ? (mediaContainer as MediaContainer) : null;
 
-                const imageContainer = (mediaContainer as ImageContainer).image !== undefined
-                    ? (mediaContainer as ImageContainer) : null;
+                const imageContainer = mediaContainer;
 
-                if(audioContainer !== null) {
-                    file = Buffer.from(await (mediaContainer as AudioContainer).blob.arrayBuffer());
+                if(audioContainer.audio !== undefined) {
+                    file = Buffer.from(await mediaContainer.blob.arrayBuffer());
 
                     if (audioContainer.audio.filename !== undefined) {
                         extension = audioContainer.audio.filename.substring(
                             audioContainer.audio.filename.lastIndexOf('.'),
                             audioContainer.audio.filename.length);
                     } else if (audioContainer.audio['content-type'] !== undefined) {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                        const contentType: string = audioContainer.audio['content-type'];
+                        const contentType = audioContainer.audio['content-type'] as string;
                         extension = `.${contentType.substring(contentType.lastIndexOf('/') + 1, contentType.length)}`;
                     } else {
                         // If all else fails, it's most likely an MP3 sound.
@@ -107,7 +105,7 @@ export class ComfyUiReplyService {
                         ? new StatefulAudioGenerationActionRow(this.#services, renderExchange.request[0]).build()
                         : [];
                 } else if(imageContainer !== null) {
-                    file = Buffer.from(await (mediaContainer as ImageContainer).blob.arrayBuffer());
+                    file = Buffer.from(await imageContainer.blob.arrayBuffer());
 
                     if (imageContainer.image.filename !== undefined) {
                         extension = imageContainer.image.filename.substring(
