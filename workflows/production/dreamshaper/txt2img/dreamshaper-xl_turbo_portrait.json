@@ -4,7 +4,7 @@
     "promptNegative": "",
     "model": "",
     "seed": -1,
-    "width": 1024,
+    "width": 684,
     "height": 1024,
     "sampler": "dpmpp_sde",
     "scheduler": "karras",
@@ -141,8 +141,11 @@
   },
   "102": {
     "inputs": {
-      "filename_prefix": "Musebot",
-      "images": ["101", 0]
+      "filename_prefix": "Musebot_Dreamshaper",
+      "images": [
+        "101",
+        0
+      ]
     },
     "class_type": "SaveImage",
     "_meta": {

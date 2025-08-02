@@ -5,16 +5,16 @@
     "model": "",
     "seed": -1,
     "width": 1024,
-    "height": 1024,
-    "sampler": "euler",
-    "scheduler": "sgm_uniform",
-    "cfgScale": 6,
-    "steps": 30,
+    "height": 768,
+    "sampler": "dpmpp_2m_sde",
+    "scheduler": "karras",
+    "cfgScale": 5,
+    "steps": 20,
     "num": 1
   },
   "4": {
     "inputs": {
-      "ckpt_name": "SDXL/Pixel/pixelArtDiffusionXL_spriteShaper.safetensors"
+      "ckpt_name": "SDXL/Cartoon/CHEYENNE_v20.safetensors"
     },
     "class_type": "CheckpointLoaderSimple",
     "_meta": {
@@ -34,8 +34,11 @@
   },
   "6": {
     "inputs": {
-      "text": "pixel art, {{{ prompt }}}",
-      "clip": ["4", 1]
+      "text": "detailed illustration, {{{ prompt }}}",
+      "clip": [
+        "4",
+        1
+      ]
     },
     "class_type": "CLIPTextEncode",
     "_meta": {
@@ -44,8 +47,11 @@
   },
   "7": {
     "inputs": {
-      "text": "bad quality, bad anatomy, worst quality, low quality, low resolution, extra fingers, blur, blurry, ugly, wrong proportions, watermark, image artifacts, lowres, jpeg artifacts, deformed, noisy image, deformation, corrupt image, {{{ promptNegative }}}",
-      "clip": ["4", 1]
+      "text": "{{{ promptNegative }}}",
+      "clip": [
+        "4",
+        1
+      ]
     },
     "class_type": "CLIPTextEncode",
     "_meta": {
@@ -54,8 +60,14 @@
   },
   "8": {
     "inputs": {
-      "samples": ["10", 0],
-      "vae": ["4", 2]
+      "samples": [
+        "10",
+        0
+      ],
+      "vae": [
+        "4",
+        2
+      ]
     },
     "class_type": "VAEDecode",
     "_meta": {
@@ -81,10 +93,22 @@
       "previews": "default",
       "tile_sample": false,
       "tile_size": 1024,
-      "model": ["4", 0],
-      "positive": ["6", 0],
-      "negative": ["100", 0],
-      "latent_image": ["5", 0]
+      "model": [
+        "4",
+        0
+      ],
+      "positive": [
+        "6",
+        0
+      ],
+      "negative": [
+        "100",
+        0
+      ],
+      "latent_image": [
+        "5",
+        0
+      ]
     },
     "class_type": "SwarmKSampler",
     "_meta": {
@@ -93,7 +117,10 @@
   },
   "100": {
     "inputs": {
-      "conditioning": ["7", 0]
+      "conditioning": [
+        "7",
+        0
+      ]
     },
     "class_type": "ConditioningZeroOut",
     "_meta": {
@@ -102,7 +129,10 @@
   },
   "101": {
     "inputs": {
-      "value": ["8", 0]
+      "value": [
+        "8",
+        0
+      ]
     },
     "class_type": "UnloadAllModels",
     "_meta": {

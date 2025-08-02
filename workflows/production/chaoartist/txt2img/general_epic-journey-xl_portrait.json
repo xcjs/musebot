@@ -4,17 +4,17 @@
     "promptNegative": "",
     "model": "",
     "seed": -1,
-    "width": 832,
-    "height": 1216,
-    "sampler": "euler_ancestral",
-    "scheduler": "simple",
-    "cfgScale": 7.5,
-    "steps": 28,
-    "num": 4
+    "width": 684,
+    "height": 1024,
+    "sampler": "dpmpp_2m_sde",
+    "scheduler": "sgm_uniform",
+    "cfgScale": 6,
+    "steps": 30,
+    "num": 1
   },
   "4": {
     "inputs": {
-      "ckpt_name": "SDXL/Illustrious/illustriousXL_v01.safetensors"
+      "ckpt_name": "SDXL/General/epicjourneyXL_v1PromptMeIDeliver.safetensors"
     },
     "class_type": "CheckpointLoaderSimple",
     "_meta": {
@@ -47,7 +47,7 @@
   },
   "7": {
     "inputs": {
-      "text": "{{{ promptNegative }}}",
+      "text": "deformed iris, deformed pupils, semi-realistic, cgi, 3d, render, sketch, cartoon, drawing, anime:1.4), text, close up, cropped, out of frame, worst quality, low quality, jpeg artifacts, ugly, duplicate, morbid, mutilated, extra fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, blurry, dehydrated, bad anatomy, bad proportions, extra limbs, cloned face, disfigured, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, {{{ promptNegative }}}",
       "clip": [
         "4",
         1

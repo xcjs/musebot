@@ -4,17 +4,17 @@
     "promptNegative": "",
     "model": "",
     "seed": -1,
-    "width": 832,
-    "height": 1216,
+    "width": 684,
+    "height": 1024,
     "sampler": "dpmpp_2m_sde",
-    "scheduler": "sgm_uniform",
-    "cfgScale": 4.5,
+    "scheduler": "karras",
+    "cfgScale": 3,
     "steps": 30,
     "num": 1
   },
   "4": {
     "inputs": {
-      "ckpt_name": "SDXL/General/juggernautXL_juggXIByRundiffusion.safetensors"
+      "ckpt_name": "SDXL/General/jibMixRealisticXL_v160Aphrodite.safetensors"
     },
     "class_type": "CheckpointLoaderSimple",
     "_meta": {
@@ -47,7 +47,7 @@
   },
   "7": {
     "inputs": {
-      "text": "bad eyes, cgi, airbrushed, plastic, deformed, watermark, {{{ promptNegative }}}",
+      "text": "{{{ promptNegative }}}",
       "clip": [
         "4",
         1

@@ -4,17 +4,17 @@
     "promptNegative": "",
     "model": "",
     "seed": -1,
-    "width": 768,
+    "width": 684,
     "height": 1024,
-    "sampler": "euler_ancestral",
-    "scheduler": "simple",
-    "cfgScale": 6,
+    "sampler": "dpmpp_sde",
+    "scheduler": "karras",
+    "cfgScale": 4,
     "steps": 30,
-    "num": 4
+    "num": 1
   },
   "4": {
     "inputs": {
-      "ckpt_name": "SDXL/Illustrious/waiNSFWIllustrious_v130.safetensors"
+      "ckpt_name": "SDXL/General/STOIQONewrealityFLUXSD_XLPRO.safetensors"
     },
     "class_type": "CheckpointLoaderSimple",
     "_meta": {
@@ -34,8 +34,11 @@
   },
   "6": {
     "inputs": {
-      "text": "{{{ prompt }}}, masterpiece, best quality, amazing quality",
-      "clip": ["4", 1]
+      "text": "{{{ prompt }}}",
+      "clip": [
+        "4",
+        1
+      ]
     },
     "class_type": "CLIPTextEncode",
     "_meta": {
@@ -44,8 +47,11 @@
   },
   "7": {
     "inputs": {
-      "text": "bad quality, worst quality, worst detail, sketch, censor, {{{ promptNegative }}}",
-      "clip": ["4", 1]
+      "text": "{{{ promptNegative }}}",
+      "clip": [
+        "4",
+        1
+      ]
     },
     "class_type": "CLIPTextEncode",
     "_meta": {
@@ -54,8 +60,14 @@
   },
   "8": {
     "inputs": {
-      "samples": ["10", 0],
-      "vae": ["4", 2]
+      "samples": [
+        "10",
+        0
+      ],
+      "vae": [
+        "4",
+        2
+      ]
     },
     "class_type": "VAEDecode",
     "_meta": {
@@ -81,10 +93,22 @@
       "previews": "default",
       "tile_sample": false,
       "tile_size": 1024,
-      "model": ["4", 0],
-      "positive": ["6", 0],
-      "negative": ["100", 0],
-      "latent_image": ["5", 0]
+      "model": [
+        "4",
+        0
+      ],
+      "positive": [
+        "6",
+        0
+      ],
+      "negative": [
+        "100",
+        0
+      ],
+      "latent_image": [
+        "5",
+        0
+      ]
     },
     "class_type": "SwarmKSampler",
     "_meta": {
@@ -93,7 +117,10 @@
   },
   "100": {
     "inputs": {
-      "conditioning": ["7", 0]
+      "conditioning": [
+        "7",
+        0
+      ]
     },
     "class_type": "ConditioningZeroOut",
     "_meta": {
@@ -102,7 +129,10 @@
   },
   "101": {
     "inputs": {
-      "value": ["8", 0]
+      "value": [
+        "8",
+        0
+      ]
     },
     "class_type": "UnloadAllModels",
     "_meta": {
