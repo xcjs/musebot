@@ -74,8 +74,8 @@ Build Distributable:
     - mkdir -p build/pkg/workflows/txt2vid/
     - cp -f workflows/production/director/txt2vid/mochi.json build/pkg/workflows/txt2vid/mochi.json
     - cp -f workflows/production/director/txt2vid/wan.json build/pkg/workflows/txt2vid/wan.json
-    - cp -f workflows/production/dreamshaper/txt2img/dreamshaper-xl.json build/pkg/workflows/txt2img/dreamshaper-xl.json
-    - cp -f workflows/production/flux/txt2img/flux_q8.json build/pkg/workflows/txt2img/flux_q8.json
+    - cp -f workflows/production/dreamshaper/txt2img/dreamshaper-xl_turbo_square.json build/pkg/workflows/txt2img/dreamshaper-xl_turbo_square.json
+    - cp -f workflows/production/flux/txt2img/flux-q8_square.json build/pkg/workflows/txt2img/flux-q8_square.json
     - cp -f workflows/production/shared/img2img/01-upscale-detail.json build/pkg/workflows/img2img/01-upscale-detail.json
     - cp -f workflows/production/shared/img2img/02-upscale-design.json build/pkg/workflows/img2img/02-upscale-design.json
     - cp -f workflows/production/shared/img2img/03-extract-subject.json build/pkg/workflows/img2img/03-extract-subject.json
