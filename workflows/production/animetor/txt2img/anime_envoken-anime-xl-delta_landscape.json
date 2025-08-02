@@ -4,17 +4,17 @@
     "promptNegative": "",
     "model": "",
     "seed": -1,
-    "width": 832,
-    "height": 1216,
+    "width": 1152,
+    "height": 896,
     "sampler": "dpmpp_2m_sde",
     "scheduler": "sgm_uniform",
-    "cfgScale": 4.5,
-    "steps": 30,
+    "cfgScale": 7,
+    "steps": 23,
     "num": 1
   },
   "4": {
     "inputs": {
-      "ckpt_name": "SDXL/General/juggernautXL_juggXIByRundiffusion.safetensors"
+      "ckpt_name": "SDXL/Anime/envokenAnimeXLDelta_v10.safetensors"
     },
     "class_type": "CheckpointLoaderSimple",
     "_meta": {
@@ -47,7 +47,7 @@
   },
   "7": {
     "inputs": {
-      "text": "bad eyes, cgi, airbrushed, plastic, deformed, watermark, {{{ promptNegative }}}",
+      "text": "NDXL, {{{ promptNegative }}}",
       "clip": [
         "4",
         1

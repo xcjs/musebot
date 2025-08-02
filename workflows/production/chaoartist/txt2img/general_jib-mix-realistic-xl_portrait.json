@@ -4,17 +4,17 @@
     "promptNegative": "",
     "model": "",
     "seed": -1,
-    "width": 1024,
+    "width": 768,
     "height": 1024,
-    "sampler": "dpmpp_sde",
+    "sampler": "dpmpp_2m_sde",
     "scheduler": "karras",
-    "cfgScale": 7,
-    "steps": 20,
+    "cfgScale": 3,
+    "steps": 30,
     "num": 1
   },
   "4": {
     "inputs": {
-      "ckpt_name": "SDXL/Anime/ghostxl_v10BakedVAE.safetensors"
+      "ckpt_name": "SDXL/General/jibMixRealisticXL_v160Aphrodite.safetensors"
     },
     "class_type": "CheckpointLoaderSimple",
     "_meta": {

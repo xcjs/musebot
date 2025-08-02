@@ -4,17 +4,17 @@
     "promptNegative": "",
     "model": "",
     "seed": -1,
-    "width": 1024,
+    "width": 768,
     "height": 1024,
-    "sampler": "dpmpp_sde",
-    "scheduler": "karras",
-    "cfgScale": 2,
-    "steps": 8,
+    "sampler": "euler",
+    "scheduler": "beta",
+    "cfgScale": 3,
+    "steps": 25,
     "num": 1
   },
   "4": {
     "inputs": {
-      "ckpt_name": "SDXL-Turbo/General/dreamshaperXL_v21TurboDPMSDE.safetensors"
+      "ckpt_name": "SDXL/Anime/animagineXLRealistic_v7.safetensors"
     },
     "class_type": "CheckpointLoaderSimple",
     "_meta": {
@@ -47,7 +47,7 @@
   },
   "7": {
     "inputs": {
-      "text": "{{{ promptNegative }}}",
+      "text": "{{{ promptNegative }}}, worst quality, lowres, explicit, nsfw, ugly, blurry",
       "clip": [
         "4",
         1
@@ -142,7 +142,10 @@
   "102": {
     "inputs": {
       "filename_prefix": "Musebot",
-      "images": ["101", 0]
+      "images": [
+        "101",
+        0
+      ]
     },
     "class_type": "SaveImage",
     "_meta": {

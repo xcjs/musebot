@@ -4,17 +4,17 @@
     "promptNegative": "",
     "model": "",
     "seed": -1,
-    "width": 1024,
+    "width": 768,
     "height": 1024,
-    "sampler": "dpmpp_2m_sde",
-    "scheduler": "simple",
-    "cfgScale": 5,
+    "sampler": "euler_ancestral",
+    "scheduler": "sgm_uniform",
+    "cfgScale": 9,
     "steps": 30,
     "num": 1
   },
   "4": {
     "inputs": {
-      "ckpt_name": "SDXL/Anime/animaPencilXL_v500.safetensors"
+      "ckpt_name": "SDXL/General/duchaitenAiartSDXL_v33515.safetensors"
     },
     "class_type": "CheckpointLoaderSimple",
     "_meta": {
@@ -47,7 +47,7 @@
   },
   "7": {
     "inputs": {
-      "text": "{{{ promptNegative }}}",
+      "text": "(worst quality:1.5), (low quality:1.5), (normal quality:1.5), lowres, bad anatomy, bad hands, multiple eyebrow, (cropped), extra limb, missing limbs, deformed hands, long neck, long body, (bad hands), signature, username, artist name, conjoined fingers, deformed fingers, ugly eyes, imperfect eyes, skewed eyes, unnatural face, unnatural body, error, painting by bad-artist, {{{ promptNegative }}}",
       "clip": [
         "4",
         1
@@ -142,10 +142,7 @@
   "102": {
     "inputs": {
       "filename_prefix": "Musebot",
-      "images": [
-        "101",
-        0
-      ]
+      "images": ["101", 0]
     },
     "class_type": "SaveImage",
     "_meta": {
