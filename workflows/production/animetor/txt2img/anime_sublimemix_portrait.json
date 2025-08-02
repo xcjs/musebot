@@ -4,7 +4,7 @@
     "promptNegative": "",
     "model": "",
     "seed": -1,
-    "width": 768,
+    "width": 684,
     "height": 1024,
     "sampler": "euler_ancestral",
     "scheduler": "simple",
