@@ -66,20 +66,19 @@ export class ExtendedComfyUIClient extends ComfyUIClient {
                                     }
                                 }
 
-                                // Remove listener
-                                // eslint-disable-next-line @typescript-eslint/no-misused-promises
-                                this.ws?.off('message', onMessage);
+                                // Remove listener.
+                                this.ws?.off('message', void onMessage);
                                 return resolve(multiMediaResponse);
                             }
                         }
                     }
-                } catch (err) {
-                    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-                    return reject(err);
+                } catch (error) {
+                    const typedError = new Error(error as string);
+                    return reject(typedError);
                 }
             };
 
-            // Add listener
+            // Add listener.
             // eslint-disable-next-line @typescript-eslint/no-misused-promises
             this.ws?.on('message', onMessage);
         });
