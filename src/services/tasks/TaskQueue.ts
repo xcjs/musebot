@@ -78,7 +78,7 @@ export class TaskQueue implements ITaskQueue {
 
                     if (promise.status === PromisedSettledResultStatus.Rejected.toString()) {
                         task.taskStatus = TaskStatus.Failed;
-                        this.#logger.error(`Task ${task.id} was rejected ${task.numAttempts} time(s): ${promise.reason}`);
+                        this.#logger.error(`Task ${task.id} was rejected ${task.numAttempts} time(s):`, task, promise.reason);
 
                         if (task.numAttempts >= this.#environmentSettings.maxTaskAttempts) {
                             return task.postProcess();
