@@ -20,14 +20,13 @@ export class ExtendedComfyUIClient extends ComfyUIClient {
             const multiMediaResponse: MultiMediaResponse = {};
 
             const onMessage = async (data: WebSocket.RawData, isBinary: boolean) => {
-                // Previews are binary data
+                // Image previews are binary data.
                 if (isBinary) {
                     return;
                 }
 
                 try {
-                    // eslint-disable-next-line @typescript-eslint/no-base-to-string
-                    const message = JSON.parse(data.toString()) as ComfyUiMessage;
+                    const message = JSON.parse((data as Buffer).toString()) as ComfyUiMessage;
 
                     if (message.type === ComfyUiMessageType.Executing) {
                         const messageData = message.data;
