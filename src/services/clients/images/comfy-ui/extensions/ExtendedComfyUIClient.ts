@@ -66,7 +66,9 @@ export class ExtendedComfyUIClient extends ComfyUIClient {
                                 }
 
                                 // Remove listener.
-                                this.ws?.off('message', void onMessage);
+                                // eslint-disable-next-line @typescript-eslint/no-misused-promises
+                                this.ws?.off('message', onMessage);
+
                                 return resolve(multiMediaResponse);
                             }
                         }
