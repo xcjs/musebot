@@ -108,7 +108,7 @@ export class ComfyUiReplyAudioTask extends ComfyUiBaseTask implements IReplyRend
             i++;
         } while (i < numRenders);
 
-        const audiosResponse = await this.#comfyUiClient.renderMedia(prompts);
+        const audiosResponse = await this.#comfyUiClient.render(prompts);
         const exchange: IHttpExchange<SerializableRenderRequest[], MultiMediaResponse> = {
             request: renderRequests,
             response: audiosResponse

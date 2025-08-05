@@ -86,7 +86,7 @@ export class ComfyUiReplyService {
 
                 const imageContainer = mediaContainer;
 
-                if(audioContainer.audio !== undefined) {
+                if(audioContainer !== null) {
                     file = Buffer.from(await mediaContainer.blob.arrayBuffer());
 
                     if (audioContainer.audio.filename !== undefined) {

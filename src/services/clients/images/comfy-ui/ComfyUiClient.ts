@@ -1,4 +1,4 @@
-import { ImagesResponse, Prompt } from 'comfy-ui-client';
+import { Prompt } from 'comfy-ui-client';
 
 import { APPLICATION_NAME } from '../../../../constants/Globals.js';
 import { PromisedSettledResultStatus } from '../../../../enums/PromisedSettledResultStatus.js';
@@ -42,40 +42,7 @@ export class ComfyUiClient {
         this.#logger.info(`Selected host: ${this.#host}`);
     }
 
-    async render(prompts: Prompt[]): Promise<ImagesResponse> {
-        await this.#client.connect();
-
-        const imagesPromises: Promise<ImagesResponse>[] = [];
-        const imagesResponses: ImagesResponse[] = [];
-
-        prompts.forEach((prompt) => {
-            this.#logger.info('Sending workflow to ComfyUI:', prompt);
-            delete prompt.$musebotDefaults;
-            imagesPromises.push(this.#client.getImages(prompt));
-        });
-
-        await Promise.allSettled(imagesPromises).then(async (results) => {
-            await this.#client.disconnect();
-
-            results.forEach(result => {
-                if(result.status === PromisedSettledResultStatus.Fulfilled) {
-                    imagesResponses.push(result.value);
-                } else {
-                    this.#logger.error('Error rendering prompt:', prompt, result);
-                }
-            });
-        });
-
-        const imagesResponse = this.#flattenMultipleImagesResponses(imagesResponses);
-
-        if(Object.keys(imagesResponse).length === 0) {
-            return Promise.reject(new Error('The render failed but was not reported as a failure by the Comfy UI client.'));
-        }
-
-        return imagesResponse;
-    }
-
-    async renderMedia(prompts: Prompt[]): Promise<MultiMediaResponse> {
+    async render(prompts: Prompt[]): Promise<MultiMediaResponse> {
         await this.#client.connect();
 
         const multiMediaPromises: Promise<MultiMediaResponse>[] = [];
@@ -116,22 +83,6 @@ export class ComfyUiClient {
         } finally {
             await this.#client.disconnect();
         }
-    }
-
-    #flattenMultipleImagesResponses(imagesResponses: ImagesResponse[]): ImagesResponse {
-        const imagesResponse: ImagesResponse = {};
-
-        for (const imageResponse of imagesResponses) {
-            for (const [key, value] of Object.entries(imageResponse)) {
-                if (imagesResponse[key] === undefined) {
-                    imagesResponse[key] = [];
-                }
-
-                imagesResponse[key] = imagesResponse[key].concat(value);
-            }
-        }
-
-        return imagesResponse;
     }
 
     #flattenMultipleMediaResponses(multiMediaResponses: MultiMediaResponse[]): MultiMediaResponse {

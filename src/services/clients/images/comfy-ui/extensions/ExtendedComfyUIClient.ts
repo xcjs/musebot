@@ -1,7 +1,9 @@
 import { ComfyUIClient, Prompt } from 'comfy-ui-client';
 import WebSocket from 'ws';
 
-import { MediaContainer, MultiMediaContainer, MultiMediaResponse } from './MediaResponse.js';
+import { ComfyUiMessage, ComfyUiMessageType } from './ComfyUiMessage.js';
+import { MediaContainer, MultiMediaContainer, MultiMediaResponse, OutputMedia } from './MediaResponse.js';
+import { SupportedNode } from './SupportedNode.js';
 
 export class ExtendedComfyUIClient extends ComfyUIClient {
     async getMultiMedia(prompt: Prompt): Promise<MultiMediaResponse> {
@@ -24,18 +26,14 @@ export class ExtendedComfyUIClient extends ComfyUIClient {
                 }
 
                 try {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-base-to-string
-                    const message = JSON.parse(data.toString());
+                    // eslint-disable-next-line @typescript-eslint/no-base-to-string
+                    const message = JSON.parse(data.toString()) as ComfyUiMessage;
 
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                    if (message.type === 'executing') {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                    if (message.type === ComfyUiMessageType.Executing) {
                         const messageData = message.data;
 
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                        if (!messageData.node) {
-                            // Execution is done
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                        if (messageData.node === null) {
+                            // The workflow has completed.
                             if (messageData.prompt_id === promptId) {
                                 const historyRes = await this.getHistory(promptId);
                                 const history = historyRes[promptId];
@@ -43,24 +41,28 @@ export class ExtendedComfyUIClient extends ComfyUIClient {
                                 for (const nodeId of Object.keys(history.outputs)) {
                                     const mediaContainer = history.outputs[nodeId] as MultiMediaContainer;
 
-                                    if (mediaContainer.audio !== undefined) {
-                                        const audioOutputs: MediaContainer[] = [];
+                                    for(const supportedNode of Object.values(SupportedNode)) {
+                                        const outputMedia = mediaContainer[supportedNode.toString()] as OutputMedia[];
 
-                                        for (const audio of mediaContainer.audio) {
-                                            const blob = await this.getMedia(
-                                                audio.filename,
-                                                audio.subfolder,
-                                                audio.type,
-                                            );
+                                        if (outputMedia !== undefined) {
+                                            const mediaContainers: MediaContainer[] = [];
 
-                                            audioOutputs.push({
-                                                blob,
-                                                audio,
-                                                image: undefined
-                                            });
+                                            for (const media of outputMedia) {
+                                                const blob = await this.getMedia(
+                                                    media.filename,
+                                                    media.subfolder,
+                                                    media.type,
+                                                );
+
+                                                mediaContainers.push({
+                                                    blob,
+                                                    audio: supportedNode === SupportedNode.Audio ? media : undefined,
+                                                    image: supportedNode === SupportedNode.Images ? media : undefined,
+                                                });
+                                            }
+
+                                            multiMediaResponse[nodeId] = mediaContainers;
                                         }
-
-                                        multiMediaResponse[nodeId] = audioOutputs;
                                     }
                                 }
 

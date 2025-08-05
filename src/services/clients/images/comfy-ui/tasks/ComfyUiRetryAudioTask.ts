@@ -110,7 +110,7 @@ export class ComfyUiRetryAudioTask extends ComfyUiBaseTask implements IRetryRend
             prompts.push(this.#workflowService.renderWorkflow(workflow, renderRequest));
         }
 
-        const multiMediaResponse = await this.#comfyUiClient.renderMedia(prompts);
+        const multiMediaResponse = await this.#comfyUiClient.render(prompts);
 
         const reply: BaseMessageOptions = { content };
         const exchange: IHttpExchange<SerializableRenderRequest[], MultiMediaResponse> = {
