@@ -126,7 +126,7 @@ export class ComfyUiReplyService {
                         new StatelessImageGenerationActionRow(this.#services).build()
                             .concat(await new Img2ImgActionRow(this.#services).buildAsync());
                 } else {
-                    throw new Error('Unsupported media container was used.');
+                    throw new Error('An unsupported media container was used.');
                 }
 
                 const filename = this.getFileNameFromPrompt(renderExchange.request[i]
