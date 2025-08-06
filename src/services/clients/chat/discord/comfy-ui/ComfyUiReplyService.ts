@@ -2,11 +2,13 @@ import { ActionRowBuilder, AttachmentBuilder, BaseMessageOptions, ButtonBuilder,
 
 import { MAX_FILE_NAME_LENGTH } from '../../../../../constants/FileConstants.js';
 import { APPLICATION_NAME } from '../../../../../constants/Globals.js';
+import { ContentType } from '../../../../../enums/ContentType.js';
+import { ContentTypeCategory } from '../../../../../enums/ContentTypeCategory.js';
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { ComfyUiClient } from '../../../images/comfy-ui/ComfyUiClient.js';
-import { MediaCollectionResponse } from '../../../images/comfy-ui/extensions/MediaResponse.js';
+import { MediaCollectionResponse, MediaContainer } from '../../../images/comfy-ui/extensions/MediaResponse.js';
 import { SerializableRenderRequest } from '../../../images/stable-diffusion/models/SerializableRenderRequest.js';
 import { IReplyService } from '../../IReplyService.js';
 import { Img2ImgActionRow } from '../components/buttonRows/Img2ImgActionRow.js';
@@ -54,29 +56,21 @@ export class ComfyUiReplyService {
             return await this.#replyService.replyWithError(interaction);
         }
 
-        const jsonDescriptions: Array<string | null> = [];
-
-        const isStatefulResponse = renderExchange.request.filter((_, i) => {
-            const stringRequest = renderExchange.request[i];
-
-            if(stringRequest !== null) {
-                const description = JSON.stringify(stringRequest);
-                jsonDescriptions.push(description);
-                return description.length <= DiscordConstants.ImageDescriptionMaxLength;
-            } else {
-                jsonDescriptions.push(null);
-                return false;
-            }
-        }).length === renderExchange.request.length;
+        const jsonDescriptions: Array<string | null> = renderExchange.request.map((request) => {
+            const requestString = JSON.stringify(request);
+            return requestString.length <= DiscordConstants.ContentMaxLength
+                ? requestString
+                : null;
+        });
 
         const fileAttachments: Array<AttachmentBuilder> = [];
         let components: ActionRowBuilder<ButtonBuilder>[] = [];
 
-        for (const mediaResponse of Object.values(renderExchange.response)) {
-            this.#logger.info(`Attaching render(s):`, mediaResponse);
+        for (const mediaContainerCollection of Object.values(renderExchange.response)) {
+            this.#logger.info(`Attaching render(s):`, mediaContainerCollection);
             let i = 0;
 
-            for (const mediaContainer of mediaResponse) {
+            for (const mediaContainer of mediaContainerCollection) {
                 let extension = '';
 
                 const file = Buffer.from(await mediaContainer.blob.arrayBuffer());
@@ -92,15 +86,10 @@ export class ComfyUiReplyService {
                     extension = '.unknown';
                 }
 
-                components = isStatefulResponse
-                    ? new StatefulAudioGenerationActionRow(this.#services, renderExchange.request[0]).build()
-                    : [];
-
-                components = isStatefulResponse ?
-                    new StatefulImageGenerationActionRows(this.#services, renderExchange.request[0]).build()
-                        .concat(await new Img2ImgActionRow(this.#services).buildAsync()) :
-                    new StatelessImageGenerationActionRow(this.#services).build()
-                        .concat(await new Img2ImgActionRow(this.#services).buildAsync());
+                // Allow the action bar to be set from the first piece of media content.
+                if(components.length === 0) {
+                    components = await this.#buildActionBars(mediaContainer, renderExchange.request);
+                }
 
                 const filename = this.getFileNameFromPrompt(renderExchange.request[i]
                     || renderExchange.request[0]);
@@ -108,9 +97,7 @@ export class ComfyUiReplyService {
                 fileAttachments.push(new AttachmentBuilder(
                     file, {
                     name: `${filename}${extension}`,
-                    description: isStatefulResponse
-                        ? jsonDescriptions[i] || jsonDescriptions[0]
-                        : null,
+                    description: jsonDescriptions[i] || jsonDescriptions[0]
                     }
                 ));
 
@@ -130,5 +117,48 @@ export class ComfyUiReplyService {
         }
 
         return `${APPLICATION_NAME}_${renderRequest.seed}_${renderRequest.prompt}`.substring(0, MAX_FILE_NAME_LENGTH);
+    }
+
+    async #buildActionBars(mediaContainer: MediaContainer, requests: SerializableRenderRequest[]): Promise<ActionRowBuilder<ButtonBuilder>[]> {
+        if (mediaContainer === null) {
+            return [];
+        }
+
+        const contentType = mediaContainer.media['content-type'] as ContentType;
+
+        if(contentType === null
+            || !contentType.includes('/')) {
+            return [];
+        }
+
+        const contentTypeCategory = contentType.split('/')[0] as ContentTypeCategory;
+
+        if(contentTypeCategory === null) {
+            return [];
+        }
+
+        const isStatefulResponse = requests.filter((request) => {
+            if (request !== null) {
+                const description = JSON.stringify(request);
+                return description.length <= DiscordConstants.ImageDescriptionMaxLength;
+            } else {
+                return false;
+            }
+        }).length === requests.length;
+
+        switch(contentTypeCategory) {
+            case ContentTypeCategory.Audio:
+                return isStatefulResponse
+                    ? new StatefulAudioGenerationActionRow(this.#services, requests[0]).build()
+                    : [];
+            case ContentTypeCategory.Image:
+                return isStatefulResponse ?
+                    new StatefulImageGenerationActionRows(this.#services, requests[0]).build()
+                        .concat(await new Img2ImgActionRow(this.#services).buildAsync()) :
+                    new StatelessImageGenerationActionRow(this.#services).build()
+                        .concat(await new Img2ImgActionRow(this.#services).buildAsync());
+            default:
+                return [];
+        }
     }
 }
