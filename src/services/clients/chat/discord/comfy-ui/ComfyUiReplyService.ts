@@ -126,6 +126,7 @@ export class ComfyUiReplyService {
 
         const contentType = mediaContainer.media['content-type'] as ContentType;
 
+        // TODO: Fill in content type based on file extension.
         if(contentType === null
             || !contentType.includes('/')) {
             return [];
