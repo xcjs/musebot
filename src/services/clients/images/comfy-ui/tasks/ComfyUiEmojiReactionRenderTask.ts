@@ -1,4 +1,4 @@
-import { ImagesResponse, Prompt } from 'comfy-ui-client';
+import { Prompt } from 'comfy-ui-client';
 import { BaseMessageOptions, ButtonInteraction, Message, ReactionEmoji, User } from 'discord.js';
 
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
@@ -17,6 +17,7 @@ import { OllamaClient } from '../../../text/ollama/OllamaClient.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 import { IEmojiReactionRenderTask } from '../../tasks/IEmojiReactionRenderTask.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
+import { MediaCollectionResponse } from '../extensions/MediaResponse.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 import { ComfyUiReplyTask } from './ComfyUiReplyTask.js';
@@ -142,7 +143,7 @@ export class ComfyUiEmojiReactionRenderTask extends ComfyUiBaseTask implements I
         const imagesResponse = await this.#comfyUiClient.render(prompts);
 
         const reply: BaseMessageOptions = { content };
-        const exchange: IHttpExchange<SerializableRenderRequest[], ImagesResponse> = {
+        const exchange: IHttpExchange<SerializableRenderRequest[], MediaCollectionResponse> = {
             request: renderRequests,
             response: imagesResponse
         };

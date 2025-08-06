@@ -8,7 +8,7 @@ import { ILogger } from '../../../ILogger.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
 import { IGenerativeChatClient } from '../../chat/IGenerativeChatClient.js';
 import { ExtendedComfyUIClient } from './extensions/ExtendedComfyUIClient.js';
-import { MultiMediaResponse } from './extensions/MediaResponse.js';
+import { MediaCollectionResponse } from './extensions/MediaResponse.js';
 
 export class ComfyUiClient {
     get host(): URL {
@@ -42,31 +42,31 @@ export class ComfyUiClient {
         this.#logger.info(`Selected host: ${this.#host}`);
     }
 
-    async render(prompts: Prompt[]): Promise<MultiMediaResponse> {
+    async render(prompts: Prompt[]): Promise<MediaCollectionResponse> {
         await this.#client.connect();
 
-        const multiMediaPromises: Promise<MultiMediaResponse>[] = [];
-        const multiMediaResponses: MultiMediaResponse[] = [];
+        const mediaCollectionResponsePromises: Promise<MediaCollectionResponse>[] = [];
+        const mediaCollectionResponses: MediaCollectionResponse[] = [];
 
         prompts.forEach((prompt) => {
             this.#logger.info('Sending workflow to ComfyUI:', prompt);
             delete prompt.$musebotDefaults;
-            multiMediaPromises.push(this.#client.getMultiMedia(prompt));
+            mediaCollectionResponsePromises.push(this.#client.getMultiMedia(prompt));
         });
 
-        await Promise.allSettled(multiMediaPromises).then(async (results) => {
+        await Promise.allSettled(mediaCollectionResponsePromises).then(async (results) => {
             await this.#client.disconnect();
 
             results.forEach(result => {
                 if (result.status === PromisedSettledResultStatus.Fulfilled) {
-                    multiMediaResponses.push(result.value);
+                    mediaCollectionResponses.push(result.value);
                 } else {
                     this.#logger.error('Error rendering prompt:', prompt, result);
                 }
             });
         });
 
-        const multiMediaResponse = this.#flattenMultipleMediaResponses(multiMediaResponses);
+        const multiMediaResponse = this.#flattenMultipleMediaResponses(mediaCollectionResponses);
 
         if (Object.keys(multiMediaResponse).length === 0) {
             return Promise.reject(new Error('The render failed but was not reported as a failure by the Comfy UI client.'));
@@ -85,8 +85,8 @@ export class ComfyUiClient {
         }
     }
 
-    #flattenMultipleMediaResponses(multiMediaResponses: MultiMediaResponse[]): MultiMediaResponse {
-        const responseDictionary: MultiMediaResponse = {};
+    #flattenMultipleMediaResponses(multiMediaResponses: MediaCollectionResponse[]): MediaCollectionResponse {
+        const responseDictionary: MediaCollectionResponse = {};
 
         for (const multiMediaResponse of multiMediaResponses) {
             for (const [key, value] of Object.entries(multiMediaResponse)) {

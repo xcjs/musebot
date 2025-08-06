@@ -15,7 +15,7 @@ import { IReplyService } from '../../../chat/IReplyService.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 import { IRetryRenderTask } from '../../tasks/IRetryRenderTask.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
-import { MultiMediaResponse } from '../extensions/MediaResponse.js';
+import { MediaCollectionResponse } from '../extensions/MediaResponse.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 import { ComfyUiReplyTask } from './ComfyUiReplyTask.js';
@@ -113,7 +113,7 @@ export class ComfyUiRetryAudioTask extends ComfyUiBaseTask implements IRetryRend
         const multiMediaResponse = await this.#comfyUiClient.render(prompts);
 
         const reply: BaseMessageOptions = { content };
-        const exchange: IHttpExchange<SerializableRenderRequest[], MultiMediaResponse> = {
+        const exchange: IHttpExchange<SerializableRenderRequest[], MediaCollectionResponse> = {
             request: renderRequests,
             response: multiMediaResponse
         };

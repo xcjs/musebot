@@ -1,4 +1,4 @@
-import { ImagesResponse, Prompt } from 'comfy-ui-client';
+import { Prompt } from 'comfy-ui-client';
 import { BaseMessageOptions, ButtonInteraction } from 'discord.js';
 import sharp from 'sharp';
 
@@ -14,6 +14,7 @@ import { IReplyService } from '../../../chat/IReplyService.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 import { IImg2ImgRenderTask } from '../../tasks/IImg2ImgRenderTask.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
+import { MediaCollectionResponse } from '../extensions/MediaResponse.js';
 import { IWorkflow } from '../models/IWorkflow.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
@@ -116,7 +117,7 @@ export class ComfyUiImg2ImgRenderTask extends ComfyUiBaseTask implements IImg2Im
         const imagesResponse = await this.#comfyUiClient.render(prompts);
 
         const reply: BaseMessageOptions = { content };
-        const exchange: IHttpExchange<SerializableRenderRequest[], ImagesResponse> = {
+        const exchange: IHttpExchange<SerializableRenderRequest[], MediaCollectionResponse> = {
             request: renderRequests,
             response: imagesResponse
         };

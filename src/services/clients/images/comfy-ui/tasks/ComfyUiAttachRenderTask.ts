@@ -1,4 +1,3 @@
-import { ImagesResponse } from 'comfy-ui-client';
 import { BaseMessageOptions, ButtonInteraction, Message } from 'discord.js';
 
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
@@ -14,6 +13,7 @@ import { IReplyService } from '../../../chat/IReplyService.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 import { IAttachRenderTask } from '../../tasks/IAttachRenderTask.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
+import { MediaCollectionResponse } from '../extensions/MediaResponse.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 import { ComfyUiReplyTask } from './ComfyUiReplyTask.js';
@@ -81,7 +81,7 @@ export class ComfyUiAttachRenderTask extends ComfyUiBaseTask implements IAttachR
         const imagesResponse = await this.#comfyUiClient.render([prompt]);
 
         const reply: BaseMessageOptions = { content: this.#reply.content };
-        const exchange: IHttpExchange<SerializableRenderRequest[], ImagesResponse> = {
+        const exchange: IHttpExchange<SerializableRenderRequest[], MediaCollectionResponse> = {
             request: [renderRequest],
             response: imagesResponse
         };

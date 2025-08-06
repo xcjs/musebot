@@ -1,4 +1,3 @@
-import { ImagesResponse } from 'comfy-ui-client';
 import { AttachmentBuilder, BaseMessageOptions, ButtonInteraction } from 'discord.js';
 
 import { MAX_FILE_NAME_LENGTH,MAX_TEXT_LINE_LENGTH } from '../../../../../constants/FileConstants.js';
@@ -18,6 +17,7 @@ import { OllamaClient } from '../../../text/ollama/OllamaClient.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 import { IRandomRenderTask } from '../../tasks/IRandomRenderTask.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
+import { MediaCollectionResponse } from '../extensions/MediaResponse.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 import { ComfyUiReplyTask } from './ComfyUiReplyTask.js';
@@ -81,7 +81,7 @@ export class ComfyUiRandomRenderTask extends ComfyUiBaseTask implements IRandomR
         const prompt = this.#workflowService.renderWorkflow(workflow, renderRequest);
         const imagesResponse = await this.#comfyUiClient.render([prompt]);
 
-        const exchange: IHttpExchange<SerializableRenderRequest[], ImagesResponse> = {
+        const exchange: IHttpExchange<SerializableRenderRequest[], MediaCollectionResponse> = {
             request: [renderRequest],
             response: imagesResponse
         };

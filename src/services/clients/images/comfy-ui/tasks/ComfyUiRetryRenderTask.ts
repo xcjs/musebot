@@ -1,4 +1,4 @@
-import { ImagesResponse, Prompt } from 'comfy-ui-client';
+import { Prompt } from 'comfy-ui-client';
 import { BaseMessageOptions, ButtonInteraction, Message, User } from 'discord.js';
 
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
@@ -15,6 +15,7 @@ import { IReplyService } from '../../../chat/IReplyService.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 import { IRetryRenderTask } from '../../tasks/IRetryRenderTask.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
+import { MediaCollectionResponse } from '../extensions/MediaResponse.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 import { ComfyUiReplyTask } from './ComfyUiReplyTask.js';
@@ -108,7 +109,7 @@ export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRen
         const imagesResponse = await this.#comfyUiClient.render(prompts);
 
         const reply: BaseMessageOptions = { content };
-        const exchange: IHttpExchange<SerializableRenderRequest[], ImagesResponse> = {
+        const exchange: IHttpExchange<SerializableRenderRequest[], MediaCollectionResponse> = {
             request: renderRequests,
             response: imagesResponse
         };

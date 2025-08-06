@@ -2,11 +2,11 @@ import { ComfyUIClient, Prompt } from 'comfy-ui-client';
 import WebSocket from 'ws';
 
 import { ComfyUiMessage, ComfyUiMessageType } from './ComfyUiMessage.js';
-import { MediaContainer, MultiMediaContainer, MultiMediaResponse, OutputMedia } from './MediaResponse.js';
+import { MediaCollectionResponse, MediaContainer, OutputMedia } from './MediaResponse.js';
 import { SupportedNode } from './SupportedNode.js';
 
 export class ExtendedComfyUIClient extends ComfyUIClient {
-    async getMultiMedia(prompt: Prompt): Promise<MultiMediaResponse> {
+    async getMultiMedia(prompt: Prompt): Promise<MediaCollectionResponse> {
         if (!this.ws) {
             throw new Error(
                 'WebSocket client is not connected. Please call connect() before interacting.',
@@ -16,8 +16,8 @@ export class ExtendedComfyUIClient extends ComfyUIClient {
         const queue = await this.queuePrompt(prompt);
         const promptId = queue.prompt_id;
 
-        return new Promise<MultiMediaResponse>((resolve, reject) => {
-            const multiMediaResponse: MultiMediaResponse = {};
+        return new Promise<MediaCollectionResponse>((resolve, reject) => {
+            const multiMediaResponse: MediaCollectionResponse = {};
 
             const onMessage = async (data: WebSocket.RawData, isBinary: boolean) => {
                 // Image previews are binary data.
@@ -38,7 +38,7 @@ export class ExtendedComfyUIClient extends ComfyUIClient {
                                 const history = historyRes[promptId];
 
                                 for (const nodeId of Object.keys(history.outputs)) {
-                                    const mediaContainer = history.outputs[nodeId] as MultiMediaContainer;
+                                    const mediaContainer = history.outputs[nodeId] as MediaContainer;
 
                                     for(const supportedNode of Object.values(SupportedNode)) {
                                         const outputMedia = mediaContainer[supportedNode.toString()] as OutputMedia[];
@@ -55,8 +55,7 @@ export class ExtendedComfyUIClient extends ComfyUIClient {
 
                                                 mediaContainers.push({
                                                     blob,
-                                                    audio: supportedNode === SupportedNode.Audio ? media : undefined,
-                                                    image: supportedNode === SupportedNode.Images ? media : undefined,
+                                                    media: media,
                                                 });
                                             }
 

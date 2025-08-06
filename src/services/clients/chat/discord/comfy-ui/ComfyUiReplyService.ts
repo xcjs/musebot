@@ -1,4 +1,3 @@
-import { ImagesResponse } from 'comfy-ui-client';
 import { ActionRowBuilder, AttachmentBuilder, BaseMessageOptions, ButtonBuilder, ButtonInteraction, Message } from 'discord.js';
 
 import { MAX_FILE_NAME_LENGTH } from '../../../../../constants/FileConstants.js';
@@ -7,7 +6,7 @@ import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { ComfyUiClient } from '../../../images/comfy-ui/ComfyUiClient.js';
-import { MediaContainer, MultiMediaResponse } from '../../../images/comfy-ui/extensions/MediaResponse.js';
+import { MediaCollectionResponse } from '../../../images/comfy-ui/extensions/MediaResponse.js';
 import { SerializableRenderRequest } from '../../../images/stable-diffusion/models/SerializableRenderRequest.js';
 import { IReplyService } from '../../IReplyService.js';
 import { Img2ImgActionRow } from '../components/buttonRows/Img2ImgActionRow.js';
@@ -40,7 +39,7 @@ export class ComfyUiReplyService {
     async reply(interaction: Message | ButtonInteraction,
         reply: BaseMessageOptions,
         isEdit: boolean = false,
-        renderExchange: IHttpExchange<Array<SerializableRenderRequest | null>, ImagesResponse | MultiMediaResponse>): Promise<void> {
+        renderExchange: IHttpExchange<Array<SerializableRenderRequest | null>, MediaCollectionResponse>): Promise<void> {
 
         if(reply.content === undefined || reply.content === null) {
             reply.content = '';
@@ -78,66 +77,40 @@ export class ComfyUiReplyService {
             let i = 0;
 
             for (const mediaContainer of mediaResponse) {
-                let file: Buffer<ArrayBuffer>;
                 let extension = '';
 
-                const audioContainer = (mediaContainer as MediaContainer).audio !== undefined
-                    ? (mediaContainer as MediaContainer) : null;
+                const file = Buffer.from(await mediaContainer.blob.arrayBuffer());
 
-                const imageContainer = mediaContainer;
-
-                if(audioContainer !== null) {
-                    file = Buffer.from(await mediaContainer.blob.arrayBuffer());
-
-                    if (audioContainer.audio.filename !== undefined) {
-                        extension = audioContainer.audio.filename.substring(
-                            audioContainer.audio.filename.lastIndexOf('.'),
-                            audioContainer.audio.filename.length);
-                    } else if (audioContainer.audio['content-type'] !== undefined) {
-                        const contentType = audioContainer.audio['content-type'] as string;
-                        extension = `.${contentType.substring(contentType.lastIndexOf('/') + 1, contentType.length)}`;
-                    } else {
-                        // If all else fails, it's most likely an MP3 sound.
-                        extension = '.mp3';
-                    }
-
-                    components = isStatefulResponse
-                        ? new StatefulAudioGenerationActionRow(this.#services, renderExchange.request[0]).build()
-                        : [];
-                } else if(imageContainer !== null) {
-                    file = Buffer.from(await imageContainer.blob.arrayBuffer());
-
-                    if (imageContainer.image.filename !== undefined) {
-                        extension = imageContainer.image.filename.substring(
-                            imageContainer.image.filename.lastIndexOf('.'),
-                            imageContainer.image.filename.length);
-                    } else if (imageContainer.image['content-type'] !== undefined) {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                        const contentType: string = imageContainer.image['content-type'];
-                        extension = `.${contentType.substring(contentType.lastIndexOf('/') + 1, contentType.length)}`;
-                    } else {
-                        // If all else fails, it's most likely a PNG image.
-                        extension = '.png';
-                    }
-
-                    components = isStatefulResponse ?
-                        new StatefulImageGenerationActionRows(this.#services, renderExchange.request[0]).build()
-                            .concat(await new Img2ImgActionRow(this.#services).buildAsync()) :
-                        new StatelessImageGenerationActionRow(this.#services).build()
-                            .concat(await new Img2ImgActionRow(this.#services).buildAsync());
+                if (mediaContainer.media.filename !== undefined) {
+                    extension = mediaContainer.media.filename.substring(
+                        mediaContainer.media.filename.lastIndexOf('.'),
+                        mediaContainer.media.filename.length);
+                } else if (mediaContainer.media['content-type'] !== undefined) {
+                    const contentType = mediaContainer.media['content-type'] as string;
+                    extension = `.${contentType.substring(contentType.lastIndexOf('/') + 1, contentType.length)}`;
                 } else {
-                    throw new Error('An unsupported media container was used.');
+                    extension = '.unknown';
                 }
+
+                components = isStatefulResponse
+                    ? new StatefulAudioGenerationActionRow(this.#services, renderExchange.request[0]).build()
+                    : [];
+
+                components = isStatefulResponse ?
+                    new StatefulImageGenerationActionRows(this.#services, renderExchange.request[0]).build()
+                        .concat(await new Img2ImgActionRow(this.#services).buildAsync()) :
+                    new StatelessImageGenerationActionRow(this.#services).build()
+                        .concat(await new Img2ImgActionRow(this.#services).buildAsync());
 
                 const filename = this.getFileNameFromPrompt(renderExchange.request[i]
                     || renderExchange.request[0]);
 
                 fileAttachments.push(new AttachmentBuilder(
                     file, {
-                        name: `${filename}${extension}`,
-                        description: isStatefulResponse
-                            ? jsonDescriptions[i] || jsonDescriptions[0]
-                            : null,
+                    name: `${filename}${extension}`,
+                    description: isStatefulResponse
+                        ? jsonDescriptions[i] || jsonDescriptions[0]
+                        : null,
                     }
                 ));
 
