@@ -50,7 +50,7 @@ Test:
 Build Docker Image:
   stage: Build
   image: docker:stable
-  needs: ["Install Dependencies"]
+  needs: ["Install Dependencies", "Lint", "Test"]
   services:
     - docker:stable-dind
   except:
