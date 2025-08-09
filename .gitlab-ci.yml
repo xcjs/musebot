@@ -2,6 +2,7 @@ stages:
   - Setup
   - Lint
   - Test
+  - Review
   - Build
   - Publish
 
@@ -29,6 +30,53 @@ Lint:
     - docker
   script:
     - npm run lint
+
+Review:
+  stage: review
+  except:
+    - main
+  image: ollama:latest
+  script:
+    - echo "Running code review..."
+
+    - echo "Finding all TypeScript files in the repository..."
+
+    # Find all TypeScript files in the repository
+    - |
+      FILES=$(find . -name "*.ts" || true)
+      echo "Found TypeScript files: $FILES"
+
+      # Exit early if no TypeScript files are found
+      if [ -z "${FILES}" ]; then
+        echo "No TypeScript files to check."
+        exit 0
+      fi
+
+    # Clean the Review.md file before starting
+    - echo "" > Review.md
+
+    # Review each TypeScript file found in the repository
+    - |
+      for FILE in $FILES; do
+        content=$(cat "${FILE}")
+        prompt="\n Review the following code, provide suggestions for improvement, coding best practices, improve readability, and maintainability. Remove any code smells and anti-patterns. Provide code examples for your suggestion. Respond in markdown format. If the file does not have any code or does not need any changes, say 'No changes needed'."
+
+        # Run the ollama model
+        ollama run gemma3:12b-it-qat "${prompt} ${content}")
+
+        # Append the suggestions to Review.md
+        echo "## Review for ${FILE}" >> Review.md
+        echo "" >> Review.md
+        echo "${suggestions}" >> Review.md
+        echo "" >> Review.md
+        echo "---" >> Review.md
+        echo "" >> Review.md
+      done
+
+      echo "All TypeScript files were reviewed and the suggestions are in Review.md."
+  artifacts:
+    paths:
+      - Review.md
 
 Test:
   stage: Test
