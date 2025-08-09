@@ -32,7 +32,7 @@ Lint:
     - npm run lint
 
 Review:
-  stage: review
+  stage: Review
   except:
     - main
   image: ollama:latest
@@ -62,7 +62,7 @@ Review:
         prompt="\n Review the following code, provide suggestions for improvement, coding best practices, improve readability, and maintainability. Remove any code smells and anti-patterns. Provide code examples for your suggestion. Respond in markdown format. If the file does not have any code or does not need any changes, say 'No changes needed'."
 
         # Run the ollama model
-        ollama run gemma3:12b-it-qat "${prompt} ${content}")
+        ollama run gemma3:12b-it-qat "${prompt} ${content}"
 
         # Append the suggestions to Review.md
         echo "## Review for ${FILE}" >> Review.md
