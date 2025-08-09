@@ -119,6 +119,8 @@ Review:
   needs: []
   except:
     - main
+  tags:
+    - docker
   image:
     name: ollama/ollama:latest
     entrypoint: [".gitlab-ci/review.sh"]
