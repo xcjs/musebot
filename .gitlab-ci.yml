@@ -63,7 +63,7 @@ Review:
     # Review each TypeScript file found in the repository
     - |
       for FILE in $FILES; do
-        prompt="Review the following code, provide suggestions for improvement, coding best practices, improve readability, and maintainability. Remove any code smells and anti-patterns. Provide code examples for your suggestion. Respond in markdown format. If the file does not have any code or does not need any changes, say \"No changes needed.\"".\n\n"
+        prompt="Review the following code, provide suggestions for improvement, coding best practices, improve readability, and maintainability. Remove any code smells and anti-patterns. Provide code examples for your suggestion. Respond in markdown format. If the file does not have any code or does not need any changes, say 'No changes needed.'\n\n"
         content=$(cat "${FILE}")
 
         # Run the ollama model
