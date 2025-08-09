@@ -37,7 +37,7 @@ Review:
     - main
   image:
     name: ollama/ollama:latest
-    entrypoint: ["/bin/sh"]
+    entrypoint: [""]
   script:
     - echo "Running code review..."
 
