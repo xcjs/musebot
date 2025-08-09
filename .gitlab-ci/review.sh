@@ -4,9 +4,9 @@ echo "Starting automated Ollama-based code review..."
 echo Starting Ollama server...
 ollama serve > /dev/null 2>&1 &
 
-reviewModel="gemma3n:latest"
 reviewModel="gemma3:12b-it-qat"
 reviewModel="qwen2.5-coder:latest"
+reviewModel="gemma3n:latest"
 
 echo "Removing node_modules to avoid them being reviewed."
 rm -r node_modules/
