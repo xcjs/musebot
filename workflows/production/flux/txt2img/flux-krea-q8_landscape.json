@@ -1,0 +1,148 @@
+{
+  "$musebotDefaults": {
+    "prompt": "",
+    "promptNegative": "",
+    "model": "",
+    "seed": -1,
+    "width": 1024,
+    "height": 768,
+    "sampler": "euler",
+    "scheduler": "simple",
+    "cfgScale": 3.5,
+    "steps": 20,
+    "num": 1
+  },
+  "4": {
+    "inputs": {
+      "unet_name": "Flux.1/Dev/fluxKreaGGUF_q8.gguf"
+    },
+    "class_type": "UnetLoaderGGUF",
+    "_meta": {
+      "title": "Unet Loader (GGUF)"
+    }
+  },
+  "5": {
+    "inputs": {
+      "width": "{{{ width }}}",
+      "height": "{{{ height }}}",
+      "batch_size": "{{{ num }}}"
+    },
+    "class_type": "EmptySD3LatentImage",
+    "_meta": {
+      "title": "EmptySD3LatentImage"
+    }
+  },
+  "6": {
+    "inputs": {
+      "text": "{{{ prompt }}}",
+      "clip": ["100", 0]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Prompt)"
+    }
+  },
+  "7": {
+    "inputs": {
+      "text": "",
+      "clip": ["100", 0]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Prompt)"
+    }
+  },
+  "8": {
+    "inputs": {
+      "tile_size": 1024,
+      "overlap": 32,
+      "temporal_size": 32,
+      "temporal_overlap": 4,
+      "samples": ["10", 0],
+      "vae": ["101", 0]
+    },
+    "class_type": "VAEDecodeTiled",
+    "_meta": {
+      "title": "VAE Decode (Tiled)"
+    }
+  },
+  "10": {
+    "inputs": {
+      "noise_seed": "{{{ seed }}}",
+      "steps": "{{{ steps }}}",
+      "cfg": 1,
+      "sampler_name": "{{{ sampler }}}",
+      "scheduler": "{{{ scheduler }}}",
+      "start_at_step": 0,
+      "end_at_step": 10000,
+      "var_seed": 0,
+      "var_seed_strength": 0,
+      "sigma_max": -1,
+      "sigma_min": -1,
+      "rho": 7,
+      "add_noise": "enable",
+      "return_with_leftover_noise": "enable",
+      "previews": "default",
+      "tile_sample": false,
+      "tile_size": 1024,
+      "model": ["4", 0],
+      "positive": ["105", 0],
+      "negative": ["7", 0],
+      "latent_image": ["5", 0]
+    },
+    "class_type": "SwarmKSampler",
+    "_meta": {
+      "title": "SwarmKSampler"
+    }
+  },
+  "100": {
+    "inputs": {
+      "clip_name1": "t5xxl_enconly.safetensors",
+      "clip_name2": "clip_l.safetensors",
+      "type": "flux",
+      "device": "default"
+    },
+    "class_type": "DualCLIPLoader",
+    "_meta": {
+      "title": "DualCLIPLoader"
+    }
+  },
+  "101": {
+    "inputs": {
+      "vae_name": "Flux/ae.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load VAE"
+    }
+  },
+  "105": {
+    "inputs": {
+      "guidance": "{{{ cfgScale }}}",
+      "conditioning": ["6", 0]
+    },
+    "class_type": "FluxGuidance",
+    "_meta": {
+      "title": "FluxGuidance"
+    }
+  },
+  "107": {
+    "inputs": {
+      "filename_prefix": "Musebot_Flux",
+      "images": ["108", 0]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
+    }
+  },
+  "108": {
+    "inputs": {
+      "value": ["8", 0]
+    },
+    "class_type": "UnloadAllModels",
+    "_meta": {
+      "title": "UnloadAllModels"
+    }
+  }
+}
