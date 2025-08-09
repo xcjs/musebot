@@ -118,7 +118,9 @@ Review:
   stage: Review
   image:
     name: ollama/ollama:latest
-    entrypoint: [".gitlab-ci/review.sh"]
+    entrypoint: [""]
+  script:
+    - .gitlab-ci/review.sh
   needs: []
   except:
     - main
