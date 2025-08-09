@@ -64,7 +64,7 @@ Review:
         content=$(cat "${FILE}")
 
         # Run the ollama model
-        ollama run gemma3:12b-it-qat "${prompt} ${content}"
+        ollama run gemma3:12b-it-qat "${prompt}" "${content}"
 
         # Append the suggestions to Review.md
         echo "## Review for ${FILE}" >> Review.md
