@@ -41,6 +41,9 @@ Review:
   script:
     - echo "Running code review..."
 
+    - echo "Removing node_modules to avoid them being reviewed."
+    - rm -r node_modules/
+
     - echo "Finding all TypeScript files in the repository..."
 
     # Find all TypeScript files in the repository
