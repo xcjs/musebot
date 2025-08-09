@@ -9,6 +9,7 @@ stages:
 Install Dependencies:
   stage: Setup
   image: node:20
+  needs: []
   tags:
     - docker
   script:
@@ -26,6 +27,7 @@ Install Dependencies:
 Lint:
   stage: Lint
   image: node:20
+  needs: ["Install Dependencies"]
   tags:
     - docker
   script:
@@ -34,6 +36,7 @@ Lint:
 Test:
   stage: Test
   image: node:20
+  needs: ["Install Dependencies"]
   tags:
     - docker
   script:
@@ -47,6 +50,7 @@ Test:
 Build Docker Image:
   stage: Build
   image: docker:stable
+  needs: ["Install Dependencies"]
   services:
     - docker:stable-dind
   except:
@@ -59,6 +63,7 @@ Build Docker Image:
 Build Distributable:
   stage: Build
   image: node:20
+  needs: ["Install Dependencies", "Lint", "Test"]
   tags:
     - docker
   script:
@@ -96,6 +101,7 @@ Build Distributable:
 Publish Docker Image:
   stage: Publish
   image: docker:stable
+  needs: ["Install Dependencies", "Lint", "Test"]
   services:
     - docker:stable-dind
   only:
@@ -110,6 +116,7 @@ Publish Docker Image:
 
 Review:
   stage: Review
+  needs: []
   except:
     - main
   image:
