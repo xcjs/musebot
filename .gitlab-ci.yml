@@ -44,7 +44,7 @@ Review:
     # Find all TypeScript files in the repository
     - |
       FILES=$(find . -name "*.ts" || true)
-      echo "Found TypeScript files: $FILES"
+      echo "Found TypeScript files: ${FILES}"
 
       # Exit early if no TypeScript files are found
       if [ -z "${FILES}" ]; then
