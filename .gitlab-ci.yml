@@ -2,9 +2,9 @@ stages:
   - Setup
   - Lint
   - Test
-  - Review
   - Build
   - Publish
+  - Review
 
 Install Dependencies:
   stage: Setup
@@ -30,17 +30,6 @@ Lint:
     - docker
   script:
     - npm run lint
-
-Review:
-  stage: Review
-  except:
-    - main
-  image:
-    name: ollama/ollama:latest
-    entrypoint: [".gitlab-ci/review.sh"]
-  artifacts:
-    paths:
-      - Code Review.md
 
 Test:
   stage: Test
@@ -118,3 +107,14 @@ Publish Docker Image:
   script:
     - docker build -t $CI_REGISTRY/xcjs/musebot:latest .
     - docker push $CI_REGISTRY/xcjs/musebot:latest
+
+Review:
+  stage: Review
+  except:
+    - main
+  image:
+    name: ollama/ollama:latest
+    entrypoint: [".gitlab-ci/review.sh"]
+  artifacts:
+    paths:
+      - Code Review.md
