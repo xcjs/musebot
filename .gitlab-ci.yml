@@ -60,6 +60,8 @@ Review:
     # Clean the Review.md file before starting
     - echo "" > Review.md
 
+    - ollama serve > /dev/null 2>&1 &
+
     # Review each TypeScript file found in the repository
     - |
       for FILE in $FILES; do
