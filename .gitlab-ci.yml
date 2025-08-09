@@ -35,7 +35,7 @@ Review:
   stage: Review
   except:
     - main
-  image: ollama:latest
+  image: ollama/ollama:latest
   script:
     - echo "Running code review..."
 
