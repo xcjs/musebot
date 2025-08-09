@@ -25,7 +25,7 @@ echo "Creating ${reviewReport}"
 echo "# Code Review Report\n\n" > "${reviewReport}"
 
 # Review each TypeScript file found in the repository
-for "${file}" in "${filesToReview}"; do
+for file in "${filesToReview}"; do
     echo "Reviewing ${file}"
 
     local prompt="Review the following code from '${file}', provide suggestions for improvement, coding best practices, improve readability, and maintainability. Remove any code smells and anti-patterns. Provide code examples for your suggestion. Respond in markdown format. If the file does not have any code or does not need any changes, say 'No changes needed.'\n\n"
