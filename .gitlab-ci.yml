@@ -35,7 +35,9 @@ Review:
   stage: Review
   except:
     - main
-  image: ollama/ollama:latest
+  image:
+    name: ollama/ollama:latest
+    entrypoint: ["/bin/sh"]
   script:
     - echo "Running code review..."
 
