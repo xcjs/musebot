@@ -116,14 +116,14 @@ Publish Docker Image:
 
 Review:
   stage: Review
+  image:
+    name: ollama/ollama:latest
+    entrypoint: [".gitlab-ci/review.sh"]
   needs: []
   except:
     - main
   tags:
     - docker
-  image:
-    name: ollama/ollama:latest
-    entrypoint: [".gitlab-ci/review.sh"]
   artifacts:
     paths:
       - Code Review.md
