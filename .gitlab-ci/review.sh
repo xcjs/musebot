@@ -22,7 +22,10 @@ fi
 
 reviewReport="Code Review.md"
 echo "Creating ${reviewReport}"
-echo "# Code Review Report\n\n" > "${reviewReport}"
+echo "# Code Review Report" > "${reviewReport}"
+
+echo "" >> "${reviewReport}"
+echo "" >> "${reviewReport}"
 
 for file in ${filesToReview}; do
     echo "Reviewing ${file}"
