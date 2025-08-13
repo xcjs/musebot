@@ -7,11 +7,12 @@ ollama serve > /dev/null 2>&1 &
 reviewModel="gemma3:12b-it-qat"
 reviewModel="qwen2.5-coder:latest"
 reviewModel="gemma3n:latest"
+reviewModel="gemma3:1b-it-qat"
 
 echo "Removing node_modules to avoid them being reviewed."
 rm -r node_modules/
 
-filesToReview=$(git diff --name-only --diff-filter=ACM "${CI_COMMIT_BEFORE_SHA}" "${CI_COMMIT_SHA}" | grep '\.ts$' || true)
+filesToReview=$(find . -name "*.ts" || true)
 echo "Reviewing the following files:"
 echo ""
 echo ""
@@ -19,7 +20,7 @@ echo "${filesToReview}"
 
 # Exit early if no TypeScript files are found.
 if [ -z "${filesToReview}" ]; then
-    echo "No eligible files were ready for review in the last set of commits."
+    echo "No eligible files were ready for review."
     exit 0
 fi
 
