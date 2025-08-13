@@ -11,12 +11,12 @@ reviewModel="gemma3n:latest"
 echo "Removing node_modules to avoid them being reviewed."
 rm -r node_modules/
 
-filesToReview=$(find . -name "*.ts" || true)
+filesToReview=$(git diff --name-only --diff-filter=ACM "${CI_COMMIT_BEFORE_SHA}" "${CI_COMMIT_SHA}" | grep '\.ts$' || true)
 echo "Reviewing the following files: \n\n ${filesToReview}"
 
 # Exit early if no TypeScript files are found
 if [ -z "${filesToReview}" ]; then
-    echo "No files were found for the provided selection expression."
+    echo "No eligible files were ready for review in the last set of commits."
     exit 0
 fi
 
