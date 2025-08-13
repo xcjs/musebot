@@ -12,7 +12,10 @@ echo "Removing node_modules to avoid them being reviewed."
 rm -r node_modules/
 
 filesToReview=$(git diff --name-only --diff-filter=ACM "${CI_COMMIT_BEFORE_SHA}" "${CI_COMMIT_SHA}" | grep '\.ts$' || true)
-echo "Reviewing the following files: \n\n ${filesToReview}"
+echo "Reviewing the following files:"
+echo ""
+echo ""
+echo "${filesToReview}"
 
 # Exit early if no TypeScript files are found.
 if [ -z "${filesToReview}" ]; then
