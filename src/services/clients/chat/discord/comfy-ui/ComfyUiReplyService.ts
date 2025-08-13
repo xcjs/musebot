@@ -5,6 +5,7 @@ import { APPLICATION_NAME } from '../../../../../constants/Globals.js';
 import { ContentType } from '../../../../../enums/ContentType.js';
 import { ContentTypeCategory } from '../../../../../enums/ContentTypeCategory.js';
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
+import { IContentTypeService } from '../../../../features/IContentTypeService.js';
 import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { ComfyUiClient } from '../../../images/comfy-ui/ComfyUiClient.js';
@@ -20,6 +21,7 @@ import { DiscordConstants } from '../enums/DiscordConstants.js';
 export class ComfyUiReplyService {
     #services: IServiceContainer;
 
+    #contentTypeService: IContentTypeService;
     #comfyUiClient: ComfyUiClient;
     #replyService: IReplyService;
 
@@ -32,6 +34,7 @@ export class ComfyUiReplyService {
     constructor(services: IServiceContainer) {
         this.#services = services;
 
+        this.#contentTypeService = services.contentTypeService;
         this.#comfyUiClient = services.comfyUiClient;
         this.#replyService = services.replyService;
 
@@ -79,11 +82,11 @@ export class ComfyUiReplyService {
                     extension = mediaContainer.media.filename.substring(
                         mediaContainer.media.filename.lastIndexOf('.'),
                         mediaContainer.media.filename.length);
-                } else if (mediaContainer.media['content-type'] !== undefined) {
-                    const contentType = mediaContainer.media['content-type'] as string;
+                } else if (mediaContainer.blob.type !== undefined) {
+                    const contentType = mediaContainer.blob.type;
                     extension = `.${contentType.substring(contentType.lastIndexOf('/') + 1, contentType.length)}`;
                 } else {
-                    extension = '.unknown';
+                    extension = '.octet';
                 }
 
                 // Allow the action bar to be set from the first piece of media content.
@@ -124,19 +127,8 @@ export class ComfyUiReplyService {
             return [];
         }
 
-        const contentType = mediaContainer.media['content-type'] as ContentType;
-
-        // TODO: Fill in content type based on file extension.
-        if(contentType === null
-            || !contentType.includes('/')) {
-            return [];
-        }
-
-        const contentTypeCategory = contentType.split('/')[0] as ContentTypeCategory;
-
-        if(contentTypeCategory === null) {
-            return [];
-        }
+        const contentType = mediaContainer.blob.type as ContentType;
+        const contentTypeCategory = this.#contentTypeService.getContentTypeCategoryFromContentType(contentType);
 
         const isStatefulResponse = requests.filter((request) => {
             if (request !== null) {

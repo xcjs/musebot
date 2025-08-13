@@ -3,5 +3,6 @@ export enum ContentTypeCategory {
     Audio = 'audio',
     Image = 'image',
     Text = 'text',
+    Unknown = 'unknown',
     Video = 'video',
 }

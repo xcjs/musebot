@@ -27,6 +27,7 @@ import { OllamaClient } from './clients/text/ollama/OllamaClient.js';
 import { IEmojiResponseTask } from './clients/text/tasks/IEmojiResponseTask.js';
 import { IPromptResponseTask } from './clients/text/tasks/IPromptResponseTask.js';
 import { IEnvironmentSettings } from './environment-settings/IEnvironmentSettings.js';
+import { IContentTypeService } from './features/IContentTypeService.js';
 import { IFeatureService } from './features/IFeatureService.js';
 import { IHelpService } from './help/IHelpService.js';
 import { ILogger } from './ILogger.js';
@@ -46,6 +47,7 @@ export interface IServiceContainer {
 
     // Transients -------------------------------------------------------------/
 
+    contentTypeService: IContentTypeService;
     replyService: IReplyService;
     comfyUiClient: ComfyUiClient;
     comfyUiReplyService: ComfyUiReplyService;

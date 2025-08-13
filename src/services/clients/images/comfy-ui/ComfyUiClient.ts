@@ -100,4 +100,5 @@ export class ComfyUiClient {
 
         return responseDictionary;
     }
+
 }

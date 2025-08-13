@@ -6,5 +6,6 @@ export enum ContentType {
     Json = `${ContentTypeCategory.Application}}/json`,
     Mp3 = `${ContentTypeCategory.Audio}/mpeg`,
     Png = `${ContentTypeCategory.Image}/png`,
+    Unknown = `${ContentTypeCategory.Application}/octet-stream`,
     WebP = `${ContentTypeCategory.Image}/webp`
 }

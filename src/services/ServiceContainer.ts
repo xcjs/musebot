@@ -55,8 +55,10 @@ import { IEmojiResponseTask } from './clients/text/tasks/IEmojiResponseTask.js';
 import { IPromptResponseTask } from './clients/text/tasks/IPromptResponseTask.js';
 import { EnvironmentSettings } from './environment-settings/EnvironmentSettings.js';
 import { IEnvironmentSettings } from './environment-settings/IEnvironmentSettings.js';
+import { ContentTypeService } from './features/ContentTypeService.js';
 import { SupportedFeature } from './features/enum/SupportedFeature.js';
 import { FeatureService } from './features/FeatureService.js';
+import { IContentTypeService } from './features/IContentTypeService.js';
 import { IFeatureService } from './features/IFeatureService.js';
 import { IHelpService } from './help/IHelpService.js';
 import { ILogger } from './ILogger.js';
@@ -111,6 +113,10 @@ export class ServiceContainer implements IServiceContainer {
     }
 
     // Transients -------------------------------------------------------------/
+
+    get contentTypeService(): IContentTypeService {
+        return new ContentTypeService;
+    }
 
     get replyService(): IReplyService {
         return new ReplyService(this);
