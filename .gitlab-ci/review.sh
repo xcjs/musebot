@@ -11,8 +11,8 @@ rm -r node_modules/
 
 filesToReview=$(find . -name "*.ts" || true)
 echo "Reviewing the following files:"
-echo ""
-echo ""
+echo
+echo
 echo "${filesToReview}"
 
 # Exit early if no TypeScript files are found.
@@ -53,4 +53,4 @@ for file in ${filesToReview}; do
     echo "" >> "${reviewReport}"
 done
 
-echo ""
+echo
