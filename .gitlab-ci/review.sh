@@ -37,6 +37,8 @@ for file in ${filesToReview}; do
     header="## ${file}"
     review=$(ollama run "${reviewModel}" "${prompt}" "${content}")
 
+    echo
+    echo
     echo "${header}"
     echo
     echo
