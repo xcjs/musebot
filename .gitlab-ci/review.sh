@@ -46,10 +46,8 @@ for file in ${filesToReview}; do
 
     echo "${header}" >> "${reviewReport}"
     echo "" >> "${reviewReport}"
-    echo "" >> "${reviewReport}"
 
     echo "${review}" >> "${reviewReport}"
-    echo "" >> "${reviewReport}"
     echo "" >> "${reviewReport}"
 done
 
