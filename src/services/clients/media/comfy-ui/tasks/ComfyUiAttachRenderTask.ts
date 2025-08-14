@@ -7,7 +7,6 @@ import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js'
 import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
-import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
@@ -16,17 +15,13 @@ import { ComfyUiClient } from '../ComfyUiClient.js';
 import { MediaCollectionResponse } from '../extensions/MediaResponse.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
-import { ComfyUiReplyTask } from './ComfyUiReplyTask.js';
 
 export class ComfyUiAttachRenderTask extends ComfyUiBaseTask implements IAttachRenderTask {
-    #services: IServiceContainer;
-
     #environmentSettings: IEnvironmentSettings;
     #workflowService: IWorkflowService;
     #comfyUiClient: ComfyUiClient;
     #comfyUiReplyService: ComfyUiReplyService;
     #replyService: IReplyService;
-    #taskQueue: ITaskQueue;
     #logger: ILogger;
 
     #reply: BaseMessageOptions;
@@ -45,14 +40,11 @@ export class ComfyUiAttachRenderTask extends ComfyUiBaseTask implements IAttachR
         prompt: string) {
         super(services);
 
-        this.#services = services;
-
         this.#environmentSettings = services.environmentSettings;
         this.#workflowService = services.workflowService;
         this.#comfyUiClient = services.comfyUiClient;
         this.#comfyUiReplyService = services.comfyUiReplyService;
         this.#replyService = services.replyService;
-        this.#taskQueue = services.taskQueue;
         this.#logger = services.getLogger('ComfyUiAttachRenderTask');
 
         this.#interaction = interaction;
@@ -86,12 +78,7 @@ export class ComfyUiAttachRenderTask extends ComfyUiBaseTask implements IAttachR
             response: imagesResponse
         };
 
-        if(this.#environmentSettings.hasStableDiffusionOutputAsSeparateTask) {
-            const replyTask = new ComfyUiReplyTask(this.#services, this.#interaction, reply, exchange, true);
-            this.#taskQueue.add(replyTask);
-        } else {
-            await this.#comfyUiReplyService.reply(this.#interaction, reply, true, exchange);
-        }
+        await this.#comfyUiReplyService.reply(this.#interaction, reply, true, exchange);
     }
 
     override async postProcess(): Promise<void> {

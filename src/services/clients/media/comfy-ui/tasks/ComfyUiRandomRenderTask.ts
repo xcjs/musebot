@@ -10,7 +10,6 @@ import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js'
 import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
-import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { OllamaClient } from '../../../llm/ollama/OllamaClient.js';
@@ -20,17 +19,16 @@ import { ComfyUiClient } from '../ComfyUiClient.js';
 import { MediaCollectionResponse } from '../extensions/MediaResponse.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
-import { ComfyUiReplyTask } from './ComfyUiReplyTask.js';
 
 export class ComfyUiRandomRenderTask extends ComfyUiBaseTask implements IRandomRenderTask {
     #services: IServiceContainer;
 
     #environmentSettings: IEnvironmentSettings;
     #workflowService: IWorkflowService;
+    #ollamaClient: OllamaClient;
     #comfyUiClient: ComfyUiClient;
     #comfyUiReplyService: ComfyUiReplyService;
     #replyService: IReplyService;
-    #taskQueue: ITaskQueue;
     #logger: ILogger;
 
     #interaction: ButtonInteraction;
@@ -46,10 +44,10 @@ export class ComfyUiRandomRenderTask extends ComfyUiBaseTask implements IRandomR
 
         this.#environmentSettings = services.environmentSettings;
         this.#workflowService = services.workflowService;
+        this.#ollamaClient = new OllamaClient(this.#services);
         this.#comfyUiClient = services.comfyUiClient;
         this.#comfyUiReplyService = services.comfyUiReplyService;
         this.#replyService = services.replyService;
-        this.#taskQueue = services.taskQueue;
         this.#logger = services.getLogger('ComfyUiRandomRenderTask');
 
         this.#interaction = interaction;
@@ -68,9 +66,8 @@ export class ComfyUiRandomRenderTask extends ComfyUiBaseTask implements IRandomR
 
         this.#logger.info(`Using ${workflow.name} as the selected workflow.`);
 
-        const ollamaClient = new OllamaClient(this.#services);
         const ollamaPrompt = getRandomArrayEntry(this.#environmentSettings.stableDiffusionOllamaPrompts);
-        const ollamaExchange = await ollamaClient.generate(ollamaPrompt);
+        const ollamaExchange = await this.#ollamaClient.generate(ollamaPrompt);
 
         const renderRequest = this.#workflowService.getWorkflowDefaults(workflow);
         renderRequest.prompt = ollamaExchange.response.response;
@@ -102,12 +99,7 @@ export class ComfyUiRandomRenderTask extends ComfyUiBaseTask implements IRandomR
             files: [promptAttachment]
          };
 
-        if (this.#environmentSettings.hasStableDiffusionOutputAsSeparateTask) {
-            const replyTask = new ComfyUiReplyTask(this.#services, this.#interaction, reply, exchange);
-            this.#taskQueue.add(replyTask);
-        } else {
-            await this.#comfyUiReplyService.reply(this.#interaction, reply, false, exchange);
-        }
+        await this.#comfyUiReplyService.reply(this.#interaction, reply, false, exchange);
     }
 
     override async postProcess(): Promise<void> {

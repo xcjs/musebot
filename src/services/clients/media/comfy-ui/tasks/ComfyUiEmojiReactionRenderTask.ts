@@ -9,7 +9,6 @@ import { IFeatureService } from '../../../../features/IFeatureService.js';
 import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
-import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
@@ -20,11 +19,8 @@ import { ComfyUiClient } from '../ComfyUiClient.js';
 import { MediaCollectionResponse } from '../extensions/MediaResponse.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
-import { ComfyUiReplyTask } from './ComfyUiReplyTask.js';
 
 export class ComfyUiEmojiReactionRenderTask extends ComfyUiBaseTask implements IEmojiReactionRenderTask {
-    #services: IServiceContainer;
-
     #environmentSettings: IEnvironmentSettings;
     #featureService: IFeatureService;
     #workflowService: IWorkflowService;
@@ -32,7 +28,6 @@ export class ComfyUiEmojiReactionRenderTask extends ComfyUiBaseTask implements I
     #comfyUiReplyService: ComfyUiReplyService;
     #replyService: IReplyService;
     #ollamaClient: OllamaClient;
-    #taskQueue: ITaskQueue;
     #logger: ILogger;
 
     #interaction: Message | ButtonInteraction;
@@ -50,8 +45,6 @@ export class ComfyUiEmojiReactionRenderTask extends ComfyUiBaseTask implements I
         userOverride: User | null = null) {
         super(services);
 
-        this.#services = services;
-
         this.#environmentSettings = services.environmentSettings;
         this.#featureService = services.featureService;
         this.#workflowService = services.workflowService;
@@ -59,7 +52,6 @@ export class ComfyUiEmojiReactionRenderTask extends ComfyUiBaseTask implements I
         this.#comfyUiReplyService = services.comfyUiReplyService;
         this.#replyService = services.replyService;
         this.#ollamaClient = services.ollamaClient;
-        this.#taskQueue = services.taskQueue;
         this.#logger = services.getLogger('ComfyUiEmojiReactionRenderTask');
 
         this.#interaction = interaction;
@@ -148,12 +140,7 @@ export class ComfyUiEmojiReactionRenderTask extends ComfyUiBaseTask implements I
             response: imagesResponse
         };
 
-        if (this.#environmentSettings.hasStableDiffusionOutputAsSeparateTask) {
-            const replyTask = new ComfyUiReplyTask(this.#services, this.#interaction, reply, exchange);
-            this.#taskQueue.add(replyTask);
-        } else {
-            await this.#comfyUiReplyService.reply(this.#interaction, reply, false, exchange);
-        }
+        await this.#comfyUiReplyService.reply(this.#interaction, reply, false, exchange);
     }
 
     override async postProcess(): Promise<void> {
