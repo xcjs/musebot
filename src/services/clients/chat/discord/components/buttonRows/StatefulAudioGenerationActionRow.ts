@@ -1,7 +1,7 @@
 import { ActionRowBuilder, ButtonBuilder } from 'discord.js';
 
 import { IServiceContainer } from '../../../../../IServiceContainer.js';
-import { SerializableRenderRequest } from '../../../../images/stable-diffusion/models/SerializableRenderRequest.js';
+import { SerializableRenderRequest } from '../../../../media/stable-diffusion/models/SerializableRenderRequest.js';
 import { BaseComponent } from '../BaseComponent.js';
 import { RetryButton } from '../buttons/images/RetryButton.js';
 import { IActionRowBuilderFactory } from '../IActionRowBuilderFactory.js';

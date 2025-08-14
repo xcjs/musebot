@@ -1,5 +1,5 @@
-import { IWorkflowService } from '../clients/images/comfy-ui/services/IWorkflowService.js';
-import { StableDiffusionApiType } from '../clients/images/stable-diffusion/enums/StableDiffusionApiType.js';
+import { IWorkflowService } from '../clients/media/comfy-ui/services/IWorkflowService.js';
+import { StableDiffusionApiType } from '../clients/media/stable-diffusion/enums/StableDiffusionApiType.js';
 import { IEnvironmentSettings } from '../environment-settings/IEnvironmentSettings.js';
 import { ILogger } from '../ILogger.js';
 import { IServiceContainer } from '../IServiceContainer.js';
