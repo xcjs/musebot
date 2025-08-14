@@ -34,7 +34,7 @@ echo "" >> "${reviewReport}"
 for file in ${filesToReview}; do
     echo "Reviewing ${file}"
 
-    prompt="Review the following code from '${file}', provide suggestions for improvement, coding best practices, improve readability, and maintainability. Remove any code smells and anti-patterns. Provide code examples for your suggestion. Respond in markdown format. If the file does not have any code or does not need any changes, say 'No changes needed.'\n\n"
+    prompt="Review the following code from '${file}', provide suggestions for improvement, coding best practices, improve readability, and maintainability. Remove any code smells and anti-patterns. Provide code examples for your suggestion. If the file does not have any code or does not need any changes, say 'No changes needed.'"
     content=$(cat "${file}")
 
     review=$(ollama run "${reviewModel}" "${prompt}" "${content}")

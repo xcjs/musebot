@@ -122,8 +122,7 @@ Review:
   script:
     - .gitlab-ci/review.sh
   needs: []
-  except:
-    - main
+  when: manual
   tags:
     - docker
   artifacts:
