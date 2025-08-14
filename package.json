@@ -25,7 +25,7 @@
     "build": "tsc",
     "preparcel": "npm run build",
     "parcel": "parcel build build/tsc/src/app.js",
-    "dev": "tsc -w",
+    "watch": "tsc -w",
     "prebuild:bin": "npm run parcel",
     "build:bin": "npx pkg .",
     "prebuild:docs": "npx recursive-copy-cli -w docs/assets/ build/docs/assets/",
