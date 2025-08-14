@@ -114,13 +114,58 @@ Publish Docker Image:
     - docker build -t $CI_REGISTRY/xcjs/musebot:latest .
     - docker push $CI_REGISTRY/xcjs/musebot:latest
 
-Review:
+Review with gemma3:1b-it-qat:
   stage: Review
   image:
     name: ollama/ollama:latest
     entrypoint: [""]
   script:
-    - .gitlab-ci/review.sh
+    - .gitlab-ci/review.sh "gemma3:1b-it-qat"
+  needs: []
+  when: manual
+  tags:
+    - docker
+  artifacts:
+    paths:
+      - Code Review.md
+
+Review with gemma3n:latest:
+  stage: Review
+  image:
+    name: ollama/ollama:latest
+    entrypoint: [""]
+  script:
+    - .gitlab-ci/review.sh "gemma3n:latest"
+  needs: []
+  when: manual
+  tags:
+    - docker
+  artifacts:
+    paths:
+      - Code Review.md
+
+Review with qwen2.5-coder:latest:
+  stage: Review
+  image:
+    name: ollama/ollama:latest
+    entrypoint: [""]
+  script:
+    - .gitlab-ci/review.sh "qwen2.5-coder:latest"
+  needs: []
+  when: manual
+  tags:
+    - docker
+  artifacts:
+    paths:
+      - Code Review.md
+
+Review with gemma3:12b-it-qat:
+  stage: Review
+  image:
+    name: ollama/ollama:latest
+    entrypoint: [""]
+  script:
+    - .gitlab-ci/review.sh "gemma3:12b-it-qat"
   needs: []
   when: manual
   tags:
