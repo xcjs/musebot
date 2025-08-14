@@ -42,9 +42,7 @@ export abstract class BaseTask<T> {
         this.#logger.info(`Setting taskStatus of task ${this.id} to ${taskStatus}.`);
     }
 
-    get taskChannel(): string {
-        throw new Error('The base getTaskChannel() method must be overridden.');
-    }
+    abstract get taskChannel(): string;
 
     get numAttempts(): number {
         return this.#numAttempts;
