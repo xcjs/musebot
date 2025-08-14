@@ -54,6 +54,8 @@ export class EnvironmentSettings implements IEnvironmentSettings {
     }
 
     constructor() {
+        this.#logger = new Logger('EnvironmentSettings');
+
         // If this loads environment variables during a test, it can pollute
         // the results.
         /* c8 ignore start */
@@ -66,7 +68,8 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         this.version = nodePackage.version;
 
         this.nodeEnvironment = this.#readEnum<NodeEnvironment>(EnvironmentKey.NodeEnvironment, Object.values(NodeEnvironment));
-        this.botFunction = this.#readEnum<BotFunction>(EnvironmentKey.BotFunction, Object.values(BotFunction));
+        this.botFunction = this.#mapLegacyFunctionsToCurrent(
+            this.#readEnum<BotFunction>(EnvironmentKey.BotFunction, Object.values(BotFunction)));
 
         this.maxTaskAttempts = this.#readDefaultableNumber(EnvironmentKey.TaskQueueMaxAttempts, this.maxTaskAttempts);
         this.taskRetryDelayMilliseconds = this.#readDefaultableNumber(EnvironmentKey.TaskQueueRetryDelayMs, this.taskRetryDelayMilliseconds);
@@ -97,8 +100,6 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         this.ollamaTaskChannel = this.#readDefaultableString(EnvironmentKey.OllamaTaskChannel, this.ollamaTaskChannel);
 
         this.stableDiffusionOllamaPrompts = this.#readDelimitedList(EnvironmentKey.StableDiffusionOllamaPrompts, '|');
-
-        this.#logger = new Logger('EnvironmentSettings');
 
         this.#validate();
 
@@ -154,11 +155,11 @@ export class EnvironmentSettings implements IEnvironmentSettings {
     * It also logs informational messages if certain configurations are not provided.
     */
     #validate(): void {
-        if(this.botFunction === BotFunction.Images && this.stableDiffusionHosts.length === 0) {
+        if(this.botFunction === BotFunction.Media && this.stableDiffusionHosts.length === 0) {
             throw new Error(`${EnvironmentKey.StableDiffusionHosts} requires at least one value.`);
         }
 
-        if(this.botFunction === BotFunction.Text && this.ollamaHosts.length === 0) {
+        if(this.botFunction === BotFunction.Chat && this.ollamaHosts.length === 0) {
             throw new Error(`${EnvironmentKey.OllamaHosts} requires at least one value.`);
         }
 
@@ -293,13 +294,36 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         return value;
     }
 
+    /**
+     * Maps legacy `BotFunction` values to their modern equivalents (`BotFunction.Chat` or `BotFunction.Media`).
+     *
+     * This function handles the deprecation of the `Audio`, `Images, and `Text` `BotFunction` values. When encountering
+     * either of these legacy values, a warning is logged (unless running in a test environment) indicating that the
+     * configuration should be updated to use `Chat` or `Media` instead.
+     *
+     * @param {BotFunction} botFunction - The `BotFunction` value to map.
+     * @returns {BotFunction} The mapped `BotFunction` value.
+     */
     #mapLegacyFunctionsToCurrent(botFunction: BotFunction): BotFunction {
+        const warningMessage = `The ${EnvironmentKey.BotFunction} value configured has been deprecated and should be `
+            + `updated with either ${BotFunction.Chat} or ${BotFunction.Media}.`;
+
         switch(botFunction) {
             case BotFunction.Audio:
             case BotFunction.Images:
+                if(this.nodeEnvironment !== NodeEnvironment.Test) {
+                    this.#logger.warn(warningMessage);
+                }
+
                 return BotFunction.Media;
             case BotFunction.Text:
+                if (this.nodeEnvironment !== NodeEnvironment.Test) {
+                    this.#logger.warn(warningMessage);
+                }
+
                 return BotFunction.Chat;
+            default:
+                return botFunction;
         }
     }
 }

@@ -87,14 +87,17 @@ describe('EnvironmentSettings', () => {
         });
 
         it.each([
-            BotFunction.Images,
-            BotFunction.Text
-        ])('should accept any valid BotFunction value', (botFunction: BotFunction) => {
-            process.env[EnvironmentKey.BotFunction] = botFunction;
+            [BotFunction.Chat, BotFunction.Chat],
+            [BotFunction.Media, BotFunction.Media],
+            [BotFunction.Audio, BotFunction.Media],
+            [BotFunction.Images, BotFunction.Media],
+            [BotFunction.Text, BotFunction.Chat]
+        ])('should accept any valid BotFunction value', (expectedBotFunction: BotFunction, actualBotFunction: BotFunction) => {
+            process.env[EnvironmentKey.BotFunction] = expectedBotFunction;
             process.env[EnvironmentKey.OllamaHosts] = mockUrl;
             const environmentSettings = new EnvironmentSettings();
 
-            expect(environmentSettings.botFunction).toBe(botFunction);
+            expect(environmentSettings.botFunction).toBe(actualBotFunction);
         });
 
         it('should not accept any invalid value', () => {
