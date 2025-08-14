@@ -296,4 +296,14 @@ export class EnvironmentSettings implements IEnvironmentSettings {
 
         return value;
     }
+
+    #mapLegacyFunctionsToCurrent(botFunction: BotFunction): BotFunction {
+        switch(botFunction) {
+            case BotFunction.Audio:
+            case BotFunction.Images:
+                return BotFunction.Media;
+            case BotFunction.Text:
+                return BotFunction.Chat;
+        }
+    }
 }
