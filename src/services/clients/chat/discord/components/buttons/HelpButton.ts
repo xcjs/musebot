@@ -31,4 +31,8 @@ export class HelpButton extends BaseComponent<ButtonBuilder> {
             .setLabel(this.label)
             .setStyle(ButtonStyle.Secondary);
     }
+
+    override buildAsync(): Promise<ButtonBuilder> {
+        throw new Error('Method not implemented.');
+    }
 }

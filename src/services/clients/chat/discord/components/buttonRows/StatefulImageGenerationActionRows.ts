@@ -52,4 +52,8 @@ export class StatefulImageGenerationActionRows extends BaseComponent<ActionRowBu
 
         return this.#actionRowBuilderFactory.buildActionRows(this.#buttons);
     }
+
+    override buildAsync(): Promise<ActionRowBuilder<ButtonBuilder>[]> {
+        throw new Error('Method not implemented.');
+    }
 }
