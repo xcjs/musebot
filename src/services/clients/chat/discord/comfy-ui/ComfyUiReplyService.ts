@@ -133,7 +133,7 @@ export class ComfyUiReplyService {
         const isStatefulResponse = requests.filter((request) => {
             if (request !== null) {
                 const description = JSON.stringify(request);
-                return description.length <= DiscordConstants.ImageDescriptionMaxLength;
+                return description.length <= DiscordConstants.AttachmentDescriptionMaxLength;
             } else {
                 return false;
             }
