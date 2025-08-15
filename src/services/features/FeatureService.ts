@@ -12,9 +12,9 @@ export class FeatureService implements IFeatureService {
 
     #logger: ILogger;
 
-    #supportedFeatures: Array<SupportedFeature> = [];
+    #supportedFeatures: SupportedFeature[] = [];
 
-    get supportedFeatures(): Array<SupportedFeature> {
+    get supportedFeatures(): SupportedFeature[] {
         return this.#supportedFeatures;
     }
 

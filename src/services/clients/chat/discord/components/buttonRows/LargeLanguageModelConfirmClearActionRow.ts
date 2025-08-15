@@ -28,7 +28,7 @@ export class LargeLanguageModelConfirmClearActionRow extends BaseComponent<Actio
         this.#actionRowBuilderFactory = services.actionRowBuilderFactory;
     }
 
-    override build(): Array<ActionRowBuilder<ButtonBuilder>> {
+    override build(): ActionRowBuilder<ButtonBuilder>[] {
         this.#buttons = [
             new ClearContextCancelButton(this.#services),
             new ClearContextConfirmButton(this.#services)

@@ -17,11 +17,11 @@ export interface IReplyService {
 
     replyWithError(interaction: Message | ButtonInteraction): Promise<void>;
 
-    getAttachmentsByType(interaction: Message | ButtonInteraction, contentTypes: Array<ContentType>): Array<Attachment>;
+    getAttachmentsByType(interaction: Message | ButtonInteraction, contentTypes: ContentType[]): Attachment[];
 
-    getAudioAttachments(interaction: Message | ButtonInteraction): Array<Attachment>;
+    getAudioAttachments(interaction: Message | ButtonInteraction): Attachment[];
 
-    getImageAttachments(interaction: Message | ButtonInteraction): Array<Attachment>;
+    getImageAttachments(interaction: Message | ButtonInteraction): Attachment[];
 
-    getAttachedImagesAsBase64(interaction: Message | ButtonInteraction): Promise<Array<string>>;
+    getAttachedImagesAsBase64(interaction: Message | ButtonInteraction): Promise<string[]>;
 }

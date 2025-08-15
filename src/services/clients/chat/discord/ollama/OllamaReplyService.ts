@@ -22,9 +22,9 @@ export class OllamaReplyService {
     async reply(
         message: Message,
         exchange: IHttpExchange<ChatRequest, ChatResponse>,
-        prependedText: string = ''): Promise<Array<Message>> {
+        prependedText: string = ''): Promise<Message[]> {
         const responses = splitText(`${prependedText} ${exchange.response.message.content}`, DiscordConstants.ContentMaxLength);
-        const replies: Array<Message> = [];
+        const replies: Message[] = [];
 
         this.#logger.info(`Replying with ${responses.length} messages.`);
 

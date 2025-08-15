@@ -59,14 +59,14 @@ export class ComfyUiReplyService {
             return await this.#replyService.replyWithError(interaction);
         }
 
-        const jsonDescriptions: Array<string | null> = renderExchange.request.map((request) => {
+        const jsonDescriptions: string[] = renderExchange.request.map((request) => {
             const requestString = JSON.stringify(request);
             return requestString.length <= DiscordConstants.ContentMaxLength
                 ? requestString
-                : null;
+                : '';
         });
 
-        const fileAttachments: Array<AttachmentBuilder> = [];
+        const fileAttachments: AttachmentBuilder[] = [];
         let components: ActionRowBuilder<ButtonBuilder>[] = [];
 
         for (const mediaContainerCollection of Object.values(renderExchange.response)) {
