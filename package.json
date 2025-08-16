@@ -3,7 +3,12 @@
   "version": "7.2.0",
   "description": "A Discord bot that connects to various generative AI APIs.",
   "private": "true",
-  "license": "ISC",
+  "license": "XCJS Software License Agreement",
+  "author": {
+    "name": "Zackary Lowery",
+    "email": "zlowery@xcjs.com",
+    "url": "https://xcjs.com/"
+  },
   "bin": "build/parcel/musebot.cjs",
   "main": "build/parcel/musebot.cjs",
   "type": "module",
