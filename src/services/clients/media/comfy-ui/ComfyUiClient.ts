@@ -1,6 +1,5 @@
 import { Prompt } from 'comfy-ui-client';
 
-import { APPLICATION_NAME } from '../../../../constants/Globals.js';
 import { PromisedSettledResultStatus } from '../../../../enums/PromisedSettledResultStatus.js';
 import { getRandomArrayEntry } from '../../../../utilities/random-utilities.js';
 import { IEnvironmentSettings } from '../../../environment-settings/IEnvironmentSettings.js';
@@ -37,7 +36,8 @@ export class ComfyUiClient {
             comfyHost = comfyHost.substring(0, comfyHost.length - 1);
         }
 
-        this.#client = new ExtendedComfyUIClient(comfyHost, `${APPLICATION_NAME}_${this.#chatClient.name}`);
+        this.#client = new ExtendedComfyUIClient(comfyHost,
+            `${this.#environmentSettings.applicationName}_${this.#chatClient.name}`);
 
         this.#logger.info(`Selected host: ${this.#host}`);
     }

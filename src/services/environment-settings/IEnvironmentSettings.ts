@@ -36,5 +36,6 @@ export interface IEnvironmentSettings {
 
     stableDiffusionOllamaPrompts: Array<string>;
 
+    applicationName: string;
     isProduction: boolean;
 }

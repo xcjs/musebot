@@ -1,3 +1,15 @@
+export function toTitleCase(text: string): string {
+    if(text === null
+        || text.length === 0) {
+        return '';
+    }
+
+    return text.replace(
+        /\w\S*/g,
+        text => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase()
+    );
+}
+
 export function splitText(text: string, lineLength: number): Array<string> {
     const splitText: Array<string> = [];
 

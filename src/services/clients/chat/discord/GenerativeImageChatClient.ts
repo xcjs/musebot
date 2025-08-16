@@ -1,8 +1,8 @@
 import { ButtonInteraction, Client as DiscordClient, Events, Message as DiscordMessage, MessageReaction, User } from 'discord.js';
 import { Message as OllamaMessage } from 'ollama';
 
-import { APPLICATION_NAME } from '../../../../constants/Globals.js';
 import { BotInteraction } from '../../../../enums/BotInteraction.js';
+import { IEnvironmentSettings } from '../../../environment-settings/IEnvironmentSettings.js';
 import { IHelpService } from '../../../help/IHelpService.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
 import { ITaskQueue } from '../../../tasks/ITaskQueue.js';
@@ -17,6 +17,7 @@ import { BaseDiscordClient } from './BaseDiscordClient.js';
 export class GenerativeImageChatClient extends BaseDiscordClient {
     #services: IServiceContainer;
 
+    #environmentSettings: IEnvironmentSettings;
     #discordClient: DiscordClient;
     #replyService: IReplyService;
     #typingService: ITypingService;
@@ -29,6 +30,7 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
 
         this.#services = services;
 
+        this.#environmentSettings = services.environmentSettings;
         this.#discordClient = services.discordClient;
         this.#replyService = services.replyService;
         this.#typingService = services.typingService;
@@ -74,7 +76,8 @@ export class GenerativeImageChatClient extends BaseDiscordClient {
         try {
             await interaction.deferUpdate();
         } catch (error) {
-            this.logger.error(`Error while deferring a reply. Ignore this error if the ${APPLICATION_NAME} is functioning normally:`, error);
+            this.logger.error(`Error while deferring a reply. Ignore this error if the `
+                + `${this.#environmentSettings.applicationName} is functioning normally:`, error);
         }
 
         switch (interaction.customId) {

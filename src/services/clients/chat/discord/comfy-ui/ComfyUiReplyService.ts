@@ -1,10 +1,10 @@
 import { ActionRowBuilder, AttachmentBuilder, BaseMessageOptions, ButtonBuilder, ButtonInteraction, Message } from 'discord.js';
 
 import { MAX_FILE_NAME_LENGTH } from '../../../../../constants/FileConstants.js';
-import { APPLICATION_NAME } from '../../../../../constants/Globals.js';
 import { ContentType } from '../../../../../enums/ContentType.js';
 import { ContentTypeCategory } from '../../../../../enums/ContentTypeCategory.js';
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
+import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { IContentTypeService } from '../../../../features/IContentTypeService.js';
 import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
@@ -21,8 +21,9 @@ import { DiscordConstants } from '../enums/DiscordConstants.js';
 export class ComfyUiReplyService {
     #services: IServiceContainer;
 
-    #contentTypeService: IContentTypeService;
+    #environmentSettings: IEnvironmentSettings;
     #comfyUiClient: ComfyUiClient;
+    #contentTypeService: IContentTypeService;
     #replyService: IReplyService;
 
     #logger: ILogger;
@@ -34,8 +35,9 @@ export class ComfyUiReplyService {
     constructor(services: IServiceContainer) {
         this.#services = services;
 
-        this.#contentTypeService = services.contentTypeService;
+        this.#environmentSettings = services.environmentSettings;
         this.#comfyUiClient = services.comfyUiClient;
+        this.#contentTypeService = services.contentTypeService;
         this.#replyService = services.replyService;
 
         this.#logger = services.getLogger('ComfyUiReplyService');
@@ -116,10 +118,10 @@ export class ComfyUiReplyService {
 
     getFileNameFromPrompt(renderRequest: SerializableRenderRequest | null): string {
         if(renderRequest === null) {
-            return `${APPLICATION_NAME}_${new Date().getTime()}_stateless`;
+            return `${this.#environmentSettings.applicationName}_${new Date().getTime()}_stateless`;
         }
 
-        return `${APPLICATION_NAME}_${renderRequest.seed}_${renderRequest.prompt}`.substring(0, MAX_FILE_NAME_LENGTH);
+        return `${this.#environmentSettings.applicationName}_${renderRequest.seed}_${renderRequest.prompt}`.substring(0, MAX_FILE_NAME_LENGTH);
     }
 
     async #buildActionBars(mediaContainer: MediaContainer, requests: SerializableRenderRequest[]): Promise<ActionRowBuilder<ButtonBuilder>[]> {

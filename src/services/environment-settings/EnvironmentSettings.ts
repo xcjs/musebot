@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 import nodePackage from '../../../package.json' with { type: 'json' };
 import { BotFunction } from '../../enums/BotFunction.js';
 import { NodeEnvironment } from '../../enums/NodeEnvironment.js';
+import { toTitleCase } from '../../utilities/string-utilities.js';
 import { StableDiffusionApiType } from '../clients/media/stable-diffusion/enums/StableDiffusionApiType.js';
 import { ILogger } from '../ILogger.js';
 import { Logger } from '../Logger.js';
@@ -49,7 +50,11 @@ export class EnvironmentSettings implements IEnvironmentSettings {
 
     #logger: ILogger;
 
-    get isProduction() {
+    get applicationName(): string {
+        return toTitleCase(this.packageName);
+    }
+
+    get isProduction(): boolean {
         return this.nodeEnvironment === NodeEnvironment.Production;
     }
 
