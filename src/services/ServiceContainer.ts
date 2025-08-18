@@ -234,30 +234,32 @@ export class ServiceContainer implements IServiceContainer {
 
     getReplyRenderTask(message: DiscordMessage): IReplyRenderTask {
         if (!this.#featureService.hasFeature(SupportedFeature.Txt2Audio)
+            && !this.#featureService.hasFeature(SupportedFeature.Txt2Music)
             && !this.#featureService.hasFeature(SupportedFeature.Txt2Img)
             && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
             throw this.#taskNotConfiguredError;
         }
 
-        if(this.#environmentSettings.botFunction === BotFunction.Audio) {
-            return new ComfyUiReplyAudioTask(this, message);
-        } else if(this.#environmentSettings.botFunction === BotFunction.Images) {
+        if (this.#featureService.hasFeature(SupportedFeature.Txt2Img)) {
             return new ComfyUiReplyRenderTask(this, message);
+        } else if (this.#featureService.hasFeature(SupportedFeature.Txt2Music)) {
+            return new ComfyUiReplyAudioTask(this, message);
         } else {
             throw this.#taskNotConfiguredError;
         }
     }
 
     getRetryRenderTask(interaction: ButtonInteraction): IRetryRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)
-            && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)
-            && !this.#featureService.hasFeature(SupportedFeature.Txt2Audio)) {
+        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Audio)
+            && !this.#featureService.hasFeature(SupportedFeature.Txt2Music)
+            && !this.#featureService.hasFeature(SupportedFeature.Txt2Img)
+            && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
             throw this.#taskNotConfiguredError;
         }
 
         if(this.#featureService.hasFeature(SupportedFeature.Txt2Img)) {
             return new ComfyUiRetryRenderTask(this, interaction);
-        } else if(this.#featureService.hasFeature(SupportedFeature.Txt2Audio)) {
+        } else if(this.#featureService.hasFeature(SupportedFeature.Txt2Music)) {
             return new ComfyUiRetryAudioTask(this, interaction);
         } else {
             throw this.#taskNotConfiguredError;
