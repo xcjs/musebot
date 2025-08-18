@@ -10,10 +10,10 @@ import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
-import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
 import { IReplyRenderTask } from '../../tasks/IReplyRenderTask.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
 import { MediaCollectionResponse } from '../extensions/MediaResponse.js';
+import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 
@@ -54,7 +54,7 @@ export class ComfyUiReplyRenderTask extends ComfyUiBaseTask implements IReplyRen
         this.#logger.info('Processing a ComfyUiReplyRenderTask...');
 
         const prompt = this.#message.type === MessageType.Reply
-            ? `${((await this.#getAllAntecedentPrompts()).join(' '))} ${this.#message.content}`.trim()
+            ? `${((await this.#replyService.getAllAntecedentPrompts(this.#message)).join(' '))} ${this.#message.content}`.trim()
             : this.#replyService.getMessageWithoutBotMentions(this.#message);
 
         const workflows = this.#workflowService.workflows.filter(x =>
@@ -103,22 +103,5 @@ export class ComfyUiReplyRenderTask extends ComfyUiBaseTask implements IReplyRen
         if(this.taskStatus === TaskStatus.Dead) {
             await this.#replyService.replyWithError(this.#message);
         }
-    }
-
-    async #getAllAntecedentPrompts(): Promise<Array<string>> {
-        const prompts: Array<string> = [];
-        let currentMessage = this.#message;
-
-        while (currentMessage.reference !== null) {
-            const antecedentMessage = await currentMessage.fetchReference();
-
-            if (antecedentMessage.content !== null && antecedentMessage.content.length > 0) {
-                prompts.push(this.#replyService.getMessageWithoutBotMentions(antecedentMessage));
-            }
-
-            currentMessage = antecedentMessage;
-        }
-
-        return prompts.reverse();
     }
 }

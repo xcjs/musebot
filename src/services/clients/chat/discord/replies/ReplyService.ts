@@ -218,6 +218,23 @@ export class ReplyService implements IReplyService {
         return `<@${user.id}>`;
     }
 
+    async getAllAntecedentPrompts(message: Message): Promise<string[]> {
+        const prompts: string[] = [];
+        let currentMessage = message;
+
+        while (currentMessage.reference !== null) {
+            const antecedentMessage = await currentMessage.fetchReference();
+
+            if (antecedentMessage.content !== null && antecedentMessage.content.length > 0) {
+                prompts.push(this.getMessageWithoutBotMentions(antecedentMessage));
+            }
+
+            currentMessage = antecedentMessage;
+        }
+
+        return prompts.reverse();
+    }
+
     getAttachmentsByType(interaction: Message | ButtonInteraction, contentTypes: Array<ContentType>): Array<Attachment> {
         this.#logger.info('Looking for attachments of the following types on a message:', contentTypes);
 

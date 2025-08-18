@@ -1,4 +1,4 @@
-import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
+import { SerializableRenderRequest } from './SerializableRenderRequest.js';
 
 export interface IWorkflowDefaults {
     $musebotDefaults: SerializableRenderRequest;

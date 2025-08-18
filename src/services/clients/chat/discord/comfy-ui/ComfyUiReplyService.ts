@@ -10,7 +10,7 @@ import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { ComfyUiClient } from '../../../media/comfy-ui/ComfyUiClient.js';
 import { MediaCollectionResponse, MediaContainer } from '../../../media/comfy-ui/extensions/MediaResponse.js';
-import { SerializableRenderRequest } from '../../../media/stable-diffusion/models/SerializableRenderRequest.js';
+import { SerializableRenderRequest } from '../../../media/comfy-ui/models/SerializableRenderRequest.js';
 import { IReplyService } from '../../IReplyService.js';
 import { Img2ImgActionRow } from '../components/buttonRows/Img2ImgActionRow.js';
 import { StatefulAudioGenerationActionRow } from '../components/buttonRows/StatefulAudioGenerationActionRow.js';

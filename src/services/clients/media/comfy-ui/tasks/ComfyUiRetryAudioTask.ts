@@ -11,7 +11,7 @@ import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
-import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
+import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
 import { IRetryRenderTask } from '../../tasks/IRetryRenderTask.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
 import { MediaCollectionResponse } from '../extensions/MediaResponse.js';

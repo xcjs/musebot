@@ -1,7 +1,7 @@
 import { ActionRowBuilder, ButtonBuilder } from 'discord.js';
 
 import { IServiceContainer } from '../../../../../IServiceContainer.js';
-import { SerializableRenderRequest } from '../../../../media/stable-diffusion/models/SerializableRenderRequest.js';
+import { SerializableRenderRequest } from '../../../../media/comfy-ui/models/SerializableRenderRequest.js';
 import { BaseComponent } from '../BaseComponent.js';
 import { HelpButton } from '../buttons/HelpButton.js';
 import { ExpandPromptButton } from '../buttons/images/ExpandPromptButton.js';

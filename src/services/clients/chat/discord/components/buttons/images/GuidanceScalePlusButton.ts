@@ -4,8 +4,8 @@ import { BotInteraction } from '../../../../../../../enums/BotInteraction.js';
 import { IEnvironmentSettings } from '../../../../../../environment-settings/IEnvironmentSettings.js';
 import { SupportedFeature } from '../../../../../../features/enum/SupportedFeature.js';
 import { IServiceContainer } from '../../../../../../IServiceContainer.js';
-import { GuidanceScaleLimit } from '../../../../../media/stable-diffusion/enums/GuidanceScaleLimit.js';
-import { SerializableRenderRequest } from '../../../../../media/stable-diffusion/models/SerializableRenderRequest.js';
+import { SerializableRenderRequest } from '../../../../../media/comfy-ui/models/SerializableRenderRequest.js';
+import { guidanceScaleMax } from '../../../../../media/stable-diffusion/constants/constants.js';
 import { BaseComponent } from '../../BaseComponent.js';
 
 export class GuidanceScalePlusButton extends BaseComponent<ButtonBuilder> {
@@ -25,7 +25,7 @@ export class GuidanceScalePlusButton extends BaseComponent<ButtonBuilder> {
 
         isSupported = isSupported
             && this.#renderRequest.cfgScale - this.#environmentSettings.stableDiffusionGuidanceScaleInterval
-                <= GuidanceScaleLimit.Max;
+                <= guidanceScaleMax;
 
         return isSupported;
     }

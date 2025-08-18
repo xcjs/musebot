@@ -1,5 +1,5 @@
 import { getRandomInt } from '../../../../../utilities/random-utilities.js';
-import { maxSeed } from '../constants/constants.js';
+import { maxSeed } from '../../stable-diffusion/constants/constants.js';
 
 export class SerializableRenderRequest {
     prompt: string | null;

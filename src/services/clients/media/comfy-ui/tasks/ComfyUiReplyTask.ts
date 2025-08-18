@@ -7,7 +7,7 @@ import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { IReplyTask } from '../../../chat/tasks/IReplyTask.js';
-import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
+import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
 import { MediaCollectionResponse } from '../extensions/MediaResponse.js';
 
 export class ComfyUiReplyTask extends BaseTask<void> implements IReplyTask {

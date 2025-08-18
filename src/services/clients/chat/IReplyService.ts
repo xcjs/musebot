@@ -15,6 +15,8 @@ export interface IReplyService {
 
     mention(user: User): string;
 
+    getAllAntecedentPrompts(message: Message): Promise<string[]>;
+
     replyWithError(interaction: Message | ButtonInteraction): Promise<void>;
 
     getAttachmentsByType(interaction: Message | ButtonInteraction, contentTypes: ContentType[]): Attachment[];

@@ -9,7 +9,7 @@ import { ITaskQueue } from '../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { IWorkflow } from '../../media/comfy-ui/models/IWorkflow.js';
 import { IWorkflowService } from '../../media/comfy-ui/services/IWorkflowService.js';
-import { SerializableRenderRequest } from '../../media/stable-diffusion/models/SerializableRenderRequest.js';
+import { SerializableRenderRequest } from '../../media/comfy-ui/models/SerializableRenderRequest.js';
 import { IReplyService } from '../IReplyService.js';
 import { ITypingService } from '../ITypingService.js';
 import { BaseDiscordClient } from './BaseDiscordClient.js';

@@ -8,7 +8,7 @@ import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
-import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
+import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
 import { IWorkflow } from '../models/IWorkflow.js';
 import { IWorkflowDefaults } from '../models/IWorkflowDefaults.js';
 import { IWorkflowService } from './IWorkflowService.js';

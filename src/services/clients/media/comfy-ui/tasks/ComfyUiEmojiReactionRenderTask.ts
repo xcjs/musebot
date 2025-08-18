@@ -13,7 +13,7 @@ import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReply
 import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { OllamaClient } from '../../../llm/ollama/OllamaClient.js';
-import { SerializableRenderRequest } from '../../stable-diffusion/models/SerializableRenderRequest.js';
+import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
 import { IEmojiReactionRenderTask } from '../../tasks/IEmojiReactionRenderTask.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
 import { MediaCollectionResponse } from '../extensions/MediaResponse.js';

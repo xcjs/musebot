@@ -1,5 +1,5 @@
 import { Prompt } from 'comfy-ui-client';
-import { BaseMessageOptions, ButtonInteraction, Message, User } from 'discord.js';
+import { Message, MessageType } from 'discord.js';
 
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
@@ -9,111 +9,97 @@ import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
-import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
-import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
-import { IRetryRenderTask } from '../../tasks/IRetryRenderTask.js';
+import { IReplyRenderTask } from '../../tasks/IReplyRenderTask.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
 import { MediaCollectionResponse } from '../extensions/MediaResponse.js';
+import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
+import { IRenderRequestMutator } from '../services/render-request-mutators/IRenderRequestMutator.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 
-export class ComfyUiRetryRenderTask extends ComfyUiBaseTask implements IRetryRenderTask {
+export class ComfyUiReplyRenderTask extends ComfyUiBaseTask implements IReplyRenderTask {
     #environmentSettings: IEnvironmentSettings;
+
     #workflowService: IWorkflowService;
+    #mutator: IRenderRequestMutator;
     #comfyUiClient: ComfyUiClient;
     #comfyUiReplyService: ComfyUiReplyService;
     #replyService: IReplyService;
     #logger: ILogger;
 
-    #interaction: Message | ButtonInteraction;
+    #message: Message;
+
 
     override get taskChannel(): string {
         return `${this.#environmentSettings.stableDiffusionTaskChannel}_${this.#comfyUiClient.host}`;
     }
 
-    constructor(
-        services: IServiceContainer,
-        interaction: Message | ButtonInteraction) {
+    constructor(services: IServiceContainer, message: Message) {
         super(services);
 
         this.#environmentSettings = services.environmentSettings;
+
         this.#workflowService = services.workflowService;
         this.#comfyUiClient = services.comfyUiClient;
         this.#comfyUiReplyService = services.comfyUiReplyService;
         this.#replyService = services.replyService;
-        this.#logger = services.getLogger('ComfyUiRetryRenderTask');
 
-        this.#interaction = interaction;
+        this.#logger = services.getLogger('ComfyUiReplyRenderTask');
+
+        this.#message = message;
     }
 
     override async process(): Promise<void> {
         await super.process();
 
-        this.#logger.info('Processing a ComfyUiRetryRenderTask...');
+        this.#logger.info('Processing a ComfyUiReplyRenderTask...');
 
-        const imageAttachments = this.#replyService.getImageAttachments(this.#interaction);
-
-        if (imageAttachments.length === 0) {
-            this.#logger.warn('No attachments were found - exiting the task.');
-            return;
-        }
+        const workflows = this.#workflowService.workflows.filter(x =>
+            x.type !== SupportedFeature.Txt2Txt);
 
         const renderRequests: SerializableRenderRequest[] = [];
         const prompts: Prompt[] = [];
-        let content: string;
+        let numRenders = 1;
+        let i = 0;
 
-        const username = this.#interaction.member !== null
-                    ? this.#replyService.mention(this.#interaction.member.user as User)
-                    : 'You';
-
-        for (const imageAttachment of imageAttachments) {
-            const renderRequest = SerializableRenderRequest.fromJson(imageAttachment.description);
-            content = `${username} re-rendered \`${renderRequest.prompt}\``.substring(0, DiscordConstants.ContentMaxLength);
-
-            const workflows = this.#workflowService.workflows.filter(x =>
-                x.type === SupportedFeature.Txt2Img
-                || x.type === SupportedFeature.Txt2Vid);
-
+        do {
             const workflow = getRandomArrayEntry(workflows);
-            const renderDefaults = this.#workflowService.getWorkflowDefaults(workflow);
 
             this.#logger.info(`Using ${workflow.name} as the selected workflow.`);
 
-            renderRequest.prompt = renderRequest.prompt;
-            renderRequest.refreshSeed();
-            renderRequest.workflow = workflow.name;
-            renderRequest.num = 1;
-            renderRequest.cfgScale = renderDefaults.cfgScale;
-            renderRequest.sampler = renderDefaults.sampler;
-            renderRequest.scheduler = renderDefaults.scheduler;
-            renderRequest.steps = renderDefaults.steps;
+            const renderRequest = this.#workflowService.getWorkflowDefaults(workflow);
 
-            if(renderRequest.workflow !== workflow.name) {
-                renderRequest.height = renderDefaults.height;
-                renderRequest.width = renderDefaults.width;
+            if (i === 0) {
+                numRenders = renderRequest.num;
             }
 
+            renderRequest.workflow = workflow.name;
+            renderRequest.prompt = prompt;
+            renderRequest.num = 1;
+            renderRequest.refreshSeed();
+
             renderRequests.push(renderRequest);
+
             prompts.push(this.#workflowService.renderWorkflow(workflow, renderRequest));
-        }
+
+            i++;
+        } while (i < numRenders);
 
         const imagesResponse = await this.#comfyUiClient.render(prompts);
-
-        const reply: BaseMessageOptions = { content };
         const exchange: IHttpExchange<SerializableRenderRequest[], MediaCollectionResponse> = {
             request: renderRequests,
             response: imagesResponse
         };
 
-        await this.#comfyUiReplyService.reply(this.#interaction, reply, true, exchange);
+        await this.#comfyUiReplyService.reply(this.#message, {}, false, exchange);
     }
 
     override async postProcess(): Promise<void> {
         await super.postProcess();
 
         if (this.taskStatus === TaskStatus.Dead) {
-            await this.#replyService.replyWithError(this.#interaction);
+            await this.#replyService.replyWithError(this.#message);
         }
     }
 }
