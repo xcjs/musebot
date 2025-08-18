@@ -7,7 +7,6 @@ import { beforeEach, describe, expect, it } from '@jest/globals';
 import nodePackage from '../../../package.json' with { type: 'json' };
 import { BotFunction } from '../../enums/BotFunction.js';
 import { NodeEnvironment } from '../../enums/NodeEnvironment.js';
-import { StableDiffusionApiType } from '../clients/media/stable-diffusion/enums/StableDiffusionApiType.js';
 import { EnvironmentKey } from './constants/EnvironmentKey.js';
 import { EnvironmentSettings } from './EnvironmentSettings';
 
@@ -22,7 +21,6 @@ beforeEach(() => {
         [EnvironmentKey.NodeEnvironment]: process.env[EnvironmentKey.NodeEnvironment] || NodeEnvironment.Test,
         // Preset all minimally required values for most tests to pass.
         [EnvironmentKey.BotFunction]: BotFunction.Media,
-        [EnvironmentKey.StableDiffusionApiType]: StableDiffusionApiType.ComfyUI,
         [EnvironmentKey.AuthenticationToken]: mockToken,
         [EnvironmentKey.StableDiffusionHosts]: mockUrl
     };
@@ -450,27 +448,6 @@ describe('EnvironmentSettings', () => {
         });
     });
 
-    describe('stableDiffusionApiType', () => {
-        it.each([
-            StableDiffusionApiType.ComfyUI,
-        ])('it should work with each supported API definition', (apiType: StableDiffusionApiType) => {
-            process.env[EnvironmentKey.StableDiffusionApiType] = apiType;
-
-            const environmentSettings = new EnvironmentSettings();
-
-            expect(environmentSettings.stableDiffusionApiType).toBe(apiType);
-        });
-
-        it('should throw an exception if an invalid API type is provided', () => {
-            const invalidApiType = 'invalidApiType';
-            process.env[EnvironmentKey.StableDiffusionApiType] = invalidApiType;
-
-            expect(() => {
-                new EnvironmentSettings();
-            }).toThrow();
-        });
-    });
-
     describe('stableDiffusionHosts', () => {
         const mockHosts = [
             mockUrl,
@@ -503,7 +480,7 @@ describe('EnvironmentSettings', () => {
 
         it('should throw an exception for invalid URLs', () => {
             const invalidUrl = 'invalidUrl';
-            process.env[EnvironmentKey.StableDiffusionApiType] = invalidUrl;
+            process.env[EnvironmentKey.StableDiffusionHosts] = invalidUrl;
 
             expect(() => {
                 new EnvironmentSettings();

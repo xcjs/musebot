@@ -8,45 +8,122 @@ import nodePackage from '../../../package.json' with { type: 'json' };
 import { BotFunction } from '../../enums/BotFunction.js';
 import { NodeEnvironment } from '../../enums/NodeEnvironment.js';
 import { toTitleCase } from '../../utilities/string-utilities.js';
-import { StableDiffusionApiType } from '../clients/media/stable-diffusion/enums/StableDiffusionApiType.js';
 import { ILogger } from '../ILogger.js';
 import { Logger } from '../Logger.js';
 import { EnvironmentKey } from './constants/EnvironmentKey.js';
 import { IEnvironmentSettings } from './IEnvironmentSettings.js';
 
 export class EnvironmentSettings implements IEnvironmentSettings {
-    packageName: string;
-    version: string;
+    #packageName: string;
+    get packageName(): string {
+        return this.#packageName;
+    }
 
-    nodeEnvironment: NodeEnvironment;
+    #version: string;
+    get version(): string {
+        return this.#version;
+    }
 
-    botFunction: BotFunction;
+    #nodeEnvironment: NodeEnvironment;
+    get nodeEnvironment(): NodeEnvironment {
+        return this.#nodeEnvironment;
+    }
 
-    maxTaskAttempts: number = 10;
-    taskRetryDelayMilliseconds: number = 1000;
+    #botFunction: BotFunction;
+    get botFunction(): BotFunction {
+        return this.#botFunction;
+    }
 
-    discordToken: string;
-    discordChannels: string[] = [];
-    discordChannelsDisallowed: string[] = [];
+    #maxTaskAttempts: number = 10;
+    get maxTaskAttempts(): number {
+        return this.#maxTaskAttempts;
+    }
 
-    botRequiresMention: boolean = true;
-    botResponseRate: number = 100;
-    botPrivateMessageUsers: string[] = [];
-    errorMessage: string = 'An error occurred while generating a response. Please try again later.';
+    #taskRetryDelayMilliseconds: number = 1000;
+    get taskRetryDelayMilliseconds(): number {
+        return this.#taskRetryDelayMilliseconds;
+    }
 
-    stableDiffusionApiType: StableDiffusionApiType;
-    stableDiffusionHosts: URL[] = [];
-    stableDiffusionModels: string[] = [];
-    stableDiffusionGuidanceScaleInterval: number = .5;
-    stableDiffusionTaskChannel: string = '';
 
-    ollamaHosts: URL[] = [];
-    ollamaModels: string[] = [];
-    ollamaSystemPrompt: string;
-    ollamaStreamsResponse: boolean = false;
-    ollamaTaskChannel: string = '';
+    #discordToken: string;
+    get discordToken(): string {
+        return this.#discordToken;
+    }
 
-    stableDiffusionOllamaPrompts: string[] = ['Describe something or someone with extraordinary detail.'];
+    #discordChannels: string[] = [];
+    get discordChannels(): string[] {
+        return this.#discordChannels;
+    }
+
+    #discordChannelsDisallowed: string[] = [];
+    get discordChannelsDisallowed(): string[] {
+        return this.#discordChannelsDisallowed;
+    }
+
+    #botRequiresMention: boolean = true;
+    get botRequiresMention(): boolean {
+        return this.#botRequiresMention;
+    }
+
+    #botResponseRate: number = 100;
+    get botResponseRate(): number {
+        return this.#botResponseRate;
+    }
+
+    #botPrivateMessageUsers: string[] = [];
+    get botPrivateMessageUsers(): string[] {
+        return this.#botPrivateMessageUsers;
+    }
+
+    #errorMessage: string = 'An error occurred while generating a response. Please try again later.';
+    get errorMessage(): string {
+        return this.#errorMessage;
+    }
+
+    #stableDiffusionHosts: URL[] = [];
+    get stableDiffusionHosts(): URL[] {
+        return this.#stableDiffusionHosts;
+    }
+
+    #stableDiffusionGuidanceScaleInterval: number = .5;
+    get stableDiffusionGuidanceScaleInterval(): number {
+        return this.#stableDiffusionGuidanceScaleInterval;
+    }
+
+    #stableDiffusionTaskChannel: string = '';
+    get stableDiffusionTaskChannel(): string {
+        return this.#stableDiffusionTaskChannel;
+    }
+
+    #ollamaHosts: URL[] = [];
+    get ollamaHosts(): URL[] {
+        return this.#ollamaHosts;
+    }
+
+    #ollamaModels: string[] = [];
+    get ollamaModels() {
+        return this.#ollamaModels;
+    }
+
+    #ollamaSystemPrompt: string;
+    get ollamaSystemPrompt(): string {
+        return this.#ollamaSystemPrompt;
+    }
+
+    #ollamaStreamsResponse: boolean = false;
+    get ollamaStreamsResponse(): boolean {
+        return this.#ollamaStreamsResponse;
+    }
+
+    #ollamaTaskChannel: string = '';
+    get ollamaTaskChannel(): string {
+        return this.#ollamaTaskChannel;
+    }
+
+    #stableDiffusionOllamaPrompts: string[] = ['Describe something or someone with extraordinary detail.'];
+    get stableDiffusionOllamaPrompts(): string[] {
+        return this.#stableDiffusionOllamaPrompts;
+    }
 
     #logger: ILogger;
 
@@ -69,42 +146,39 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         }
         /* c8 ignore stop */
 
-        this.packageName = nodePackage.name;
-        this.version = nodePackage.version;
+        this.#packageName = nodePackage.name;
+        this.#version = nodePackage.version;
 
-        this.nodeEnvironment = this.#readEnum<NodeEnvironment>(EnvironmentKey.NodeEnvironment, Object.values(NodeEnvironment));
-        this.botFunction = this.#mapLegacyFunctionsToCurrent(
+        this.#nodeEnvironment = this.#readEnum<NodeEnvironment>(EnvironmentKey.NodeEnvironment, Object.values(NodeEnvironment));
+        this.#botFunction = this.#mapLegacyFunctionsToCurrent(
             this.#readEnum<BotFunction>(EnvironmentKey.BotFunction, Object.values(BotFunction)));
 
-        this.maxTaskAttempts = this.#readDefaultableNumber(EnvironmentKey.TaskQueueMaxAttempts, this.maxTaskAttempts);
-        this.taskRetryDelayMilliseconds = this.#readDefaultableNumber(EnvironmentKey.TaskQueueRetryDelayMs, this.taskRetryDelayMilliseconds);
+        this.#maxTaskAttempts = this.#readDefaultableNumber(EnvironmentKey.TaskQueueMaxAttempts, this.maxTaskAttempts);
+        this.#taskRetryDelayMilliseconds = this.#readDefaultableNumber(EnvironmentKey.TaskQueueRetryDelayMs, this.taskRetryDelayMilliseconds);
 
-        this.discordToken = this.#readRequiredString(EnvironmentKey.AuthenticationToken);
-        this.discordChannels = this.#readDelimitedList(EnvironmentKey.ChatChannels, ',');
-        this.discordChannelsDisallowed = this.#readDelimitedList(EnvironmentKey.ChatChannelsDisallowed, ',');
+        this.#discordToken = this.#readRequiredString(EnvironmentKey.AuthenticationToken);
+        this.#discordChannels = this.#readDelimitedList(EnvironmentKey.ChatChannels, ',');
+        this.#discordChannelsDisallowed = this.#readDelimitedList(EnvironmentKey.ChatChannelsDisallowed, ',');
 
-        this.botRequiresMention = this.#readBoolean(EnvironmentKey.BotRequiresMention);
-        this.botResponseRate = this.#readDefaultableRangedInteger(EnvironmentKey.BotResponseRate, 1, 100, 100);
-        this.botPrivateMessageUsers = this.#readDelimitedList(EnvironmentKey.BotPrivateMessageUsers, ',');
-        this.errorMessage = this.#readDefaultableString(EnvironmentKey.BotErrorMessage, this.errorMessage);
+        this.#botRequiresMention = this.#readBoolean(EnvironmentKey.BotRequiresMention);
+        this.#botResponseRate = this.#readDefaultableRangedInteger(EnvironmentKey.BotResponseRate, 1, 100, 100);
+        this.#botPrivateMessageUsers = this.#readDelimitedList(EnvironmentKey.BotPrivateMessageUsers, ',');
+        this.#errorMessage = this.#readDefaultableString(EnvironmentKey.BotErrorMessage, this.errorMessage);
 
-        this.stableDiffusionApiType = this.#readEnum<StableDiffusionApiType>
-            (EnvironmentKey.StableDiffusionApiType, Object.values(StableDiffusionApiType));
-
-        this.stableDiffusionHosts = this.#readDelimitedList(EnvironmentKey.StableDiffusionHosts, ',')
+        this.#stableDiffusionHosts = this.#readDelimitedList(EnvironmentKey.StableDiffusionHosts, ',')
             .map(x => new URL(x));
 
-        this.stableDiffusionTaskChannel = this.#readDefaultableString(EnvironmentKey.StableDiffusionTaskChannel, this.stableDiffusionTaskChannel);
+        this.#stableDiffusionTaskChannel = this.#readDefaultableString(EnvironmentKey.StableDiffusionTaskChannel, this.stableDiffusionTaskChannel);
 
-        this.ollamaHosts = this.#readDelimitedList(EnvironmentKey.OllamaHosts, ',')
+        this.#ollamaHosts = this.#readDelimitedList(EnvironmentKey.OllamaHosts, ',')
             .map(x => new URL(x));
 
-        this.ollamaModels = this.#readDelimitedList(EnvironmentKey.OllamaModels, ',');
-        this.ollamaSystemPrompt = this.#readDefaultableString(EnvironmentKey.OllamaSystemPrompt, '');
-        this.ollamaStreamsResponse = this.#readBoolean(EnvironmentKey.OllamaStreamsResponse);
-        this.ollamaTaskChannel = this.#readDefaultableString(EnvironmentKey.OllamaTaskChannel, this.ollamaTaskChannel);
+        this.#ollamaModels = this.#readDelimitedList(EnvironmentKey.OllamaModels, ',');
+        this.#ollamaSystemPrompt = this.#readDefaultableString(EnvironmentKey.OllamaSystemPrompt, '');
+        this.#ollamaStreamsResponse = this.#readBoolean(EnvironmentKey.OllamaStreamsResponse);
+        this.#ollamaTaskChannel = this.#readDefaultableString(EnvironmentKey.OllamaTaskChannel, this.ollamaTaskChannel);
 
-        this.stableDiffusionOllamaPrompts = this.#readDelimitedList(EnvironmentKey.StableDiffusionOllamaPrompts, '|');
+        this.#stableDiffusionOllamaPrompts = this.#readDelimitedList(EnvironmentKey.StableDiffusionOllamaPrompts, '|');
 
         this.#validate();
 
@@ -140,7 +214,6 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         this.#logger.info(`${EnvironmentKey.BotPrivateMessageUsers}: ${this.botPrivateMessageUsers.join(', ')}`);
         this.#logger.info(`${EnvironmentKey.BotErrorMessage}: ${this.errorMessage}`);
 
-        this.#logger.info(`${EnvironmentKey.StableDiffusionApiType}: ${this.stableDiffusionApiType}`);
         this.#logger.info(`${EnvironmentKey.StableDiffusionHosts}: ${this.stableDiffusionHosts.join(', ')}`);
         this.#logger.info(`${EnvironmentKey.StableDiffusionTaskChannel}: ${this.stableDiffusionTaskChannel}`);
 

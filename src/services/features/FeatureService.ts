@@ -1,5 +1,4 @@
 import { IWorkflowService } from '../clients/media/comfy-ui/services/IWorkflowService.js';
-import { StableDiffusionApiType } from '../clients/media/stable-diffusion/enums/StableDiffusionApiType.js';
 import { IEnvironmentSettings } from '../environment-settings/IEnvironmentSettings.js';
 import { ILogger } from '../ILogger.js';
 import { IServiceContainer } from '../IServiceContainer.js';
@@ -42,8 +41,7 @@ export class FeatureService implements IFeatureService {
             return;
         }
 
-        if (this.#environmentSettings.stableDiffusionApiType !== StableDiffusionApiType.None
-            && this.#environmentSettings.stableDiffusionHosts.length > 0) {
+        if (this.#environmentSettings.stableDiffusionHosts.length > 0) {
             if (this.#workflowService.hasWorkflowType(SupportedFeature.Img2Img)) {
                 this.#logger.info(`${SupportedFeature.Img2Img} supported.`);
                 this.#supportedFeatures.push(SupportedFeature.Img2Img);

@@ -1,6 +1,5 @@
 import { BotFunction } from '../../enums/BotFunction.js';
 import { NodeEnvironment } from '../../enums/NodeEnvironment.js';
-import { StableDiffusionApiType } from '../clients/media/stable-diffusion/enums/StableDiffusionApiType.js';
 
 export interface IEnvironmentSettings {
     packageName: string;
@@ -22,9 +21,7 @@ export interface IEnvironmentSettings {
     botPrivateMessageUsers: string[];
     errorMessage: string;
 
-    stableDiffusionApiType: StableDiffusionApiType;
     stableDiffusionHosts: Array<URL>;
-    stableDiffusionModels: Array<string>;
     stableDiffusionGuidanceScaleInterval: number;
     stableDiffusionTaskChannel: string;
 

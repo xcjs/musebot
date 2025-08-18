@@ -42,7 +42,6 @@ import { ComfyUiRetryAudioTask } from './clients/media/comfy-ui/tasks/ComfyUiRet
 import { ComfyUiRetryRenderTask } from './clients/media/comfy-ui/tasks/ComfyUiRetryRenderTask.js';
 import { ComfyUiShowSourceTask } from './clients/media/comfy-ui/tasks/ComfyUiShowSourceTask.js';
 import { ImageHelpService } from './clients/media/help/ImageHelpService.js';
-import { StableDiffusionApiType } from './clients/media/stable-diffusion/enums/StableDiffusionApiType.js';
 import { IAttachRenderTask } from './clients/media/tasks/IAttachRenderTask.js';
 import { IDecreaseGuidanceScaleRenderTask } from './clients/media/tasks/IDecreaseGuidanceScaleRenderTask.js';
 import { IEmojiReactionRenderTask } from './clients/media/tasks/IEmojiReactionRenderTask.js';
@@ -167,12 +166,7 @@ export class ServiceContainer implements IServiceContainer {
             throw this.#taskNotConfiguredError;
         }
 
-        switch (this.#environmentSettings.stableDiffusionApiType) {
-            case StableDiffusionApiType.ComfyUI:
-                return new ComfyUiAttachRenderTask(this, interaction, { content }, prompt);
-            default:
-                throw this.#taskNotConfiguredError;
-        }
+        return new ComfyUiAttachRenderTask(this, interaction, { content }, prompt);
     }
 
     getDecreaseGuidanceScaleRenderTask(interaction: ButtonInteraction): IDecreaseGuidanceScaleRenderTask {
@@ -181,12 +175,7 @@ export class ServiceContainer implements IServiceContainer {
             throw this.#taskNotConfiguredError;
         }
 
-        switch (this.#environmentSettings.stableDiffusionApiType) {
-            case StableDiffusionApiType.ComfyUI:
-                return new ComfyUiDecreaseGuidanceScaleRenderTask(this, interaction);
-            default:
-                throw this.#taskNotConfiguredError;
-        }
+        return new ComfyUiDecreaseGuidanceScaleRenderTask(this, interaction);
     }
 
     getEmojiReactionRenderTask(interaction: DiscordMessage, emoji: ReactionEmoji, userOverride: User): IEmojiReactionRenderTask {
@@ -195,12 +184,7 @@ export class ServiceContainer implements IServiceContainer {
             throw this.#taskNotConfiguredError;
         }
 
-        switch(this.#environmentSettings.stableDiffusionApiType) {
-            case StableDiffusionApiType.ComfyUI:
-                return new ComfyUiEmojiReactionRenderTask(this, interaction, emoji, userOverride);
-            default:
-                throw this.#taskNotConfiguredError;
-        }
+        return new ComfyUiEmojiReactionRenderTask(this, interaction, emoji, userOverride);
     }
 
     getExpandPromptTask(interaction: ButtonInteraction): IExpandPromptTask {
@@ -209,12 +193,7 @@ export class ServiceContainer implements IServiceContainer {
             throw this.#taskNotConfiguredError;
         }
 
-        switch (this.#environmentSettings.stableDiffusionApiType) {
-            case StableDiffusionApiType.ComfyUI:
-                return new ComfyUiExpandPromptTask(this, interaction);
-            default:
-                throw this.#taskNotConfiguredError;
-        }
+        return new ComfyUiExpandPromptTask(this, interaction);
     }
 
     getImg2ImgRenderTask(interaction: ButtonInteraction, workflow: IWorkflow) {
@@ -223,12 +202,7 @@ export class ServiceContainer implements IServiceContainer {
             throw this.#taskNotConfiguredError;
         }
 
-        switch(this.#environmentSettings.stableDiffusionApiType) {
-            case StableDiffusionApiType.ComfyUI:
-                return new ComfyUiImg2ImgRenderTask(this, interaction, workflow);
-            default:
-                throw this.#taskNotConfiguredError;
-        }
+        return new ComfyUiImg2ImgRenderTask(this, interaction, workflow);
     }
 
     getIncreaseGuidanceScaleRenderTask(interaction: ButtonInteraction): IIncreaseGuidanceScaleRenderTask {
@@ -237,12 +211,7 @@ export class ServiceContainer implements IServiceContainer {
             throw this.#taskNotConfiguredError;
         }
 
-        switch (this.#environmentSettings.stableDiffusionApiType) {
-            case StableDiffusionApiType.ComfyUI:
-                return new ComfyUiIncreaseGuidanceScaleRenderTask(this, interaction);
-            default:
-                throw this.#taskNotConfiguredError;
-        }
+        return new ComfyUiIncreaseGuidanceScaleRenderTask(this, interaction);
     }
 
     getJsonRenderTask(message: DiscordMessage): IJsonRenderTask {
@@ -251,12 +220,7 @@ export class ServiceContainer implements IServiceContainer {
             throw this.#taskNotConfiguredError;
         }
 
-        switch (this.#environmentSettings.stableDiffusionApiType) {
-            case StableDiffusionApiType.ComfyUI:
-                return new ComfyUiJsonRenderTask(this, message);
-            default:
-                throw this.#taskNotConfiguredError;
-        }
+        return new ComfyUiJsonRenderTask(this, message);
     }
 
     getRandomRenderTask(interaction: ButtonInteraction): IRandomRenderTask {
@@ -265,13 +229,8 @@ export class ServiceContainer implements IServiceContainer {
             throw this.#taskNotConfiguredError;
         }
 
-        switch (this.#environmentSettings.stableDiffusionApiType) {
-            case StableDiffusionApiType.ComfyUI:
-                return new ComfyUiRandomRenderTask(this, interaction);
-                default:
-                    throw this.#taskNotConfiguredError;
-                }
-            }
+        return new ComfyUiRandomRenderTask(this, interaction);
+    }
 
     getReplyRenderTask(message: DiscordMessage): IReplyRenderTask {
         if (!this.#featureService.hasFeature(SupportedFeature.Txt2Audio)
@@ -280,17 +239,12 @@ export class ServiceContainer implements IServiceContainer {
             throw this.#taskNotConfiguredError;
         }
 
-        switch (this.#environmentSettings.stableDiffusionApiType) {
-            case StableDiffusionApiType.ComfyUI:
-                if(this.#environmentSettings.botFunction === BotFunction.Audio) {
-                    return new ComfyUiReplyAudioTask(this, message);
-                } else if(this.#environmentSettings.botFunction === BotFunction.Images) {
-                    return new ComfyUiReplyRenderTask(this, message);
-                } else {
-                    throw this.#taskNotConfiguredError;
-                }
-            default:
-                throw this.#taskNotConfiguredError;
+        if(this.#environmentSettings.botFunction === BotFunction.Audio) {
+            return new ComfyUiReplyAudioTask(this, message);
+        } else if(this.#environmentSettings.botFunction === BotFunction.Images) {
+            return new ComfyUiReplyRenderTask(this, message);
+        } else {
+            throw this.#taskNotConfiguredError;
         }
     }
 
@@ -301,17 +255,12 @@ export class ServiceContainer implements IServiceContainer {
             throw this.#taskNotConfiguredError;
         }
 
-        switch (this.#environmentSettings.stableDiffusionApiType) {
-            case StableDiffusionApiType.ComfyUI:
-                if(this.#featureService.hasFeature(SupportedFeature.Txt2Img)) {
-                    return new ComfyUiRetryRenderTask(this, interaction);
-                } else if(this.#featureService.hasFeature(SupportedFeature.Txt2Audio)) {
-                    return new ComfyUiRetryAudioTask(this, interaction);
-                } else {
-                    throw this.#taskNotConfiguredError;
-                }
-            default:
-                throw this.#taskNotConfiguredError;
+        if(this.#featureService.hasFeature(SupportedFeature.Txt2Img)) {
+            return new ComfyUiRetryRenderTask(this, interaction);
+        } else if(this.#featureService.hasFeature(SupportedFeature.Txt2Audio)) {
+            return new ComfyUiRetryAudioTask(this, interaction);
+        } else {
+            throw this.#taskNotConfiguredError;
         }
     }
 
@@ -321,12 +270,7 @@ export class ServiceContainer implements IServiceContainer {
             throw this.#taskNotConfiguredError;
         }
 
-        switch (this.#environmentSettings.stableDiffusionApiType) {
-            case StableDiffusionApiType.ComfyUI:
-                return new ComfyUiShowSourceTask(this, interaction);
-            default:
-                throw this.#taskNotConfiguredError;
-        }
+        return new ComfyUiShowSourceTask(this, interaction);
     }
 
     getLlmPromptResponseTask(message: DiscordMessage, context: OllamaMessage[]): IPromptResponseTask {
