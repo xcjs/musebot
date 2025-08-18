@@ -21,7 +21,7 @@ beforeEach(() => {
         // NODE_ENV should be preserved as Jest sets this to "test".
         [EnvironmentKey.NodeEnvironment]: process.env[EnvironmentKey.NodeEnvironment] || NodeEnvironment.Test,
         // Preset all minimally required values for most tests to pass.
-        [EnvironmentKey.BotFunction]: BotFunction.Images,
+        [EnvironmentKey.BotFunction]: BotFunction.Media,
         [EnvironmentKey.StableDiffusionApiType]: StableDiffusionApiType.ComfyUI,
         [EnvironmentKey.AuthenticationToken]: mockToken,
         [EnvironmentKey.StableDiffusionHosts]: mockUrl
