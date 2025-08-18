@@ -43,7 +43,7 @@ export class FeatureService implements IFeatureService {
 
         if (this.#environmentSettings.stableDiffusionHosts.length > 0) {
             for(const feature of Object.values(SupportedFeature)) {
-                if(this.#workflowService.hasWorkflowType(feature as SupportedFeature)) {
+                if(this.#workflowService.hasWorkflowType(feature)) {
                     this.#logger.info(`${feature} supported.`);
                     this.#supportedFeatures.push(feature);
                 }
