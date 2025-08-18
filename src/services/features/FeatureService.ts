@@ -29,13 +29,13 @@ export class FeatureService implements IFeatureService {
     }
 
     async loadFeatures(): Promise<void> {
+        await this.#workflowService.loadWorkflows();
+
         if (this.#environmentSettings.ollamaHosts.length > 0
             && this.#environmentSettings.ollamaModels.length > 0) {
                 this.#logger.info(`${SupportedFeature.Txt2Txt} supported.`);
                 this.#supportedFeatures.push(SupportedFeature.Txt2Txt);
         }
-
-        await this.#workflowService.loadWorkflows();
 
         if (!this.#workflowService.hasWorkflows) {
             return;
