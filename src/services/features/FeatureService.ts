@@ -42,29 +42,11 @@ export class FeatureService implements IFeatureService {
         }
 
         if (this.#environmentSettings.stableDiffusionHosts.length > 0) {
-            if (this.#workflowService.hasWorkflowType(SupportedFeature.Img2Img)) {
-                this.#logger.info(`${SupportedFeature.Img2Img} supported.`);
-                this.#supportedFeatures.push(SupportedFeature.Img2Img);
-            }
-
-            if (this.#workflowService.hasWorkflowType(SupportedFeature.Img2Vid)) {
-                this.#logger.info(`${SupportedFeature.Img2Vid} supported.`);
-                this.#supportedFeatures.push(SupportedFeature.Img2Vid);
-            }
-
-            if (this.#workflowService.hasWorkflowType(SupportedFeature.Txt2Audio)) {
-                this.#logger.info(`${SupportedFeature.Txt2Audio} supported.`);
-                this.#supportedFeatures.push(SupportedFeature.Txt2Audio);
-            }
-
-            if (this.#workflowService.hasWorkflowType(SupportedFeature.Txt2Img)) {
-                this.#logger.info(`${SupportedFeature.Txt2Img} supported.`);
-                this.#supportedFeatures.push(SupportedFeature.Txt2Img);
-            }
-
-            if (this.#workflowService.hasWorkflowType(SupportedFeature.Txt2Vid)) {
-                this.#logger.info(`${SupportedFeature.Txt2Vid} supported.`);
-                this.#supportedFeatures.push(SupportedFeature.Txt2Vid);
+            for(const feature of Object.values(SupportedFeature)) {
+                if(this.#workflowService.hasWorkflowType(feature as SupportedFeature)) {
+                    this.#logger.info(`${feature} supported.`);
+                    this.#supportedFeatures.push(feature);
+                }
             }
         }
     }
