@@ -1,22 +1,33 @@
+import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
+import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
+import { IReplyService } from '../../../chat/IReplyService.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
 
 export abstract class ComfyUiBaseTask extends BaseTask<void> {
-    comfyUiClient: ComfyUiClient;
+    override get taskChannel(): string {
+        return `${this.environmentSettings.stableDiffusionTaskChannel}_${this.comfyUiClient.host}`;
+    }
 
-    #workflowService: IWorkflowService;
+    environmentSettings: IEnvironmentSettings;
+    comfyUiClient: ComfyUiClient;
+    workflowService: IWorkflowService;
+    comfyUiReplyService: ComfyUiReplyService;
+    replyService: IReplyService;
 
     #logger: ILogger;
 
     constructor(services: IServiceContainer) {
         super(services);
 
+        this.environmentSettings = services.environmentSettings;
         this.comfyUiClient = services.comfyUiClient;
-
-        this.#workflowService = services.workflowService;
+        this.workflowService = services.workflowService;
+        this.comfyUiReplyService = services.comfyUiReplyService;
+        this.replyService = services.replyService;
 
         this.#logger = services.getLogger('ComfyUiBaseTask');
     }
@@ -25,7 +36,7 @@ export abstract class ComfyUiBaseTask extends BaseTask<void> {
         await super.process();
 
         this.#logger.info('Loading workflows...');
-        await this.#workflowService.loadWorkflows();
+        await this.workflowService.loadWorkflows();
     }
 
     override async postProcess(): Promise<void> {

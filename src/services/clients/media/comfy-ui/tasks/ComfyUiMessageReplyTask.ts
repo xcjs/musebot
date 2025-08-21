@@ -1,53 +1,31 @@
 import { Prompt } from 'comfy-ui-client';
-import { Message, MessageType } from 'discord.js';
+import { Message } from 'discord.js';
 
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
-import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
-import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
-import { IReplyService } from '../../../chat/IReplyService.js';
 import { IReplyRenderTask } from '../../tasks/IReplyRenderTask.js';
-import { ComfyUiClient } from '../ComfyUiClient.js';
 import { MediaCollectionResponse } from '../extensions/MediaResponse.js';
 import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
-import { IWorkflowService } from '../services/IWorkflowService.js';
 import { IRenderRequestMutator } from '../services/render-request-mutators/IRenderRequestMutator.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 
 export class ComfyUiReplyRenderTask extends ComfyUiBaseTask implements IReplyRenderTask {
-    #environmentSettings: IEnvironmentSettings;
-
-    #workflowService: IWorkflowService;
-    #mutator: IRenderRequestMutator;
-    #comfyUiClient: ComfyUiClient;
-    #comfyUiReplyService: ComfyUiReplyService;
-    #replyService: IReplyService;
     #logger: ILogger;
 
     #message: Message;
+    #mutator: IRenderRequestMutator;
 
-
-    override get taskChannel(): string {
-        return `${this.#environmentSettings.stableDiffusionTaskChannel}_${this.#comfyUiClient.host}`;
-    }
-
-    constructor(services: IServiceContainer, message: Message) {
+    constructor(services: IServiceContainer, message: Message, mutator: IRenderRequestMutator) {
         super(services);
-
-        this.#environmentSettings = services.environmentSettings;
-
-        this.#workflowService = services.workflowService;
-        this.#comfyUiClient = services.comfyUiClient;
-        this.#comfyUiReplyService = services.comfyUiReplyService;
-        this.#replyService = services.replyService;
 
         this.#logger = services.getLogger('ComfyUiReplyRenderTask');
 
         this.#message = message;
+        this.#mutator = mutator;
     }
 
     override async process(): Promise<void> {
@@ -55,7 +33,7 @@ export class ComfyUiReplyRenderTask extends ComfyUiBaseTask implements IReplyRen
 
         this.#logger.info('Processing a ComfyUiReplyRenderTask...');
 
-        const workflows = this.#workflowService.workflows.filter(x =>
+        const workflows = this.workflowService.workflows.filter(x =>
             x.type !== SupportedFeature.Txt2Txt);
 
         const renderRequests: SerializableRenderRequest[] = [];
@@ -65,41 +43,36 @@ export class ComfyUiReplyRenderTask extends ComfyUiBaseTask implements IReplyRen
 
         do {
             const workflow = getRandomArrayEntry(workflows);
-
             this.#logger.info(`Using ${workflow.name} as the selected workflow.`);
 
-            const renderRequest = this.#workflowService.getWorkflowDefaults(workflow);
+            let renderRequest = this.workflowService.getWorkflowDefaults(workflow);
+            renderRequest = await this.#mutator.mutate(renderRequest, this.#message, workflow);
 
             if (i === 0) {
                 numRenders = renderRequest.num;
             }
 
-            renderRequest.workflow = workflow.name;
-            renderRequest.prompt = prompt;
-            renderRequest.num = 1;
-            renderRequest.refreshSeed();
-
             renderRequests.push(renderRequest);
 
-            prompts.push(this.#workflowService.renderWorkflow(workflow, renderRequest));
+            prompts.push(this.workflowService.renderWorkflow(workflow, renderRequest));
 
             i++;
         } while (i < numRenders);
 
-        const imagesResponse = await this.#comfyUiClient.render(prompts);
+        const mediaCollectionResponse = await this.comfyUiClient.render(prompts);
         const exchange: IHttpExchange<SerializableRenderRequest[], MediaCollectionResponse> = {
             request: renderRequests,
-            response: imagesResponse
+            response: mediaCollectionResponse
         };
 
-        await this.#comfyUiReplyService.reply(this.#message, {}, false, exchange);
+        await this.comfyUiReplyService.reply(this.#message, {}, false, exchange);
     }
 
     override async postProcess(): Promise<void> {
         await super.postProcess();
 
         if (this.taskStatus === TaskStatus.Dead) {
-            await this.#replyService.replyWithError(this.#message);
+            await this.replyService.replyWithError(this.#message);
         }
     }
 }

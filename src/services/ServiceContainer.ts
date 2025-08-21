@@ -1,4 +1,15 @@
-import { BaseMessageOptions, ButtonInteraction, Client as DiscordClient, GatewayIntentBits, Message as DiscordMessage, MessageReaction, Partials, ReactionEmoji, User } from 'discord.js';
+import {
+    BaseMessageOptions,
+    ButtonInteraction,
+    Client as DiscordClient,
+    GatewayIntentBits,
+    Interaction,
+    Message as DiscordMessage,
+    MessageReaction,
+    MessageType,
+    Partials,
+    ReactionEmoji,
+    User} from 'discord.js';
 import { Message as OllamaMessage } from 'ollama';
 
 import { BotFunction } from '../enums/BotFunction.js';
@@ -27,6 +38,8 @@ import { IPromptResponseTask } from './clients/llm/tasks/IPromptResponseTask.js'
 import { ComfyUiClient } from './clients/media/comfy-ui/ComfyUiClient.js';
 import { IWorkflow } from './clients/media/comfy-ui/models/IWorkflow.js';
 import { IWorkflowService } from './clients/media/comfy-ui/services/IWorkflowService.js';
+import { IRenderRequestMutator } from './clients/media/comfy-ui/services/render-request-mutators/IRenderRequestMutator.js';
+import { NewImagePromptMutator } from './clients/media/comfy-ui/services/render-request-mutators/NewImagePromptMutator.js';
 import { WorkflowService } from './clients/media/comfy-ui/services/WorkflowService.js';
 import { ComfyUiAttachRenderTask } from './clients/media/comfy-ui/tasks/ComfyUiAttachRenderTask.js';
 import { ComfyUiDecreaseGuidanceScaleRenderTask } from './clients/media/comfy-ui/tasks/ComfyUiDecreaseGuidanceScaleRenderTask.js';
@@ -48,6 +61,7 @@ import { IEmojiReactionRenderTask } from './clients/media/tasks/IEmojiReactionRe
 import { IExpandPromptTask } from './clients/media/tasks/IExpandPromptTask.js';
 import { IIncreaseGuidanceScaleRenderTask } from './clients/media/tasks/IIncreaseGuidanceScaleRenderTask.js';
 import { IJsonRenderTask } from './clients/media/tasks/IJsonRenderTask.js';
+import { IMessageReplyTask } from './clients/media/tasks/IMessageReplyTask.js';
 import { IRandomRenderTask } from './clients/media/tasks/IRandomRenderTask.js';
 import { IReplyRenderTask } from './clients/media/tasks/IReplyRenderTask.js';
 import { IRetryRenderTask } from './clients/media/tasks/IRetryRenderTask.js';
@@ -155,6 +169,19 @@ export class ServiceContainer implements IServiceContainer {
         reply: BaseMessageOptions
         ): IReplyTask {
         return new ReplyTask(this, interaction, reply);
+    }
+
+    getMessageReplyTask(message: DiscordMessage): IMessageReplyTask {
+        if (this.#featureService.hasFeature(SupportedFeature.Txt2Audio)
+            || this.#featureService.hasFeature(SupportedFeature.Txt2Img)
+            || this.#featureService.hasFeature(SupportedFeature.Txt2Music)
+            || this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
+            return new ComfyUiReplyRenderTask(this, message);
+        } else if (this.#featureService.hasFeature(SupportedFeature.Txt2Music)) {
+            return new ComfyUiReplyAudioTask(this, message);
+        } else {
+            throw this.#taskNotConfiguredError;
+        }
     }
 
     getAttachRenderTask(
@@ -289,6 +316,37 @@ export class ServiceContainer implements IServiceContainer {
         }
 
         return new OllamaEmojiResponseTask(this, reaction, user, context);
+    }
+
+    getRenderRequestMutator(interactionLike: DiscordMessage | Interaction | MessageReaction): IRenderRequestMutator {
+        if (interactionLike instanceof DiscordMessage) {
+            const message = interactionLike;
+
+            switch(message.type) {
+                case MessageType.Default:
+                    return new NewImagePromptMutator(this);
+                default: const interaction = interactionLike;
+
+                    switch (interaction.id) {
+                        default:
+                            throw this.#taskNotConfiguredError;
+                    }
+                    throw this.#taskNotConfiguredError;
+            }
+        } else if(interactionLike instanceof Interaction) {
+            const interaction = interactionLike;
+
+            switch (interaction.id) {
+                default:
+                    throw this.#taskNotConfiguredError;
+            }
+        } else if(interactionLike instanceof MessageReaction) {
+
+        } else {
+            throw this.#taskNotConfiguredError;
+        }
+
+
     }
 
     constructor() {

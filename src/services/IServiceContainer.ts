@@ -1,4 +1,14 @@
-import { ApplicationEmoji, BaseMessageOptions, ButtonInteraction, Client as DiscordClient, GuildEmoji, Message as DiscordMessage, MessageReaction, ReactionEmoji, User } from 'discord.js';
+import {
+    ApplicationEmoji,
+    BaseMessageOptions,
+    ButtonInteraction,
+    Client as DiscordClient,
+    GuildEmoji,
+    Interaction,
+    Message as DiscordMessage,
+    MessageReaction,
+    ReactionEmoji,
+    User} from 'discord.js';
 import { Message as OllamaMessage } from 'ollama';
 
 import { ComfyUiReplyService } from './clients/chat/discord/comfy-ui/ComfyUiReplyService.js';
@@ -15,6 +25,7 @@ import { IPromptResponseTask } from './clients/llm/tasks/IPromptResponseTask.js'
 import { ComfyUiClient } from './clients/media/comfy-ui/ComfyUiClient.js';
 import { IWorkflow } from './clients/media/comfy-ui/models/IWorkflow.js';
 import { IWorkflowService } from './clients/media/comfy-ui/services/IWorkflowService.js';
+import { IRenderRequestMutator } from './clients/media/comfy-ui/services/render-request-mutators/IRenderRequestMutator.js';
 import { ComfyUiImg2ImgRenderTask } from './clients/media/comfy-ui/tasks/ComfyUiImg2ImgRenderTask.js';
 import { IAttachRenderTask } from './clients/media/tasks/IAttachRenderTask.js';
 import { IDecreaseGuidanceScaleRenderTask } from './clients/media/tasks/IDecreaseGuidanceScaleRenderTask.js';
@@ -22,6 +33,7 @@ import { IEmojiReactionRenderTask } from './clients/media/tasks/IEmojiReactionRe
 import { IExpandPromptTask } from './clients/media/tasks/IExpandPromptTask.js';
 import { IIncreaseGuidanceScaleRenderTask } from './clients/media/tasks/IIncreaseGuidanceScaleRenderTask.js';
 import { IJsonRenderTask } from './clients/media/tasks/IJsonRenderTask.js';
+import { IMessageReplyTask } from './clients/media/tasks/IMessageReplyTask.js';
 import { IRandomRenderTask } from './clients/media/tasks/IRandomRenderTask.js';
 import { IReplyRenderTask } from './clients/media/tasks/IReplyRenderTask.js';
 import { IRetryRenderTask } from './clients/media/tasks/IRetryRenderTask.js';
@@ -63,6 +75,8 @@ export interface IServiceContainer {
         interaction: DiscordMessage | ButtonInteraction,
         reply: BaseMessageOptions): IReplyTask;
 
+    getMessageReplyTask(message: DiscordMessage): IMessageReplyTask;
+
     getAttachRenderTask(
         interaction: ButtonInteraction | DiscordMessage,
         prompt: string,
@@ -80,4 +94,6 @@ export interface IServiceContainer {
     getShowSourceTask(interaction: ButtonInteraction): IShowSourceTask;
     getLlmPromptResponseTask(message: DiscordMessage, context: OllamaMessage[]): IPromptResponseTask;
     getLlmEmojiResponseTask(reaction: MessageReaction, user: User, context: OllamaMessage[]): IEmojiResponseTask;
+
+    getRenderRequestMutator(interaction: DiscordMessage | Interaction): IRenderRequestMutator;
 }
