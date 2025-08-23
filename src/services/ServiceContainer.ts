@@ -326,27 +326,23 @@ export class ServiceContainer implements IServiceContainer {
                 case MessageType.Default:
                     return new NewImagePromptMutator(this);
                 default: const interaction = interactionLike;
-
                     switch (interaction.id) {
                         default:
                             throw this.#taskNotConfiguredError;
                     }
-                    throw this.#taskNotConfiguredError;
             }
-        } else if(interactionLike instanceof Interaction) {
+        } else if(interactionLike instanceof MessageReaction) {
+
+        } else if (interactionLike.id !== undefined) {
             const interaction = interactionLike;
 
             switch (interaction.id) {
                 default:
                     throw this.#taskNotConfiguredError;
             }
-        } else if(interactionLike instanceof MessageReaction) {
-
         } else {
             throw this.#taskNotConfiguredError;
         }
-
-
     }
 
     constructor() {
