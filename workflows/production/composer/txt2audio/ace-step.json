@@ -48,7 +48,7 @@
   },
   "40": {
     "inputs": {
-      "ckpt_name": "ace_step_v1_3.5b.safetensors"
+      "ckpt_name": "ACE-Step/ace_step_v1_3.5b.safetensors"
     },
     "class_type": "CheckpointLoaderSimple",
     "_meta": {
