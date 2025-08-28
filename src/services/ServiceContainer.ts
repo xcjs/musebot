@@ -276,9 +276,13 @@ export class ServiceContainer implements IServiceContainer {
 
         switch (this.#environmentSettings.stableDiffusionApiType) {
             case StableDiffusionApiType.ComfyUI:
-                if(this.#environmentSettings.botFunction === BotFunction.Audio) {
+                if(this.#environmentSettings.botFunction === BotFunction.Audio
+                    && this.#featureService.hasFeature(SupportedFeature.Txt2Audio)
+                ) {
                     return new ComfyUiReplyAudioTask(this, message);
-                } else if(this.#environmentSettings.botFunction === BotFunction.Images) {
+                } else if(this.#environmentSettings.botFunction === BotFunction.Images
+                    && (this.#featureService.hasFeature(SupportedFeature.Txt2Img)
+                        || this.#featureService.hasFeature(SupportedFeature.Txt2Vid))) {
                     return new ComfyUiReplyRenderTask(this, message);
                 } else {
                     throw this.#taskNotConfiguredError;
@@ -289,18 +293,19 @@ export class ServiceContainer implements IServiceContainer {
     }
 
     getRetryRenderTask(interaction: ButtonInteraction): IRetryRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)
-            && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)
-            && !this.#featureService.hasFeature(SupportedFeature.Txt2Audio)) {
+        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Audio)
+            && !this.#featureService.hasFeature(SupportedFeature.Txt2Img)
+            && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
             throw this.#taskNotConfiguredError;
         }
 
         switch (this.#environmentSettings.stableDiffusionApiType) {
             case StableDiffusionApiType.ComfyUI:
-                if(this.#featureService.hasFeature(SupportedFeature.Txt2Img)) {
-                    return new ComfyUiRetryRenderTask(this, interaction);
-                } else if(this.#featureService.hasFeature(SupportedFeature.Txt2Audio)) {
+                if (this.#featureService.hasFeature(SupportedFeature.Txt2Audio)) {
                     return new ComfyUiRetryAudioTask(this, interaction);
+                } else if(this.#featureService.hasFeature(SupportedFeature.Txt2Img)
+                    || this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
+                    return new ComfyUiRetryRenderTask(this, interaction);
                 } else {
                     throw this.#taskNotConfiguredError;
                 }
