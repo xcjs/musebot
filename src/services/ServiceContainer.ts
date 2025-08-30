@@ -326,7 +326,6 @@ export class ServiceContainer implements IServiceContainer {
                 break;
             case BotFunction.Media:
                 return new ComfyUiMentionTask(this, message);
-                break;
             default:
                 throw this.#taskNotConfiguredError;
         }
