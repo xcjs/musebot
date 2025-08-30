@@ -58,7 +58,6 @@ export class ComfyUiMentionTask extends ComfyUiBaseTask implements IReplyRenderT
             }
 
             renderRequests.push(renderRequest);
-
             prompts.push(this.workflowService.renderWorkflow(this.workflow, renderRequest));
 
             i++;
