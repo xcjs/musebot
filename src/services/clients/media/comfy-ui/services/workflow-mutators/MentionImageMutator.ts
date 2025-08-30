@@ -9,6 +9,10 @@ import { SerializableRenderRequest } from '../../models/SerializableRenderReques
 import { IWorkflowMutator } from './IWorkflowMutator.js';
 
 export class MentionImageMutator implements IWorkflowMutator {
+    get interaction(): BotInteraction {
+        return BotInteraction.Mention;
+    }
+
     get type(): SupportedFeature {
         return SupportedFeature.Txt2Img;
     }
@@ -18,7 +22,6 @@ export class MentionImageMutator implements IWorkflowMutator {
     constructor(services: IServiceContainer) {
         this.#replyService = services.replyService;
     }
-    interaction: BotInteraction;
 
     async mutate(renderRequest: SerializableRenderRequest, interaction: Message, workflow: IWorkflow): Promise<SerializableRenderRequest> {
         const prompt = interaction.type === MessageType.Reply

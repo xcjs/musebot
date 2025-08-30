@@ -66,7 +66,7 @@ export class GenerativeMediaChatClient extends BaseDiscordClient {
         if (this.#replyService.getMessageWithoutBotMentions(message).startsWith('{')) {
             this.#taskQueue.add(this.#services.getJsonRenderTask(message) as BaseTask<void>);
         } else {
-            this.#taskQueue.add(this.#services.getReplyRenderTask(message) as BaseTask<void>);
+            this.#taskQueue.add(this.#services.getMentionTask(message) as BaseTask<void>);
         }
     }
 

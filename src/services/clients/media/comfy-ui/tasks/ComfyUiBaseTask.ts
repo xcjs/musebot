@@ -1,6 +1,5 @@
-import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
+import { BotInteraction } from '../../../../../enums/BotInteraction.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
-import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
@@ -16,14 +15,13 @@ export abstract class ComfyUiBaseTask extends BaseTask<void> {
         return `${this.environmentSettings.stableDiffusionTaskChannel}_${this.comfyUiClient.host}`;
     }
 
-    services: IServiceContainer;
-
     environmentSettings: IEnvironmentSettings;
     comfyUiClient: ComfyUiClient;
     workflowService: IWorkflowService;
     comfyUiReplyService: ComfyUiReplyService;
     replyService: IReplyService;
 
+    botInteraction: BotInteraction;
     workflow: IWorkflow;
     mutator: IWorkflowMutator;
 
@@ -46,11 +44,6 @@ export abstract class ComfyUiBaseTask extends BaseTask<void> {
 
         this.#logger.info('Loading workflows...');
         await this.workflowService.loadWorkflows();
-
-        this.workflow = getRandomArrayEntry(this.workflowService.workflows.filter(x =>
-            x.type !== SupportedFeature.Txt2Txt));
-
-        this.#logger.info(`Selected ${this.workflow.name} as the workflow.`);
     }
 
     override async postProcess(): Promise<void> {
