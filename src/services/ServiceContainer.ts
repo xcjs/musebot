@@ -40,6 +40,7 @@ import { IWorkflow } from './clients/media/comfy-ui/models/IWorkflow.js';
 import { IWorkflowService } from './clients/media/comfy-ui/services/IWorkflowService.js';
 import { IWorkflowMutator } from './clients/media/comfy-ui/services/workflow-mutators/IWorkflowMutator.js';
 import { MentionImageMutator } from './clients/media/comfy-ui/services/workflow-mutators/MentionImageMutator.js';
+import { MentionMusicMutator } from './clients/media/comfy-ui/services/workflow-mutators/MentionMusicMutator.js';
 import { WorkflowService } from './clients/media/comfy-ui/services/WorkflowService.js';
 import { ComfyUiAttachRenderTask } from './clients/media/comfy-ui/tasks/ComfyUiAttachRenderTask.js';
 import { ComfyUiDecreaseGuidanceScaleRenderTask } from './clients/media/comfy-ui/tasks/ComfyUiDecreaseGuidanceScaleRenderTask.js';
@@ -333,7 +334,8 @@ export class ServiceContainer implements IServiceContainer {
 
     getWorkflowMutator(interaction: BotInteraction, workflow: IWorkflow): IWorkflowMutator {
         const mutators = [
-            new MentionImageMutator(this)
+            new MentionImageMutator(this),
+            new MentionMusicMutator(this)
         ];
 
         const supportedMutators = mutators.filter(
