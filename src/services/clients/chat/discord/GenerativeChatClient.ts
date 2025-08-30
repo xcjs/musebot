@@ -11,7 +11,7 @@ import { ITypingService } from '../ITypingService.js';
 import { BaseDiscordClient } from './BaseDiscordClient.js';
 import { LargeLanguageModelConfirmClearActionRow } from './components/buttonRows/LargeLanguageModelConfirmClearActionRow.js';
 
-export class GenerativeTextChatClient extends BaseDiscordClient {
+export class GenerativeChatClient extends BaseDiscordClient {
     #services: IServiceContainer;
 
     #discordClient: DiscordClient;
@@ -32,7 +32,7 @@ export class GenerativeTextChatClient extends BaseDiscordClient {
         this.#replyService = services.replyService;
         this.#helpService = services.helpService;
         this.#taskQueue = services.taskQueue;
-        this.logger = services.getLogger('GenerativeTextChatClient');
+        this.logger = services.getLogger('GenerativeChatClient');
 
         this.#registerEvents();
     }

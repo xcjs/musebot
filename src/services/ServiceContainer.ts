@@ -3,23 +3,22 @@ import {
     ButtonInteraction,
     Client as DiscordClient,
     GatewayIntentBits,
-    Interaction,
     Message as DiscordMessage,
     MessageReaction,
-    MessageType,
     Partials,
     ReactionEmoji,
     User} from 'discord.js';
 import { Message as OllamaMessage } from 'ollama';
 
 import { BotFunction } from '../enums/BotFunction.js';
+import { BotInteraction } from '../enums/BotInteraction.js';
+import { getRandomArrayEntry } from '../utilities/random-utilities.js';
 import { ComfyUiReplyService } from './clients/chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { ActionRowBuilderFactory } from './clients/chat/discord/components/ActionRowBuilderFactory.js';
 import { IActionRowBuilderFactory } from './clients/chat/discord/components/IActionRowBuilderFactory.js';
 import { DiscordConstants } from './clients/chat/discord/enums/DiscordConstants.js';
-import { GenerativeAudioChatClient } from './clients/chat/discord/GenerativeAudioChatClient.js';
-import { GenerativeImageChatClient } from './clients/chat/discord/GenerativeImageChatClient.js';
-import { GenerativeTextChatClient } from './clients/chat/discord/GenerativeTextChatClient.js';
+import { GenerativeChatClient } from './clients/chat/discord/GenerativeChatClient.js';
+import { GenerativeMediaChatClient } from './clients/chat/discord/GenerativeMediaChatClient.js';
 import { OllamaReplyService } from './clients/chat/discord/ollama/OllamaReplyService.js';
 import { OllamaStreamingReplyService } from './clients/chat/discord/ollama/OllamaStreamingReplyService.js';
 import { ReplyService } from './clients/chat/discord/replies/ReplyService.js';
@@ -28,6 +27,7 @@ import { ReplyTask } from './clients/chat/discord/tasks/ReplyTask.js';
 import { IGenerativeChatClient } from './clients/chat/IGenerativeChatClient.js';
 import { IReplyService } from './clients/chat/IReplyService.js';
 import { ITypingService } from './clients/chat/ITypingService.js';
+import { IMentionTask } from './clients/chat/tasks/IMentionTask.js';
 import { IReplyTask } from './clients/chat/tasks/IReplyTask.js';
 import { TextHelpService } from './clients/llm/help/TextHelpService.js';
 import { OllamaClient } from './clients/llm/ollama/OllamaClient.js';
@@ -38,8 +38,8 @@ import { IPromptResponseTask } from './clients/llm/tasks/IPromptResponseTask.js'
 import { ComfyUiClient } from './clients/media/comfy-ui/ComfyUiClient.js';
 import { IWorkflow } from './clients/media/comfy-ui/models/IWorkflow.js';
 import { IWorkflowService } from './clients/media/comfy-ui/services/IWorkflowService.js';
-import { IRenderRequestMutator } from './clients/media/comfy-ui/services/render-request-mutators/IRenderRequestMutator.js';
-import { NewImagePromptMutator } from './clients/media/comfy-ui/services/render-request-mutators/NewImagePromptMutator.js';
+import { IWorkflowMutator } from './clients/media/comfy-ui/services/workflow-mutators/IWorkflowMutator.js';
+import { MentionImageMutator } from './clients/media/comfy-ui/services/workflow-mutators/MentionImageMutator.js';
 import { WorkflowService } from './clients/media/comfy-ui/services/WorkflowService.js';
 import { ComfyUiAttachRenderTask } from './clients/media/comfy-ui/tasks/ComfyUiAttachRenderTask.js';
 import { ComfyUiDecreaseGuidanceScaleRenderTask } from './clients/media/comfy-ui/tasks/ComfyUiDecreaseGuidanceScaleRenderTask.js';
@@ -48,6 +48,7 @@ import { ComfyUiExpandPromptTask } from './clients/media/comfy-ui/tasks/ComfyUiE
 import { ComfyUiImg2ImgRenderTask } from './clients/media/comfy-ui/tasks/ComfyUiImg2ImgRenderTask.js';
 import { ComfyUiIncreaseGuidanceScaleRenderTask } from './clients/media/comfy-ui/tasks/ComfyUiIncreaseGuidanceScaleRenderTask.js';
 import { ComfyUiJsonRenderTask } from './clients/media/comfy-ui/tasks/ComfyUiJsonRenderTask.js';
+import { ComfyUiMentionTask } from './clients/media/comfy-ui/tasks/ComfyUiMentionTask.js';
 import { ComfyUiRandomRenderTask } from './clients/media/comfy-ui/tasks/ComfyUiRandomRenderTask.js';
 import { ComfyUiReplyAudioTask } from './clients/media/comfy-ui/tasks/ComfyUiReplyAudioTask.js';
 import { ComfyUiReplyRenderTask } from './clients/media/comfy-ui/tasks/ComfyUiReplyRenderTask.js';
@@ -318,28 +319,32 @@ export class ServiceContainer implements IServiceContainer {
         return new OllamaEmojiResponseTask(this, reaction, user, context);
     }
 
-    getRenderRequestMutator(interactionLike: DiscordMessage | Interaction | MessageReaction): IRenderRequestMutator {
-        if (interactionLike instanceof DiscordMessage) {
-            const message = interactionLike;
+    getMentionTask(message: DiscordMessage): IMentionTask {
+        switch(this.#environmentSettings.botFunction) {
+            case BotFunction.Chat:
 
-            switch(message.type) {
-                case MessageType.Default:
-                    return new NewImagePromptMutator(this);
-                default: const interaction = interactionLike;
-                    switch (interaction.id) {
-                        default:
-                            throw this.#taskNotConfiguredError;
-                    }
-            }
-        } else if(interactionLike instanceof MessageReaction) {
+                break;
+            case BotFunction.Media:
+                return new ComfyUiMentionTask(this, message);
+                break;
+            default:
+                throw this.#taskNotConfiguredError;
+        }
+    }
 
-        } else if (interactionLike.id !== undefined) {
-            const interaction = interactionLike;
+    getWorkflowMutator(interaction: BotInteraction, workflow: IWorkflow): IWorkflowMutator {
+        const mutators = [
+            new MentionImageMutator(this)
+        ];
 
-            switch (interaction.id) {
-                default:
-                    throw this.#taskNotConfiguredError;
-            }
+        const supportedMutators = mutators.filter(
+            mutator => mutator.interaction === interaction
+                && mutator.type === workflow.type);
+
+        if(supportedMutators.length === 1) {
+            return supportedMutators[0];
+        } else if(supportedMutators.length > 1) {
+            return getRandomArrayEntry(supportedMutators);
         } else {
             throw this.#taskNotConfiguredError;
         }
@@ -372,16 +377,13 @@ export class ServiceContainer implements IServiceContainer {
         });
 
         switch (this.#environmentSettings.botFunction) {
-            case BotFunction.Audio:
-                this.#generativeChatClient = new GenerativeAudioChatClient(this);
-                break;
-            case BotFunction.Images:
+            case BotFunction.Media:
                 this.#helpService = new ImageHelpService(this);
-                this.#generativeChatClient = new GenerativeImageChatClient(this);
+                this.#generativeChatClient = new GenerativeMediaChatClient(this);
                 break;
-            case BotFunction.Text:
+            case BotFunction.Chat:
                 this.#helpService = new TextHelpService(this);
-                this.#generativeChatClient = new GenerativeTextChatClient(this);
+                this.#generativeChatClient = new GenerativeChatClient(this);
                 break;
         }
     }

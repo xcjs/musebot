@@ -7,8 +7,8 @@ import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { OllamaClient } from '../../../llm/ollama/OllamaClient.js';
-import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
 import { IExpandPromptTask } from '../../tasks/IExpandPromptTask.js';
+import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
 import { ComfyUiAttachRenderTask } from './ComfyUiAttachRenderTask.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 

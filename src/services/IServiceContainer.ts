@@ -4,13 +4,13 @@ import {
     ButtonInteraction,
     Client as DiscordClient,
     GuildEmoji,
-    Interaction,
     Message as DiscordMessage,
     MessageReaction,
     ReactionEmoji,
     User} from 'discord.js';
 import { Message as OllamaMessage } from 'ollama';
 
+import { BotInteraction } from '../enums/BotInteraction.js';
 import { ComfyUiReplyService } from './clients/chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IActionRowBuilderFactory } from './clients/chat/discord/components/IActionRowBuilderFactory.js';
 import { OllamaReplyService } from './clients/chat/discord/ollama/OllamaReplyService.js';
@@ -18,6 +18,7 @@ import { OllamaStreamingReplyService } from './clients/chat/discord/ollama/Ollam
 import { IGenerativeChatClient } from './clients/chat/IGenerativeChatClient.js';
 import { IReplyService } from './clients/chat/IReplyService.js';
 import { ITypingService } from './clients/chat/ITypingService.js';
+import { IMentionTask } from './clients/chat/tasks/IMentionTask.js';
 import { IReplyTask } from './clients/chat/tasks/IReplyTask.js';
 import { OllamaClient } from './clients/llm/ollama/OllamaClient.js';
 import { IEmojiResponseTask } from './clients/llm/tasks/IEmojiResponseTask.js';
@@ -25,7 +26,7 @@ import { IPromptResponseTask } from './clients/llm/tasks/IPromptResponseTask.js'
 import { ComfyUiClient } from './clients/media/comfy-ui/ComfyUiClient.js';
 import { IWorkflow } from './clients/media/comfy-ui/models/IWorkflow.js';
 import { IWorkflowService } from './clients/media/comfy-ui/services/IWorkflowService.js';
-import { IRenderRequestMutator } from './clients/media/comfy-ui/services/render-request-mutators/IRenderRequestMutator.js';
+import { IWorkflowMutator } from './clients/media/comfy-ui/services/workflow-mutators/IWorkflowMutator.js';
 import { ComfyUiImg2ImgRenderTask } from './clients/media/comfy-ui/tasks/ComfyUiImg2ImgRenderTask.js';
 import { IAttachRenderTask } from './clients/media/tasks/IAttachRenderTask.js';
 import { IDecreaseGuidanceScaleRenderTask } from './clients/media/tasks/IDecreaseGuidanceScaleRenderTask.js';
@@ -95,5 +96,7 @@ export interface IServiceContainer {
     getLlmPromptResponseTask(message: DiscordMessage, context: OllamaMessage[]): IPromptResponseTask;
     getLlmEmojiResponseTask(reaction: MessageReaction, user: User, context: OllamaMessage[]): IEmojiResponseTask;
 
-    getRenderRequestMutator(interaction: DiscordMessage | Interaction): IRenderRequestMutator;
+    getMentionTask(message: DiscordMessage): IMentionTask;
+
+    getWorkflowMutator(botInteraction: BotInteraction, workflow: IWorkflow): IWorkflowMutator;
 }

@@ -13,10 +13,10 @@ import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { OllamaClient } from '../../../llm/ollama/OllamaClient.js';
-import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
 import { IRandomRenderTask } from '../../tasks/IRandomRenderTask.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
 import { MediaCollectionResponse } from '../extensions/MediaResponse.js';
+import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 

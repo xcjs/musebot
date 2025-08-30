@@ -1,18 +1,24 @@
 import { Message, MessageType } from 'discord.js';
 
+import { BotInteraction } from '../../../../../../enums/BotInteraction.js';
+import { SupportedFeature } from '../../../../../features/enum/SupportedFeature.js';
 import { IServiceContainer } from '../../../../../IServiceContainer.js';
 import { IReplyService } from '../../../../chat/IReplyService.js';
 import { IWorkflow } from '../../models/IWorkflow.js';
 import { SerializableRenderRequest } from '../../models/SerializableRenderRequest.js';
-import { IRenderRequestMutator } from './IRenderRequestMutator.js';
+import { IWorkflowMutator } from './IWorkflowMutator.js';
 
-export class NewImagePromptMutator implements IRenderRequestMutator
- {
+export class MentionImageMutator implements IWorkflowMutator {
+    get type(): SupportedFeature {
+        return SupportedFeature.Txt2Img;
+    }
+
     #replyService: IReplyService;
 
     constructor(services: IServiceContainer) {
         this.#replyService = services.replyService;
     }
+    interaction: BotInteraction;
 
     async mutate(renderRequest: SerializableRenderRequest, interaction: Message, workflow: IWorkflow): Promise<SerializableRenderRequest> {
         const prompt = interaction.type === MessageType.Reply
