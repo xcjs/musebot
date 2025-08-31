@@ -1,5 +1,5 @@
 import { Prompt } from 'comfy-ui-client';
-import { Message } from 'discord.js';
+import { ButtonInteraction } from 'discord.js';
 
 import { BotInteraction } from '../../../../../enums/BotInteraction.js';
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
@@ -17,24 +17,22 @@ export class ComfyUiMentionTask extends ComfyUiBaseTask implements IChannelableT
     #logger: ILogger;
     #services: IServiceContainer;
 
-    #message: Message;
+    #interaction: ButtonInteraction;
 
-    constructor(services: IServiceContainer, message: Message) {
+    constructor(services: IServiceContainer, interaction: ButtonInteraction) {
         super(services);
 
-        this.#logger = services.getLogger('ComfyUiMentionTask');
+        this.#logger = services.getLogger('ComfyUiInteractionTask');
 
         this.#services = services;
 
-        this.botInteraction = BotInteraction.Mention;
-
-        this.#message = message;
+        this.#interaction = interaction;
     }
 
     override async process(): Promise<void> {
         await super.process();
 
-        this.#logger.info('Processing a ComfyUiMentionTask...');
+        this.#logger.info('Processing a ComfyUiInteractionTask...');
 
         this.workflow = getRandomArrayEntry(this.workflowService.workflows.filter(x =>
             x.type.startsWith('txt2')
@@ -42,7 +40,7 @@ export class ComfyUiMentionTask extends ComfyUiBaseTask implements IChannelableT
 
         this.#logger.info(`Selected ${this.workflow.name} as the workflow.`);
 
-        this.mutator = this.#services.getWorkflowMutator(BotInteraction.Mention, this.workflow);
+        this.mutator = this.#services.getWorkflowMutator(this.#interaction.id as BotInteraction, this.workflow);
 
         const renderRequests: SerializableRenderRequest[] = [];
         const prompts: Prompt[] = [];
@@ -51,7 +49,7 @@ export class ComfyUiMentionTask extends ComfyUiBaseTask implements IChannelableT
 
         do {
             let renderRequest = this.workflowService.getWorkflowDefaults(this.workflow);
-            renderRequest = await this.mutator.mutate(renderRequest, this.#message, this.workflow);
+            renderRequest = await this.mutator.mutate(renderRequest, this.#interaction, this.workflow);
 
             if (i === 0) {
                 numRenders = renderRequest.num;
@@ -69,14 +67,14 @@ export class ComfyUiMentionTask extends ComfyUiBaseTask implements IChannelableT
             response: mediaCollectionResponse
         };
 
-        await this.comfyUiReplyService.reply(this.#message, {}, false, exchange);
+        await this.comfyUiReplyService.reply(this.#interaction, {}, false, exchange);
     }
 
     override async postProcess(): Promise<void> {
         await super.postProcess();
 
         if (this.taskStatus === TaskStatus.Dead) {
-            await this.replyService.replyWithError(this.#message);
+            await this.replyService.replyWithError(this.#interaction);
         }
     }
 }

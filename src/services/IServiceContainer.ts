@@ -18,7 +18,7 @@ import { OllamaStreamingReplyService } from './clients/chat/discord/ollama/Ollam
 import { IGenerativeChatClient } from './clients/chat/IGenerativeChatClient.js';
 import { IReplyService } from './clients/chat/IReplyService.js';
 import { ITypingService } from './clients/chat/ITypingService.js';
-import { IMentionTask } from './clients/chat/tasks/IMentionTask.js';
+import { IMentionTask } from './clients/chat/tasks/IChannelableTask.js';
 import { IReplyTask } from './clients/chat/tasks/IReplyTask.js';
 import { OllamaClient } from './clients/llm/ollama/OllamaClient.js';
 import { IEmojiResponseTask } from './clients/llm/tasks/IEmojiResponseTask.js';
