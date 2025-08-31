@@ -48,6 +48,7 @@ import { ComfyUiEmojiReactionRenderTask } from './clients/media/comfy-ui/tasks/C
 import { ComfyUiExpandPromptTask } from './clients/media/comfy-ui/tasks/ComfyUiExpandPromptTask.js';
 import { ComfyUiImg2ImgRenderTask } from './clients/media/comfy-ui/tasks/ComfyUiImg2ImgRenderTask.js';
 import { ComfyUiIncreaseGuidanceScaleRenderTask } from './clients/media/comfy-ui/tasks/ComfyUiIncreaseGuidanceScaleRenderTask.js';
+import { ComfyUiInteractionTask } from './clients/media/comfy-ui/tasks/ComfyUiInteractionTask.js';
 import { ComfyUiJsonRenderTask } from './clients/media/comfy-ui/tasks/ComfyUiJsonRenderTask.js';
 import { ComfyUiMentionTask } from './clients/media/comfy-ui/tasks/ComfyUiMentionTask.js';
 import { ComfyUiRandomRenderTask } from './clients/media/comfy-ui/tasks/ComfyUiRandomRenderTask.js';
@@ -328,6 +329,23 @@ export class ServiceContainer implements IServiceContainer {
                 break;
             case BotFunction.Media:
                 return new ComfyUiMentionTask(this, message);
+            default:
+                throw this.#taskNotConfiguredError;
+        }
+    }
+
+    getInteractionTask(interaction: ButtonInteraction): BaseTask<unknown> {
+        switch(this.#environmentSettings.botFunction) {
+            case BotFunction.Chat:
+
+                break;
+            case BotFunction.Media:
+                switch(interaction.customId as BotInteraction) {
+                    case BotInteraction.Retry:
+                        return new ComfyUiInteractionTask(this, interaction);
+                    default:
+                        throw this.#taskNotConfiguredError;
+                }
             default:
                 throw this.#taskNotConfiguredError;
         }

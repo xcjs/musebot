@@ -18,7 +18,6 @@ import { OllamaStreamingReplyService } from './clients/chat/discord/ollama/Ollam
 import { IGenerativeChatClient } from './clients/chat/IGenerativeChatClient.js';
 import { IReplyService } from './clients/chat/IReplyService.js';
 import { ITypingService } from './clients/chat/ITypingService.js';
-import { IMentionTask } from './clients/chat/tasks/IChannelableTask.js';
 import { IReplyTask } from './clients/chat/tasks/IReplyTask.js';
 import { OllamaClient } from './clients/llm/ollama/OllamaClient.js';
 import { IEmojiResponseTask } from './clients/llm/tasks/IEmojiResponseTask.js';
@@ -45,6 +44,7 @@ import { IFeatureService } from './features/IFeatureService.js';
 import { IHelpService } from './help/IHelpService.js';
 import { ILogger } from './ILogger.js';
 import { ITaskQueue } from './tasks/ITaskQueue.js';
+import { BaseTask } from './tasks/models/BaseTask.js';
 
 export interface IServiceContainer {
     // Singletons -------------------------------------------------------------/
@@ -96,7 +96,8 @@ export interface IServiceContainer {
     getLlmPromptResponseTask(message: DiscordMessage, context: OllamaMessage[]): IPromptResponseTask;
     getLlmEmojiResponseTask(reaction: MessageReaction, user: User, context: OllamaMessage[]): IEmojiResponseTask;
 
-    getMentionTask(message: DiscordMessage): IMentionTask;
+    getMentionTask(message: DiscordMessage): BaseTask<unknown>;
+    getInteractionTask(interaction: ButtonInteraction): BaseTask<unknown>
 
     getWorkflowMutator(botInteraction: BotInteraction, workflow: IWorkflow): IWorkflowMutator;
 }
