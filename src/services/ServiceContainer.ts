@@ -27,7 +27,6 @@ import { ReplyTask } from './clients/chat/discord/tasks/ReplyTask.js';
 import { IGenerativeChatClient } from './clients/chat/IGenerativeChatClient.js';
 import { IReplyService } from './clients/chat/IReplyService.js';
 import { ITypingService } from './clients/chat/ITypingService.js';
-import { IChannelableTask } from './clients/chat/tasks/IChannelableTask.js';
 import { IReplyTask } from './clients/chat/tasks/IReplyTask.js';
 import { TextHelpService } from './clients/llm/help/TextHelpService.js';
 import { OllamaClient } from './clients/llm/ollama/OllamaClient.js';
@@ -81,6 +80,7 @@ import { ILogger } from './ILogger.js';
 import { IServiceContainer } from './IServiceContainer.js';
 import { Logger } from './Logger.js';
 import { ITaskQueue } from './tasks/ITaskQueue.js';
+import { BaseTask } from './tasks/models/BaseTask.js';
 import { TaskQueue } from './tasks/TaskQueue.js';
 
 export class ServiceContainer implements IServiceContainer {
@@ -321,7 +321,7 @@ export class ServiceContainer implements IServiceContainer {
         return new OllamaEmojiResponseTask(this, reaction, user, context);
     }
 
-    getMentionTask(message: DiscordMessage): IChannelableTask {
+    getMentionTask(message: DiscordMessage): BaseTask<unknown> {
         switch(this.#environmentSettings.botFunction) {
             case BotFunction.Chat:
 
