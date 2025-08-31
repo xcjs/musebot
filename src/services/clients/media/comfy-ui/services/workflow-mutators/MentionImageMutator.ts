@@ -13,8 +13,8 @@ export class MentionImageMutator implements IWorkflowMutator {
         return BotInteraction.Mention;
     }
 
-    get type(): SupportedFeature {
-        return SupportedFeature.Txt2Img;
+    get types(): SupportedFeature[] {
+        return [SupportedFeature.Txt2Img];
     }
 
     #replyService: IReplyService;

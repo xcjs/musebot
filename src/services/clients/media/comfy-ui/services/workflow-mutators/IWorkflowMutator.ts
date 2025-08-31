@@ -7,7 +7,7 @@ import { SerializableRenderRequest } from '../../models/SerializableRenderReques
 
 export interface IWorkflowMutator {
     interaction: BotInteraction;
-    type: SupportedFeature;
+    types: SupportedFeature[];
     mutate(renderRequest: SerializableRenderRequest,
         interaction: Message | ButtonInteraction,
         workflow: IWorkflow): Promise<SerializableRenderRequest>;

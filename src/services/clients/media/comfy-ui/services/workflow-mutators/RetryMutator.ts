@@ -6,13 +6,18 @@ import { IWorkflow } from '../../models/IWorkflow.js';
 import { SerializableRenderRequest } from '../../models/SerializableRenderRequest.js';
 import { IWorkflowMutator } from './IWorkflowMutator.js';
 
-export class RetryImageMutator implements IWorkflowMutator {
+export class RetryMutator implements IWorkflowMutator {
     get interaction(): BotInteraction {
         return BotInteraction.Retry;
     }
 
-    get type(): SupportedFeature {
-        return SupportedFeature.Txt2Img;
+    get types(): SupportedFeature[] {
+        return [
+            SupportedFeature.Txt2Audio,
+            SupportedFeature.Txt2Img,
+            SupportedFeature.Txt2Music,
+            SupportedFeature.Txt2Vid
+        ];
     }
 
     constructor() {
@@ -26,6 +31,7 @@ export class RetryImageMutator implements IWorkflowMutator {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         workflow: IWorkflow): Promise<SerializableRenderRequest> {
             renderRequest.refreshSeed();
+            renderRequest.refreshDuration();
             return await Promise.resolve(renderRequest);
     }
 }

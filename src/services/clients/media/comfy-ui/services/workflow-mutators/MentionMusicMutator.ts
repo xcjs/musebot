@@ -14,8 +14,8 @@ export class MentionMusicMutator implements IWorkflowMutator {
         return BotInteraction.Mention;
     }
 
-    get type(): SupportedFeature {
-        return SupportedFeature.Txt2Music;
+    get types(): SupportedFeature[] {
+        return [SupportedFeature.Txt2Music];
     }
 
     #replyService: IReplyService;
