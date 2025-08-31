@@ -8,12 +8,11 @@ import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js'
 import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
-import { IChannelableTask } from '../../../chat/tasks/IChannelableTask.js';
 import { MediaCollectionResponse } from '../extensions/MediaResponse.js';
 import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 
-export class ComfyUiMentionTask extends ComfyUiBaseTask implements IChannelableTask {
+export class ComfyUiMentionTask extends ComfyUiBaseTask {
     #logger: ILogger;
     #services: IServiceContainer;
 
