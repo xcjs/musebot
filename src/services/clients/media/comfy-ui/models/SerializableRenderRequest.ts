@@ -35,6 +35,13 @@ export class SerializableRenderRequest {
         this.seed = getRandomInt(0, maxSeed);
     }
 
+    refreshDuration(): void {
+        if (this.durationMin !== undefined
+            && this.durationMax !== undefined) {
+            this.duration = getRandomInt(this.durationMin, this.durationMax);
+        }
+    }
+
     toString(): string {
         return JSON.stringify(this);
     }
