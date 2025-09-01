@@ -39,7 +39,7 @@ export class ComfyUiInteractionTask extends ComfyUiBaseTask {
 
         this.#logger.info(`Selected ${this.workflow.name} as the workflow.`);
 
-        this.mutator = this.#services.getWorkflowMutator(this.#interaction.id as BotInteraction, this.workflow);
+        this.mutator = this.#services.getWorkflowMutator(this.#interaction.customId as BotInteraction, this.workflow);
 
         const renderRequests: SerializableRenderRequest[] = [];
         const prompts: Prompt[] = [];

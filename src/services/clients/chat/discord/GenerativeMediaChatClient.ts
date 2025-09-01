@@ -76,69 +76,48 @@ export class GenerativeMediaChatClient extends BaseDiscordClient {
         try {
             await interaction.deferUpdate();
         } catch (error) {
-            this.logger.error(`Error while deferring a reply. Ignore this error if the `
+            this.logger.error(`Error while deferring a reply. Ignore this error if `
                 + `${this.#environmentSettings.applicationName} is functioning normally:`, error);
         }
 
-        switch (interaction.customId) {
-            case BotInteraction.Retry.toString():
-                this.#taskQueue.add(this.#services.getRetryRenderTask(interaction) as BaseTask<void>);
-                break;
-            case BotInteraction.ShowSource.toString():
-                this.#taskQueue.add(this.#services.getShowSourceTask(interaction) as BaseTask<void>);
-                break;
-            case BotInteraction.GuidanceScaleMinus.toString():
-                this.#taskQueue.add(this.#services.getDecreaseGuidanceScaleRenderTask(interaction) as BaseTask<void>);
-                break;
-            case BotInteraction.GuidanceScalePlus.toString():
-                this.#taskQueue.add(this.#services.getIncreaseGuidanceScaleRenderTask(interaction) as BaseTask<void>);
-                break;
-            case BotInteraction.ExpandPrompt.toString():
-                this.#taskQueue.add(this.#services.getExpandPromptTask(interaction) as BaseTask<void>);
-                break;
-            case BotInteraction.Randomize.toString():
-                this.#taskQueue.add(this.#services.getRandomRenderTask(interaction) as BaseTask<void>);
-                break;
-            case BotInteraction.Help.toString():
-                this.#taskQueue.add(this.#services.getReplyTask(
-                    interaction, {
-                    content: await this.#helpService.buildHelpArticle(interaction),
-                }) as BaseTask<void>);
-                break;
-            default:
-                let isWorkflowInteraction = false;
-                let workflow: IWorkflow;
-
-                try {
-                    await this.#workflowService.loadWorkflows();
-                    const workflows = this.#workflowService.workflows;
-
-                    let renderRequest: SerializableRenderRequest;
-
-                    isWorkflowInteraction = !!workflows.find((workflowInstance) => {
-                        renderRequest = this.#workflowService.getWorkflowDefaults(workflowInstance);
-
-                        if (renderRequest.label === interaction.customId) {
-                            workflow = workflowInstance;
-                            return true;
-                        }
-                    });
-                } catch (error) {
-                    isWorkflowInteraction = false;
-                    this.logger.error('An exception occurred while trying to process the interaction:', interaction);
-                    this.logger.error('As this is a custom workflow, verify your workflow defaults are configured correctly:', error);
-                }
-
-                if (isWorkflowInteraction) {
-                    this.#taskQueue.add(this.#services.getImg2ImgRenderTask(interaction, workflow) as BaseTask<void>);
-                } else {
-                    this.logger.warn('An unknown or erroneous interaction was passed:', interaction);
-                }
-
-                break;
+        if(Object.values(BotInteraction).includes(interaction.customId as BotInteraction)) {
+            this.#taskQueue.add(this.#services.getInteractionTask(interaction));
+        } else {
+            await this.#onCustomInteraction(interaction);
         }
 
         await this.#typingService.startTyping(interaction);
+    }
+
+    async #onCustomInteraction(interaction: ButtonInteraction) {
+        let isWorkflowInteraction = false;
+        let workflow: IWorkflow;
+
+        try {
+            await this.#workflowService.loadWorkflows();
+            const workflows = this.#workflowService.workflows;
+
+            let renderRequest: SerializableRenderRequest;
+
+            isWorkflowInteraction = !!workflows.find((workflowInstance) => {
+                renderRequest = this.#workflowService.getWorkflowDefaults(workflowInstance);
+
+                if (renderRequest.label === interaction.customId) {
+                    workflow = workflowInstance;
+                    return true;
+                }
+            });
+        } catch (error) {
+            isWorkflowInteraction = false;
+            this.logger.error('An exception occurred while trying to process the interaction:', interaction);
+            this.logger.error('As this is a custom workflow, verify your workflow defaults are configured correctly:', error);
+        }
+
+        if (isWorkflowInteraction) {
+            this.#taskQueue.add(this.#services.getImg2ImgRenderTask(interaction, workflow) as BaseTask<void>);
+        } else {
+            this.logger.warn('An unknown or erroneous interaction was passed:', interaction);
+        }
     }
 
     async #onMessageReactionAdd(reaction: MessageReaction, user: User): Promise<void> {
