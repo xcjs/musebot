@@ -9,8 +9,8 @@ import { SerializableRenderRequest } from '../../models/SerializableRenderReques
 import { IWorkflowMutator } from './IWorkflowMutator.js';
 
 export class MentionImageMutator implements IWorkflowMutator {
-    get interaction(): BotInteraction {
-        return BotInteraction.Mention;
+    get interactions(): BotInteraction[] {
+        return [BotInteraction.Mention];
     }
 
     get types(): SupportedFeature[] {

@@ -6,7 +6,7 @@ import { IWorkflow } from '../../models/IWorkflow.js';
 import { SerializableRenderRequest } from '../../models/SerializableRenderRequest.js';
 
 export interface IWorkflowMutator {
-    interaction: BotInteraction;
+    interactions: BotInteraction[];
     types: SupportedFeature[];
     mutate(renderRequest: SerializableRenderRequest,
         interaction: Message | ButtonInteraction,

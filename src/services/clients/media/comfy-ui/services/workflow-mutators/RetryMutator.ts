@@ -7,8 +7,8 @@ import { SerializableRenderRequest } from '../../models/SerializableRenderReques
 import { IWorkflowMutator } from './IWorkflowMutator.js';
 
 export class RetryMutator implements IWorkflowMutator {
-    get interaction(): BotInteraction {
-        return BotInteraction.Retry;
+    get interactions(): BotInteraction[] {
+        return [BotInteraction.Retry];
     }
 
     get types(): SupportedFeature[] {

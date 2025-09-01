@@ -37,6 +37,7 @@ import { IPromptResponseTask } from './clients/llm/tasks/IPromptResponseTask.js'
 import { ComfyUiClient } from './clients/media/comfy-ui/ComfyUiClient.js';
 import { IWorkflow } from './clients/media/comfy-ui/models/IWorkflow.js';
 import { IWorkflowService } from './clients/media/comfy-ui/services/IWorkflowService.js';
+import { GuidanceScaleMutator } from './clients/media/comfy-ui/services/workflow-mutators/GuidanceScaleMutator.js';
 import { IWorkflowMutator } from './clients/media/comfy-ui/services/workflow-mutators/IWorkflowMutator.js';
 import { MentionImageMutator } from './clients/media/comfy-ui/services/workflow-mutators/MentionImageMutator.js';
 import { MentionMusicMutator } from './clients/media/comfy-ui/services/workflow-mutators/MentionMusicMutator.js';
@@ -353,13 +354,14 @@ export class ServiceContainer implements IServiceContainer {
 
     getWorkflowMutator(interaction: BotInteraction, workflow: IWorkflow): IWorkflowMutator {
         const mutators: IWorkflowMutator[] = [
+            new GuidanceScaleMutator(this),
             new MentionImageMutator(this),
             new MentionMusicMutator(this),
             new RetryMutator()
         ];
 
         const supportedMutators = mutators.filter(
-            mutator => mutator.interaction === interaction
+            mutator => mutator.interactions.includes(interaction)
                 && mutator.types.includes(workflow.type));
 
         if(supportedMutators.length === 1) {
