@@ -133,7 +133,7 @@ export class ServiceContainer implements IServiceContainer {
     // Transients -------------------------------------------------------------/
 
     get contentTypeService(): IContentTypeService {
-        return new ContentTypeService;
+        return new ContentTypeService(this);
     }
 
     get replyService(): IReplyService {
@@ -357,7 +357,7 @@ export class ServiceContainer implements IServiceContainer {
             new GuidanceScaleMutator(this),
             new MentionImageMutator(this),
             new MentionMusicMutator(this),
-            new RetryMutator()
+            new RetryMutator(this)
         ];
 
         const supportedMutators = mutators.filter(

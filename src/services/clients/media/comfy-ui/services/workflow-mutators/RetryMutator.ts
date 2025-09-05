@@ -2,8 +2,10 @@ import { ButtonInteraction } from 'discord.js';
 
 import { BotInteraction } from '../../../../../../enums/BotInteraction.js';
 import { SupportedFeature } from '../../../../../features/enum/SupportedFeature.js';
+import { IServiceContainer } from '../../../../../IServiceContainer.js';
 import { IWorkflow } from '../../models/IWorkflow.js';
 import { SerializableRenderRequest } from '../../models/SerializableRenderRequest.js';
+import { IWorkflowService } from '../IWorkflowService.js';
 import { IWorkflowMutator } from './IWorkflowMutator.js';
 
 export class RetryMutator implements IWorkflowMutator {
@@ -20,18 +22,29 @@ export class RetryMutator implements IWorkflowMutator {
         ];
     }
 
-    constructor() {
+    #workflowService: IWorkflowService;
 
+    constructor(services: IServiceContainer) {
+        this.#workflowService = services.workflowService;
     }
 
     // Method signature required for interface.
     async mutate(renderRequest: SerializableRenderRequest,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         interaction: ButtonInteraction,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         workflow: IWorkflow): Promise<SerializableRenderRequest> {
             renderRequest.refreshSeed();
             renderRequest.refreshDuration();
+
+            const workflowDefaults = this.#workflowService.getWorkflowDefaults(workflow);
+
+            if (renderRequest.workflow !== workflow.name
+                && renderRequest.width !== undefined
+                && renderRequest.height !== undefined
+            ) {
+                renderRequest.height = workflowDefaults.height;
+                renderRequest.width = workflowDefaults.width;
+            }
+
             return await Promise.resolve(renderRequest);
     }
 }
