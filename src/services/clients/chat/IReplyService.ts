@@ -19,7 +19,9 @@ export interface IReplyService {
 
     replyWithError(interaction: Message | ButtonInteraction): Promise<void>;
 
-    getAttachmentsByType(interaction: Message | ButtonInteraction, contentTypes: ContentType[]): Attachment[];
+    getAttachments(interaction: Message | ButtonInteraction): Attachment[];
+
+    getAttachmentsByType(interaction: Message | ButtonInteraction, contentTypes: ContentType[] | undefined): Attachment[];
 
     getAudioAttachments(interaction: Message | ButtonInteraction): Attachment[];
 

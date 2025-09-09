@@ -35,32 +35,25 @@ export class ComfyUiMentionTask extends ComfyUiBaseTask {
 
         this.#logger.info('Processing a ComfyUiMentionTask...');
 
-        this.workflow = getRandomArrayEntry(this.workflowService.workflows.filter(x =>
+        const workflow = getRandomArrayEntry(this.workflowService.workflows.filter(x =>
             x.type.startsWith('txt2')
             && x.type !== SupportedFeature.Txt2Txt));
 
-        this.#logger.info(`Selected ${this.workflow.name} as the workflow.`);
+        this.#logger.info(`Selected ${workflow.name} as the workflow.`);
 
-        this.mutator = this.#services.getWorkflowMutator(BotInteraction.Mention, this.workflow);
+        const defaultRenderRequest = this.workflowService.getWorkflowDefaults(workflow);
+        const mutator = this.#services.getWorkflowMutator(BotInteraction.Mention, workflow);
 
         const renderRequests: SerializableRenderRequest[] = [];
         const prompts: Prompt[] = [];
-        let numRenders = 1;
-        let i = 0;
 
-        do {
-            let renderRequest = this.workflowService.getWorkflowDefaults(this.workflow);
-            renderRequest = await this.mutator.mutate(renderRequest, this.#message, this.workflow);
-
-            if (i === 0) {
-                numRenders = renderRequest.num;
-            }
+        for (let i = 0; i < defaultRenderRequest.num; i++) {
+            const renderRequest = await mutator.mutate(defaultRenderRequest, this.#message, workflow);
+            const prompt = this.workflowService.renderWorkflow(workflow, renderRequest);
 
             renderRequests.push(renderRequest);
-            prompts.push(this.workflowService.renderWorkflow(this.workflow, renderRequest));
-
-            i++;
-        } while (i < numRenders);
+            prompts.push(prompt)
+        }
 
         const mediaCollectionResponse = await this.comfyUiClient.render(prompts);
         const exchange: IHttpExchange<SerializableRenderRequest[], MediaCollectionResponse> = {

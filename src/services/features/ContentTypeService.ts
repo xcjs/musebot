@@ -1,13 +1,10 @@
 import { ContentType } from '../../enums/ContentType.js';
 import { ContentTypeCategory } from '../../enums/ContentTypeCategory.js';
-import { IServiceContainer } from '../IServiceContainer.js';
 import { IContentTypeService } from './IContentTypeService.js';
 
 export class ContentTypeService implements IContentTypeService {
-    #contentTypeService: IContentTypeService;
+    constructor() {
 
-    constructor(services: IServiceContainer) {
-        this.#contentTypeService = services.contentTypeService;
     }
 
     getContentTypeFromFileName(fileName: string): ContentType {

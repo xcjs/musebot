@@ -133,7 +133,7 @@ export class ServiceContainer implements IServiceContainer {
     // Transients -------------------------------------------------------------/
 
     get contentTypeService(): IContentTypeService {
-        return new ContentTypeService(this);
+        return new ContentTypeService();
     }
 
     get replyService(): IReplyService {

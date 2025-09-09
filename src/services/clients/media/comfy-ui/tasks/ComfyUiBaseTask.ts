@@ -6,9 +6,7 @@ import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
-import { IWorkflow } from '../models/IWorkflow.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
-import { IWorkflowMutator } from '../services/workflow-mutators/IWorkflowMutator.js';
 
 export abstract class ComfyUiBaseTask extends BaseTask<void> {
     override get taskChannel(): string {
@@ -22,8 +20,6 @@ export abstract class ComfyUiBaseTask extends BaseTask<void> {
     replyService: IReplyService;
 
     botInteraction: BotInteraction;
-    workflow: IWorkflow;
-    mutator: IWorkflowMutator;
 
     #logger: ILogger;
 

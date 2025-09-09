@@ -235,7 +235,11 @@ export class ReplyService implements IReplyService {
         return prompts.reverse();
     }
 
-    getAttachmentsByType(interaction: Message | ButtonInteraction, contentTypes: Array<ContentType>): Array<Attachment> {
+    getAttachments(interaction: Message | ButtonInteraction): Attachment[] {
+        return this.getAttachmentsByType(interaction, []);
+    }
+
+    getAttachmentsByType(interaction: Message | ButtonInteraction, contentTypes: ContentType[]): Attachment[] {
         this.#logger.info('Looking for attachments of the following types on a message:', contentTypes);
 
         let attachments: Array<Attachment>;
@@ -246,14 +250,18 @@ export class ReplyService implements IReplyService {
             attachments = Array.from(interaction.message.attachments, ([name, value]) => ({ name, value })).map(x => x.value);
         }
 
-        const matchingAttachments = attachments.filter(attachment =>
-            contentTypes.includes(Object.values(ContentType)
-                .find(contentTypeValue => contentTypeValue.toString() === attachment.contentType)));
+        let matchingAttachments: Attachment[] = attachments;
+
+        if(contentTypes.length > 0) {
+            matchingAttachments = attachments.filter(attachment =>
+                contentTypes.includes(Object.values(ContentType)
+                    .find(contentTypeValue => contentTypeValue.toString() === attachment.contentType)));
+        }
 
         return matchingAttachments;
     }
 
-    getAudioAttachments(interaction: Message | ButtonInteraction): Array<Attachment> {
+    getAudioAttachments(interaction: Message | ButtonInteraction): Attachment[] {
         const audioTypes = [
             ContentType.Mp3
         ];
@@ -261,7 +269,7 @@ export class ReplyService implements IReplyService {
         return this.getAttachmentsByType(interaction, audioTypes);
     }
 
-    getImageAttachments(interaction: Message | ButtonInteraction): Array<Attachment> {
+    getImageAttachments(interaction: Message | ButtonInteraction): Attachment[] {
         const imageTypes = [
             ContentType.Jpeg,
             ContentType.Jpg,
