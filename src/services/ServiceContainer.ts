@@ -343,6 +343,8 @@ export class ServiceContainer implements IServiceContainer {
             case BotFunction.Media:
                 switch(interaction.customId as BotInteraction) {
                     case BotInteraction.Retry:
+                    case BotInteraction.GuidanceScaleMinus:
+                    case BotInteraction.GuidanceScalePlus:
                         return new ComfyUiInteractionTask(this, interaction);
                     default:
                         throw this.#taskNotConfiguredError;
