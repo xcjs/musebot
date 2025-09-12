@@ -1,4 +1,4 @@
-import { ButtonInteraction, Client as DiscordClient, Events, Message as DiscordMessage, MessageReaction, User } from 'discord.js';
+import { ButtonInteraction, Client as DiscordClient, Events, Message as DiscordMessage, MessageReaction, ReactionEmoji,User } from 'discord.js';
 import { Message as OllamaMessage } from 'ollama';
 
 import { BotInteraction } from '../../../../enums/BotInteraction.js';
@@ -63,11 +63,7 @@ export class GenerativeMediaChatClient extends BaseDiscordClient {
         this.logger.info('Replying to message...');
         await this.#typingService.startTyping(message);
 
-        if (this.#replyService.getMessageWithoutBotMentions(message).startsWith('{')) {
-            this.#taskQueue.add(this.#services.getJsonRenderTask(message) as BaseTask<void>);
-        } else {
-            this.#taskQueue.add(this.#services.getMentionTask(message) as BaseTask<void>);
-        }
+        this.#taskQueue.add(this.#services.getMessageTask(message) as BaseTask<void>);
     }
 
     async #onInteraction(interaction: ButtonInteraction): Promise<void> {
@@ -138,7 +134,7 @@ export class GenerativeMediaChatClient extends BaseDiscordClient {
 
         this.#taskQueue.add(this.#services.getEmojiReactionRenderTask(
             reaction.message as DiscordMessage,
-            reaction.emoji,
+            reaction.emoji as ReactionEmoji,
             user) as BaseTask<OllamaMessage[]>);
     }
 }

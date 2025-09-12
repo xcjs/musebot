@@ -12,7 +12,7 @@ import { MediaCollectionResponse } from '../extensions/MediaResponse.js';
 import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 
-export class ComfyUiMentionTask extends ComfyUiBaseTask {
+export class ComfyUiMessageTask extends ComfyUiBaseTask {
     #logger: ILogger;
     #services: IServiceContainer;
 

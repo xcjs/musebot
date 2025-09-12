@@ -6,8 +6,7 @@ import {
     Message as DiscordMessage,
     MessageReaction,
     Partials,
-    ReactionEmoji,
-    User} from 'discord.js';
+    ReactionEmoji,    User} from 'discord.js';
 import { Message as OllamaMessage } from 'ollama';
 
 import { BotFunction } from '../enums/BotFunction.js';
@@ -44,32 +43,13 @@ import { MentionMusicMutator } from './clients/media/comfy-ui/services/workflow-
 import { RetryMutator } from './clients/media/comfy-ui/services/workflow-mutators/RetryMutator.js';
 import { WorkflowService } from './clients/media/comfy-ui/services/WorkflowService.js';
 import { ComfyUiAttachRenderTask } from './clients/media/comfy-ui/tasks/ComfyUiAttachRenderTask.js';
-import { ComfyUiDecreaseGuidanceScaleRenderTask } from './clients/media/comfy-ui/tasks/ComfyUiDecreaseGuidanceScaleRenderTask.js';
 import { ComfyUiEmojiReactionRenderTask } from './clients/media/comfy-ui/tasks/ComfyUiEmojiReactionRenderTask.js';
-import { ComfyUiExpandPromptTask } from './clients/media/comfy-ui/tasks/ComfyUiExpandPromptTask.js';
 import { ComfyUiImg2ImgRenderTask } from './clients/media/comfy-ui/tasks/ComfyUiImg2ImgRenderTask.js';
-import { ComfyUiIncreaseGuidanceScaleRenderTask } from './clients/media/comfy-ui/tasks/ComfyUiIncreaseGuidanceScaleRenderTask.js';
 import { ComfyUiInteractionTask } from './clients/media/comfy-ui/tasks/ComfyUiInteractionTask.js';
-import { ComfyUiJsonRenderTask } from './clients/media/comfy-ui/tasks/ComfyUiJsonRenderTask.js';
-import { ComfyUiMentionTask } from './clients/media/comfy-ui/tasks/ComfyUiMentionTask.js';
-import { ComfyUiRandomRenderTask } from './clients/media/comfy-ui/tasks/ComfyUiRandomRenderTask.js';
-import { ComfyUiReplyAudioTask } from './clients/media/comfy-ui/tasks/ComfyUiReplyAudioTask.js';
-import { ComfyUiReplyRenderTask } from './clients/media/comfy-ui/tasks/ComfyUiReplyRenderTask.js';
-import { ComfyUiRetryAudioTask } from './clients/media/comfy-ui/tasks/ComfyUiRetryAudioTask.js';
-import { ComfyUiRetryRenderTask } from './clients/media/comfy-ui/tasks/ComfyUiRetryRenderTask.js';
-import { ComfyUiShowSourceTask } from './clients/media/comfy-ui/tasks/ComfyUiShowSourceTask.js';
+import { ComfyUiMessageTask } from './clients/media/comfy-ui/tasks/ComfyUiMessageTask.js';
 import { ImageHelpService } from './clients/media/help/ImageHelpService.js';
 import { IAttachRenderTask } from './clients/media/tasks/IAttachRenderTask.js';
-import { IDecreaseGuidanceScaleRenderTask } from './clients/media/tasks/IDecreaseGuidanceScaleRenderTask.js';
 import { IEmojiReactionRenderTask } from './clients/media/tasks/IEmojiReactionRenderTask.js';
-import { IExpandPromptTask } from './clients/media/tasks/IExpandPromptTask.js';
-import { IIncreaseGuidanceScaleRenderTask } from './clients/media/tasks/IIncreaseGuidanceScaleRenderTask.js';
-import { IJsonRenderTask } from './clients/media/tasks/IJsonRenderTask.js';
-import { IMessageReplyTask } from './clients/media/tasks/IMessageReplyTask.js';
-import { IRandomRenderTask } from './clients/media/tasks/IRandomRenderTask.js';
-import { IReplyRenderTask } from './clients/media/tasks/IReplyRenderTask.js';
-import { IRetryRenderTask } from './clients/media/tasks/IRetryRenderTask.js';
-import { IShowSourceTask } from './clients/media/tasks/IShowSourceTask.js';
 import { EnvironmentSettings } from './environment-settings/EnvironmentSettings.js';
 import { IEnvironmentSettings } from './environment-settings/IEnvironmentSettings.js';
 import { ContentTypeService } from './features/ContentTypeService.js';
@@ -176,19 +156,6 @@ export class ServiceContainer implements IServiceContainer {
         return new ReplyTask(this, interaction, reply);
     }
 
-    getMessageReplyTask(message: DiscordMessage): IMessageReplyTask {
-        if (this.#featureService.hasFeature(SupportedFeature.Txt2Audio)
-            || this.#featureService.hasFeature(SupportedFeature.Txt2Img)
-            || this.#featureService.hasFeature(SupportedFeature.Txt2Music)
-            || this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
-            return new ComfyUiReplyRenderTask(this, message);
-        } else if (this.#featureService.hasFeature(SupportedFeature.Txt2Music)) {
-            return new ComfyUiReplyAudioTask(this, message);
-        } else {
-            throw this.#taskNotConfiguredError;
-        }
-    }
-
     getAttachRenderTask(
         interaction: ButtonInteraction | DiscordMessage,
         prompt: string,
@@ -201,31 +168,13 @@ export class ServiceContainer implements IServiceContainer {
         return new ComfyUiAttachRenderTask(this, interaction, { content }, prompt);
     }
 
-    getDecreaseGuidanceScaleRenderTask(interaction: ButtonInteraction): IDecreaseGuidanceScaleRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)
-            && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
-            throw this.#taskNotConfiguredError;
-        }
-
-        return new ComfyUiDecreaseGuidanceScaleRenderTask(this, interaction);
-    }
-
     getEmojiReactionRenderTask(interaction: DiscordMessage, emoji: ReactionEmoji, userOverride: User): IEmojiReactionRenderTask {
-        if(!this.#featureService.hasFeature(SupportedFeature.Txt2Img)
+        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)
             || !this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
             throw this.#taskNotConfiguredError;
         }
 
         return new ComfyUiEmojiReactionRenderTask(this, interaction, emoji, userOverride);
-    }
-
-    getExpandPromptTask(interaction: ButtonInteraction): IExpandPromptTask {
-        if(!this.#featureService.hasFeature(SupportedFeature.Txt2Img)
-            && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
-            throw this.#taskNotConfiguredError;
-        }
-
-        return new ComfyUiExpandPromptTask(this, interaction);
     }
 
     getImg2ImgRenderTask(interaction: ButtonInteraction, workflow: IWorkflow) {
@@ -235,76 +184,6 @@ export class ServiceContainer implements IServiceContainer {
         }
 
         return new ComfyUiImg2ImgRenderTask(this, interaction, workflow);
-    }
-
-    getIncreaseGuidanceScaleRenderTask(interaction: ButtonInteraction): IIncreaseGuidanceScaleRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)
-            && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
-            throw this.#taskNotConfiguredError;
-        }
-
-        return new ComfyUiIncreaseGuidanceScaleRenderTask(this, interaction);
-    }
-
-    getJsonRenderTask(message: DiscordMessage): IJsonRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)
-            && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
-            throw this.#taskNotConfiguredError;
-        }
-
-        return new ComfyUiJsonRenderTask(this, message);
-    }
-
-    getRandomRenderTask(interaction: ButtonInteraction): IRandomRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)
-            && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
-            throw this.#taskNotConfiguredError;
-        }
-
-        return new ComfyUiRandomRenderTask(this, interaction);
-    }
-
-    getReplyRenderTask(message: DiscordMessage): IReplyRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Audio)
-            && !this.#featureService.hasFeature(SupportedFeature.Txt2Music)
-            && !this.#featureService.hasFeature(SupportedFeature.Txt2Img)
-            && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
-            throw this.#taskNotConfiguredError;
-        }
-
-        if (this.#featureService.hasFeature(SupportedFeature.Txt2Img)) {
-            return new ComfyUiReplyRenderTask(this, message);
-        } else if (this.#featureService.hasFeature(SupportedFeature.Txt2Music)) {
-            return new ComfyUiReplyAudioTask(this, message);
-        } else {
-            throw this.#taskNotConfiguredError;
-        }
-    }
-
-    getRetryRenderTask(interaction: ButtonInteraction): IRetryRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Audio)
-            && !this.#featureService.hasFeature(SupportedFeature.Txt2Music)
-            && !this.#featureService.hasFeature(SupportedFeature.Txt2Img)
-            && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
-            throw this.#taskNotConfiguredError;
-        }
-
-        if(this.#featureService.hasFeature(SupportedFeature.Txt2Img)) {
-            return new ComfyUiRetryRenderTask(this, interaction);
-        } else if(this.#featureService.hasFeature(SupportedFeature.Txt2Music)) {
-            return new ComfyUiRetryAudioTask(this, interaction);
-        } else {
-            throw this.#taskNotConfiguredError;
-        }
-    }
-
-    getShowSourceTask(interaction: ButtonInteraction): IShowSourceTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)
-            && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
-            throw this.#taskNotConfiguredError;
-        }
-
-        return new ComfyUiShowSourceTask(this, interaction);
     }
 
     getLlmPromptResponseTask(message: DiscordMessage, context: OllamaMessage[]): IPromptResponseTask {
@@ -323,13 +202,13 @@ export class ServiceContainer implements IServiceContainer {
         return new OllamaEmojiResponseTask(this, reaction, user, context);
     }
 
-    getMentionTask(message: DiscordMessage): BaseTask<unknown> {
+    getMessageTask(message: DiscordMessage): BaseTask<unknown> {
         switch(this.#environmentSettings.botFunction) {
             case BotFunction.Chat:
 
                 break;
             case BotFunction.Media:
-                return new ComfyUiMentionTask(this, message);
+                return new ComfyUiMessageTask(this, message);
             default:
                 throw this.#taskNotConfiguredError;
         }
