@@ -47,6 +47,7 @@ import { ComfyUiEmojiReactionRenderTask } from './clients/media/comfy-ui/tasks/C
 import { ComfyUiImg2ImgRenderTask } from './clients/media/comfy-ui/tasks/ComfyUiImg2ImgRenderTask.js';
 import { ComfyUiInteractionTask } from './clients/media/comfy-ui/tasks/ComfyUiInteractionTask.js';
 import { ComfyUiMessageTask } from './clients/media/comfy-ui/tasks/ComfyUiMessageTask.js';
+import { ComfyUiShowSourceTask } from './clients/media/comfy-ui/tasks/ComfyUiShowSourceTask.js';
 import { ImageHelpService } from './clients/media/help/ImageHelpService.js';
 import { IAttachRenderTask } from './clients/media/tasks/IAttachRenderTask.js';
 import { IEmojiReactionRenderTask } from './clients/media/tasks/IEmojiReactionRenderTask.js';
@@ -225,6 +226,8 @@ export class ServiceContainer implements IServiceContainer {
                     case BotInteraction.GuidanceScaleMinus:
                     case BotInteraction.GuidanceScalePlus:
                         return new ComfyUiInteractionTask(this, interaction);
+                    case BotInteraction.ShowSource:
+                        return new ComfyUiShowSourceTask(this, interaction);
                     default:
                         throw this.#taskNotConfiguredError;
                 }
