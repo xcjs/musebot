@@ -9,9 +9,9 @@ import { IWorkflow } from '../../models/IWorkflow.js';
 import { SerializableRenderRequest } from '../../models/SerializableRenderRequest.js';
 import { IWorkflowMutator } from './IWorkflowMutator.js';
 
-export class MentionMusicMutator implements IWorkflowMutator {
+export class MessageToMusicMutator implements IWorkflowMutator {
     get interactions(): BotInteraction[] {
-        return [BotInteraction.Mention];
+        return [BotInteraction.Message];
     }
 
     get types(): SupportedFeature[] {
@@ -31,24 +31,25 @@ export class MentionMusicMutator implements IWorkflowMutator {
         // genre/style and one for lyrics.
         const promptSeparator = '\n\n';
 
+        const mutatedRequest = SerializableRenderRequest.fromSerializableRenderRequest(renderRequest);
+
         if(prompt.indexOf(promptSeparator) > 0) {
-            renderRequest.prompt = prompt.split(promptSeparator)[0].trim();
-            renderRequest.prompt2 = prompt.substring(
+            mutatedRequest.prompt = prompt.split(promptSeparator)[0].trim();
+            mutatedRequest.prompt2 = prompt.substring(
                 prompt.indexOf(promptSeparator), prompt.length).trim();
         } else {
-            renderRequest.prompt = prompt;
+            mutatedRequest.prompt = prompt;
         }
 
-        if(renderRequest.durationMin !== undefined
-            && renderRequest.durationMax !== undefined) {
-            renderRequest.duration = getRandomInt(renderRequest.durationMin, renderRequest.durationMax);
+        if (mutatedRequest.durationMin !== undefined
+            && mutatedRequest.durationMax !== undefined) {
+            mutatedRequest.duration = getRandomInt(mutatedRequest.durationMin, mutatedRequest.durationMax);
         }
 
-        renderRequest.workflow = workflow.name;
-        renderRequest.prompt = prompt;
-        renderRequest.num = 1;
-        renderRequest.refreshSeed();
+        mutatedRequest.workflow = workflow.name;
+        mutatedRequest.prompt = prompt;
+        mutatedRequest.refreshSeed();
 
-        return await Promise.resolve(renderRequest);
+        return await Promise.resolve(mutatedRequest);
     }
 }

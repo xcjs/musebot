@@ -10,5 +10,5 @@ export interface IWorkflowMutator {
     types: SupportedFeature[];
     mutate(renderRequest: SerializableRenderRequest,
         interaction: Message | ButtonInteraction,
-        workflow: IWorkflow): Promise<SerializableRenderRequest>;
+        workflow: IWorkflow): Promise<SerializableRenderRequest | null>;
 }

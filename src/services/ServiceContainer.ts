@@ -38,8 +38,9 @@ import { IWorkflow } from './clients/media/comfy-ui/models/IWorkflow.js';
 import { IWorkflowService } from './clients/media/comfy-ui/services/IWorkflowService.js';
 import { GuidanceScaleMutator } from './clients/media/comfy-ui/services/workflow-mutators/GuidanceScaleMutator.js';
 import { IWorkflowMutator } from './clients/media/comfy-ui/services/workflow-mutators/IWorkflowMutator.js';
-import { MentionImageMutator } from './clients/media/comfy-ui/services/workflow-mutators/MentionImageMutator.js';
-import { MentionMusicMutator } from './clients/media/comfy-ui/services/workflow-mutators/MentionMusicMutator.js';
+import { JsonMutator } from './clients/media/comfy-ui/services/workflow-mutators/JsonMutator.js';
+import { MessageToImageMutator } from './clients/media/comfy-ui/services/workflow-mutators/MessageToImageMutator.js';
+import { MessageToMusicMutator } from './clients/media/comfy-ui/services/workflow-mutators/MessageToMusicMutator.js';
 import { RetryMutator } from './clients/media/comfy-ui/services/workflow-mutators/RetryMutator.js';
 import { WorkflowService } from './clients/media/comfy-ui/services/WorkflowService.js';
 import { ComfyUiAttachRenderTask } from './clients/media/comfy-ui/tasks/ComfyUiAttachRenderTask.js';
@@ -47,7 +48,7 @@ import { ComfyUiEmojiReactionRenderTask } from './clients/media/comfy-ui/tasks/C
 import { ComfyUiImg2ImgRenderTask } from './clients/media/comfy-ui/tasks/ComfyUiImg2ImgRenderTask.js';
 import { ComfyUiInteractionTask } from './clients/media/comfy-ui/tasks/ComfyUiInteractionTask.js';
 import { ComfyUiMessageTask } from './clients/media/comfy-ui/tasks/ComfyUiMessageTask.js';
-import { ComfyUiShowSourceTask } from './clients/media/comfy-ui/tasks/ComfyUiShowSourceTask.js';
+import { ShowDescriptionTask } from './clients/media/comfy-ui/tasks/ShowDescriptionTask.js';
 import { ImageHelpService } from './clients/media/help/ImageHelpService.js';
 import { IAttachRenderTask } from './clients/media/tasks/IAttachRenderTask.js';
 import { IEmojiReactionRenderTask } from './clients/media/tasks/IEmojiReactionRenderTask.js';
@@ -209,7 +210,7 @@ export class ServiceContainer implements IServiceContainer {
 
                 break;
             case BotFunction.Media:
-                return new ComfyUiMessageTask(this, message);
+                    return new ComfyUiMessageTask(this, message);
             default:
                 throw this.#taskNotConfiguredError;
         }
@@ -227,7 +228,7 @@ export class ServiceContainer implements IServiceContainer {
                     case BotInteraction.GuidanceScalePlus:
                         return new ComfyUiInteractionTask(this, interaction);
                     case BotInteraction.ShowSource:
-                        return new ComfyUiShowSourceTask(this, interaction);
+                        return new ShowDescriptionTask(this, interaction);
                     default:
                         throw this.#taskNotConfiguredError;
                 }
@@ -236,16 +237,17 @@ export class ServiceContainer implements IServiceContainer {
         }
     }
 
-    getWorkflowMutator(interaction: BotInteraction, workflow: IWorkflow): IWorkflowMutator {
+    getWorkflowMutator(interactionType: BotInteraction, workflow: IWorkflow): IWorkflowMutator {
         const mutators: IWorkflowMutator[] = [
             new GuidanceScaleMutator(this),
-            new MentionImageMutator(this),
-            new MentionMusicMutator(this),
+            new JsonMutator(this),
+            new MessageToImageMutator(this),
+            new MessageToMusicMutator(this),
             new RetryMutator(this)
         ];
 
         const supportedMutators = mutators.filter(
-            mutator => mutator.interactions.includes(interaction)
+            mutator => mutator.interactions.includes(interactionType)
                 && mutator.types.includes(workflow.type));
 
         if(supportedMutators.length === 1) {

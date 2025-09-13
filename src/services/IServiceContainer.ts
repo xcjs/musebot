@@ -78,5 +78,5 @@ export interface IServiceContainer {
     getMessageTask(message: DiscordMessage): BaseTask<unknown>;
     getInteractionTask(interaction: ButtonInteraction): BaseTask<unknown>
 
-    getWorkflowMutator(botInteraction: BotInteraction, workflow: IWorkflow): IWorkflowMutator;
+    getWorkflowMutator(interactionType: BotInteraction, workflow: IWorkflow): IWorkflowMutator;
 }

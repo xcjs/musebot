@@ -1,6 +1,7 @@
 export enum BotInteraction {
     // Chat Interactions
-    Mention = 'mention',
+    Message = 'message',
+    JsonMessage = 'jsonMessage',
     Reply = 'reply',
     Reaction = 'reaction',
     // LLM Button Interactions

@@ -63,7 +63,13 @@ export class GenerativeMediaChatClient extends BaseDiscordClient {
         this.logger.info('Replying to message...');
         await this.#typingService.startTyping(message);
 
+        if(this.#replyService.getMessageWithoutBotMentions(message).startsWith('{')) {
+
+        } else {
+
+        }
         this.#taskQueue.add(this.#services.getMessageTask(message) as BaseTask<void>);
+
     }
 
     async #onInteraction(interaction: ButtonInteraction): Promise<void> {

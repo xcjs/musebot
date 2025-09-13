@@ -37,19 +37,21 @@ export class GuidanceScaleMutator implements IWorkflowMutator {
         interaction: ButtonInteraction,
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         workflow: IWorkflow): Promise<SerializableRenderRequest> {
-            switch(interaction.customId as BotInteraction) {
-                case BotInteraction.GuidanceScaleMinus:
-                    const lowerScale = renderRequest.cfgScale -= this.#environmentSettings.stableDiffusionGuidanceScaleInterval;
-                    renderRequest.cfgScale = lowerScale >= guidanceScaleMin ? lowerScale : renderRequest.cfgScale;
-                    break;
-                case BotInteraction.GuidanceScalePlus:
-                    const higherScale = renderRequest.cfgScale += this.#environmentSettings.stableDiffusionGuidanceScaleInterval;
-                    renderRequest.cfgScale = higherScale <= guidanceScaleMax ? higherScale : renderRequest.cfgScale;
-                    break;
-                default:
-                    throw new Error('Invalid interaction for GuidanceScaleMutator.');
-            }
+        const mutatedRequest = SerializableRenderRequest.fromSerializableRenderRequest(renderRequest);
 
-            return await Promise.resolve(renderRequest);
+        switch(interaction.customId as BotInteraction) {
+            case BotInteraction.GuidanceScaleMinus:
+                const lowerScale = mutatedRequest.cfgScale -= this.#environmentSettings.stableDiffusionGuidanceScaleInterval;
+                mutatedRequest.cfgScale = lowerScale >= guidanceScaleMin ? lowerScale : mutatedRequest.cfgScale;
+                break;
+            case BotInteraction.GuidanceScalePlus:
+                const higherScale = mutatedRequest.cfgScale += this.#environmentSettings.stableDiffusionGuidanceScaleInterval;
+                mutatedRequest.cfgScale = higherScale <= guidanceScaleMax ? higherScale : mutatedRequest.cfgScale;
+                break;
+            default:
+                throw new Error('Invalid interaction for GuidanceScaleMutator.');
+        }
+
+        return await Promise.resolve(mutatedRequest);
     }
 }

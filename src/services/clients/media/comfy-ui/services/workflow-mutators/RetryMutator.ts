@@ -32,19 +32,21 @@ export class RetryMutator implements IWorkflowMutator {
     async mutate(renderRequest: SerializableRenderRequest,
         interaction: ButtonInteraction,
         workflow: IWorkflow): Promise<SerializableRenderRequest> {
-            renderRequest.refreshSeed();
-            renderRequest.refreshDuration();
+        const mutatedRequest = SerializableRenderRequest.fromSerializableRenderRequest(renderRequest);
 
-            const workflowDefaults = this.#workflowService.getWorkflowDefaults(workflow);
+        mutatedRequest.refreshSeed();
+        mutatedRequest.refreshDuration();
 
-            if (renderRequest.workflow !== workflow.name
-                && renderRequest.width !== undefined
-                && renderRequest.height !== undefined
-            ) {
-                renderRequest.height = workflowDefaults.height;
-                renderRequest.width = workflowDefaults.width;
-            }
+        const workflowDefaults = this.#workflowService.getWorkflowDefaults(workflow);
 
-            return await Promise.resolve(renderRequest);
+        if (mutatedRequest.workflow !== workflow.name
+            && mutatedRequest.width !== undefined
+            && mutatedRequest.height !== undefined
+        ) {
+            mutatedRequest.height = workflowDefaults.height;
+            mutatedRequest.width = workflowDefaults.width;
+        }
+
+        return await Promise.resolve(mutatedRequest);
     }
 }

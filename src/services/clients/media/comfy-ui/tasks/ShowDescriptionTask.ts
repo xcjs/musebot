@@ -4,13 +4,13 @@ import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
 import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
+import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { IShowSourceTask } from '../../tasks/IShowSourceTask.js';
 import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
-import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 
-export class ComfyUiShowSourceTask extends ComfyUiBaseTask implements IShowSourceTask {
+export class ShowDescriptionTask extends BaseTask<void> implements IShowSourceTask {
     #comfyUiReplyService: ComfyUiReplyService;
     #replyService: IReplyService;
     #logger: ILogger;

@@ -1,4 +1,3 @@
-import { BotInteraction } from '../../../../../enums/BotInteraction.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
@@ -18,8 +17,6 @@ export abstract class ComfyUiBaseTask extends BaseTask<void> {
     workflowService: IWorkflowService;
     comfyUiReplyService: ComfyUiReplyService;
     replyService: IReplyService;
-
-    botInteraction: BotInteraction;
 
     #logger: ILogger;
 
