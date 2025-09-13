@@ -8,13 +8,17 @@ import { IWorkflow } from '../../models/IWorkflow.js';
 import { SerializableRenderRequest } from '../../models/SerializableRenderRequest.js';
 import { IWorkflowMutator } from './IWorkflowMutator.js';
 
-export class MessageToImageMutator implements IWorkflowMutator {
+export class MessageToMediaMutator implements IWorkflowMutator {
     get interactions(): BotInteraction[] {
         return [BotInteraction.Message];
     }
 
     get types(): SupportedFeature[] {
-        return [SupportedFeature.Txt2Img];
+        return [
+            SupportedFeature.Txt2Audio,
+            SupportedFeature.Txt2Img,
+            SupportedFeature.Txt2Vid
+        ];
     }
 
     get contentMessage() {

@@ -40,7 +40,7 @@ import { IWorkflowService } from './clients/media/comfy-ui/services/IWorkflowSer
 import { GuidanceScaleMutator } from './clients/media/comfy-ui/services/workflow-mutators/GuidanceScaleMutator.js';
 import { IWorkflowMutator } from './clients/media/comfy-ui/services/workflow-mutators/IWorkflowMutator.js';
 import { JsonMutator } from './clients/media/comfy-ui/services/workflow-mutators/JsonMutator.js';
-import { MessageToImageMutator } from './clients/media/comfy-ui/services/workflow-mutators/MessageToImageMutator.js';
+import { MessageToMediaMutator } from './clients/media/comfy-ui/services/workflow-mutators/MessageToMediaMutator.js';
 import { MessageToMusicMutator } from './clients/media/comfy-ui/services/workflow-mutators/MessageToMusicMutator.js';
 import { RetryMutator } from './clients/media/comfy-ui/services/workflow-mutators/RetryMutator.js';
 import { WorkflowService } from './clients/media/comfy-ui/services/WorkflowService.js';
@@ -248,7 +248,7 @@ export class ServiceContainer implements IServiceContainer {
         const mutators: IWorkflowMutator[] = [
             new GuidanceScaleMutator(this),
             new JsonMutator(this),
-            new MessageToImageMutator(this),
+            new MessageToMediaMutator(this),
             new MessageToMusicMutator(this),
             new RetryMutator(this)
         ];
