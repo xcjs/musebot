@@ -27,6 +27,7 @@ import { IGenerativeChatClient } from './clients/chat/IGenerativeChatClient.js';
 import { IReplyService } from './clients/chat/IReplyService.js';
 import { ITypingService } from './clients/chat/ITypingService.js';
 import { IReplyTask } from './clients/chat/tasks/IReplyTask.js';
+import { ShowHelpTask } from './clients/internal/tasks/ShowHelpTask.js';
 import { TextHelpService } from './clients/llm/help/TextHelpService.js';
 import { OllamaClient } from './clients/llm/ollama/OllamaClient.js';
 import { OllamaEmojiResponseTask } from './clients/llm/ollama/tasks/OllamaEmojiResponseTask.js';
@@ -219,8 +220,12 @@ export class ServiceContainer implements IServiceContainer {
     getInteractionTask(interaction: ButtonInteraction): BaseTask<unknown> {
         switch(this.#environmentSettings.botFunction) {
             case BotFunction.Chat:
-
-                break;
+                switch (interaction.customId as BotInteraction) {
+                    case BotInteraction.Help:
+                        return new ShowHelpTask(this, interaction);
+                    default:
+                        throw this.#taskNotConfiguredError;
+                }
             case BotFunction.Media:
                 switch(interaction.customId as BotInteraction) {
                     case BotInteraction.Retry:
@@ -229,6 +234,8 @@ export class ServiceContainer implements IServiceContainer {
                         return new ComfyUiInteractionTask(this, interaction);
                     case BotInteraction.ShowSource:
                         return new ShowDescriptionTask(this, interaction);
+                    case BotInteraction.Help:
+                        return new ShowHelpTask(this, interaction);
                     default:
                         throw this.#taskNotConfiguredError;
                 }
