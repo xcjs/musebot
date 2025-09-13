@@ -22,13 +22,17 @@ export class RetryMutator implements IWorkflowMutator {
         ];
     }
 
+    get contentMessage(): string {
+        return this.#contentMessage;
+    }
+
     #workflowService: IWorkflowService;
+    #contentMessage = '';
 
     constructor(services: IServiceContainer) {
         this.#workflowService = services.workflowService;
     }
 
-    // Method signature required for interface.
     async mutate(renderRequest: SerializableRenderRequest,
         interaction: ButtonInteraction,
         workflow: IWorkflow): Promise<SerializableRenderRequest> {
@@ -46,6 +50,9 @@ export class RetryMutator implements IWorkflowMutator {
             mutatedRequest.height = workflowDefaults.height;
             mutatedRequest.width = workflowDefaults.width;
         }
+
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string
+        this.#contentMessage = `${interaction.member?.user.toString() || 'You'} retried \`${mutatedRequest.prompt }\``
 
         return await Promise.resolve(mutatedRequest);
     }

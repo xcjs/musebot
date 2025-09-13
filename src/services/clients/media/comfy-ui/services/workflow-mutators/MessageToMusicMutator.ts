@@ -18,6 +18,10 @@ export class MessageToMusicMutator implements IWorkflowMutator {
         return [SupportedFeature.Txt2Music];
     }
 
+    get contentMessage() {
+        return '';
+    }
+
     #replyService: IReplyService;
 
     constructor(services: IServiceContainer) {

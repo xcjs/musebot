@@ -23,6 +23,10 @@ export class JsonMutator implements IWorkflowMutator {
         ];
     }
 
+    get contentMessage() {
+        return '';
+    }
+
     #replyService: IReplyService;
 
     constructor(services: IServiceContainer) {

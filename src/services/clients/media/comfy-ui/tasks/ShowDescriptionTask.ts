@@ -7,10 +7,9 @@ import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
-import { IShowSourceTask } from '../../tasks/IShowSourceTask.js';
 import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
 
-export class ShowDescriptionTask extends BaseTask<void> implements IShowSourceTask {
+export class ShowDescriptionTask extends BaseTask<void> {
     #comfyUiReplyService: ComfyUiReplyService;
     #replyService: IReplyService;
     #logger: ILogger;

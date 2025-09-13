@@ -17,6 +17,10 @@ export class MessageToImageMutator implements IWorkflowMutator {
         return [SupportedFeature.Txt2Img];
     }
 
+    get contentMessage() {
+        return '';
+    }
+
     #replyService: IReplyService;
 
     constructor(services: IServiceContainer) {

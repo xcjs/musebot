@@ -26,7 +26,13 @@ export class GuidanceScaleMutator implements IWorkflowMutator {
         ];
     }
 
+    get contentMessage(): string {
+        return this.#contentMessage;
+    }
+
     #environmentSettings: IEnvironmentSettings;
+
+    #contentMessage = '';
 
     constructor(services: IServiceContainer) {
         this.#environmentSettings = services.environmentSettings;
@@ -43,10 +49,16 @@ export class GuidanceScaleMutator implements IWorkflowMutator {
             case BotInteraction.GuidanceScaleMinus:
                 const lowerScale = mutatedRequest.cfgScale -= this.#environmentSettings.stableDiffusionGuidanceScaleInterval;
                 mutatedRequest.cfgScale = lowerScale >= guidanceScaleMin ? lowerScale : mutatedRequest.cfgScale;
+
+                // eslint-disable-next-line @typescript-eslint/no-base-to-string
+                this.#contentMessage = this.#contentMessage = `${interaction.member?.user.toString() || 'You'} decreased the guidance scale from \`${renderRequest.cfgScale}\` to \`${ mutatedRequest.cfgScale }\`.`
                 break;
             case BotInteraction.GuidanceScalePlus:
                 const higherScale = mutatedRequest.cfgScale += this.#environmentSettings.stableDiffusionGuidanceScaleInterval;
                 mutatedRequest.cfgScale = higherScale <= guidanceScaleMax ? higherScale : mutatedRequest.cfgScale;
+
+                // eslint-disable-next-line @typescript-eslint/no-base-to-string
+                this.#contentMessage = this.#contentMessage = `${interaction.member?.user.toString() || 'You'} increased the guidance scale from \`${renderRequest.cfgScale}\` to \`${mutatedRequest.cfgScale}\`.`
                 break;
             default:
                 throw new Error('Invalid interaction for GuidanceScaleMutator.');
