@@ -81,7 +81,7 @@ export class ComfyUiMessageTask extends ComfyUiBaseTask {
             const prompt = this.workflowService.renderWorkflow(workflow, renderRequest);
 
             renderRequests.push(renderRequest);
-            prompts.push(prompt)
+            prompts.push(prompt);
         }
 
         if(renderRequests.length === 0 || prompts.length === 0) {
