@@ -5,9 +5,10 @@ import {
     MessageReaction,
     ReactionEmoji,
     User} from 'discord.js';
-import { Message as OllamaMessage } from 'ollama';
+import { GenerateRequest, GenerateResponse, Message as OllamaMessage } from 'ollama';
 
 import { BotInteraction } from '../enums/BotInteraction.js';
+import { IHttpExchange } from '../models/IHttpExchange.js';
 import { ComfyUiReplyService } from './clients/chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IActionRowBuilderFactory } from './clients/chat/discord/components/IActionRowBuilderFactory.js';
 import { OllamaReplyService } from './clients/chat/discord/ollama/OllamaReplyService.js';
@@ -66,6 +67,7 @@ export interface IServiceContainer {
 
     getImg2ImgRenderTask(interaction: ButtonInteraction, workflow: IWorkflow): ComfyUiImg2ImgRenderTask;
     getEmojiReactionRenderTask(interaction: DiscordMessage, emoji: ReactionEmoji, userOverride: User): IEmojiReactionRenderTask;
+    getLlmGenerateTask(prompt: string): BaseTask<IHttpExchange<GenerateRequest, GenerateResponse>>;
     getLlmPromptResponseTask(message: DiscordMessage, context: OllamaMessage[]): IPromptResponseTask;
     getLlmEmojiResponseTask(reaction: MessageReaction, user: User, context: OllamaMessage[]): IEmojiResponseTask;
 

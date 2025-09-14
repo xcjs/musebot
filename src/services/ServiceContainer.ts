@@ -6,10 +6,11 @@ import {
     MessageReaction,
     Partials,
     ReactionEmoji,    User} from 'discord.js';
-import { Message as OllamaMessage } from 'ollama';
+import { GenerateRequest, GenerateResponse, Message as OllamaMessage } from 'ollama';
 
 import { BotFunction } from '../enums/BotFunction.js';
 import { BotInteraction } from '../enums/BotInteraction.js';
+import { IHttpExchange } from '../models/IHttpExchange.js';
 import { getRandomArrayEntry } from '../utilities/random-utilities.js';
 import { ComfyUiReplyService } from './clients/chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { ActionRowBuilderFactory } from './clients/chat/discord/components/ActionRowBuilderFactory.js';
@@ -28,12 +29,14 @@ import { ShowHelpTask } from './clients/internal/tasks/ShowHelpTask.js';
 import { TextHelpService } from './clients/llm/help/TextHelpService.js';
 import { OllamaClient } from './clients/llm/ollama/OllamaClient.js';
 import { OllamaEmojiResponseTask } from './clients/llm/ollama/tasks/OllamaEmojiResponseTask.js';
+import { OllamaGenerateTask } from './clients/llm/ollama/tasks/OllamaGenerateTask.js';
 import { OllamaPromptResponseTask } from './clients/llm/ollama/tasks/OllamaPromptResponseTask.js';
 import { IEmojiResponseTask } from './clients/llm/tasks/IEmojiResponseTask.js';
 import { IPromptResponseTask } from './clients/llm/tasks/IPromptResponseTask.js';
 import { ComfyUiClient } from './clients/media/comfy-ui/ComfyUiClient.js';
 import { IWorkflow } from './clients/media/comfy-ui/models/IWorkflow.js';
 import { IWorkflowService } from './clients/media/comfy-ui/services/IWorkflowService.js';
+import { ExpandPromptMutator } from './clients/media/comfy-ui/services/workflow-mutators/ExpandPromptMutator.js';
 import { GuidanceScaleMutator } from './clients/media/comfy-ui/services/workflow-mutators/GuidanceScaleMutator.js';
 import { IWorkflowMutator } from './clients/media/comfy-ui/services/workflow-mutators/IWorkflowMutator.js';
 import { JsonMutator } from './clients/media/comfy-ui/services/workflow-mutators/JsonMutator.js';
@@ -179,6 +182,14 @@ export class ServiceContainer implements IServiceContainer {
         return new ComfyUiImg2ImgRenderTask(this, interaction, workflow);
     }
 
+    getLlmGenerateTask(prompt: string): BaseTask<IHttpExchange<GenerateRequest, GenerateResponse>> {
+        if(!this.featureService.hasFeature(SupportedFeature.Txt2Txt)) {
+            throw this.#taskNotConfiguredError;
+        }
+
+        return new OllamaGenerateTask(this, prompt);
+    }
+
     getLlmPromptResponseTask(message: DiscordMessage, context: OllamaMessage[]): IPromptResponseTask {
         if(!this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
             throw this.#taskNotConfiguredError;
@@ -221,6 +232,7 @@ export class ServiceContainer implements IServiceContainer {
                     case BotInteraction.Retry:
                     case BotInteraction.GuidanceScaleMinus:
                     case BotInteraction.GuidanceScalePlus:
+                    case BotInteraction.ExpandPrompt:
                         return new ComfyUiInteractionTask(this, interaction);
                     case BotInteraction.ShowSource:
                         return new ShowDescriptionTask(this, interaction);
@@ -240,6 +252,7 @@ export class ServiceContainer implements IServiceContainer {
             new JsonMutator(this),
             new MessageToMediaMutator(this),
             new MessageToMusicMutator(this),
+            new ExpandPromptMutator(this),
             new RetryMutator(this)
         ];
 
