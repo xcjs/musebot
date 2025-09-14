@@ -1,5 +1,4 @@
 import {
-    BaseMessageOptions,
     ButtonInteraction,
     Client as DiscordClient,
     GatewayIntentBits,
@@ -22,11 +21,9 @@ import { OllamaReplyService } from './clients/chat/discord/ollama/OllamaReplySer
 import { OllamaStreamingReplyService } from './clients/chat/discord/ollama/OllamaStreamingReplyService.js';
 import { ReplyService } from './clients/chat/discord/replies/ReplyService.js';
 import { TypingService } from './clients/chat/discord/services/TypingService.js';
-import { ReplyTask } from './clients/chat/discord/tasks/ReplyTask.js';
 import { IGenerativeChatClient } from './clients/chat/IGenerativeChatClient.js';
 import { IReplyService } from './clients/chat/IReplyService.js';
 import { ITypingService } from './clients/chat/ITypingService.js';
-import { IReplyTask } from './clients/chat/tasks/IReplyTask.js';
 import { ShowHelpTask } from './clients/internal/tasks/ShowHelpTask.js';
 import { TextHelpService } from './clients/llm/help/TextHelpService.js';
 import { OllamaClient } from './clients/llm/ollama/OllamaClient.js';
@@ -150,13 +147,6 @@ export class ServiceContainer implements IServiceContainer {
     // Factories --------------------------------------------------------------/
     getLogger(prefix: string): ILogger {
         return new Logger(prefix);
-    }
-
-    getReplyTask(
-        interaction: DiscordMessage | ButtonInteraction,
-        reply: BaseMessageOptions
-        ): IReplyTask {
-        return new ReplyTask(this, interaction, reply);
     }
 
     getAttachRenderTask(
