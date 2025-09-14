@@ -57,7 +57,7 @@ export class GenerativeChatClient extends BaseDiscordClient {
         this.logger.info('Replying to message...');
 
         const promptResponseTask = this.#services.getLlmPromptResponseTask(message, this.#context) as BaseTask<OllamaMessage[]>;
-        promptResponseTask.onSuccess = (context: OllamaMessage[]) => { this.#context = this.#mergeContexts(this.#context, context); };
+        promptResponseTask.onSuccess = (payload: OllamaMessage[]) => { this.#context = this.#mergeContexts(this.#context, payload); };
 
         this.#taskQueue.add(promptResponseTask);
         await this.#typingService.startTyping(message);
@@ -151,7 +151,7 @@ export class GenerativeChatClient extends BaseDiscordClient {
 
         await this.#typingService.startTyping(reaction.message as DiscordMessage);
 
-        emojiResponseTask.onSuccess = (context: OllamaMessage[]) => { this.#context = this.#mergeContexts(this.#context, context); };
+        emojiResponseTask.onSuccess = (payload: OllamaMessage[]) => { this.#context = this.#mergeContexts(this.#context, payload); };
     }
 
     #mergeContexts(oldContext: OllamaMessage[], newContext: OllamaMessage[]): OllamaMessage[] {

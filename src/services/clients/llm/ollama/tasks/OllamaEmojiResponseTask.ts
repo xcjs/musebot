@@ -21,7 +21,7 @@ export class OllamaEmojiResponseTask extends BaseTask<OllamaMessage[]> implement
         return `${this.#environmentSettings.ollamaTaskChannel}_${this.#ollamaClient.host}`;
     }
 
-    override set onSuccess(callback: (context: OllamaMessage[]) => void) {
+    override set onSuccess(callback: (payload: OllamaMessage[]) => void) {
         this.#onSuccess = callback;
     }
 
@@ -41,7 +41,7 @@ export class OllamaEmojiResponseTask extends BaseTask<OllamaMessage[]> implement
 
     #logger: ILogger;
 
-    #onSuccess: (context: OllamaMessage[]) => void = () => { };
+    #onSuccess: (payload: OllamaMessage[]) => void = () => { };
 
     constructor(
         services: IServiceContainer,

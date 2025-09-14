@@ -56,7 +56,7 @@ export abstract class BaseTask<T> {
         return this.#startedTime;
     }
 
-    set onSuccess(callback: (context: T) => void) { }
+    set onSuccess(callback: (payload: T) => void) { }
 
     #environmentSettings: IEnvironmentSettings;
     #logger: ILogger;
