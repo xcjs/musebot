@@ -72,7 +72,10 @@ export class ComfyUiReactionTask extends ComfyUiBaseTask {
         const username =
             this.#userOverride !== null
                 ? this.#replyService.mention(this.#userOverride)
-                : this.#reaction.users.cache.first().toString();
+                : this.#reaction.users.cache.hasAny()
+                    ? this.#reaction.users.cache.first().toString()
+                    : 'You';
+
 
         let content = '';
         let emojiText = this.#reaction.emoji.name;
