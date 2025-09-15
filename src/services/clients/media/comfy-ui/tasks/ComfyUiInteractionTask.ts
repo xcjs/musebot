@@ -41,6 +41,11 @@ export class ComfyUiInteractionTask extends ComfyUiBaseTask {
         const attachments = this.#replyService.getAttachments(this.#interaction)
             .filter(attachment => attachment.description.length > 0);
 
+        if(attachments.length === 0) {
+            // No attachments means there's no work to do.
+            return;
+        }
+
         const renderRequests = attachments
             .map(attachment => SerializableRenderRequest.fromJson(attachment.description));
 
