@@ -3,6 +3,8 @@ import { Interaction } from 'discord.js';
 import nodePackage from '../../../../../package.json' with { type: 'json' };
 import { DEVELOPER } from '../../../../constants/Globals.js';
 import { IEnvironmentSettings } from '../../../environment-settings/IEnvironmentSettings.js';
+import { SupportedFeature } from '../../../features/enum/SupportedFeature.js';
+import { IFeatureService } from '../../../features/IFeatureService.js';
 import { BaseHelpService } from '../../../help/BaseHelpService.js';
 import { IHelpService } from '../../../help/IHelpService.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
@@ -15,6 +17,7 @@ export class MediaHelpService extends BaseHelpService implements IHelpService {
     #services: IServiceContainer;
 
     #environmentSettings: IEnvironmentSettings;
+    #featureService: IFeatureService;
     #replyService: IReplyService;
 
     constructor(services: IServiceContainer) {
@@ -23,6 +26,7 @@ export class MediaHelpService extends BaseHelpService implements IHelpService {
         this.#services = services;
 
         this.#environmentSettings = services.environmentSettings;
+        this.#featureService = services.featureService;
         this.#replyService = services.replyService;
     }
 
@@ -39,11 +43,15 @@ export class MediaHelpService extends BaseHelpService implements IHelpService {
             + ' Additionally, there are various button-based interactions you can use to adjust the image generated after interacting with the bot at least once: '
             + '\n\n';
 
-        const actionRows = new StatefulImageGenerationActionRows(this.#services, null);
-        const img2ImgRows = new Img2ImgActionRow(this.#services);
+        if(this.#featureService.hasFeature(SupportedFeature.Txt2Img)) {
+            const actionRows = new StatefulImageGenerationActionRows(this.#services, null);
+            helpArticle += await this.buildHelpArticleFromActionRows(actionRows);
+        }
 
-        helpArticle += await this.buildHelpArticleFromActionRows(actionRows);
-        helpArticle += await this.buildHelpArticleFromActionRows(img2ImgRows);
+        if(this.#featureService.hasFeature(SupportedFeature.Img2Img)) {
+            const actionRows = new Img2ImgActionRow(this.#services);
+            helpArticle += await this.buildHelpArticleFromActionRows(actionRows);
+        }
 
         return helpArticle;
     }
