@@ -3,7 +3,6 @@ import {
     Client as DiscordClient,
     Message as DiscordMessage,
     MessageReaction,
-    ReactionEmoji,
     User} from 'discord.js';
 import { GenerateRequest, GenerateResponse, Message as OllamaMessage } from 'ollama';
 
@@ -25,7 +24,6 @@ import { IWorkflowService } from './clients/media/comfy-ui/services/IWorkflowSer
 import { IWorkflowMutator } from './clients/media/comfy-ui/services/workflow-mutators/IWorkflowMutator.js';
 import { ComfyUiImg2ImgRenderTask } from './clients/media/comfy-ui/tasks/ComfyUiImg2ImgRenderTask.js';
 import { IAttachRenderTask } from './clients/media/tasks/IAttachRenderTask.js';
-import { IEmojiReactionRenderTask } from './clients/media/tasks/IEmojiReactionRenderTask.js';
 import { IEnvironmentSettings } from './environment-settings/IEnvironmentSettings.js';
 import { IContentTypeService } from './features/IContentTypeService.js';
 import { IFeatureService } from './features/IFeatureService.js';
@@ -65,14 +63,14 @@ export interface IServiceContainer {
         prompt: string,
         content: string | null): IAttachRenderTask;
 
-    getImg2ImgRenderTask(interaction: ButtonInteraction, workflow: IWorkflow): ComfyUiImg2ImgRenderTask;
-    getEmojiReactionRenderTask(interaction: DiscordMessage, emoji: ReactionEmoji, userOverride: User): IEmojiReactionRenderTask;
     getLlmGenerateTask(prompt: string): BaseTask<IHttpExchange<GenerateRequest, GenerateResponse>>;
     getLlmPromptResponseTask(message: DiscordMessage, context: OllamaMessage[]): IPromptResponseTask;
     getLlmEmojiResponseTask(reaction: MessageReaction, user: User, context: OllamaMessage[]): IEmojiResponseTask;
 
     getMessageTask(message: DiscordMessage): BaseTask<unknown>;
-    getInteractionTask(interaction: ButtonInteraction): BaseTask<unknown>
+    getInteractionTask(interaction: ButtonInteraction): BaseTask<unknown>;
+    getMessageReactionTask(reaction: MessageReaction, user: User, context: OllamaMessage[]): BaseTask<unknown>;
+    getImg2ImgRenderTask(interaction: ButtonInteraction, workflow: IWorkflow): ComfyUiImg2ImgRenderTask;
 
     getWorkflowMutator(interactionType: BotInteraction, workflow: IWorkflow): IWorkflowMutator;
 }

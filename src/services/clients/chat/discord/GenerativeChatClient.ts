@@ -146,7 +146,7 @@ export class GenerativeChatClient extends BaseDiscordClient {
             return;
         }
 
-        const emojiResponseTask = this.#services.getLlmEmojiResponseTask(reaction, user, this.#context);
+        const emojiResponseTask = this.#services.getMessageReactionTask(reaction, user, this.#context);
         this.#taskQueue.add(emojiResponseTask as BaseTask<OllamaMessage[]>);
 
         await this.#typingService.startTyping(reaction.message as DiscordMessage);

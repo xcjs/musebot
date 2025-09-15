@@ -1,4 +1,4 @@
-import { AttachmentBuilder, ButtonInteraction, Message } from 'discord.js';
+import { AttachmentBuilder, ButtonInteraction, Message, MessageReaction } from 'discord.js';
 
 import { BotInteraction } from '../../../../../../enums/BotInteraction.js';
 import { SupportedFeature } from '../../../../../features/enum/SupportedFeature.js';
@@ -11,6 +11,6 @@ export interface IWorkflowMutator {
     contentMessage: string;
     additionalAttachments: AttachmentBuilder[];
     mutate(renderRequest: SerializableRenderRequest,
-        interaction: Message | ButtonInteraction,
+        interaction: Message | ButtonInteraction | MessageReaction,
         workflow: IWorkflow): Promise<SerializableRenderRequest | null>;
 }

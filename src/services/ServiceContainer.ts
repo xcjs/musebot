@@ -5,7 +5,7 @@ import {
     Message as DiscordMessage,
     MessageReaction,
     Partials,
-    ReactionEmoji,    User} from 'discord.js';
+    User} from 'discord.js';
 import { GenerateRequest, GenerateResponse, Message as OllamaMessage } from 'ollama';
 
 import { BotFunction } from '../enums/BotFunction.js';
@@ -46,14 +46,13 @@ import { RandomPromptMutator } from './clients/media/comfy-ui/services/workflow-
 import { RetryMutator } from './clients/media/comfy-ui/services/workflow-mutators/RetryMutator.js';
 import { WorkflowService } from './clients/media/comfy-ui/services/WorkflowService.js';
 import { ComfyUiAttachRenderTask } from './clients/media/comfy-ui/tasks/ComfyUiAttachRenderTask.js';
-import { ComfyUiEmojiReactionRenderTask } from './clients/media/comfy-ui/tasks/ComfyUiEmojiReactionRenderTask.js';
 import { ComfyUiImg2ImgRenderTask } from './clients/media/comfy-ui/tasks/ComfyUiImg2ImgRenderTask.js';
 import { ComfyUiInteractionTask } from './clients/media/comfy-ui/tasks/ComfyUiInteractionTask.js';
 import { ComfyUiMessageTask } from './clients/media/comfy-ui/tasks/ComfyUiMessageTask.js';
+import { ComfyUiReactionTask } from './clients/media/comfy-ui/tasks/ComfyUiReactionTask.js';
 import { ShowDescriptionTask } from './clients/media/comfy-ui/tasks/ShowDescriptionTask.js';
 import { ImageHelpService } from './clients/media/help/ImageHelpService.js';
 import { IAttachRenderTask } from './clients/media/tasks/IAttachRenderTask.js';
-import { IEmojiReactionRenderTask } from './clients/media/tasks/IEmojiReactionRenderTask.js';
 import { EnvironmentSettings } from './environment-settings/EnvironmentSettings.js';
 import { IEnvironmentSettings } from './environment-settings/IEnvironmentSettings.js';
 import { ContentTypeService } from './features/ContentTypeService.js';
@@ -165,15 +164,6 @@ export class ServiceContainer implements IServiceContainer {
         return new ComfyUiAttachRenderTask(this, interaction, { content }, prompt);
     }
 
-    getEmojiReactionRenderTask(interaction: DiscordMessage, emoji: ReactionEmoji, userOverride: User): IEmojiReactionRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)
-            || !this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
-            throw this.#taskNotConfiguredError;
-        }
-
-        return new ComfyUiEmojiReactionRenderTask(this, interaction, emoji, userOverride);
-    }
-
     getImg2ImgRenderTask(interaction: ButtonInteraction, workflow: IWorkflow) {
         if(!this.#featureService.hasFeature(SupportedFeature.Img2Img)
             && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
@@ -243,6 +233,17 @@ export class ServiceContainer implements IServiceContainer {
                     default:
                         throw this.#taskNotConfiguredError;
                 }
+            default:
+                throw this.#taskNotConfiguredError;
+        }
+    }
+
+    getMessageReactionTask(reaction: MessageReaction, user: User, context: OllamaMessage[] = []): BaseTask<unknown> {
+        switch(this.environmentSettings.botFunction) {
+            case BotFunction.Chat:
+                return new OllamaEmojiResponseTask(this, reaction, user, context);
+            case BotFunction.Media:
+                return new ComfyUiReactionTask(this, reaction)
             default:
                 throw this.#taskNotConfiguredError;
         }

@@ -1,9 +1,7 @@
-import { ButtonInteraction, Client as DiscordClient, Events, Message as DiscordMessage, MessageReaction, ReactionEmoji,User } from 'discord.js';
-import { Message as OllamaMessage } from 'ollama';
+import { ButtonInteraction, Client as DiscordClient, Events, Message as DiscordMessage, MessageReaction, User } from 'discord.js';
 
 import { BotInteraction } from '../../../../enums/BotInteraction.js';
 import { IEnvironmentSettings } from '../../../environment-settings/IEnvironmentSettings.js';
-import { IHelpService } from '../../../help/IHelpService.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
 import { ITaskQueue } from '../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
@@ -22,7 +20,6 @@ export class GenerativeMediaChatClient extends BaseDiscordClient {
     #replyService: IReplyService;
     #typingService: ITypingService;
     #workflowService: IWorkflowService;
-    #helpService: IHelpService;
     #taskQueue: ITaskQueue;
 
     constructor(services: IServiceContainer) {
@@ -35,7 +32,6 @@ export class GenerativeMediaChatClient extends BaseDiscordClient {
         this.#replyService = services.replyService;
         this.#typingService = services.typingService;
         this.#workflowService = services.workflowService;
-        this.#helpService = services.helpService;
         this.#taskQueue = services.taskQueue;
 
         this.logger = services.getLogger('GenerativeMediaChatClient');
@@ -63,13 +59,7 @@ export class GenerativeMediaChatClient extends BaseDiscordClient {
         this.logger.info('Replying to message...');
         await this.#typingService.startTyping(message);
 
-        if(this.#replyService.getMessageWithoutBotMentions(message).startsWith('{')) {
-
-        } else {
-
-        }
         this.#taskQueue.add(this.#services.getMessageTask(message) as BaseTask<void>);
-
     }
 
     async #onInteraction(interaction: ButtonInteraction): Promise<void> {
@@ -138,9 +128,9 @@ export class GenerativeMediaChatClient extends BaseDiscordClient {
 
         await this.#typingService.startTyping(reaction.message as DiscordMessage);
 
-        this.#taskQueue.add(this.#services.getEmojiReactionRenderTask(
-            reaction.message as DiscordMessage,
-            reaction.emoji as ReactionEmoji,
-            user) as BaseTask<OllamaMessage[]>);
+        this.#taskQueue.add(this.#services.getMessageReactionTask(
+            reaction,
+            user,
+            []) as BaseTask<void>);
     }
 }

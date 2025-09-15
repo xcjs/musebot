@@ -1,5 +1,5 @@
 import { Prompt } from 'comfy-ui-client';
-import { BaseMessageOptions, ButtonInteraction, Message, ReactionEmoji, User } from 'discord.js';
+import { BaseMessageOptions, Message, MessageReaction, User } from 'discord.js';
 
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
@@ -13,14 +13,13 @@ import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReply
 import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { OllamaClient } from '../../../llm/ollama/OllamaClient.js';
-import { IEmojiReactionRenderTask } from '../../tasks/IEmojiReactionRenderTask.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
 import { MediaCollectionResponse } from '../extensions/MediaResponse.js';
 import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 
-export class ComfyUiEmojiReactionRenderTask extends ComfyUiBaseTask implements IEmojiReactionRenderTask {
+export class ComfyUiReactionTask extends ComfyUiBaseTask {
     #environmentSettings: IEnvironmentSettings;
     #featureService: IFeatureService;
     #workflowService: IWorkflowService;
@@ -30,8 +29,7 @@ export class ComfyUiEmojiReactionRenderTask extends ComfyUiBaseTask implements I
     #ollamaClient: OllamaClient;
     #logger: ILogger;
 
-    #interaction: Message | ButtonInteraction;
-    #emoji: ReactionEmoji;
+    #reaction: MessageReaction;
     #userOverride: User | null;
 
     override get taskChannel(): string {
@@ -40,8 +38,7 @@ export class ComfyUiEmojiReactionRenderTask extends ComfyUiBaseTask implements I
 
     constructor(
         services: IServiceContainer,
-        interaction: Message | ButtonInteraction,
-        emoji: ReactionEmoji | null = null,
+        reaction: MessageReaction,
         userOverride: User | null = null) {
         super(services);
 
@@ -52,19 +49,18 @@ export class ComfyUiEmojiReactionRenderTask extends ComfyUiBaseTask implements I
         this.#comfyUiReplyService = services.comfyUiReplyService;
         this.#replyService = services.replyService;
         this.#ollamaClient = services.ollamaClient;
-        this.#logger = services.getLogger('ComfyUiEmojiReactionRenderTask');
+        this.#logger = services.getLogger('ComfyUiReactionTask');
 
-        this.#interaction = interaction;
-        this.#emoji = emoji;
+        this.#reaction = reaction;
         this.#userOverride = userOverride;
     }
 
     override async process(): Promise<void> {
         await super.process();
 
-        this.#logger.info('Processing a ComfyUiEmojiReactionRenderTask...');
+        this.#logger.info('Processing a ComfyUiReactionTask...');
 
-        const imageAttachments = this.#replyService.getImageAttachments(this.#interaction);
+        const imageAttachments = this.#replyService.getImageAttachments(this.#reaction.message as Message);
 
         if (imageAttachments.length === 0) {
             this.#logger.warn('No attachments were found - exiting the task.');
@@ -76,16 +72,14 @@ export class ComfyUiEmojiReactionRenderTask extends ComfyUiBaseTask implements I
         const username =
             this.#userOverride !== null
                 ? this.#replyService.mention(this.#userOverride)
-                : this.#interaction.member !== null
-                    ? this.#replyService.mention(this.#interaction.member.user as User)
-                    : 'You';
+                : this.#reaction.users.cache.first().toString();
 
         let content = '';
-        let emojiText = this.#emoji.name;
+        let emojiText = this.#reaction.emoji.name;
 
         if(this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
             this.#logger.info(`Text generation is supported - converting the emoji to plain text for better model compatibility.`);
-            const exchange = await this.#ollamaClient.sendMessage(`Tell me the name of the following emoji in as few words as possible: ${this.#emoji.name}.`, []);
+            const exchange = await this.#ollamaClient.sendMessage(`Tell me the name of the following emoji in as few words as possible: ${this.#reaction.emoji.name}.`, []);
             emojiText = exchange.exchange.response.message.content.trim();
             this.#logger.info(`The LLM responded with ${emojiText} as the converted text.`);
         }
@@ -98,11 +92,12 @@ export class ComfyUiEmojiReactionRenderTask extends ComfyUiBaseTask implements I
             const renderRequest = SerializableRenderRequest.fromJson(imageAttachment.description);
             const newPrompt = `${renderRequest.prompt}, ${emojiText}`;
 
-            content = `${username} re-rendered \`${renderRequest.prompt}\` as \`${newPrompt}\``.substring(0, DiscordConstants.ContentMaxLength);
+            content = `${username} retried \`${renderRequest.prompt}\` as \`${newPrompt}\``.substring(0, DiscordConstants.ContentMaxLength);
 
             const workflows = this.#workflowService.workflows.filter(x =>
-                x.type === SupportedFeature.Txt2Img
-                || x.type === SupportedFeature.Txt2Vid);
+                x.type.startsWith('txt2')
+                && x.type !== SupportedFeature.Txt2Txt
+                && x.type !== SupportedFeature.Txt2Music);
 
             const workflow = getRandomArrayEntry(workflows);
             const renderDefaults = this.#workflowService.getWorkflowDefaults(workflow);
@@ -140,14 +135,14 @@ export class ComfyUiEmojiReactionRenderTask extends ComfyUiBaseTask implements I
             response: imagesResponse
         };
 
-        await this.#comfyUiReplyService.reply(this.#interaction, reply, false, exchange);
+        await this.#comfyUiReplyService.reply(this.#reaction.message as Message, reply, false, exchange);
     }
 
     override async postProcess(): Promise<void> {
         await super.postProcess();
 
         if (this.taskStatus === TaskStatus.Dead) {
-            await this.#replyService.replyWithError(this.#interaction);
+            await this.#replyService.replyWithError(this.#reaction.message as Message);
         }
     }
 }
