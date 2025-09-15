@@ -11,7 +11,7 @@ import { StatefulImageGenerationActionRows } from '../../chat/discord/components
 import { DiscordConstants } from '../../chat/discord/enums/DiscordConstants.js';
 import { IReplyService } from '../../chat/IReplyService.js';
 
-export class ImageHelpService extends BaseHelpService implements IHelpService {
+export class MediaHelpService extends BaseHelpService implements IHelpService {
     #services: IServiceContainer;
 
     #environmentSettings: IEnvironmentSettings;

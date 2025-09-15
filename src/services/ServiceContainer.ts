@@ -51,7 +51,7 @@ import { ComfyUiInteractionTask } from './clients/media/comfy-ui/tasks/ComfyUiIn
 import { ComfyUiMessageTask } from './clients/media/comfy-ui/tasks/ComfyUiMessageTask.js';
 import { ComfyUiReactionTask } from './clients/media/comfy-ui/tasks/ComfyUiReactionTask.js';
 import { ShowDescriptionTask } from './clients/media/comfy-ui/tasks/ShowDescriptionTask.js';
-import { ImageHelpService } from './clients/media/help/ImageHelpService.js';
+import { MediaHelpService } from './clients/media/help/MediaHelpService.js';
 import { IAttachRenderTask } from './clients/media/tasks/IAttachRenderTask.js';
 import { EnvironmentSettings } from './environment-settings/EnvironmentSettings.js';
 import { IEnvironmentSettings } from './environment-settings/IEnvironmentSettings.js';
@@ -301,7 +301,7 @@ export class ServiceContainer implements IServiceContainer {
 
         switch (this.#environmentSettings.botFunction) {
             case BotFunction.Media:
-                this.#helpService = new ImageHelpService(this);
+                this.#helpService = new MediaHelpService(this);
                 this.#generativeChatClient = new GenerativeMediaChatClient(this);
                 break;
             case BotFunction.Chat:
