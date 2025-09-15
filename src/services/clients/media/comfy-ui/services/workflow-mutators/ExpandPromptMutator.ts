@@ -34,6 +34,7 @@ export class ExpandPromptMutator implements IWorkflowMutator {
     #services: IServiceContainer;
 
     #taskQueue: ITaskQueue;
+
     #contentMessage = '';
 
     constructor(services: IServiceContainer) {
