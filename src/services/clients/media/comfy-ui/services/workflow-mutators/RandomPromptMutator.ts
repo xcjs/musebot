@@ -60,8 +60,8 @@ export class RandomPromptMutator implements IWorkflowMutator {
         mutatedRequest.prompt = await this.#getRandomPrompt();
 
         this.#contentMessage = `Two AIs whisper to each other over the the ancient \`TCP/IP\` protocol.` +
-        // eslint-disable-next-line @typescript-eslint/no-base-to-string
-        ` They present ${interaction.member?.user.toString() || 'you'} with this.`;
+            // eslint-disable-next-line @typescript-eslint/no-base-to-string
+            ` They present ${interaction.member?.user.toString() || 'you'} with this.`;
 
         return await Promise.resolve(mutatedRequest);
     }
