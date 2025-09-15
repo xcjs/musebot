@@ -45,7 +45,7 @@ export class ExpandPromptMutator implements IWorkflowMutator {
         workflow: IWorkflow): Promise<SerializableRenderRequest> {
         const mutatedRequest = SerializableRenderRequest.fromSerializableRenderRequest(renderRequest);
 
-        mutatedRequest.prompt = await this.getExpandedPrompt(mutatedRequest.prompt);
+        mutatedRequest.prompt = await this.#getExpandedPrompt(mutatedRequest.prompt);
 
         // eslint-disable-next-line @typescript-eslint/no-base-to-string
         this.#contentMessage = `${interaction.member?.user.toString() || 'You'} expanded the detail in \`${renderRequest.prompt }\``
@@ -53,7 +53,7 @@ export class ExpandPromptMutator implements IWorkflowMutator {
         return await Promise.resolve(mutatedRequest);
     }
 
-    async getExpandedPrompt(prompt: string): Promise<string> {
+    async #getExpandedPrompt(prompt: string): Promise<string> {
         return new Promise((resolve) => {
             prompt = `The following is a prompt used to generate an image ` +
                 ` - expand it with meticulous detail so it can be rendered better: ${prompt}`;
