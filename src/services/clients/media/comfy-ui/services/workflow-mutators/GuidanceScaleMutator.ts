@@ -1,4 +1,4 @@
-import { ButtonInteraction } from 'discord.js';
+import { AttachmentBuilder, ButtonInteraction } from 'discord.js';
 
 import { BotInteraction } from '../../../../../../enums/BotInteraction.js';
 import { IEnvironmentSettings } from '../../../../../environment-settings/IEnvironmentSettings.js';
@@ -28,6 +28,10 @@ export class GuidanceScaleMutator implements IWorkflowMutator {
 
     get contentMessage(): string {
         return this.#contentMessage;
+    }
+
+    get additionalAttachments(): AttachmentBuilder[] {
+        return [];
     }
 
     #environmentSettings: IEnvironmentSettings;

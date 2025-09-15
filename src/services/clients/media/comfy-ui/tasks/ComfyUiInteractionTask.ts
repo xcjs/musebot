@@ -1,11 +1,12 @@
 import { Prompt } from 'comfy-ui-client';
-import { ButtonInteraction } from 'discord.js';
+import { AttachmentBuilder, ButtonInteraction } from 'discord.js';
 
 import { BotInteraction } from '../../../../../enums/BotInteraction.js';
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
+import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 import { MediaCollectionResponse } from '../extensions/MediaResponse.js';
 import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
@@ -50,6 +51,7 @@ export class ComfyUiInteractionTask extends ComfyUiBaseTask {
         let i = 0;
         const prompts: Prompt[] = [];
         let content: string = '';
+        let additionalAttachments: AttachmentBuilder[] = [];
 
         for (const workflow of workflows) {
             if(i >= renderRequests.length) {
@@ -61,6 +63,7 @@ export class ComfyUiInteractionTask extends ComfyUiBaseTask {
             const prompt = this.workflowService.renderWorkflow(workflow, renderRequest);
 
             content = mutator.contentMessage;
+            additionalAttachments = additionalAttachments.concat(mutator.additionalAttachments);
 
             prompts.push(prompt);
             i++;
@@ -72,7 +75,18 @@ export class ComfyUiInteractionTask extends ComfyUiBaseTask {
             response: mediaCollectionResponse
         };
 
-        await this.comfyUiReplyService.reply(this.#interaction, { content }, false, exchange);
+        if (additionalAttachments.length > DiscordConstants.MaxAttachmentsPerMessage) {
+            this.#logger.warn('The maximum attachment count has been exceeded:',
+                additionalAttachments.length,
+                DiscordConstants.MaxAttachmentsPerMessage);
+
+            additionalAttachments.length = DiscordConstants.ContentMaxLength;
+        }
+
+        await this.comfyUiReplyService.reply(this.#interaction, {
+            content,
+            files: additionalAttachments
+        }, false, exchange);
     }
 
     override async postProcess(): Promise<void> {

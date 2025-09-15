@@ -1,4 +1,4 @@
-import { Message } from 'discord.js';
+import { AttachmentBuilder, Message } from 'discord.js';
 
 import { BotInteraction } from '../../../../../../enums/BotInteraction.js';
 import { SupportedFeature } from '../../../../../features/enum/SupportedFeature.js';
@@ -25,6 +25,10 @@ export class JsonMutator implements IWorkflowMutator {
 
     get contentMessage() {
         return '';
+    }
+
+    get additionalAttachments(): AttachmentBuilder[] {
+        return [];
     }
 
     #replyService: IReplyService;

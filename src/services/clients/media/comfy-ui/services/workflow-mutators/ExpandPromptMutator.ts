@@ -1,4 +1,4 @@
-import { ButtonInteraction } from 'discord.js';
+import { AttachmentBuilder, ButtonInteraction } from 'discord.js';
 import { GenerateRequest, GenerateResponse } from 'ollama';
 
 import { BotInteraction } from '../../../../../../enums/BotInteraction.js';
@@ -25,6 +25,10 @@ export class ExpandPromptMutator implements IWorkflowMutator {
 
     get contentMessage(): string {
         return this.#contentMessage;
+    }
+
+    get additionalAttachments(): AttachmentBuilder[] {
+        return [];
     }
 
     #services: IServiceContainer;

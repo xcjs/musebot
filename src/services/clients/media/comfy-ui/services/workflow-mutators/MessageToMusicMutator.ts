@@ -1,4 +1,4 @@
-import { Message } from 'discord.js';
+import { AttachmentBuilder, Message } from 'discord.js';
 
 import { BotInteraction } from '../../../../../../enums/BotInteraction.js';
 import { getRandomInt } from '../../../../../../utilities/random-utilities.js';
@@ -20,6 +20,10 @@ export class MessageToMusicMutator implements IWorkflowMutator {
 
     get contentMessage() {
         return '';
+    }
+
+    get additionalAttachments(): AttachmentBuilder[] {
+        return [];
     }
 
     #replyService: IReplyService;

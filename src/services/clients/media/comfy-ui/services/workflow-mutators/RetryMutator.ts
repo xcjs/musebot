@@ -1,4 +1,4 @@
-import { ButtonInteraction } from 'discord.js';
+import { AttachmentBuilder, ButtonInteraction } from 'discord.js';
 
 import { BotInteraction } from '../../../../../../enums/BotInteraction.js';
 import { SupportedFeature } from '../../../../../features/enum/SupportedFeature.js';
@@ -24,6 +24,10 @@ export class RetryMutator implements IWorkflowMutator {
 
     get contentMessage(): string {
         return this.#contentMessage;
+    }
+
+    get additionalAttachments(): AttachmentBuilder[] {
+        return [];
     }
 
     #workflowService: IWorkflowService;

@@ -1,9 +1,12 @@
-import { ButtonInteraction } from 'discord.js';
+import { AttachmentBuilder, ButtonInteraction } from 'discord.js';
 import { GenerateRequest, GenerateResponse } from 'ollama';
 
+import { MAX_FILE_NAME_LENGTH, MAX_TEXT_LINE_LENGTH } from '../../../../../../constants/FileConstants.js';
 import { BotInteraction } from '../../../../../../enums/BotInteraction.js';
+import { BufferEncoding } from '../../../../../../enums/BufferEncoding.js';
 import { IHttpExchange } from '../../../../../../models/IHttpExchange.js';
 import { getRandomArrayEntry } from '../../../../../../utilities/random-utilities.js';
+import { wrapText } from '../../../../../../utilities/string-utilities.js';
 import { IEnvironmentSettings } from '../../../../../environment-settings/IEnvironmentSettings.js';
 import { SupportedFeature } from '../../../../../features/enum/SupportedFeature.js';
 import { IServiceContainer } from '../../../../../IServiceContainer.js';
@@ -29,12 +32,17 @@ export class RandomPromptMutator implements IWorkflowMutator {
         return this.#contentMessage;
     }
 
+    get additionalAttachments(): AttachmentBuilder[] {
+        return this.#additionalAttachments;
+    }
+
     #services: IServiceContainer;
 
     #environmentSettings: IEnvironmentSettings;
     #taskQueue: ITaskQueue;
 
     #contentMessage = '';
+    #additionalAttachments: AttachmentBuilder[] = [];
 
     constructor(services: IServiceContainer) {
         this.#services = services;
@@ -64,11 +72,23 @@ export class RandomPromptMutator implements IWorkflowMutator {
             const task = this.#services.getLlmGenerateTask(prompt);
 
             const callback = (payload: IHttpExchange<GenerateRequest, GenerateResponse>) => {
+                this.additionalAttachments.push(
+                    this.#packageExpandedPromptAsMarkdown(payload.response.response));
+
                 resolve(payload.response.response);
             };
 
             task.onSuccess = callback;
             this.#taskQueue.add(task);
+        });
+    }
+
+    #packageExpandedPromptAsMarkdown(prompt: string): AttachmentBuilder {
+        const promptBuffer = Buffer.from(wrapText(prompt, MAX_TEXT_LINE_LENGTH).trim(),
+            BufferEncoding.UTF8);
+
+        return new AttachmentBuilder(promptBuffer, {
+            name: `${prompt.substring(0, MAX_FILE_NAME_LENGTH)}.md`
         });
     }
 }
