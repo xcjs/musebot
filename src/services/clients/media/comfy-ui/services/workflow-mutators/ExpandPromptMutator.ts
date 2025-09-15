@@ -44,12 +44,10 @@ export class ExpandPromptMutator implements IWorkflowMutator {
 
     async mutate(renderRequest: SerializableRenderRequest,
         interaction: ButtonInteraction,
-        // This parameter is required by the interface.
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         workflow: IWorkflow): Promise<SerializableRenderRequest> {
         const mutatedRequest = SerializableRenderRequest.fromSerializableRenderRequest(renderRequest);
 
-        mutatedRequest.prompt = await this.#getExpandedPrompt(mutatedRequest.prompt);
+        mutatedRequest.prompt = await this.#getExpandedPrompt(mutatedRequest.prompt, workflow.type);
 
         // eslint-disable-next-line @typescript-eslint/no-base-to-string
         this.#contentMessage = `${interaction.member?.user.toString() || 'You'} expanded the detail in \`${renderRequest.prompt }\``
@@ -57,10 +55,10 @@ export class ExpandPromptMutator implements IWorkflowMutator {
         return await Promise.resolve(mutatedRequest);
     }
 
-    async #getExpandedPrompt(prompt: string): Promise<string> {
+    async #getExpandedPrompt(prompt: string, feature: SupportedFeature): Promise<string> {
         return new Promise((resolve) => {
-            prompt = `The following is a prompt used to generate an image ` +
-                ` - expand it with meticulous detail so it can be rendered better: ${prompt}`;
+            prompt = `The following is a prompt used to generate a piece of media from ${feature} ` +
+                ` - expand it with meticulous detail so it can be generated better: ${prompt}`;
 
             const task = this.#services.getLlmGenerateTask(prompt);
 
