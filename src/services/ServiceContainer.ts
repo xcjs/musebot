@@ -42,6 +42,7 @@ import { IWorkflowMutator } from './clients/media/comfy-ui/services/workflow-mut
 import { JsonMutator } from './clients/media/comfy-ui/services/workflow-mutators/JsonMutator.js';
 import { MessageToMediaMutator } from './clients/media/comfy-ui/services/workflow-mutators/MessageToMediaMutator.js';
 import { MessageToMusicMutator } from './clients/media/comfy-ui/services/workflow-mutators/MessageToMusicMutator.js';
+import { RandomPromptMutator } from './clients/media/comfy-ui/services/workflow-mutators/RandomPromptMutator.js';
 import { RetryMutator } from './clients/media/comfy-ui/services/workflow-mutators/RetryMutator.js';
 import { WorkflowService } from './clients/media/comfy-ui/services/WorkflowService.js';
 import { ComfyUiAttachRenderTask } from './clients/media/comfy-ui/tasks/ComfyUiAttachRenderTask.js';
@@ -233,6 +234,7 @@ export class ServiceContainer implements IServiceContainer {
                     case BotInteraction.GuidanceScaleMinus:
                     case BotInteraction.GuidanceScalePlus:
                     case BotInteraction.ExpandPrompt:
+                    case BotInteraction.Randomize:
                         return new ComfyUiInteractionTask(this, interaction);
                     case BotInteraction.ShowSource:
                         return new ShowDescriptionTask(this, interaction);
@@ -253,6 +255,7 @@ export class ServiceContainer implements IServiceContainer {
             new MessageToMediaMutator(this),
             new MessageToMusicMutator(this),
             new ExpandPromptMutator(this),
+            new RandomPromptMutator(this),
             new RetryMutator(this)
         ];
 
