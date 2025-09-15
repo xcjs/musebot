@@ -22,7 +22,7 @@ export class RetryButton extends BaseComponent<ButtonBuilder> {
     }
 
     override get helpText(): string {
-        return 'Retries your prompt and responds with a different image.';
+        return 'Retries your prompt and responds with a different output.';
     }
 
     constructor(services: IServiceContainer) {
