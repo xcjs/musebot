@@ -16,6 +16,7 @@ import { Img2ImgActionRow } from '../components/buttonRows/Img2ImgActionRow.js';
 import { StatefulImageGenerationActionRows } from '../components/buttonRows/StatefulImageGenerationActionRows.js';
 import { StatefulMusicGenerationActionRow } from '../components/buttonRows/StatefulMusicGenerationActionRow.js';
 import { StatelessImageGenerationActionRow } from '../components/buttonRows/StatelessImageGenerationActionRow.js';
+import { StatelessMusicGenerationActionRow } from '../components/buttonRows/StatelessMusicGenerationActionRow.js';
 import { DiscordConstants } from '../enums/DiscordConstants.js';
 
 export class ComfyUiReplyService {
@@ -145,7 +146,7 @@ export class ComfyUiReplyService {
             case ContentTypeCategory.Audio:
                 return isStatefulResponse
                     ? new StatefulMusicGenerationActionRow(this.#services, requests[0]).build()
-                    : [];
+                    : new StatelessMusicGenerationActionRow(this.#services).build();
             case ContentTypeCategory.Image:
                 return isStatefulResponse ?
                     new StatefulImageGenerationActionRows(this.#services, requests[0]).build()
