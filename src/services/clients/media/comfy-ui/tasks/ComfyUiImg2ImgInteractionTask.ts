@@ -10,7 +10,6 @@ import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
-import { IImg2ImgRenderTask } from '../../tasks/IImg2ImgRenderTask.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
 import { MediaCollectionResponse } from '../extensions/MediaResponse.js';
 import { IWorkflow } from '../models/IWorkflow.js';
@@ -18,7 +17,7 @@ import { SerializableRenderRequest } from '../models/SerializableRenderRequest.j
 import { IWorkflowService } from '../services/IWorkflowService.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 
-export class ComfyUiImg2ImgRenderTask extends ComfyUiBaseTask implements IImg2ImgRenderTask {
+export class ComfyUiImg2ImgInteractionTask extends ComfyUiBaseTask {
     #environmentSettings: IEnvironmentSettings;
     #workflowService: IWorkflowService;
     #comfyUiClient: ComfyUiClient;
@@ -41,7 +40,7 @@ export class ComfyUiImg2ImgRenderTask extends ComfyUiBaseTask implements IImg2Im
         this.#comfyUiClient = services.comfyUiClient;
         this.#comfyUiReplyService = services.comfyUiReplyService;
         this.#replyService = services.replyService;
-        this.#logger = services.getLogger('ComfyUiUpscaleRenderTask');
+        this.#logger = services.getLogger('ComfyUiImg2ImgInteractionTask');
 
         this.#interaction = interaction;
         this.#workflow = workflow;
@@ -50,7 +49,7 @@ export class ComfyUiImg2ImgRenderTask extends ComfyUiBaseTask implements IImg2Im
     override async process(): Promise<void> {
         await super.process();
 
-        this.#logger.info('Processing a ComfyUiUpscaleRenderTask...');
+        this.#logger.info('Processing a ComfyUiImg2ImgInteractionTask...');
 
         const imageAttachments = this.#replyService.getImageAttachments(this.#interaction);
         const prompts: Prompt[] = [];

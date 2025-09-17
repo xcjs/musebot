@@ -105,7 +105,7 @@ export class GenerativeMediaChatClient extends BaseDiscordClient {
         }
 
         if (isWorkflowInteraction) {
-            this.#taskQueue.add(this.#services.getImg2ImgRenderTask(interaction, workflow) as BaseTask<void>);
+            this.#taskQueue.add(this.#services.getImg2ImgInteractionTask(interaction, workflow) as BaseTask<void>);
         } else {
             this.logger.warn('An unknown or erroneous interaction was passed:', interaction);
         }

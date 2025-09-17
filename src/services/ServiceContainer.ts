@@ -45,13 +45,12 @@ import { MessageToMusicMutator } from './clients/media/comfy-ui/services/workflo
 import { RandomPromptMutator } from './clients/media/comfy-ui/services/workflow-mutators/RandomPromptMutator.js';
 import { RetryMutator } from './clients/media/comfy-ui/services/workflow-mutators/RetryMutator.js';
 import { WorkflowService } from './clients/media/comfy-ui/services/WorkflowService.js';
-import { ComfyUiAttachRenderTask } from './clients/media/comfy-ui/tasks/ComfyUiAttachRenderTask.js';
-import { ComfyUiImg2ImgRenderTask } from './clients/media/comfy-ui/tasks/ComfyUiImg2ImgRenderTask.js';
+import { ComfyUiAttachmentTask } from './clients/media/comfy-ui/tasks/ComfyUiAttachmentTask.js';
+import { ComfyUiImg2ImgInteractionTask } from './clients/media/comfy-ui/tasks/ComfyUiImg2ImgInteractionTask.js';
 import { ComfyUiInteractionTask } from './clients/media/comfy-ui/tasks/ComfyUiInteractionTask.js';
 import { ComfyUiMessageTask } from './clients/media/comfy-ui/tasks/ComfyUiMessageTask.js';
 import { ShowDescriptionTask } from './clients/media/comfy-ui/tasks/ShowDescriptionTask.js';
 import { MediaHelpService } from './clients/media/help/MediaHelpService.js';
-import { IAttachRenderTask } from './clients/media/tasks/IAttachRenderTask.js';
 import { EnvironmentSettings } from './environment-settings/EnvironmentSettings.js';
 import { IEnvironmentSettings } from './environment-settings/IEnvironmentSettings.js';
 import { ContentTypeService } from './features/ContentTypeService.js';
@@ -151,27 +150,6 @@ export class ServiceContainer implements IServiceContainer {
         return new Logger(prefix);
     }
 
-    getAttachRenderTask(
-        interaction: ButtonInteraction | DiscordMessage,
-        prompt: string,
-        content: string | null = null): IAttachRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)
-            && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
-            throw this.#taskNotConfiguredError;
-        }
-
-        return new ComfyUiAttachRenderTask(this, interaction, { content }, prompt);
-    }
-
-    getImg2ImgRenderTask(interaction: ButtonInteraction, workflow: IWorkflow) {
-        if(!this.#featureService.hasFeature(SupportedFeature.Img2Img)
-            && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
-            throw this.#taskNotConfiguredError;
-        }
-
-        return new ComfyUiImg2ImgRenderTask(this, interaction, workflow);
-    }
-
     getLlmGenerateTask(prompt: string): BaseTask<IHttpExchange<GenerateRequest, GenerateResponse>> {
         if(!this.featureService.hasFeature(SupportedFeature.Txt2Txt)) {
             throw this.#taskNotConfiguredError;
@@ -194,6 +172,15 @@ export class ServiceContainer implements IServiceContainer {
         }
 
         return new OllamaEmojiResponseTask(this, reaction, user, context);
+    }
+
+    getMessageReactionTask(reaction: MessageReaction, user: User, context: OllamaMessage[] = []): BaseTask<unknown> {
+        switch (this.environmentSettings.botFunction) {
+            case BotFunction.Chat:
+                return new OllamaEmojiResponseTask(this, reaction, user, context);
+            default:
+                throw this.#taskNotConfiguredError;
+        }
     }
 
     getMessageTask(message: DiscordMessage): BaseTask<unknown> {
@@ -237,10 +224,27 @@ export class ServiceContainer implements IServiceContainer {
         }
     }
 
-    getMessageReactionTask(reaction: MessageReaction, user: User, context: OllamaMessage[] = []): BaseTask<unknown> {
-        switch(this.environmentSettings.botFunction) {
-            case BotFunction.Chat:
-                return new OllamaEmojiResponseTask(this, reaction, user, context);
+    getAttachmentTask(
+        message: DiscordMessage,
+        prompt: string): BaseTask<unknown> {
+        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Audio)
+            && !this.#featureService.hasFeature(SupportedFeature.Txt2Img)
+            && !this.#featureService.hasFeature(SupportedFeature.Txt2Music)
+            && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
+            throw this.#taskNotConfiguredError;
+        }
+
+        return new ComfyUiAttachmentTask(this, message, prompt);
+    }
+
+    getImg2ImgInteractionTask(interaction: ButtonInteraction, workflow: IWorkflow) {
+        if(!this.featureService.hasFeature(SupportedFeature.Img2Img)) {
+            throw this.#taskNotConfiguredError;
+        }
+
+        switch (this.#environmentSettings.botFunction) {
+            case BotFunction.Media:
+                return new ComfyUiImg2ImgInteractionTask(this, interaction, workflow);
             default:
                 throw this.#taskNotConfiguredError;
         }

@@ -22,8 +22,6 @@ import { ComfyUiClient } from './clients/media/comfy-ui/ComfyUiClient.js';
 import { IWorkflow } from './clients/media/comfy-ui/models/IWorkflow.js';
 import { IWorkflowService } from './clients/media/comfy-ui/services/IWorkflowService.js';
 import { IWorkflowMutator } from './clients/media/comfy-ui/services/workflow-mutators/IWorkflowMutator.js';
-import { ComfyUiImg2ImgRenderTask } from './clients/media/comfy-ui/tasks/ComfyUiImg2ImgRenderTask.js';
-import { IAttachRenderTask } from './clients/media/tasks/IAttachRenderTask.js';
 import { IEnvironmentSettings } from './environment-settings/IEnvironmentSettings.js';
 import { IContentTypeService } from './features/IContentTypeService.js';
 import { IFeatureService } from './features/IFeatureService.js';
@@ -58,19 +56,15 @@ export interface IServiceContainer {
     // Factories --------------------------------------------------------------/
     getLogger(prefix: string): ILogger;
 
-    getAttachRenderTask(
-        interaction: ButtonInteraction | DiscordMessage,
-        prompt: string,
-        content: string | null): IAttachRenderTask;
-
     getLlmGenerateTask(prompt: string): BaseTask<IHttpExchange<GenerateRequest, GenerateResponse>>;
     getLlmPromptResponseTask(message: DiscordMessage, context: OllamaMessage[]): IPromptResponseTask;
     getLlmEmojiResponseTask(reaction: MessageReaction, user: User, context: OllamaMessage[]): IEmojiResponseTask;
+    getMessageReactionTask(reaction: MessageReaction, user: User, context: OllamaMessage[]): BaseTask<unknown>;
 
     getMessageTask(message: DiscordMessage): BaseTask<unknown>;
     getInteractionTask(interaction: ButtonInteraction): BaseTask<unknown>;
-    getMessageReactionTask(reaction: MessageReaction, user: User, context: OllamaMessage[]): BaseTask<unknown>;
-    getImg2ImgRenderTask(interaction: ButtonInteraction, workflow: IWorkflow): ComfyUiImg2ImgRenderTask;
+    getAttachmentTask(message: DiscordMessage, prompt: string): BaseTask<unknown>;
+    getImg2ImgInteractionTask(interaction: ButtonInteraction, workflow: IWorkflow): BaseTask<unknown>;
 
     getWorkflowMutator(interactionType: BotInteraction, workflow: IWorkflow): IWorkflowMutator;
 }
