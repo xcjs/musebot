@@ -139,7 +139,7 @@ export class OllamaEmojiResponseTask extends BaseTask<OllamaMessage[]> implement
         this.#logger.info('An image will be attached to the Ollama response.');
 
         const lastReply = replies[replies.length - 1];
-        const attachTask = this.#services.getAttachRenderTask(lastReply, prompt, lastReply.content) as BaseTask<void>;
+        const attachTask = this.#services.getAttachmentTask(lastReply, prompt) as BaseTask<void>;
 
         this.#taskQueue.add(attachTask);
     }

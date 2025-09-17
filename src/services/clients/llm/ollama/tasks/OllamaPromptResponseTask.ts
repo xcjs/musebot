@@ -189,7 +189,7 @@ export class OllamaPromptResponseTask extends BaseTask<OllamaMessage[]> implemen
         }
 
         const lastReply = replies[replies.length - 1];
-        const attachTask = this.#services.getAttachRenderTask(lastReply, imagePrompt, lastReply.content) as BaseTask<void>;
+        const attachTask = this.#services.getAttachmentTask(lastReply, imagePrompt) as BaseTask<void>;
 
         this.#taskQueue.add(attachTask);
     }
