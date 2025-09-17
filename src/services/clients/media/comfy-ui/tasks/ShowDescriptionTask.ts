@@ -25,7 +25,7 @@ export class ShowDescriptionTask extends BaseTask<void> {
 
         this.#comfyUiReplyService = services.comfyUiReplyService;
         this.#replyService = services.replyService;
-        this.#logger = services.getLogger('ComfyUiShowSourceTask');
+        this.#logger = services.getLogger('ShowDescriptionTask');
 
         this.#interaction = interaction;
     }
@@ -33,7 +33,7 @@ export class ShowDescriptionTask extends BaseTask<void> {
     override async process(): Promise<void> {
         await super.process();
 
-        this.#logger.info('Processing a ComfyUiShowSourceTask...');
+        this.#logger.info('Processing a ShowDescriptionTask...');
 
         const imageAttachments = this.#replyService.getImageAttachments(this.#interaction);
         let messageContent: string;
