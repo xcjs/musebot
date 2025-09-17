@@ -3,7 +3,6 @@ import { AttachmentBuilder, ButtonInteraction } from 'discord.js';
 
 import { BotInteraction } from '../../../../../enums/BotInteraction.js';
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
-import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.js';
@@ -13,8 +12,6 @@ import { SerializableRenderRequest } from '../models/SerializableRenderRequest.j
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 
 export class ComfyUiInteractionTask extends ComfyUiBaseTask {
-    #logger: ILogger;
-
     #services: IServiceContainer;
 
     #replyService: IReplyService;
@@ -23,8 +20,7 @@ export class ComfyUiInteractionTask extends ComfyUiBaseTask {
 
     constructor(services: IServiceContainer, interaction: ButtonInteraction) {
         super(services);
-
-        this.#logger = services.getLogger('ComfyUiInteractionTask');
+        this.logger = services.getLogger('ComfyUiInteractionTask');
 
         this.#services = services;
 
@@ -35,8 +31,6 @@ export class ComfyUiInteractionTask extends ComfyUiBaseTask {
 
     override async process(): Promise<void> {
         await super.process();
-
-        this.#logger.info('Processing a ComfyUiInteractionTask...');
 
         const attachments = this.#replyService.getAttachments(this.#interaction)
             .filter(attachment => attachment.description.length > 0);
@@ -81,7 +75,7 @@ export class ComfyUiInteractionTask extends ComfyUiBaseTask {
         };
 
         if (additionalAttachments.length > DiscordConstants.MaxAttachmentsPerMessage) {
-            this.#logger.warn('The maximum attachment count has been exceeded:',
+            this.logger.warn('The maximum attachment count has been exceeded:',
                 additionalAttachments.length,
                 DiscordConstants.MaxAttachmentsPerMessage);
 

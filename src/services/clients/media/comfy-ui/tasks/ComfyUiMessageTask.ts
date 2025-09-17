@@ -5,7 +5,6 @@ import { BotInteraction } from '../../../../../enums/BotInteraction.js';
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
-import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { MediaCollectionResponse } from '../extensions/MediaResponse.js';
@@ -14,15 +13,13 @@ import { SerializableRenderRequest } from '../models/SerializableRenderRequest.j
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 
 export class ComfyUiMessageTask extends ComfyUiBaseTask {
-    #logger: ILogger;
     #services: IServiceContainer;
 
     #message: Message;
 
     constructor(services: IServiceContainer, message: Message) {
         super(services);
-
-        this.#logger = services.getLogger('ComfyUiMentionTask');
+        this.logger = services.getLogger('ComfyUiMessageTask');
 
         this.#services = services;
 
@@ -31,8 +28,6 @@ export class ComfyUiMessageTask extends ComfyUiBaseTask {
 
     override async process(): Promise<void> {
         await super.process();
-
-        this.#logger.info('Processing a ComfyUiMentionTask...');
 
         const textPrompt = this.replyService.getMessageWithoutBotMentions(this.#message);
         const renderRequests: SerializableRenderRequest[] = [];
@@ -60,7 +55,7 @@ export class ComfyUiMessageTask extends ComfyUiBaseTask {
                 break;
         }
 
-        this.#logger.info(`Selected ${workflow.name} as the workflow.`);
+        this.logger.info(`Selected ${workflow.name} as the workflow.`);
 
         const mutator = this.#services.getWorkflowMutator(interactionType, workflow);
 

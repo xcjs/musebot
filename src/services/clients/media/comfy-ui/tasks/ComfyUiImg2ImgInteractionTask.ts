@@ -5,7 +5,6 @@ import sharp from 'sharp';
 import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
-import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
@@ -23,7 +22,6 @@ export class ComfyUiImg2ImgInteractionTask extends ComfyUiBaseTask {
     #comfyUiClient: ComfyUiClient;
     #comfyUiReplyService: ComfyUiReplyService;
     #replyService: IReplyService;
-    #logger: ILogger;
 
     #interaction: ButtonInteraction;
     #workflow: IWorkflow;
@@ -34,13 +32,13 @@ export class ComfyUiImg2ImgInteractionTask extends ComfyUiBaseTask {
 
     constructor(services: IServiceContainer, interaction: ButtonInteraction, workflow: IWorkflow) {
         super(services);
+        this.logger = services.getLogger('ComfyUiImg2ImgInteractionTask');
 
         this.#environmentSettings = services.environmentSettings;
         this.#workflowService = services.workflowService;
         this.#comfyUiClient = services.comfyUiClient;
         this.#comfyUiReplyService = services.comfyUiReplyService;
         this.#replyService = services.replyService;
-        this.#logger = services.getLogger('ComfyUiImg2ImgInteractionTask');
 
         this.#interaction = interaction;
         this.#workflow = workflow;
@@ -48,8 +46,6 @@ export class ComfyUiImg2ImgInteractionTask extends ComfyUiBaseTask {
 
     override async process(): Promise<void> {
         await super.process();
-
-        this.#logger.info('Processing a ComfyUiImg2ImgInteractionTask...');
 
         const imageAttachments = this.#replyService.getImageAttachments(this.#interaction);
         const prompts: Prompt[] = [];

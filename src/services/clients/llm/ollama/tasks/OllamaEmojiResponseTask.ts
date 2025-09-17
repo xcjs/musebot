@@ -4,7 +4,6 @@ import { Message as OllamaMessage } from 'ollama';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../../../../features/IFeatureService.js';
-import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
@@ -39,8 +38,6 @@ export class OllamaEmojiResponseTask extends BaseTask<OllamaMessage[]> implement
     #user: User;
     #context: OllamaMessage[];
 
-    #logger: ILogger;
-
     #onSuccess: (payload: OllamaMessage[]) => void = () => { };
 
     constructor(
@@ -49,6 +46,7 @@ export class OllamaEmojiResponseTask extends BaseTask<OllamaMessage[]> implement
         user: User,
         context: OllamaMessage[]) {
         super(services);
+        this.logger = services.getLogger('PromptResponseTask');
 
         this.#services = services;
 
@@ -64,7 +62,6 @@ export class OllamaEmojiResponseTask extends BaseTask<OllamaMessage[]> implement
         this.#user = user;
         this.#context = context;
 
-        this.#logger = services.getLogger('PromptResponseTask');
     }
 
     override async process(): Promise<void> {
@@ -108,14 +105,14 @@ export class OllamaEmojiResponseTask extends BaseTask<OllamaMessage[]> implement
         let responseBatch = '';
 
         for await (const response of exchange.exchange.response) {
-            this.#logger.info(`Appending "${response.message.content}"`);
+            this.logger.info(`Appending "${response.message.content}"`);
 
             let replies: DiscordMessage[] = [];
             responseBatch += response.message.content;
 
             if (performance.now() - startTime >= 1000
                 / DiscordConstants.MaxRequestsPerSecond || response.done) {
-                this.#logger.info('Flushing response batch.');
+                this.logger.info('Flushing response batch.');
 
                 replies = await this.#ollamaStreamingReplyService.reply(this.#reaction.message as DiscordMessage, responseBatch, !!response.done);
                 startTime = performance.now();
@@ -136,7 +133,7 @@ export class OllamaEmojiResponseTask extends BaseTask<OllamaMessage[]> implement
     }
 
     #attachImage(prompt: string, replies: DiscordMessage[]): void {
-        this.#logger.info('An image will be attached to the Ollama response.');
+        this.logger.info('An image will be attached to the Ollama response.');
 
         const lastReply = replies[replies.length - 1];
         const attachTask = this.#services.getAttachmentTask(lastReply, prompt) as BaseTask<void>;

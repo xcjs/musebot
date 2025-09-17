@@ -1,7 +1,6 @@
 import { AttachmentBuilder, ButtonInteraction } from 'discord.js';
 
 import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
-import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
@@ -12,7 +11,6 @@ import { SerializableRenderRequest } from '../models/SerializableRenderRequest.j
 export class ShowDescriptionTask extends BaseTask<void> {
     #comfyUiReplyService: ComfyUiReplyService;
     #replyService: IReplyService;
-    #logger: ILogger;
 
     #interaction: ButtonInteraction;
 
@@ -22,18 +20,16 @@ export class ShowDescriptionTask extends BaseTask<void> {
 
     constructor(services: IServiceContainer, interaction: ButtonInteraction) {
         super(services);
+        this.logger = services.getLogger('ShowDescriptionTask');
 
         this.#comfyUiReplyService = services.comfyUiReplyService;
         this.#replyService = services.replyService;
-        this.#logger = services.getLogger('ShowDescriptionTask');
 
         this.#interaction = interaction;
     }
 
     override async process(): Promise<void> {
         await super.process();
-
-        this.#logger.info('Processing a ShowDescriptionTask...');
 
         const imageAttachments = this.#replyService.getImageAttachments(this.#interaction);
         let messageContent: string;
@@ -51,8 +47,6 @@ export class ShowDescriptionTask extends BaseTask<void> {
             // eslint-disable-next-line @typescript-eslint/no-base-to-string
             messageContent = `${this.#interaction.member?.user.toString() || 'You'} wanted to see the request message for \`${renderRequest.prompt}\``;
         }
-
-        this.#logger.info(messageContent);
 
         const reply = {
             content: messageContent,

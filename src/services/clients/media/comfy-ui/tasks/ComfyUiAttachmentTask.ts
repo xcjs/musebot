@@ -4,7 +4,6 @@ import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
-import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
@@ -21,7 +20,6 @@ export class ComfyUiAttachmentTask extends ComfyUiBaseTask {
     #comfyUiClient: ComfyUiClient;
     #comfyUiReplyService: ComfyUiReplyService;
     #replyService: IReplyService;
-    #logger: ILogger;
 
     #message: Message;
     #prompt: string;
@@ -35,13 +33,13 @@ export class ComfyUiAttachmentTask extends ComfyUiBaseTask {
         message: Message,
         prompt: string) {
         super(services);
+        this.logger = services.getLogger('ComfyUiAttachmentTask');
 
         this.#environmentSettings = services.environmentSettings;
         this.#workflowService = services.workflowService;
         this.#comfyUiClient = services.comfyUiClient;
         this.#comfyUiReplyService = services.comfyUiReplyService;
         this.#replyService = services.replyService;
-        this.#logger = services.getLogger('ComfyUiAttachmentTask');
 
         this.#message = message;
         this.#prompt = prompt;
@@ -50,15 +48,13 @@ export class ComfyUiAttachmentTask extends ComfyUiBaseTask {
     override async process(): Promise<void> {
         await super.process();
 
-        this.#logger.info('Processing a ComfyUiAttachmentTask...');
-
         const workflows = this.#workflowService.workflows.filter(x =>
             x.type.startsWith('txt2')
             && x.type != SupportedFeature.Txt2Txt);
 
         const workflow = getRandomArrayEntry(workflows);
 
-        this.#logger.info(`Using ${workflow.name} as the selected workflow.`);
+        this.logger.info(`Using ${workflow.name} as the selected workflow.`);
 
         const renderRequest = this.#workflowService.getWorkflowDefaults(workflow);
         renderRequest.prompt = this.#prompt.trim();

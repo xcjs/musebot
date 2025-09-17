@@ -1,5 +1,4 @@
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
-import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
@@ -18,8 +17,6 @@ export abstract class ComfyUiBaseTask extends BaseTask<void> {
     comfyUiReplyService: ComfyUiReplyService;
     replyService: IReplyService;
 
-    #logger: ILogger;
-
     constructor(services: IServiceContainer) {
         super(services);
 
@@ -28,14 +25,12 @@ export abstract class ComfyUiBaseTask extends BaseTask<void> {
         this.workflowService = services.workflowService;
         this.comfyUiReplyService = services.comfyUiReplyService;
         this.replyService = services.replyService;
-
-        this.#logger = services.getLogger('ComfyUiBaseTask');
     }
 
     override async process(): Promise<void> {
         await super.process();
 
-        this.#logger.info('Loading workflows...');
+        this.logger.info('Loading workflows...');
         await this.workflowService.loadWorkflows();
     }
 

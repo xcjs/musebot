@@ -33,13 +33,13 @@ export abstract class BaseTask<T> {
                 this.#taskStatus = TaskStatus.Delayed;
                 this.#delayUntil = new Date(Date.now() + this.#environmentSettings.taskRetryDelayMilliseconds);
 
-                this.#logger.info(`Delaying task ${this.#id} until ${this.#delayUntil.toLocaleDateString()}.`)
+                this.logger.info(`Delaying task ${this.#id} until ${this.#delayUntil.toLocaleDateString()}.`)
             }
         } else {
             this.#taskStatus = taskStatus;
         }
 
-        this.#logger.info(`Setting taskStatus of task ${this.id} to ${taskStatus}.`);
+        this.logger.info(`Setting taskStatus of task ${this.id} to ${taskStatus}.`);
     }
 
     abstract get taskChannel(): string;
@@ -58,8 +58,9 @@ export abstract class BaseTask<T> {
 
     set onSuccess(callback: (payload: T) => void) { }
 
+    logger: ILogger;
+
     #environmentSettings: IEnvironmentSettings;
-    #logger: ILogger;
 
     #id: UUID;
     #taskStatus: TaskStatus = TaskStatus.Idle;
@@ -72,8 +73,6 @@ export abstract class BaseTask<T> {
     constructor(services: IServiceContainer) {
         this.#environmentSettings = services.environmentSettings;
 
-        this.#logger = services.getLogger('BaseTask');
-
         this.#id = randomUUID();
         this.#createdTime = new Date();
         this.#maxAttempts = services.environmentSettings.maxTaskAttempts;
@@ -81,12 +80,12 @@ export abstract class BaseTask<T> {
 
     async process(): Promise<void> {
         this.#startedTime = new Date();
-        this.#logger.info(`Starting task ${this.#id} at ${this.startedTime.toISOString()}`);
+        this.logger.info(`Starting task ${this.#id} at ${this.startedTime.toISOString()}`);
         await Promise.resolve();
     }
 
     async postProcess(): Promise<void> {
-        this.#logger.info(`Post-processing task ${this.#id} at ${new Date().toISOString()}`);
+        this.logger.info(`Post-processing task ${this.#id} at ${new Date().toISOString()}`);
         await Promise.resolve();
     }
 }

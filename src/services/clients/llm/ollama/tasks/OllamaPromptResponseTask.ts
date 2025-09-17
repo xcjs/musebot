@@ -5,7 +5,6 @@ import { endsWithWhitespace, hasOnly, isOnlyWhitespace } from '../../../../../ut
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../../../../features/IFeatureService.js';
-import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
@@ -36,7 +35,6 @@ export class OllamaPromptResponseTask extends BaseTask<OllamaMessage[]> implemen
     #ollamaStreamingReplyService: OllamaStreamingReplyService;
     #replyService: IReplyService;
     #taskQueue: ITaskQueue;
-    #logger: ILogger;
 
     #message: DiscordMessage;
     #context: OllamaMessage[] = [];
@@ -48,6 +46,7 @@ export class OllamaPromptResponseTask extends BaseTask<OllamaMessage[]> implemen
         message: DiscordMessage,
         context: OllamaMessage[]) {
         super(services);
+        this.logger = services.getLogger('OllamaPromptResponseTask');
 
         this.#services = services;
 
@@ -58,7 +57,6 @@ export class OllamaPromptResponseTask extends BaseTask<OllamaMessage[]> implemen
         this.#ollamaStreamingReplyService = services.ollamaStreamingReplyService;
         this.#replyService = services.replyService;
         this.#taskQueue = services.taskQueue;
-        this.#logger = services.getLogger('PromptResponseTask');
 
         this.#message = message;
         this.#context = context;
@@ -161,12 +159,12 @@ export class OllamaPromptResponseTask extends BaseTask<OllamaMessage[]> implemen
 
             endTime = performance.now();
             averageResponseInMs = (averageResponseInMs + endTime - startTime) / 2;
-            this.#logger.debug(`The average streaming response time is ${averageResponseInMs}ms.`);
+            this.logger.debug(`The average streaming response time is ${averageResponseInMs}ms.`);
         }
     }
 
     async #attachImage(prompt: string, replies: Array<DiscordMessage>): Promise<void> {
-        this.#logger.info('An image will be attached to the Ollama response.');
+        this.logger.info('An image will be attached to the Ollama response.');
 
         const llmImagePrompt = 'The following prompt is a response to a message.'
             + ' Describe an artistic or creative image to go with this response.'
@@ -184,7 +182,7 @@ export class OllamaPromptResponseTask extends BaseTask<OllamaMessage[]> implemen
         }
         catch(error)
         {
-            this.#logger.error('Failed to generate an image for the prompt. Falling back to the original Ollama response to generate an image instead.', error);
+            this.logger.error('Failed to generate an image for the prompt. Falling back to the original Ollama response to generate an image instead.', error);
             imagePrompt = prompt;
         }
 
