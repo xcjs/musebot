@@ -227,13 +227,6 @@ export class ServiceContainer implements IServiceContainer {
     getAttachmentTask(
         message: DiscordMessage,
         prompt: string): BaseTask<unknown> {
-        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Audio)
-            && !this.#featureService.hasFeature(SupportedFeature.Txt2Img)
-            && !this.#featureService.hasFeature(SupportedFeature.Txt2Music)
-            && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
-            throw this.#taskNotConfiguredError;
-        }
-
         return new ComfyUiAttachmentTask(this, message, prompt);
     }
 
