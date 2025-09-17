@@ -93,7 +93,7 @@ export class ComfyUiReplyService {
 
                 // Allow the action bar to be set from the first piece of media content.
                 if(components.length === 0) {
-                    components = await this.#buildActionBars(mediaContainer, renderExchange.request);
+                    components = await this.#buildActionRows(mediaContainer, renderExchange.request);
                 }
 
                 const filename = this.getFileNameFromPrompt(renderExchange.request[i]
@@ -124,7 +124,7 @@ export class ComfyUiReplyService {
         return `${this.#environmentSettings.applicationName}_${renderRequest.seed}_${renderRequest.prompt}`.substring(0, MAX_FILE_NAME_LENGTH);
     }
 
-    async #buildActionBars(mediaContainer: MediaContainer, requests: SerializableRenderRequest[]): Promise<ActionRowBuilder<ButtonBuilder>[]> {
+    async #buildActionRows(mediaContainer: MediaContainer, requests: SerializableRenderRequest[]): Promise<ActionRowBuilder<ButtonBuilder>[]> {
         if (mediaContainer === null) {
             return [];
         }
