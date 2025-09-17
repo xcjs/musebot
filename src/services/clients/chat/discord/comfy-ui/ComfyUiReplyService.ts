@@ -13,8 +13,8 @@ import { MediaCollectionResponse, MediaContainer } from '../../../media/comfy-ui
 import { SerializableRenderRequest } from '../../../media/comfy-ui/models/SerializableRenderRequest.js';
 import { IReplyService } from '../../IReplyService.js';
 import { Img2ImgActionRow } from '../components/buttonRows/Img2ImgActionRow.js';
-import { StatefulAudioGenerationActionRow } from '../components/buttonRows/StatefulAudioGenerationActionRow.js';
 import { StatefulImageGenerationActionRows } from '../components/buttonRows/StatefulImageGenerationActionRows.js';
+import { StatefulMusicGenerationActionRow } from '../components/buttonRows/StatefulMusicGenerationActionRow.js';
 import { StatelessImageGenerationActionRow } from '../components/buttonRows/StatelessImageGenerationActionRow.js';
 import { DiscordConstants } from '../enums/DiscordConstants.js';
 
@@ -144,7 +144,7 @@ export class ComfyUiReplyService {
         switch(contentTypeCategory) {
             case ContentTypeCategory.Audio:
                 return isStatefulResponse
-                    ? new StatefulAudioGenerationActionRow(this.#services, requests[0]).build()
+                    ? new StatefulMusicGenerationActionRow(this.#services, requests[0]).build()
                     : [];
             case ContentTypeCategory.Image:
                 return isStatefulResponse ?
