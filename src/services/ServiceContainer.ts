@@ -49,7 +49,6 @@ import { ComfyUiAttachRenderTask } from './clients/media/comfy-ui/tasks/ComfyUiA
 import { ComfyUiImg2ImgRenderTask } from './clients/media/comfy-ui/tasks/ComfyUiImg2ImgRenderTask.js';
 import { ComfyUiInteractionTask } from './clients/media/comfy-ui/tasks/ComfyUiInteractionTask.js';
 import { ComfyUiMessageTask } from './clients/media/comfy-ui/tasks/ComfyUiMessageTask.js';
-import { ComfyUiReactionTask } from './clients/media/comfy-ui/tasks/ComfyUiReactionTask.js';
 import { ShowDescriptionTask } from './clients/media/comfy-ui/tasks/ShowDescriptionTask.js';
 import { MediaHelpService } from './clients/media/help/MediaHelpService.js';
 import { IAttachRenderTask } from './clients/media/tasks/IAttachRenderTask.js';
@@ -242,8 +241,6 @@ export class ServiceContainer implements IServiceContainer {
         switch(this.environmentSettings.botFunction) {
             case BotFunction.Chat:
                 return new OllamaEmojiResponseTask(this, reaction, user, context);
-            case BotFunction.Media:
-                return new ComfyUiReactionTask(this, reaction)
             default:
                 throw this.#taskNotConfiguredError;
         }

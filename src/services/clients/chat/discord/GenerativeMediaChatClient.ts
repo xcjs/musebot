@@ -1,4 +1,4 @@
-import { ButtonInteraction, Client as DiscordClient, Events, Message as DiscordMessage, MessageReaction, User } from 'discord.js';
+import { ButtonInteraction, Client as DiscordClient, Events, Message as DiscordMessage } from 'discord.js';
 
 import { BotInteraction } from '../../../../enums/BotInteraction.js';
 import { IEnvironmentSettings } from '../../../environment-settings/IEnvironmentSettings.js';
@@ -46,7 +46,6 @@ export class GenerativeMediaChatClient extends BaseDiscordClient {
         this.#discordClient.once(Events.ClientReady, (event) => void this.onClientReady.call(self, event));
         this.#discordClient.on(Events.MessageCreate, (message) => void this.#onMessageCreate.call(self, message));
         this.#discordClient.on(Events.InteractionCreate, (interaction) => void this.#onInteraction.call(self, interaction));
-        this.#discordClient.on(Events.MessageReactionAdd, (reaction, user) => void this.#onMessageReactionAdd.call(self, reaction, user));
     }
 
     async #onMessageCreate(message: DiscordMessage): Promise<void> {
@@ -110,27 +109,5 @@ export class GenerativeMediaChatClient extends BaseDiscordClient {
         } else {
             this.logger.warn('An unknown or erroneous interaction was passed:', interaction);
         }
-    }
-
-    async #onMessageReactionAdd(reaction: MessageReaction, user: User): Promise<void> {
-        if (reaction.partial) {
-            try {
-                reaction = await reaction.fetch();
-            } catch (error) {
-                this.logger.error('An error occurred while fetching the MessageReaction:', error);
-                return;
-            }
-        }
-
-        if (!this.#replyService.shouldReply(reaction.message as DiscordMessage, reaction)) {
-            return;
-        }
-
-        await this.#typingService.startTyping(reaction.message as DiscordMessage);
-
-        this.#taskQueue.add(this.#services.getMessageReactionTask(
-            reaction,
-            user,
-            []) as BaseTask<void>);
     }
 }
