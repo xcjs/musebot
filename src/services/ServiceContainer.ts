@@ -230,13 +230,9 @@ export class ServiceContainer implements IServiceContainer {
         return new ComfyUiAttachmentTask(this, message, prompt);
     }
 
-    getImg2ImgInteractionTask(interaction: ButtonInteraction, workflow: IWorkflow) {
-        if(!this.featureService.hasFeature(SupportedFeature.Img2Img)) {
-            throw this.#taskNotConfiguredError;
-        }
-
-        switch (this.#environmentSettings.botFunction) {
-            case BotFunction.Media:
+    getCustomInteractionTask(interaction: ButtonInteraction, workflow: IWorkflow) {
+        switch (workflow.type) {
+            case SupportedFeature.Img2Img:
                 return new ComfyUiImg2ImgInteractionTask(this, interaction, workflow);
             default:
                 throw this.#taskNotConfiguredError;

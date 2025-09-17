@@ -64,7 +64,7 @@ export interface IServiceContainer {
     getMessageTask(message: DiscordMessage): BaseTask<unknown>;
     getInteractionTask(interaction: ButtonInteraction): BaseTask<unknown>;
     getAttachmentTask(message: DiscordMessage, prompt: string): BaseTask<unknown>;
-    getImg2ImgInteractionTask(interaction: ButtonInteraction, workflow: IWorkflow): BaseTask<unknown>;
+    getCustomInteractionTask(interaction: ButtonInteraction, workflow: IWorkflow): BaseTask<unknown>;
 
     getWorkflowMutator(interactionType: BotInteraction, workflow: IWorkflow): IWorkflowMutator;
 }
