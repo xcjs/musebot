@@ -2,12 +2,12 @@ import { ActionRowBuilder, ButtonBuilder } from 'discord.js';
 
 import { IServiceContainer } from '../../../../../IServiceContainer.js';
 import { BaseComponent } from '../BaseComponent.js';
-import { HelpButton } from '../buttons/HelpButton.js';
-import { ClearContextButton } from '../buttons/text/ClearContextButton.js';
+import { ClearContextCancelButton } from '../buttons/text/ClearContextCancelButton.js';
+import { ClearContextConfirmButton } from '../buttons/text/ClearContextConfirmButton.js';
 import { IActionRowBuilderFactory } from '../IActionRowBuilderFactory.js';
 import { IActionRows } from './IActionRows.js';
 
-export class LargeLanguageModelActionRow extends BaseComponent<ActionRowBuilder<ButtonBuilder>[]> implements IActionRows {
+export class ChatConfirmClearActionRow extends BaseComponent<ActionRowBuilder<ButtonBuilder>[]> implements IActionRows {
     #buttons: BaseComponent<ButtonBuilder>[] = [];
     get buttons(): BaseComponent<ButtonBuilder>[] {
         return this.#buttons;
@@ -30,8 +30,8 @@ export class LargeLanguageModelActionRow extends BaseComponent<ActionRowBuilder<
 
     override build(): ActionRowBuilder<ButtonBuilder>[] {
         this.#buttons = [
-            new ClearContextButton(this.#services),
-            new HelpButton(this.#services)
+            new ClearContextCancelButton(this.#services),
+            new ClearContextConfirmButton(this.#services)
         ];
 
         return this.#actionRowBuilderFactory.buildActionRows(this.#buttons);

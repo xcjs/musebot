@@ -5,12 +5,12 @@ import { IEnvironmentSettings } from '../../../environment-settings/IEnvironment
 import { BaseHelpService } from '../../../help/BaseHelpService.js';
 import { IHelpService } from '../../../help/IHelpService.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
-import { LargeLanguageModelActionRow } from '../../chat/discord/components/buttonRows/LargeLanguageModelActionRow.js';
-import { LargeLanguageModelConfirmClearActionRow } from '../../chat/discord/components/buttonRows/LargeLanguageModelConfirmClearActionRow.js';
+import { ChatActionRow } from '../../chat/discord/components/buttonRows/ChatActionRow.js';
+import { ChatConfirmClearActionRow } from '../../chat/discord/components/buttonRows/ChatConfirmClearActionRow.js';
 import { DiscordConstants } from '../../chat/discord/enums/DiscordConstants.js';
 import { IReplyService } from '../../chat/IReplyService.js';
 
-export class TextHelpService extends BaseHelpService implements IHelpService {
+export class ChatHelpService extends BaseHelpService implements IHelpService {
     #services: IServiceContainer;
 
     #environmentSettings: IEnvironmentSettings;
@@ -38,8 +38,8 @@ export class TextHelpService extends BaseHelpService implements IHelpService {
             + ' Additionally, there are various button-based interactions you can use after interacting with the bot at least once: '
             + '\n\n';
 
-        helpArticle += await this.buildHelpArticleFromActionRows(new LargeLanguageModelActionRow(this.#services));
-        helpArticle += await this.buildHelpArticleFromActionRows(new LargeLanguageModelConfirmClearActionRow(this.#services));
+        helpArticle += await this.buildHelpArticleFromActionRows(new ChatActionRow(this.#services));
+        helpArticle += await this.buildHelpArticleFromActionRows(new ChatConfirmClearActionRow(this.#services));
 
         return helpArticle;
     }

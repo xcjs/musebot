@@ -24,6 +24,7 @@ export class GenerativeMediaChatClient extends BaseDiscordClient {
 
     constructor(services: IServiceContainer) {
         super(services);
+        this.logger = services.getLogger('GenerativeMediaChatClient');
 
         this.#services = services;
 
@@ -33,8 +34,6 @@ export class GenerativeMediaChatClient extends BaseDiscordClient {
         this.#typingService = services.typingService;
         this.#workflowService = services.workflowService;
         this.#taskQueue = services.taskQueue;
-
-        this.logger = services.getLogger('GenerativeMediaChatClient');
 
         this.#registerEvents();
     }
@@ -58,7 +57,7 @@ export class GenerativeMediaChatClient extends BaseDiscordClient {
         this.logger.info('Replying to message...');
         await this.#typingService.startTyping(message);
 
-        this.#taskQueue.add(this.#services.getMessageTask(message) as BaseTask<void>);
+        this.#taskQueue.add(this.#services.getMessageTask(message, []) as BaseTask<void>);
     }
 
     async #onInteraction(interaction: ButtonInteraction): Promise<void> {

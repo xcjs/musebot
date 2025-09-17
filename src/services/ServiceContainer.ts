@@ -26,13 +26,11 @@ import { IGenerativeChatClient } from './clients/chat/IGenerativeChatClient.js';
 import { IReplyService } from './clients/chat/IReplyService.js';
 import { ITypingService } from './clients/chat/ITypingService.js';
 import { ShowHelpTask } from './clients/internal/tasks/ShowHelpTask.js';
-import { TextHelpService } from './clients/llm/help/TextHelpService.js';
+import { ChatHelpService } from './clients/llm/help/ChatHelpService.js';
 import { OllamaClient } from './clients/llm/ollama/OllamaClient.js';
-import { OllamaEmojiResponseTask } from './clients/llm/ollama/tasks/OllamaEmojiResponseTask.js';
+import { OllamaEmojiReactionTask } from './clients/llm/ollama/tasks/OllamaEmojiReactionTask.js';
 import { OllamaGenerateTask } from './clients/llm/ollama/tasks/OllamaGenerateTask.js';
-import { OllamaPromptResponseTask } from './clients/llm/ollama/tasks/OllamaPromptResponseTask.js';
-import { IEmojiResponseTask } from './clients/llm/tasks/IEmojiResponseTask.js';
-import { IPromptResponseTask } from './clients/llm/tasks/IPromptResponseTask.js';
+import { OllamaMessageTask } from './clients/llm/ollama/tasks/OllamaMessageTask.js';
 import { ComfyUiClient } from './clients/media/comfy-ui/ComfyUiClient.js';
 import { IWorkflow } from './clients/media/comfy-ui/models/IWorkflow.js';
 import { IWorkflowService } from './clients/media/comfy-ui/services/IWorkflowService.js';
@@ -158,35 +156,19 @@ export class ServiceContainer implements IServiceContainer {
         return new OllamaGenerateTask(this, prompt);
     }
 
-    getLlmPromptResponseTask(message: DiscordMessage, context: OllamaMessage[]): IPromptResponseTask {
-        if(!this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
-            throw this.#taskNotConfiguredError;
-        }
-
-        return new OllamaPromptResponseTask(this, message, context);
-    }
-
-    getLlmEmojiResponseTask(reaction: MessageReaction, user: User, context: OllamaMessage[]): IEmojiResponseTask {
-        if(!this.featureService.hasFeature(SupportedFeature.Txt2Txt)) {
-            throw this.#taskNotConfiguredError;
-        }
-
-        return new OllamaEmojiResponseTask(this, reaction, user, context);
-    }
-
-    getMessageReactionTask(reaction: MessageReaction, user: User, context: OllamaMessage[] = []): BaseTask<unknown> {
+    getEmojiReactionTask(reaction: MessageReaction, user: User, context: OllamaMessage[] = []): BaseTask<unknown> {
         switch (this.environmentSettings.botFunction) {
             case BotFunction.Chat:
-                return new OllamaEmojiResponseTask(this, reaction, user, context);
+                return new OllamaEmojiReactionTask(this, reaction, user, context);
             default:
                 throw this.#taskNotConfiguredError;
         }
     }
 
-    getMessageTask(message: DiscordMessage): BaseTask<unknown> {
+    getMessageTask(message: DiscordMessage, context: OllamaMessage[] = []): BaseTask<unknown> {
         switch(this.#environmentSettings.botFunction) {
             case BotFunction.Chat:
-
+                return new OllamaMessageTask(this, message, context);
                 break;
             case BotFunction.Media:
                     return new ComfyUiMessageTask(this, message);
@@ -295,7 +277,7 @@ export class ServiceContainer implements IServiceContainer {
                 this.#generativeChatClient = new GenerativeMediaChatClient(this);
                 break;
             case BotFunction.Chat:
-                this.#helpService = new TextHelpService(this);
+                this.#helpService = new ChatHelpService(this);
                 this.#generativeChatClient = new GenerativeChatClient(this);
                 break;
         }

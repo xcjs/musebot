@@ -9,7 +9,7 @@ import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { IReplyService } from '../IReplyService.js';
 import { ITypingService } from '../ITypingService.js';
 import { BaseDiscordClient } from './BaseDiscordClient.js';
-import { LargeLanguageModelConfirmClearActionRow } from './components/buttonRows/LargeLanguageModelConfirmClearActionRow.js';
+import { ChatConfirmClearActionRow } from './components/buttonRows/ChatConfirmClearActionRow.js';
 
 export class GenerativeChatClient extends BaseDiscordClient {
     #services: IServiceContainer;
@@ -24,6 +24,7 @@ export class GenerativeChatClient extends BaseDiscordClient {
 
     constructor(services: IServiceContainer) {
         super(services);
+        this.logger = services.getLogger('GenerativeChatClient');
 
         this.#services = services;
 
@@ -32,7 +33,6 @@ export class GenerativeChatClient extends BaseDiscordClient {
         this.#replyService = services.replyService;
         this.#helpService = services.helpService;
         this.#taskQueue = services.taskQueue;
-        this.logger = services.getLogger('GenerativeChatClient');
 
         this.#registerEvents();
     }
@@ -56,10 +56,10 @@ export class GenerativeChatClient extends BaseDiscordClient {
 
         this.logger.info('Replying to message...');
 
-        const promptResponseTask = this.#services.getLlmPromptResponseTask(message, this.#context) as BaseTask<OllamaMessage[]>;
-        promptResponseTask.onSuccess = (payload: OllamaMessage[]) => { this.#context = this.#mergeContexts(this.#context, payload); };
+        const messageTask = this.#services.getMessageTask(message, this.#context) as BaseTask<OllamaMessage[]>;
+        messageTask.onSuccess = (payload: OllamaMessage[]) => { this.#context = this.#mergeContexts(this.#context, payload); };
 
-        this.#taskQueue.add(promptResponseTask);
+        this.#taskQueue.add(messageTask);
         await this.#typingService.startTyping(message);
     }
 
@@ -100,7 +100,7 @@ export class GenerativeChatClient extends BaseDiscordClient {
             await interaction.editReply({
                 content: `Are you sure you want to clear the conversational context of ${this.#context.length} messages?`
                     + ` This will make me forget everything we've discussed up to this point.`,
-                components: new LargeLanguageModelConfirmClearActionRow(this.#services).build()
+                components: new ChatConfirmClearActionRow(this.#services).build()
             });
         } catch {
             this.logger.error('An error occurred while asking to clear the Ollama context.');
@@ -146,12 +146,14 @@ export class GenerativeChatClient extends BaseDiscordClient {
             return;
         }
 
-        const emojiResponseTask = this.#services.getMessageReactionTask(reaction, user, this.#context);
-        this.#taskQueue.add(emojiResponseTask as BaseTask<OllamaMessage[]>);
+        const emojiReactionTask = this.#services.getEmojiReactionTask(reaction, user, this.#context);
+        this.#taskQueue.add(emojiReactionTask as BaseTask<OllamaMessage[]>);
 
         await this.#typingService.startTyping(reaction.message as DiscordMessage);
 
-        emojiResponseTask.onSuccess = (payload: OllamaMessage[]) => { this.#context = this.#mergeContexts(this.#context, payload); };
+        emojiReactionTask.onSuccess = (payload: OllamaMessage[]) => {
+            this.#context = this.#mergeContexts(this.#context, payload);
+        };
     }
 
     #mergeContexts(oldContext: OllamaMessage[], newContext: OllamaMessage[]): OllamaMessage[] {

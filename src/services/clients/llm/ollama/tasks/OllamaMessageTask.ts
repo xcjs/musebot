@@ -13,11 +13,10 @@ import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.j
 import { OllamaReplyService } from '../../../chat/discord/ollama/OllamaReplyService.js';
 import { OllamaStreamingReplyService } from '../../../chat/discord/ollama/OllamaStreamingReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
-import { IPromptResponseTask } from '../../tasks/IPromptResponseTask.js';
 import { OllamaRole } from '../enums/OllamaRole.js';
 import { OllamaClient } from '../OllamaClient.js';
 
-export class OllamaPromptResponseTask extends BaseTask<OllamaMessage[]> implements IPromptResponseTask {
+export class OllamaMessageTask extends BaseTask<OllamaMessage[]> {
     override get taskChannel(): string {
         return `${this.#environmentSettings.ollamaTaskChannel}_${this.#ollamaClient.host}`;
     }
@@ -46,7 +45,7 @@ export class OllamaPromptResponseTask extends BaseTask<OllamaMessage[]> implemen
         message: DiscordMessage,
         context: OllamaMessage[]) {
         super(services);
-        this.logger = services.getLogger('OllamaPromptResponseTask');
+        this.logger = services.getLogger('OllamaMessageTask');
 
         this.#services = services;
 

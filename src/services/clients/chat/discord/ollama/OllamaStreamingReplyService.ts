@@ -3,7 +3,7 @@ import { ActionRowBuilder, ButtonBuilder, Message } from 'discord.js';
 import { splitText } from '../../../../../utilities/string-utilities.js';
 import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
-import { LargeLanguageModelActionRow } from '../components/buttonRows/LargeLanguageModelActionRow.js';
+import { ChatActionRow } from '../components/buttonRows/ChatActionRow.js';
 import { DiscordConstants } from '../enums/DiscordConstants.js';
 
 export class OllamaStreamingReplyService {
@@ -24,7 +24,7 @@ export class OllamaStreamingReplyService {
         message: Message,
         responseBatch: string,
         done: boolean): Promise<Message[]> {
-        const components = done ? new LargeLanguageModelActionRow(this.#services).build() : null;
+        const components = done ? new ChatActionRow(this.#services).build() : null;
 
         if (this.#currentReply() === null
             && responseBatch.length <= DiscordConstants.ContentMaxLength) {

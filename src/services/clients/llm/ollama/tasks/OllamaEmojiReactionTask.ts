@@ -12,10 +12,9 @@ import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.j
 import { OllamaReplyService } from '../../../chat/discord/ollama/OllamaReplyService.js';
 import { OllamaStreamingReplyService } from '../../../chat/discord/ollama/OllamaStreamingReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
-import { IEmojiResponseTask } from '../../tasks/IEmojiResponseTask.js';
 import { OllamaClient } from '../OllamaClient.js';
 
-export class OllamaEmojiResponseTask extends BaseTask<OllamaMessage[]> implements IEmojiResponseTask {
+export class OllamaEmojiReactionTask extends BaseTask<OllamaMessage[]> {
     override get taskChannel(): string {
         return `${this.#environmentSettings.ollamaTaskChannel}_${this.#ollamaClient.host}`;
     }
@@ -46,7 +45,7 @@ export class OllamaEmojiResponseTask extends BaseTask<OllamaMessage[]> implement
         user: User,
         context: OllamaMessage[]) {
         super(services);
-        this.logger = services.getLogger('PromptResponseTask');
+        this.logger = services.getLogger('OllamaEmojiReactionTask');
 
         this.#services = services;
 
