@@ -3,13 +3,14 @@ import { GenerateRequest, GenerateResponse } from 'ollama';
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { ApiResourceType } from '../../../../parallelization/ApiResourceType.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { OllamaClient } from '../OllamaClient.js';
 
 export class OllamaGenerateTask extends BaseTask<IHttpExchange<GenerateRequest, GenerateResponse>> {
     override get taskChannel(): string {
-        return `${this.#environmentSettings.ollamaTaskChannel}_${this.#ollamaClient.host}`;
+        return this.parallelizationStrategy.getTaskChannel(ApiResourceType.LargeLanguageModel, this.#ollamaClient.host);
     }
 
     override set onSuccess(callback: (payload: IHttpExchange<GenerateRequest, GenerateResponse>) => void) {

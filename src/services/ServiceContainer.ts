@@ -10,6 +10,7 @@ import { GenerateRequest, GenerateResponse, Message as OllamaMessage } from 'oll
 
 import { BotFunction } from '../enums/BotFunction.js';
 import { BotInteraction } from '../enums/BotInteraction.js';
+import { TaskQueueStrategy } from '../enums/TaskQueueStrategy.js';
 import { IHttpExchange } from '../models/IHttpExchange.js';
 import { getRandomArrayEntry } from '../utilities/random-utilities.js';
 import { ComfyUiReplyService } from './clients/chat/discord/comfy-ui/ComfyUiReplyService.js';
@@ -60,6 +61,9 @@ import { IHelpService } from './help/IHelpService.js';
 import { ILogger } from './ILogger.js';
 import { IServiceContainer } from './IServiceContainer.js';
 import { Logger } from './Logger.js';
+import { IParallelizationStrategy } from './parallelization/IParallelizationStrategy.js';
+import { ParallelStrategy } from './parallelization/ParallelStrategy.js';
+import { SerialStrategy } from './parallelization/SerialStrategy.js';
 import { ITaskQueue } from './tasks/ITaskQueue.js';
 import { BaseTask } from './tasks/models/BaseTask.js';
 import { TaskQueue } from './tasks/TaskQueue.js';
@@ -107,6 +111,11 @@ export class ServiceContainer implements IServiceContainer {
     #workflowService: IWorkflowService;
     get workflowService(): IWorkflowService {
         return this.#workflowService;
+    }
+
+    #parallelizationStrategy: IParallelizationStrategy;
+    get parallelizationStrategy(): IParallelizationStrategy {
+        return this.#parallelizationStrategy;
     }
 
     // Transients -------------------------------------------------------------/
@@ -272,13 +281,22 @@ export class ServiceContainer implements IServiceContainer {
         });
 
         switch (this.#environmentSettings.botFunction) {
+            case BotFunction.Chat:
+                this.#helpService = new ChatHelpService(this);
+                this.#generativeChatClient = new GenerativeChatClient(this);
+                break;
             case BotFunction.Media:
                 this.#helpService = new MediaHelpService(this);
                 this.#generativeChatClient = new GenerativeMediaChatClient(this);
                 break;
-            case BotFunction.Chat:
-                this.#helpService = new ChatHelpService(this);
-                this.#generativeChatClient = new GenerativeChatClient(this);
+        }
+
+        switch(this.#environmentSettings.taskQueueStrategy) {
+            case TaskQueueStrategy.Parallel:
+                this.#parallelizationStrategy = new ParallelStrategy();
+                break;
+            default:
+                this.#parallelizationStrategy = new SerialStrategy();
                 break;
         }
     }

@@ -2,7 +2,6 @@ import { Message } from 'discord.js';
 
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
-import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
@@ -15,7 +14,6 @@ import { IWorkflowService } from '../services/IWorkflowService.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 
 export class ComfyUiAttachmentTask extends ComfyUiBaseTask {
-    #environmentSettings: IEnvironmentSettings;
     #workflowService: IWorkflowService;
     #comfyUiClient: ComfyUiClient;
     #comfyUiReplyService: ComfyUiReplyService;
@@ -24,10 +22,6 @@ export class ComfyUiAttachmentTask extends ComfyUiBaseTask {
     #message: Message;
     #prompt: string;
 
-    override get taskChannel(): string {
-        return `${this.#environmentSettings.stableDiffusionTaskChannel}_${this.#comfyUiClient.host}`;
-    }
-
     constructor(
         services: IServiceContainer,
         message: Message,
@@ -35,7 +29,6 @@ export class ComfyUiAttachmentTask extends ComfyUiBaseTask {
         super(services);
         this.logger = services.getLogger('ComfyUiAttachmentTask');
 
-        this.#environmentSettings = services.environmentSettings;
         this.#workflowService = services.workflowService;
         this.#comfyUiClient = services.comfyUiClient;
         this.#comfyUiReplyService = services.comfyUiReplyService;

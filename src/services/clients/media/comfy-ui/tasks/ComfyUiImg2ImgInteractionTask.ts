@@ -26,10 +26,6 @@ export class ComfyUiImg2ImgInteractionTask extends ComfyUiBaseTask {
     #interaction: ButtonInteraction;
     #workflow: IWorkflow;
 
-    override get taskChannel(): string {
-        return `${this.#environmentSettings.stableDiffusionTaskChannel}_${this.#comfyUiClient.host}`;
-    }
-
     constructor(services: IServiceContainer, interaction: ButtonInteraction, workflow: IWorkflow) {
         super(services);
         this.logger = services.getLogger('ComfyUiImg2ImgInteractionTask');

@@ -7,6 +7,7 @@ import { beforeEach, describe, expect, it } from '@jest/globals';
 import nodePackage from '../../../package.json' with { type: 'json' };
 import { BotFunction } from '../../enums/BotFunction.js';
 import { NodeEnvironment } from '../../enums/NodeEnvironment.js';
+import { TaskQueueStrategy } from '../../enums/TaskQueueStrategy.js';
 import { EnvironmentKey } from './constants/EnvironmentKey.js';
 import { EnvironmentSettings } from './EnvironmentSettings';
 
@@ -236,33 +237,26 @@ describe('EnvironmentSettings', () => {
         });
     });
 
-    describe('stableDiffusionTaskChannel', () => {
-        it('should default an empty string', () => {
+    describe('taskQueueStrategy', () => {
+        it('should default to serial', () => {
             const environmentSettings = new EnvironmentSettings();
-            expect(environmentSettings.stableDiffusionTaskChannel).toBe('');
+            expect(environmentSettings.taskQueueStrategy).toBe(TaskQueueStrategy.Serial);
         });
 
-        it('should prefer the provided value', () => {
-            const mockTaskChannel = 'ComfyUI';
-            process.env[EnvironmentKey.StableDiffusionTaskChannel] = mockTaskChannel;
+        it('should support serial', () => {
+            const mockTaskQueueStrategy = 'serial';
+            process.env[EnvironmentKey.TaskQueueStrategy] = mockTaskQueueStrategy;
             const environmentSettings = new EnvironmentSettings();
 
-            expect(environmentSettings.stableDiffusionTaskChannel).toBe(mockTaskChannel);
-        });
-    });
-
-    describe('ollamaTaskChannel', () => {
-        it('should default an empty string', () => {
-            const environmentSettings = new EnvironmentSettings();
-            expect(environmentSettings.ollamaTaskChannel).toBe('');
+            expect(environmentSettings.taskQueueStrategy).toBe(TaskQueueStrategy.Serial);
         });
 
-        it('should prefer the provided value', () => {
-            const mockTaskChannel = 'Ollama';
-            process.env[EnvironmentKey.OllamaTaskChannel] = mockTaskChannel;
+        it('should support parallel', () => {
+            const mockTaskQueueStrategy = 'parallel';
+            process.env[EnvironmentKey.TaskQueueStrategy] = mockTaskQueueStrategy;
             const environmentSettings = new EnvironmentSettings();
 
-            expect(environmentSettings.ollamaTaskChannel).toBe(mockTaskChannel);
+            expect(environmentSettings.taskQueueStrategy).toBe(TaskQueueStrategy.Parallel);
         });
     });
 

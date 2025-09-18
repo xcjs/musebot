@@ -1,5 +1,6 @@
 import { BotFunction } from '../../enums/BotFunction.js';
 import { NodeEnvironment } from '../../enums/NodeEnvironment.js';
+import { TaskQueueStrategy } from '../../enums/TaskQueueStrategy.js';
 
 export interface IEnvironmentSettings {
     packageName: string;
@@ -11,6 +12,7 @@ export interface IEnvironmentSettings {
 
     maxTaskAttempts: number;
     taskRetryDelayMilliseconds: number;
+    taskQueueStrategy: TaskQueueStrategy;
 
     discordToken: string;
     discordChannels: Array<string>;
@@ -23,13 +25,11 @@ export interface IEnvironmentSettings {
 
     stableDiffusionHosts: Array<URL>;
     stableDiffusionGuidanceScaleInterval: number;
-    stableDiffusionTaskChannel: string;
 
     ollamaHosts: Array<URL>;
     ollamaModels: Array<string>;
     ollamaSystemPrompt: string;
     ollamaStreamsResponse: boolean;
-    ollamaTaskChannel: string;
 
     stableDiffusionOllamaPrompts: Array<string>;
 

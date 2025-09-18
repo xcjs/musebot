@@ -1,5 +1,6 @@
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { ApiResourceType } from '../../../../parallelization/ApiResourceType.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
@@ -8,7 +9,7 @@ import { IWorkflowService } from '../services/IWorkflowService.js';
 
 export abstract class ComfyUiBaseTask extends BaseTask<void> {
     override get taskChannel(): string {
-        return `${this.environmentSettings.stableDiffusionTaskChannel}_${this.comfyUiClient.host}`;
+        return this.parallelizationStrategy.getTaskChannel(ApiResourceType.Media, this.comfyUiClient.host);
     }
 
     environmentSettings: IEnvironmentSettings;

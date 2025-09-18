@@ -3,6 +3,7 @@ import { randomUUID, UUID } from 'node:crypto';
 import { IEnvironmentSettings } from '../../environment-settings/IEnvironmentSettings.js';
 import { ILogger } from '../../ILogger.js';
 import { IServiceContainer } from '../../IServiceContainer.js';
+import { IParallelizationStrategy } from '../../parallelization/IParallelizationStrategy.js';
 import { TaskStatus } from '../enums/TaskStatus.js';
 
 export abstract class BaseTask<T> {
@@ -58,6 +59,7 @@ export abstract class BaseTask<T> {
 
     set onSuccess(callback: (payload: T) => void) { }
 
+    parallelizationStrategy: IParallelizationStrategy;
     logger: ILogger;
 
     #environmentSettings: IEnvironmentSettings;
@@ -71,6 +73,8 @@ export abstract class BaseTask<T> {
     #delayUntil: Date;
 
     constructor(services: IServiceContainer) {
+        this.parallelizationStrategy = services.parallelizationStrategy;
+
         this.#environmentSettings = services.environmentSettings;
 
         this.#id = randomUUID();

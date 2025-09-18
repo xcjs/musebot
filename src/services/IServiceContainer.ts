@@ -25,6 +25,7 @@ import { IContentTypeService } from './features/IContentTypeService.js';
 import { IFeatureService } from './features/IFeatureService.js';
 import { IHelpService } from './help/IHelpService.js';
 import { ILogger } from './ILogger.js';
+import { IParallelizationStrategy } from './parallelization/IParallelizationStrategy.js';
 import { ITaskQueue } from './tasks/ITaskQueue.js';
 import { BaseTask } from './tasks/models/BaseTask.js';
 
@@ -39,6 +40,7 @@ export interface IServiceContainer {
     generativeChatClient: IGenerativeChatClient;
     helpService: IHelpService;
     workflowService: IWorkflowService;
+    parallelizationStrategy: IParallelizationStrategy;
 
     // Transients -------------------------------------------------------------/
 

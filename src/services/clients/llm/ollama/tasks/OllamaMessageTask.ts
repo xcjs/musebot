@@ -6,6 +6,7 @@ import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironm
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../../../../features/IFeatureService.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { ApiResourceType } from '../../../../parallelization/ApiResourceType.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
@@ -18,7 +19,7 @@ import { OllamaClient } from '../OllamaClient.js';
 
 export class OllamaMessageTask extends BaseTask<OllamaMessage[]> {
     override get taskChannel(): string {
-        return `${this.#environmentSettings.ollamaTaskChannel}_${this.#ollamaClient.host}`;
+        return this.parallelizationStrategy.getTaskChannel(ApiResourceType.LargeLanguageModel, this.#ollamaClient.host);
     }
 
     override set onSuccess(callback: (context: OllamaMessage[]) => void) {

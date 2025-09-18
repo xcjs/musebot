@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 import nodePackage from '../../../package.json' with { type: 'json' };
 import { BotFunction } from '../../enums/BotFunction.js';
 import { NodeEnvironment } from '../../enums/NodeEnvironment.js';
+import { TaskQueueStrategy } from '../../enums/TaskQueueStrategy.js';
 import { toTitleCase } from '../../utilities/string-utilities.js';
 import { ILogger } from '../ILogger.js';
 import { Logger } from '../Logger.js';
@@ -44,6 +45,10 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         return this.#taskRetryDelayMilliseconds;
     }
 
+    #taskQueueStrategy: TaskQueueStrategy;
+    get taskQueueStrategy(): TaskQueueStrategy {
+        return this.#taskQueueStrategy;
+    }
 
     #discordToken: string;
     get discordToken(): string {
@@ -90,11 +95,6 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         return this.#stableDiffusionGuidanceScaleInterval;
     }
 
-    #stableDiffusionTaskChannel: string = '';
-    get stableDiffusionTaskChannel(): string {
-        return this.#stableDiffusionTaskChannel;
-    }
-
     #ollamaHosts: URL[] = [];
     get ollamaHosts(): URL[] {
         return this.#ollamaHosts;
@@ -113,11 +113,6 @@ export class EnvironmentSettings implements IEnvironmentSettings {
     #ollamaStreamsResponse: boolean = false;
     get ollamaStreamsResponse(): boolean {
         return this.#ollamaStreamsResponse;
-    }
-
-    #ollamaTaskChannel: string = '';
-    get ollamaTaskChannel(): string {
-        return this.#ollamaTaskChannel;
     }
 
     #stableDiffusionOllamaPrompts: string[] = ['Describe something or someone with extraordinary detail.'];
@@ -155,6 +150,7 @@ export class EnvironmentSettings implements IEnvironmentSettings {
 
         this.#maxTaskAttempts = this.#readDefaultableNumber(EnvironmentKey.TaskQueueMaxAttempts, this.maxTaskAttempts);
         this.#taskRetryDelayMilliseconds = this.#readDefaultableNumber(EnvironmentKey.TaskQueueRetryDelayMs, this.taskRetryDelayMilliseconds);
+        this.#taskQueueStrategy = this.#readEnum(EnvironmentKey.TaskQueueStrategy, Object.values(TaskQueueStrategy), TaskQueueStrategy.Serial);
 
         this.#discordToken = this.#readRequiredString(EnvironmentKey.AuthenticationToken);
         this.#discordChannels = this.#readDelimitedList(EnvironmentKey.ChatChannels, ',');
@@ -168,15 +164,12 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         this.#stableDiffusionHosts = this.#readDelimitedList(EnvironmentKey.StableDiffusionHosts, ',')
             .map(x => new URL(x));
 
-        this.#stableDiffusionTaskChannel = this.#readDefaultableString(EnvironmentKey.StableDiffusionTaskChannel, this.stableDiffusionTaskChannel);
-
         this.#ollamaHosts = this.#readDelimitedList(EnvironmentKey.OllamaHosts, ',')
             .map(x => new URL(x));
 
         this.#ollamaModels = this.#readDelimitedList(EnvironmentKey.OllamaModels, ',');
         this.#ollamaSystemPrompt = this.#readDefaultableString(EnvironmentKey.OllamaSystemPrompt, '');
         this.#ollamaStreamsResponse = this.#readBoolean(EnvironmentKey.OllamaStreamsResponse);
-        this.#ollamaTaskChannel = this.#readDefaultableString(EnvironmentKey.OllamaTaskChannel, this.ollamaTaskChannel);
 
         this.#stableDiffusionOllamaPrompts = this.#readDelimitedList(EnvironmentKey.StableDiffusionOllamaPrompts, '|');
 
@@ -215,13 +208,11 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         this.#logger.info(`${EnvironmentKey.BotErrorMessage}: ${this.errorMessage}`);
 
         this.#logger.info(`${EnvironmentKey.StableDiffusionHosts}: ${this.stableDiffusionHosts.join(', ')}`);
-        this.#logger.info(`${EnvironmentKey.StableDiffusionTaskChannel}: ${this.stableDiffusionTaskChannel}`);
 
         this.#logger.info(`${EnvironmentKey.OllamaHosts}: ${this.ollamaHosts.join(', ')}`);
         this.#logger.info(`${EnvironmentKey.OllamaModels}: ${this.ollamaModels.join(', ')}`);
         this.#logger.info(`${EnvironmentKey.OllamaSystemPrompt}: ${this.ollamaSystemPrompt}`);
         this.#logger.info(`${EnvironmentKey.OllamaStreamsResponse}: ${this.ollamaStreamsResponse}`);
-        this.#logger.info(`${EnvironmentKey.OllamaTaskChannel}: ${this.ollamaTaskChannel}`);
 
         this.#logger.info(`${EnvironmentKey.StableDiffusionOllamaPrompts}: ${this.stableDiffusionOllamaPrompts.join(' | ')}`);
     }
@@ -255,8 +246,8 @@ export class EnvironmentSettings implements IEnvironmentSettings {
     * @returns {T} - The validated value from the environment variable.
     * @throws {Error} - Throws an error if the environment variable is not one of the allowed values.
     */
-    #readEnum<T>(key: EnvironmentKey, enumValues: T[]): T {
-        const valueString = process.env[key].trim() as T;
+    #readEnum<T>(key: EnvironmentKey, enumValues: T[], defaultValue: T | null = null): T {
+        const valueString = process.env[key]?.trim() as T || defaultValue;
 
         if(!((Object.values(enumValues) as string[]).includes(valueString as string))) {
             throw new Error(`${key} must be one of the following values: ${Object.values(enumValues).join(', ')}`);
