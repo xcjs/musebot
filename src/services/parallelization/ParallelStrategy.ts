@@ -8,15 +8,9 @@ export class ParallelStrategy implements IParallelizationStrategy {
 
     getTaskChannel(resourceType: ApiResourceType, resourceUrl: URL | null): string {
         const parts: string[] = [];
-
-        if (resourceType === ApiResourceType.Chat
-            || resourceType === ApiResourceType.Media) {
-                resourceType = ApiResourceType.GenerativeAI
-        }
-
         parts.push(resourceType);
 
-        if(resourceUrl !== null) {
+        if (resourceUrl !== null) {
             parts.push(resourceUrl.toString());
         }
 
