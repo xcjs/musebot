@@ -77,6 +77,8 @@ export abstract class BaseTask<T> {
 
         this.#environmentSettings = services.environmentSettings;
 
+        this.logger = services.getLogger('BaseTask');
+
         this.#id = randomUUID();
         this.#createdTime = new Date();
         this.#maxAttempts = services.environmentSettings.maxTaskAttempts;
