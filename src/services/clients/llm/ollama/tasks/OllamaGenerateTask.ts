@@ -1,43 +1,35 @@
 import { GenerateRequest, GenerateResponse } from 'ollama';
 
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
-import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
-import { ApiResourceType } from '../../../../parallelization/ApiResourceType.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
-import { BaseTask } from '../../../../tasks/models/BaseTask.js';
-import { OllamaClient } from '../OllamaClient.js';
+import { OllamaBaseTask } from './OllamaBaseTask.js';
 
-export class OllamaGenerateTask extends BaseTask<IHttpExchange<GenerateRequest, GenerateResponse>> {
-    override get taskChannel(): string {
-        return this.parallelizationStrategy.getTaskChannel(ApiResourceType.LargeLanguageModel, this.#ollamaClient.host);
-    }
+export class OllamaGenerateTask extends OllamaBaseTask<IHttpExchange<GenerateRequest, GenerateResponse>> {
 
     override set onSuccess(callback: (payload: IHttpExchange<GenerateRequest, GenerateResponse>) => void) {
         this.#onSuccess = callback;
     }
 
-    #environmentSettings: IEnvironmentSettings;
-    #ollamaClient: OllamaClient;
-
-    #onSuccess: (payload: IHttpExchange<GenerateRequest, GenerateResponse>) => void = () => { };
     #prompt: string;
 
     #ollamaExchange: IHttpExchange<GenerateRequest, GenerateResponse>;
+
+    #onSuccess: (payload: IHttpExchange<GenerateRequest, GenerateResponse>) => void = () => { };
 
     constructor(services: IServiceContainer, prompt: string) {
         super(services);
         this.logger = services.getLogger('OllamaGenerateTask');
 
-        this.#environmentSettings = services.environmentSettings;
-        this.#ollamaClient = services.ollamaClient;
+        this.environmentSettings = services.environmentSettings;
+        this.ollamaClient = services.ollamaClient;
 
         this.#prompt = prompt;
     }
 
     override async process(): Promise<void> {
         this.logger.info('Starting task with prompt:', this.#prompt);
-        this.#ollamaExchange = await this.#ollamaClient.generate(this.#prompt);
+        this.#ollamaExchange = await this.ollamaClient.generate(this.#prompt);
     }
 
     override async postProcess(): Promise<void> {

@@ -1,37 +1,23 @@
 import { Message as DiscordMessage, MessageReaction, User } from 'discord.js';
 import { Message as OllamaMessage } from 'ollama';
 
-import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../../../../features/IFeatureService.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
-import { ApiResourceType } from '../../../../parallelization/ApiResourceType.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.js';
-import { OllamaReplyService } from '../../../chat/discord/ollama/OllamaReplyService.js';
-import { OllamaStreamingReplyService } from '../../../chat/discord/ollama/OllamaStreamingReplyService.js';
-import { IReplyService } from '../../../chat/IReplyService.js';
-import { OllamaClient } from '../OllamaClient.js';
+import { OllamaBaseTask } from './OllamaBaseTask.js';
 
-export class OllamaEmojiReactionTask extends BaseTask<OllamaMessage[]> {
-    override get taskChannel(): string {
-        return this.parallelizationStrategy.getTaskChannel(ApiResourceType.LargeLanguageModel, this.#ollamaClient.host);
-    }
-
+export class OllamaEmojiReactionTask extends OllamaBaseTask<OllamaMessage[]> {
     override set onSuccess(callback: (payload: OllamaMessage[]) => void) {
         this.#onSuccess = callback;
     }
 
     #services: IServiceContainer;
 
-    #environmentSettings: IEnvironmentSettings;
     #featureService: IFeatureService;
-    #ollamaClient: OllamaClient;
-    #ollamaReplyService: OllamaReplyService;
-    #ollamaStreamingReplyService: OllamaStreamingReplyService;
-    #replyService: IReplyService;
     #taskQueue: ITaskQueue;
 
     #reaction: MessageReaction;
@@ -50,12 +36,7 @@ export class OllamaEmojiReactionTask extends BaseTask<OllamaMessage[]> {
 
         this.#services = services;
 
-        this.#environmentSettings = services.environmentSettings;
         this.#featureService = services.featureService;
-        this.#ollamaClient = services.ollamaClient;
-        this.#ollamaReplyService = services.ollamaReplyService;
-        this.#ollamaStreamingReplyService = services.ollamaStreamingReplyService;
-        this.#replyService = services.replyService;
         this.#taskQueue = services.taskQueue;
 
         this.#reaction = reaction;
@@ -64,18 +45,18 @@ export class OllamaEmojiReactionTask extends BaseTask<OllamaMessage[]> {
     }
 
     override async process(): Promise<void> {
-        const mention = this.#replyService.mention(this.#user);
+        const mention = this.replyService.mention(this.#user);
         const prompt = `${mention} reacted to your response with ${this.#reaction.emoji.name}. React to them regarding their reaction.`
 
-        if (this.#environmentSettings.ollamaStreamsResponse) {
+        if (this.environmentSettings.ollamaStreamsResponse) {
             await this.#processAsStream(prompt, this.#context);
             return;
         }
 
-        const exchange = await this.#ollamaClient.sendMessage(prompt, this.#context);
+        const exchange = await this.ollamaClient.sendMessage(prompt, this.#context);
         this.#context = exchange.data;
 
-        const replies = await this.#ollamaReplyService.reply(this.#reaction.message as DiscordMessage, exchange.exchange, mention);
+        const replies = await this.ollamaReplyService.reply(this.#reaction.message as DiscordMessage, exchange.exchange, mention);
 
         if (this.#featureService.hasFeature(SupportedFeature.Txt2Img)
             && replies.length > 0) {
@@ -86,18 +67,18 @@ export class OllamaEmojiReactionTask extends BaseTask<OllamaMessage[]> {
     override async postProcess(): Promise<void> {
         switch (this.taskStatus) {
             case TaskStatus.Dead:
-                await this.#replyService.replyWithError(this.#reaction.message as DiscordMessage);
+                await this.replyService.replyWithError(this.#reaction.message as DiscordMessage);
                 break;
             case TaskStatus.Successful:
-                this.#onSuccess(this.#context);
+                this.onSuccess(this.#context);
                 break;
         }
 
-        this.#ollamaStreamingReplyService.clearState();
+        this.ollamaStreamingReplyService.clearState();
     }
 
     async #processAsStream(formattedPrompt: string, context: OllamaMessage[]): Promise<void> {
-        const exchange = await this.#ollamaClient.sendMessageAndGetStream(formattedPrompt, context);
+        const exchange = await this.ollamaClient.sendMessageAndGetStream(formattedPrompt, context);
 
         let startTime = performance.now();
         let fullResponse = '';
@@ -113,7 +94,7 @@ export class OllamaEmojiReactionTask extends BaseTask<OllamaMessage[]> {
                 / DiscordConstants.MaxRequestsPerSecond || response.done) {
                 this.logger.info('Flushing response batch.');
 
-                replies = await this.#ollamaStreamingReplyService.reply(this.#reaction.message as DiscordMessage, responseBatch, !!response.done);
+                replies = await this.ollamaStreamingReplyService.reply(this.#reaction.message as DiscordMessage, responseBatch, !!response.done);
                 startTime = performance.now();
 
                 fullResponse += responseBatch;

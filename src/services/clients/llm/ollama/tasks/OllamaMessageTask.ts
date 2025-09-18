@@ -2,44 +2,30 @@ import { Message as DiscordMessage } from 'discord.js';
 import { Message as OllamaMessage } from 'ollama';
 
 import { endsWithWhitespace, hasOnly, isOnlyWhitespace } from '../../../../../utilities/string-utilities.js';
-import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../../../../features/IFeatureService.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
-import { ApiResourceType } from '../../../../parallelization/ApiResourceType.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.js';
-import { OllamaReplyService } from '../../../chat/discord/ollama/OllamaReplyService.js';
-import { OllamaStreamingReplyService } from '../../../chat/discord/ollama/OllamaStreamingReplyService.js';
-import { IReplyService } from '../../../chat/IReplyService.js';
 import { OllamaRole } from '../enums/OllamaRole.js';
-import { OllamaClient } from '../OllamaClient.js';
+import { OllamaBaseTask } from './OllamaBaseTask.js';
 
-export class OllamaMessageTask extends BaseTask<OllamaMessage[]> {
-    override get taskChannel(): string {
-        return this.parallelizationStrategy.getTaskChannel(ApiResourceType.LargeLanguageModel, this.#ollamaClient.host);
-    }
-
-    override set onSuccess(callback: (context: OllamaMessage[]) => void) {
+export class OllamaMessageTask extends OllamaBaseTask<OllamaMessage[]> {
+    override set onSuccess(callback: (payload: OllamaMessage[]) => void) {
         this.#onSuccess = callback;
     }
 
     #services: IServiceContainer;
 
-    #environmentSettings: IEnvironmentSettings;
     #featureService: IFeatureService;
-    #ollamaClient: OllamaClient;
-    #ollamaReplyService: OllamaReplyService;
-    #ollamaStreamingReplyService: OllamaStreamingReplyService;
-    #replyService: IReplyService;
     #taskQueue: ITaskQueue;
 
     #message: DiscordMessage;
     #context: OllamaMessage[] = [];
 
-    #onSuccess: (context: OllamaMessage[]) => void = () => { };
+    #onSuccess: (payload: OllamaMessage[]) => void = () => { };
 
     constructor(
         services: IServiceContainer,
@@ -50,12 +36,7 @@ export class OllamaMessageTask extends BaseTask<OllamaMessage[]> {
 
         this.#services = services;
 
-        this.#environmentSettings = services.environmentSettings;
         this.#featureService = services.featureService;
-        this.#ollamaClient = services.ollamaClient;
-        this.#ollamaReplyService = services.ollamaReplyService;
-        this.#ollamaStreamingReplyService = services.ollamaStreamingReplyService;
-        this.#replyService = services.replyService;
         this.#taskQueue = services.taskQueue;
 
         this.#message = message;
@@ -65,17 +46,17 @@ export class OllamaMessageTask extends BaseTask<OllamaMessage[]> {
     override async process(): Promise<void> {
         await super.process();
 
-        const formattedMessage = `${this.#message.author.displayName}: ${this.#replyService.getMessageWithoutBotMentions(this.#message)}`;
+        const formattedMessage = `${this.#message.author.displayName}: ${this.replyService.getMessageWithoutBotMentions(this.#message)}`;
 
-        if (this.#environmentSettings.ollamaStreamsResponse) {
+        if (this.environmentSettings.ollamaStreamsResponse) {
             await this.#processAsStream(formattedMessage, this.#context);
             return;
         }
 
-        const exchange = await this.#ollamaClient.sendMessage(formattedMessage, this.#context);
+        const exchange = await this.ollamaClient.sendMessage(formattedMessage, this.#context);
         this.#context = exchange.data;
 
-        const replies = await this.#ollamaReplyService.reply(this.#message, exchange.exchange);
+        const replies = await this.ollamaReplyService.reply(this.#message, exchange.exchange);
 
         if (this.#featureService.hasFeature(SupportedFeature.Txt2Img)
             && replies.length > 0) {
@@ -88,18 +69,18 @@ export class OllamaMessageTask extends BaseTask<OllamaMessage[]> {
 
         switch (this.taskStatus) {
             case TaskStatus.Dead:
-                await this.#replyService.replyWithError(this.#message);
+                await this.replyService.replyWithError(this.#message);
                 break;
             case TaskStatus.Successful:
                 this.#onSuccess(this.#context);
                 break;
         }
 
-        this.#ollamaStreamingReplyService.clearState();
+        this.ollamaStreamingReplyService.clearState();
     }
 
     async #processAsStream(formattedMessage: string, context: OllamaMessage[]): Promise<void> {
-        const exchange = await this.#ollamaClient.sendMessageAndGetStream(formattedMessage, context);
+        const exchange = await this.ollamaClient.sendMessageAndGetStream(formattedMessage, context);
 
         let averageResponseInMs = 0;
         let endTime = performance.now();
@@ -142,7 +123,7 @@ export class OllamaMessageTask extends BaseTask<OllamaMessage[]> {
                 }
             }
 
-            replies = await this.#ollamaStreamingReplyService.reply(this.#message, responseBatch, response.done);
+            replies = await this.ollamaStreamingReplyService.reply(this.#message, responseBatch, response.done);
             responseBatch = '';
 
             if (response.done) {
@@ -177,7 +158,7 @@ export class OllamaMessageTask extends BaseTask<OllamaMessage[]> {
         // TODO: Consider creating an OllamaGenerateResponseTask to do this instead.
         try
         {
-            const exchange = await this.#ollamaClient.generate(llmImagePrompt);
+            const exchange = await this.ollamaClient.generate(llmImagePrompt);
             imagePrompt = exchange.response.response;
         }
         catch(error)
