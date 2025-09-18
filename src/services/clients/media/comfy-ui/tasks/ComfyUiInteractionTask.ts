@@ -40,10 +40,11 @@ export class ComfyUiInteractionTask extends ComfyUiBaseTask {
             return;
         }
 
-        const renderRequests = attachments
+        const inputRenderRequests = attachments
             .map(attachment => SerializableRenderRequest.fromJson(attachment.description));
+        const outputRenderRequests: SerializableRenderRequest[] = [];
 
-        const workflows = renderRequests.map(renderRequest => this.workflowService.workflows
+        const workflows = inputRenderRequests.map(renderRequest => this.workflowService.workflows
             .find(workflow => workflow.name === renderRequest.workflow))
             .filter(workflow => workflow !== undefined);
 
@@ -53,24 +54,25 @@ export class ComfyUiInteractionTask extends ComfyUiBaseTask {
         let additionalAttachments: AttachmentBuilder[] = [];
 
         for (const workflow of workflows) {
-            if(i >= renderRequests.length) {
+            if (i >= inputRenderRequests.length) {
                 break;
             }
 
             const mutator = this.#services.getWorkflowMutator(this.#interaction.customId as BotInteraction, workflow);
-            const renderRequest = await mutator.mutate(renderRequests[i], this.#interaction, workflow);
+            const renderRequest = await mutator.mutate(inputRenderRequests[i], this.#interaction, workflow);
             const prompt = this.workflowService.renderWorkflow(workflow, renderRequest);
 
             content = mutator.contentMessage;
             additionalAttachments = additionalAttachments.concat(mutator.additionalAttachments);
 
             prompts.push(prompt);
+            outputRenderRequests.push(renderRequest);
             i++;
         }
 
         const mediaCollectionResponse = await this.comfyUiClient.render(prompts);
         const exchange: IHttpExchange<SerializableRenderRequest[], MediaCollectionResponse> = {
-            request: renderRequests,
+            request: outputRenderRequests,
             response: mediaCollectionResponse
         };
 
