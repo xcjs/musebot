@@ -10,7 +10,7 @@ import { RetryButton } from '../buttons/images/RetryButton.js';
 import { IActionRowBuilderFactory } from '../IActionRowBuilderFactory.js';
 import { IActionRows } from './IActionRows.js';
 
-export class StatefulMusicGenerationActionRow extends BaseComponent<ActionRowBuilder<ButtonBuilder>[]> implements IActionRows {
+export class StatefulAudioGenerationActionRow extends BaseComponent<ActionRowBuilder<ButtonBuilder>[]> implements IActionRows {
     #buttons: BaseComponent<ButtonBuilder>[] = [];
     get buttons(): BaseComponent<ButtonBuilder>[] {
         return this.#buttons;

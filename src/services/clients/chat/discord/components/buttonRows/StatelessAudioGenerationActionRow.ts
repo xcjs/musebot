@@ -6,7 +6,7 @@ import { HelpButton } from '../buttons/HelpButton.js';
 import { IActionRowBuilderFactory } from '../IActionRowBuilderFactory.js';
 import { IActionRows } from './IActionRows.js';
 
-export class StatelessMusicGenerationActionRow extends BaseComponent<ActionRowBuilder<ButtonBuilder>[]> implements IActionRows {
+export class StatelessAudioGenerationActionRow extends BaseComponent<ActionRowBuilder<ButtonBuilder>[]> implements IActionRows {
     #buttons: BaseComponent<ButtonBuilder>[] = [];
     get buttons(): BaseComponent<ButtonBuilder>[] {
         return this.#buttons;
