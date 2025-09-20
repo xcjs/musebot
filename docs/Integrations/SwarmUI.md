@@ -301,9 +301,12 @@ This should look something like:
    "maxWidth": 1024,
    "maxHeight": 1024,
    // txt2audio, txt2music, txt2vid, img2img (animated), and img2vid only below
-   // here. The unit van vary, referring to frames, seconds, etc. Refer to your
+   // here. The units can vary, referring to frames, seconds, etc. Refer to your
    // model documentation to determine the type of value.
-   "duration": 30
+   "duration": 30,
+   // Do not set duration (above) if you want to provide a random range.
+   "durationMin": 90,
+   "durationMax": 240
   },
   // The exported  ComfyUI (API) workflow nodes should begin here.
 }
@@ -339,7 +342,12 @@ This should look something like:
 * `duration`: The length of time used for certain outputs types. This usually
    applies to animations, audio, music, or video. Unit can vary based on model,
    so refer to your model documentation to understand the units this duration
-   applies to.
+   applies to. If you wish to set a random duration for your workflow, do not
+   define or set this value.
+* `durationMin`: The minimum duration to select a random duration from. Do not
+   use in conjunction with `duration`.
+* `durationMax`: The maximum duration to select a random duration from. Do not
+   use in conjunction with `duration`.
 * `label` **(img2img and img2vid workflows only)**: This is used for the
    displayed text on your custom Musebot button.
 * `title` **(img2img and img2vid workflows only)**: This is used for the title
