@@ -178,9 +178,8 @@ export class ServiceContainer implements IServiceContainer {
         switch(this.#environmentSettings.botFunction) {
             case BotFunction.Chat:
                 return new OllamaMessageTask(this, message, context);
-                break;
             case BotFunction.Media:
-                    return new ComfyUiMessageTask(this, message);
+                return new ComfyUiMessageTask(this, message);
             default:
                 throw this.#taskNotConfiguredError;
         }
