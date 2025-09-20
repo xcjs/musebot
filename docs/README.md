@@ -2,6 +2,9 @@
 
 ![Musebot Logo](assets/images/logos/musebot.jpg)
 
+Thanks for purchasing a copy of Musebot! I'm excited to see how people utilize
+it, and I hope it brings you a lot of inspiration!
+
 Musebot is an interactive chat bot designed for use in the Discord chat service.
 
 The goal of Musebot is to bring self-hosted generative AI solutions to Discord
@@ -16,6 +19,11 @@ Musebot currently supports the following generative AI solutions:
 While some documentation is included on these systems, please refer to the
 respective documentation provided by these projects for basic installation and
 configuration.
+
+## Musebot Discord Instance
+
+If you need help or support, please visit the
+[XCJS Discord](https://xcjs.com/discord) instance.
 
 ## 1. Discord Configuration
 
