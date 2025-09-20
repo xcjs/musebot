@@ -64,7 +64,7 @@ export class ComfyUiReplyService {
 
         const jsonDescriptions: string[] = renderExchange.request.map((request) => {
             const requestString = JSON.stringify(request);
-            return requestString.length <= DiscordConstants.ContentMaxLength
+            return requestString.length <= DiscordConstants.MaxAttachmentDescriptionLength
                 ? requestString
                 : '';
         });
