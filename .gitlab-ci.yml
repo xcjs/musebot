@@ -76,7 +76,9 @@ Build Distributable:
     - cp -rf build/docs/ build/pkg/docs/
     - mkdir -p build/pkg/workflows/img2img/
     - mkdir -p build/pkg/workflows/img2vid/
+    - mkdir -p build/pkg/workflows/txt2audio/
     - mkdir -p build/pkg/workflows/txt2img/
+    - mkdir -p build/pkg/workflows/txt2music/
     - mkdir -p build/pkg/workflows/txt2vid/
     - cp -f workflows/production/composer/txt2music/ace-step.json build/pkg/workflows/txt2music/ace-step.json
     - cp -f workflows/production/director/txt2img/wan.json build/pkg/workflows/txt2img/wan.json
