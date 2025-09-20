@@ -101,7 +101,7 @@ Build Distributable:
 Publish Docker Image:
   stage: Publish
   image: docker:stable
-  needs: ["Build Docker Image"]
+  needs: []
   services:
     - docker:stable-dind
   only:
