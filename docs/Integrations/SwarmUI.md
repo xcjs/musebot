@@ -27,12 +27,23 @@ for configuring and installing SwarmUI.
 Once you have SwarmUI installed and running, we recommend installing some custom
 nodes that are either useful or required for Musebot to function.
 
+Alternatively, you can use the official Musebot backend container to get started
+instead of doing this manually. This is available from the Musebot release
+channel in Discord.
+
+If you chose to install SwarmUI manually, follow the steps below.
+
 Inside the SwarmUI directory (usually installed as `SwarmUI/`), you'll find
 the ComfyUI installation in `swarmui/dlbackend/ComfyUI/`. We're interested in
 the `custom_nodes` directory within. Go ahead and navigate to that directory
 in your preferred shell.
 
-1. Install [ComfyUI-Manager](https://github.com/ltdrdata/ComfyUI-Manager). This
+1. Activate ComfyUI's virtual Python environment from within the root ComfyUI directory:
+
+   ```bash
+      . venv/bin/activate
+   ```
+2. Install [ComfyUI-Manager](https://github.com/ltdrdata/ComfyUI-Manager). This
    does require that you have both `git` and `python` (version 3) installed.
 
    ```bash
@@ -49,7 +60,7 @@ in your preferred shell.
    you can continue with the following provided CLI instructions.
 
    ![ComfyUI-Manager](../../assets/images/comfyui/comfyui-manager.jpg)
-2. Install [ComfyUI-KJNodes](https://github.com/kijai/ComfyUI-KJNodes):
+3. Install [ComfyUI-KJNodes](https://github.com/kijai/ComfyUI-KJNodes):
 
    ```bash
     git clone https://github.com/kijai/ComfyUI-KJNodes.git
@@ -58,14 +69,14 @@ in your preferred shell.
     cd ..
    ```
 
-3. Install
+4. Install
    [ComfyUI-Unload-Model](https://github.com/SeanScripts/ComfyUI-Unload-Model)
 
    ```bash
     git clone https://github.com/SeanScripts/ComfyUI-Unload-Model.git
    ```
 
-4. Install
+5. Install
    [comfyui-tooling-nodes](https://github.com/Acly/comfyui-tooling-nodes).
 
    ```bash
@@ -75,7 +86,7 @@ in your preferred shell.
     cd ..
    ```
 
-5. Restart SwarmUI and/or ComfyUI. Once again, the ComfyUI backend can be
+6. Restart SwarmUI and/or ComfyUI. Once again, the ComfyUI backend can be
    restarted from within SwarmUI. (`Server` tab » `Backends` tab » `Restart All
    Backends` button)
 
@@ -192,21 +203,32 @@ to matching directories within `./workflows`:
    into another image. Each `img2img` workflow will create a custom button in
    Musebot's interface. Workflows can be named any valid file name, but if you
    want them in a specific order, consider prefixing them with numbers.
+
+   Animated images are supported in `img2img` workflows. Animated images should
+   be exported as animated WebP images or GIF images, though beware of Discord's
+   upload size limits. WebP is probably the more size-conscious choice.
 * `img2vid`: These workflows accept a base64 encoded image and process the image
    into a video. Each `img2vid` workflow will create a custom button in
    Musebot's interface. The img2vid output must either be an animated `.gif` or
    `.webp`. Workflows can be named any valid file name, but if you want them in
    a specific order, consider prefixing them with numbers.
+* `txt2audio` (Experimental):
 * `txt2img`: These workflows accept a text prompt and return one or several
    images. If you provide multiple workflows in this directory, Musebot will
    choose a random one.
-* `txt2vid`: These workflows accept a text prompt and return a video. Videos
-   should be exported as animated WebP images or GIF images, though beware of
-   Discord's upload size limits. WebP is probably the more size-conscious
-   choice. Of course, The upload size limits do apply to the other workflow
-   types as well, but you are more likely to run into them with video output. If
-   you provide multiple workflows in this directory, Musebot will choose a
-   random one.
+
+   Animated images are supported in `txt2img` workflows. Animated images should
+   be exported as animated WebP images or GIF images, though beware of Discord's
+   upload size limits. WebP is probably the more size-conscious choice.
+* `txt2music`: These workflows accept two prompts:
+   1. Music tags/style/genre/instruments/mood (```{{{ prompt }}}```)
+   2. Lyrics (```{{{ prompt2 }}}```)
+
+   ACE-Step is the recommended model for this workflow.
+* `txt2vid` (Experimental): These workflows accept a text prompt and return a
+   video. Be aware of your Discord account's/instance's upload limits. If you
+   provide multiple workflows in this directory, Musebot will choose a random
+   one.
 
 **Note:** _Musebot reloads all workflows before each task, so you don't need to
 restart Musebot when modifying workflows._
@@ -257,9 +279,10 @@ This should look something like:
 
 ```json
 {
-   // txt2img or txt2vid workflows only below here.
+   // txt2* workflows only below here.
   "$musebotDefaults": {
    "prompt": "",
+   "prompt2": "",
    "promptNegative": "",
    "workflow": "",
    "seed": -1,
@@ -276,15 +299,21 @@ This should look something like:
    "helpText": "",
    "image": "",
    "maxWidth": 1024,
-   "maxHeight": 1024
+   "maxHeight": 1024,
+   // txt2audio, txt2music, txt2vid, img2img (animated), and img2vid only below
+   // here. The unit van vary, referring to frames, seconds, etc. Refer to your
+   // model documentation to determine the type of value.
+   "duration": 30
   },
-  // The ComfyUI workflow nodes should begin here.
+  // The exported  ComfyUI (API) workflow nodes should begin here.
 }
 ```
 
 * `prompt`: The text prompt given to the model that instructs it what to create.
+* `prompt2`: A secondary prompt placeholder used for models that support it.
+   Optional.
 * `promptNegative`: The negative prompt used to "remove" things from the model
-   output - not required.
+   output. Optional.
 * `workflow`: The workflow being used, those this is only used during JSON
   prompts delivered via Discord. This can be set to an empty string in
   templates.
@@ -307,6 +336,10 @@ This should look something like:
 * `num`: This is how many images or videos to output at a time. Consider your
    hardware's average processing time before doing more than one output at a
    time.
+* `duration`: The length of time used for certain outputs types. This usually
+   applies to animations, audio, music, or video. Unit can vary based on model,
+   so refer to your model documentation to understand the units this duration
+   applies to.
 * `label` **(img2img and img2vid workflows only)**: This is used for the
    displayed text on your custom Musebot button.
 * `title` **(img2img and img2vid workflows only)**: This is used for the title

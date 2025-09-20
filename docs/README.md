@@ -35,12 +35,9 @@ be configured, although you are welcome to set up more.
    optional.
 
    Only one supported backend _needs_ to be configured, but feel free to
-   configure multiple based on your needs. Additionally, only one backend per
-   media type (images, large language models, etc.) should be configured. For
-   example, don't configure both ComfyUI _and_ SwarmUI as they both generate
-   images.
+   configure multiple based on your needs. (Ollama and/or SwarmUI/ComfyUI).
 
-### Image/Video Generation
+### Media Generation
 
 #### SwarmUI
 
@@ -56,9 +53,9 @@ Standalone ComfyUI integration (that is, without
 as a wrapper) is supported, but for more advanced users. There is no
 documentation for standalone ComfyUI integration at this time.
 
-If you need help with ComfyUI configuration for Musebot, some of the
-[SwarmUI documentation](Integrations/SwarmUI/index.html) may offer some clues, albeit with some adjustments
-here and there.
+If you need help with ComfyUI configuration for Musebot, most of the
+[SwarmUI documentation](Integrations/SwarmUI/index.html) may offer some clues,
+albeit with some adjustments here and there.
 
 ### Large Language Model Inferencing
 
