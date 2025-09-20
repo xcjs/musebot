@@ -1,6 +1,13 @@
-import { ApplicationEmoji, BaseMessageOptions, ButtonInteraction, Client as DiscordClient, GuildEmoji, Message as DiscordMessage, MessageReaction, ReactionEmoji, User } from 'discord.js';
-import { Message as OllamaMessage } from 'ollama';
+import {
+    ButtonInteraction,
+    Client as DiscordClient,
+    Message as DiscordMessage,
+    MessageReaction,
+    User} from 'discord.js';
+import { GenerateRequest, GenerateResponse, Message as OllamaMessage } from 'ollama';
 
+import { BotInteraction } from '../enums/BotInteraction.js';
+import { IHttpExchange } from '../models/IHttpExchange.js';
 import { ComfyUiReplyService } from './clients/chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IActionRowBuilderFactory } from './clients/chat/discord/components/IActionRowBuilderFactory.js';
 import { OllamaReplyService } from './clients/chat/discord/ollama/OllamaReplyService.js';
@@ -8,29 +15,19 @@ import { OllamaStreamingReplyService } from './clients/chat/discord/ollama/Ollam
 import { IGenerativeChatClient } from './clients/chat/IGenerativeChatClient.js';
 import { IReplyService } from './clients/chat/IReplyService.js';
 import { ITypingService } from './clients/chat/ITypingService.js';
-import { IReplyTask } from './clients/chat/tasks/IReplyTask.js';
-import { ComfyUiClient } from './clients/images/comfy-ui/ComfyUiClient.js';
-import { IWorkflow } from './clients/images/comfy-ui/models/IWorkflow.js';
-import { IWorkflowService } from './clients/images/comfy-ui/services/IWorkflowService.js';
-import { ComfyUiImg2ImgRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiImg2ImgRenderTask.js';
-import { IAttachRenderTask } from './clients/images/tasks/IAttachRenderTask.js';
-import { IDecreaseGuidanceScaleRenderTask } from './clients/images/tasks/IDecreaseGuidanceScaleRenderTask.js';
-import { IEmojiReactionRenderTask } from './clients/images/tasks/IEmojiReactionRenderTask.js';
-import { IExpandPromptTask } from './clients/images/tasks/IExpandPromptTask.js';
-import { IIncreaseGuidanceScaleRenderTask } from './clients/images/tasks/IIncreaseGuidanceScaleRenderTask.js';
-import { IJsonRenderTask } from './clients/images/tasks/IJsonRenderTask.js';
-import { IRandomRenderTask } from './clients/images/tasks/IRandomRenderTask.js';
-import { IReplyRenderTask } from './clients/images/tasks/IReplyRenderTask.js';
-import { IRetryRenderTask } from './clients/images/tasks/IRetryRenderTask.js';
-import { IShowSourceTask } from './clients/images/tasks/IShowSourceTask.js';
-import { OllamaClient } from './clients/text/ollama/OllamaClient.js';
-import { IEmojiResponseTask } from './clients/text/tasks/IEmojiResponseTask.js';
-import { IPromptResponseTask } from './clients/text/tasks/IPromptResponseTask.js';
+import { OllamaClient } from './clients/llm/ollama/OllamaClient.js';
+import { ComfyUiClient } from './clients/media/comfy-ui/ComfyUiClient.js';
+import { IWorkflow } from './clients/media/comfy-ui/models/IWorkflow.js';
+import { IWorkflowService } from './clients/media/comfy-ui/services/IWorkflowService.js';
+import { IWorkflowMutator } from './clients/media/comfy-ui/services/workflow-mutators/IWorkflowMutator.js';
 import { IEnvironmentSettings } from './environment-settings/IEnvironmentSettings.js';
+import { IContentTypeService } from './features/IContentTypeService.js';
 import { IFeatureService } from './features/IFeatureService.js';
 import { IHelpService } from './help/IHelpService.js';
 import { ILogger } from './ILogger.js';
+import { IParallelizationStrategy } from './parallelization/IParallelizationStrategy.js';
 import { ITaskQueue } from './tasks/ITaskQueue.js';
+import { BaseTask } from './tasks/models/BaseTask.js';
 
 export interface IServiceContainer {
     // Singletons -------------------------------------------------------------/
@@ -43,9 +40,11 @@ export interface IServiceContainer {
     generativeChatClient: IGenerativeChatClient;
     helpService: IHelpService;
     workflowService: IWorkflowService;
+    parallelizationStrategy: IParallelizationStrategy;
 
     // Transients -------------------------------------------------------------/
 
+    contentTypeService: IContentTypeService;
     replyService: IReplyService;
     comfyUiClient: ComfyUiClient;
     comfyUiReplyService: ComfyUiReplyService;
@@ -57,25 +56,13 @@ export interface IServiceContainer {
     // Factories --------------------------------------------------------------/
     getLogger(prefix: string): ILogger;
 
-    getReplyTask(
-        interaction: DiscordMessage | ButtonInteraction,
-        reply: BaseMessageOptions): IReplyTask;
+    getLlmGenerateTask(prompt: string): BaseTask<IHttpExchange<GenerateRequest, GenerateResponse>>;
+    getEmojiReactionTask(reaction: MessageReaction, user: User, context: OllamaMessage[]): BaseTask<unknown>;
 
-    getAttachRenderTask(
-        interaction: ButtonInteraction | DiscordMessage,
-        prompt: string,
-        content: string | null): IAttachRenderTask;
+    getMessageTask(message: DiscordMessage, context: OllamaMessage[]): BaseTask<unknown>;
+    getInteractionTask(interaction: ButtonInteraction): BaseTask<unknown>;
+    getAttachmentTask(message: DiscordMessage, prompt: string): BaseTask<unknown>;
+    getCustomInteractionTask(interaction: ButtonInteraction, workflow: IWorkflow): BaseTask<unknown>;
 
-    getDecreaseGuidanceScaleRenderTask(interaction: ButtonInteraction): IDecreaseGuidanceScaleRenderTask;
-    getEmojiReactionRenderTask(interaction: DiscordMessage, emoji: GuildEmoji | ReactionEmoji | ApplicationEmoji, userOverride: User): IEmojiReactionRenderTask;
-    getExpandPromptTask(interaction: ButtonInteraction): IExpandPromptTask;
-    getImg2ImgRenderTask(interaction: ButtonInteraction, workflow: IWorkflow): ComfyUiImg2ImgRenderTask;
-    getIncreaseGuidanceScaleRenderTask(interaction: ButtonInteraction): IIncreaseGuidanceScaleRenderTask;
-    getJsonRenderTask(message: DiscordMessage): IJsonRenderTask;
-    getRandomRenderTask(interaction: ButtonInteraction): IRandomRenderTask;
-    getReplyRenderTask(message: DiscordMessage): IReplyRenderTask;
-    getRetryRenderTask(interaction: ButtonInteraction): IRetryRenderTask;
-    getShowSourceTask(interaction: ButtonInteraction): IShowSourceTask;
-    getLlmPromptResponseTask(message: DiscordMessage, context: OllamaMessage[]): IPromptResponseTask;
-    getLlmEmojiResponseTask(reaction: MessageReaction, user: User, context: OllamaMessage[]): IEmojiResponseTask;
+    getWorkflowMutator(interactionType: BotInteraction, workflow: IWorkflow): IWorkflowMutator;
 }

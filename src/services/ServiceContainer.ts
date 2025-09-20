@@ -1,68 +1,71 @@
-import { BaseMessageOptions, ButtonInteraction, Client as DiscordClient, GatewayIntentBits, Message as DiscordMessage, MessageReaction, Partials, ReactionEmoji, User } from 'discord.js';
-import { Message as OllamaMessage } from 'ollama';
+import {
+    ButtonInteraction,
+    Client as DiscordClient,
+    GatewayIntentBits,
+    Message as DiscordMessage,
+    MessageReaction,
+    Partials,
+    User} from 'discord.js';
+import { GenerateRequest, GenerateResponse, Message as OllamaMessage } from 'ollama';
 
 import { BotFunction } from '../enums/BotFunction.js';
+import { BotInteraction } from '../enums/BotInteraction.js';
+import { TaskQueueStrategy } from '../enums/TaskQueueStrategy.js';
+import { IHttpExchange } from '../models/IHttpExchange.js';
+import { getRandomArrayEntry } from '../utilities/random-utilities.js';
 import { ComfyUiReplyService } from './clients/chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { ActionRowBuilderFactory } from './clients/chat/discord/components/ActionRowBuilderFactory.js';
 import { IActionRowBuilderFactory } from './clients/chat/discord/components/IActionRowBuilderFactory.js';
 import { DiscordConstants } from './clients/chat/discord/enums/DiscordConstants.js';
-import { GenerativeAudioChatClient } from './clients/chat/discord/GenerativeAudioChatClient.js';
-import { GenerativeImageChatClient } from './clients/chat/discord/GenerativeImageChatClient.js';
-import { GenerativeTextChatClient } from './clients/chat/discord/GenerativeTextChatClient.js';
+import { GenerativeChatClient } from './clients/chat/discord/GenerativeChatClient.js';
+import { GenerativeMediaChatClient } from './clients/chat/discord/GenerativeMediaChatClient.js';
 import { OllamaReplyService } from './clients/chat/discord/ollama/OllamaReplyService.js';
 import { OllamaStreamingReplyService } from './clients/chat/discord/ollama/OllamaStreamingReplyService.js';
 import { ReplyService } from './clients/chat/discord/replies/ReplyService.js';
 import { TypingService } from './clients/chat/discord/services/TypingService.js';
-import { ReplyTask } from './clients/chat/discord/tasks/ReplyTask.js';
 import { IGenerativeChatClient } from './clients/chat/IGenerativeChatClient.js';
 import { IReplyService } from './clients/chat/IReplyService.js';
 import { ITypingService } from './clients/chat/ITypingService.js';
-import { IReplyTask } from './clients/chat/tasks/IReplyTask.js';
-import { ComfyUiClient } from './clients/images/comfy-ui/ComfyUiClient.js';
-import { IWorkflow } from './clients/images/comfy-ui/models/IWorkflow.js';
-import { IWorkflowService } from './clients/images/comfy-ui/services/IWorkflowService.js';
-import { WorkflowService } from './clients/images/comfy-ui/services/WorkflowService.js';
-import { ComfyUiAttachRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiAttachRenderTask.js';
-import { ComfyUiDecreaseGuidanceScaleRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiDecreaseGuidanceScaleRenderTask.js';
-import { ComfyUiEmojiReactionRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiEmojiReactionRenderTask.js';
-import { ComfyUiExpandPromptTask } from './clients/images/comfy-ui/tasks/ComfyUiExpandPromptTask.js';
-import { ComfyUiImg2ImgRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiImg2ImgRenderTask.js';
-import { ComfyUiIncreaseGuidanceScaleRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiIncreaseGuidanceScaleRenderTask.js';
-import { ComfyUiJsonRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiJsonRenderTask.js';
-import { ComfyUiRandomRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiRandomRenderTask.js';
-import { ComfyUiReplyAudioTask } from './clients/images/comfy-ui/tasks/ComfyUiReplyAudioTask.js';
-import { ComfyUiReplyRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiReplyRenderTask.js';
-import { ComfyUiRetryAudioTask } from './clients/images/comfy-ui/tasks/ComfyUiRetryAudioTask.js';
-import { ComfyUiRetryRenderTask } from './clients/images/comfy-ui/tasks/ComfyUiRetryRenderTask.js';
-import { ComfyUiShowSourceTask } from './clients/images/comfy-ui/tasks/ComfyUiShowSourceTask.js';
-import { ImageHelpService } from './clients/images/help/ImageHelpService.js';
-import { StableDiffusionApiType } from './clients/images/stable-diffusion/enums/StableDiffusionApiType.js';
-import { IAttachRenderTask } from './clients/images/tasks/IAttachRenderTask.js';
-import { IDecreaseGuidanceScaleRenderTask } from './clients/images/tasks/IDecreaseGuidanceScaleRenderTask.js';
-import { IEmojiReactionRenderTask } from './clients/images/tasks/IEmojiReactionRenderTask.js';
-import { IExpandPromptTask } from './clients/images/tasks/IExpandPromptTask.js';
-import { IIncreaseGuidanceScaleRenderTask } from './clients/images/tasks/IIncreaseGuidanceScaleRenderTask.js';
-import { IJsonRenderTask } from './clients/images/tasks/IJsonRenderTask.js';
-import { IRandomRenderTask } from './clients/images/tasks/IRandomRenderTask.js';
-import { IReplyRenderTask } from './clients/images/tasks/IReplyRenderTask.js';
-import { IRetryRenderTask } from './clients/images/tasks/IRetryRenderTask.js';
-import { IShowSourceTask } from './clients/images/tasks/IShowSourceTask.js';
-import { TextHelpService } from './clients/text/help/TextHelpService.js';
-import { OllamaClient } from './clients/text/ollama/OllamaClient.js';
-import { OllamaEmojiResponseTask } from './clients/text/ollama/tasks/OllamaEmojiResponseTask.js';
-import { OllamaPromptResponseTask } from './clients/text/ollama/tasks/OllamaPromptResponseTask.js';
-import { IEmojiResponseTask } from './clients/text/tasks/IEmojiResponseTask.js';
-import { IPromptResponseTask } from './clients/text/tasks/IPromptResponseTask.js';
+import { ShowHelpTask } from './clients/internal/tasks/ShowHelpTask.js';
+import { ChatHelpService } from './clients/llm/help/ChatHelpService.js';
+import { OllamaClient } from './clients/llm/ollama/OllamaClient.js';
+import { OllamaEmojiReactionTask } from './clients/llm/ollama/tasks/OllamaEmojiReactionTask.js';
+import { OllamaGenerateTask } from './clients/llm/ollama/tasks/OllamaGenerateTask.js';
+import { OllamaMessageTask } from './clients/llm/ollama/tasks/OllamaMessageTask.js';
+import { ComfyUiClient } from './clients/media/comfy-ui/ComfyUiClient.js';
+import { IWorkflow } from './clients/media/comfy-ui/models/IWorkflow.js';
+import { IWorkflowService } from './clients/media/comfy-ui/services/IWorkflowService.js';
+import { ExpandPromptMutator } from './clients/media/comfy-ui/services/workflow-mutators/ExpandPromptMutator.js';
+import { GuidanceScaleMutator } from './clients/media/comfy-ui/services/workflow-mutators/GuidanceScaleMutator.js';
+import { IWorkflowMutator } from './clients/media/comfy-ui/services/workflow-mutators/IWorkflowMutator.js';
+import { JsonMutator } from './clients/media/comfy-ui/services/workflow-mutators/JsonMutator.js';
+import { MessageToMediaMutator } from './clients/media/comfy-ui/services/workflow-mutators/MessageToMediaMutator.js';
+import { MessageToMusicMutator } from './clients/media/comfy-ui/services/workflow-mutators/MessageToMusicMutator.js';
+import { RandomPromptMutator } from './clients/media/comfy-ui/services/workflow-mutators/RandomPromptMutator.js';
+import { RetryMutator } from './clients/media/comfy-ui/services/workflow-mutators/RetryMutator.js';
+import { WorkflowService } from './clients/media/comfy-ui/services/WorkflowService.js';
+import { ComfyUiAttachmentTask } from './clients/media/comfy-ui/tasks/ComfyUiAttachmentTask.js';
+import { ComfyUiImg2ImgInteractionTask } from './clients/media/comfy-ui/tasks/ComfyUiImg2ImgInteractionTask.js';
+import { ComfyUiInteractionTask } from './clients/media/comfy-ui/tasks/ComfyUiInteractionTask.js';
+import { ComfyUiMessageTask } from './clients/media/comfy-ui/tasks/ComfyUiMessageTask.js';
+import { ShowDescriptionTask } from './clients/media/comfy-ui/tasks/ShowDescriptionTask.js';
+import { MediaHelpService } from './clients/media/help/MediaHelpService.js';
 import { EnvironmentSettings } from './environment-settings/EnvironmentSettings.js';
 import { IEnvironmentSettings } from './environment-settings/IEnvironmentSettings.js';
+import { ContentTypeService } from './features/ContentTypeService.js';
 import { SupportedFeature } from './features/enum/SupportedFeature.js';
 import { FeatureService } from './features/FeatureService.js';
+import { IContentTypeService } from './features/IContentTypeService.js';
 import { IFeatureService } from './features/IFeatureService.js';
 import { IHelpService } from './help/IHelpService.js';
 import { ILogger } from './ILogger.js';
 import { IServiceContainer } from './IServiceContainer.js';
 import { Logger } from './Logger.js';
+import { IParallelizationStrategy } from './parallelization/IParallelizationStrategy.js';
+import { ParallelStrategy } from './parallelization/ParallelStrategy.js';
+import { SerialStrategy } from './parallelization/SerialStrategy.js';
 import { ITaskQueue } from './tasks/ITaskQueue.js';
+import { BaseTask } from './tasks/models/BaseTask.js';
 import { TaskQueue } from './tasks/TaskQueue.js';
 
 export class ServiceContainer implements IServiceContainer {
@@ -110,7 +113,16 @@ export class ServiceContainer implements IServiceContainer {
         return this.#workflowService;
     }
 
+    #parallelizationStrategy: IParallelizationStrategy;
+    get parallelizationStrategy(): IParallelizationStrategy {
+        return this.#parallelizationStrategy;
+    }
+
     // Transients -------------------------------------------------------------/
+
+    get contentTypeService(): IContentTypeService {
+        return new ContentTypeService();
+    }
 
     get replyService(): IReplyService {
         return new ReplyService(this);
@@ -145,203 +157,100 @@ export class ServiceContainer implements IServiceContainer {
         return new Logger(prefix);
     }
 
-    getReplyTask(
-        interaction: DiscordMessage | ButtonInteraction,
-        reply: BaseMessageOptions
-        ): IReplyTask {
-        return new ReplyTask(this, interaction, reply);
-    }
-
-    getAttachRenderTask(
-        interaction: ButtonInteraction | DiscordMessage,
-        prompt: string,
-        content: string | null = null): IAttachRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)
-            && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
-            throw this.#taskNotConfiguredError;
-        }
-
-        switch (this.#environmentSettings.stableDiffusionApiType) {
-            case StableDiffusionApiType.ComfyUI:
-                return new ComfyUiAttachRenderTask(this, interaction, { content }, prompt);
-            default:
-                throw this.#taskNotConfiguredError;
-        }
-    }
-
-    getDecreaseGuidanceScaleRenderTask(interaction: ButtonInteraction): IDecreaseGuidanceScaleRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)
-            && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
-            throw this.#taskNotConfiguredError;
-        }
-
-        switch (this.#environmentSettings.stableDiffusionApiType) {
-            case StableDiffusionApiType.ComfyUI:
-                return new ComfyUiDecreaseGuidanceScaleRenderTask(this, interaction);
-            default:
-                throw this.#taskNotConfiguredError;
-        }
-    }
-
-    getEmojiReactionRenderTask(interaction: DiscordMessage, emoji: ReactionEmoji, userOverride: User): IEmojiReactionRenderTask {
-        if(!this.#featureService.hasFeature(SupportedFeature.Txt2Img)
-            || !this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
-            throw this.#taskNotConfiguredError;
-        }
-
-        switch(this.#environmentSettings.stableDiffusionApiType) {
-            case StableDiffusionApiType.ComfyUI:
-                return new ComfyUiEmojiReactionRenderTask(this, interaction, emoji, userOverride);
-            default:
-                throw this.#taskNotConfiguredError;
-        }
-    }
-
-    getExpandPromptTask(interaction: ButtonInteraction): IExpandPromptTask {
-        if(!this.#featureService.hasFeature(SupportedFeature.Txt2Img)
-            && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
-            throw this.#taskNotConfiguredError;
-        }
-
-        switch (this.#environmentSettings.stableDiffusionApiType) {
-            case StableDiffusionApiType.ComfyUI:
-                return new ComfyUiExpandPromptTask(this, interaction);
-            default:
-                throw this.#taskNotConfiguredError;
-        }
-    }
-
-    getImg2ImgRenderTask(interaction: ButtonInteraction, workflow: IWorkflow) {
-        if(!this.#featureService.hasFeature(SupportedFeature.Img2Img)
-            && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
-            throw this.#taskNotConfiguredError;
-        }
-
-        switch(this.#environmentSettings.stableDiffusionApiType) {
-            case StableDiffusionApiType.ComfyUI:
-                return new ComfyUiImg2ImgRenderTask(this, interaction, workflow);
-            default:
-                throw this.#taskNotConfiguredError;
-        }
-    }
-
-    getIncreaseGuidanceScaleRenderTask(interaction: ButtonInteraction): IIncreaseGuidanceScaleRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)
-            && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
-            throw this.#taskNotConfiguredError;
-        }
-
-        switch (this.#environmentSettings.stableDiffusionApiType) {
-            case StableDiffusionApiType.ComfyUI:
-                return new ComfyUiIncreaseGuidanceScaleRenderTask(this, interaction);
-            default:
-                throw this.#taskNotConfiguredError;
-        }
-    }
-
-    getJsonRenderTask(message: DiscordMessage): IJsonRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)
-            && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
-            throw this.#taskNotConfiguredError;
-        }
-
-        switch (this.#environmentSettings.stableDiffusionApiType) {
-            case StableDiffusionApiType.ComfyUI:
-                return new ComfyUiJsonRenderTask(this, message);
-            default:
-                throw this.#taskNotConfiguredError;
-        }
-    }
-
-    getRandomRenderTask(interaction: ButtonInteraction): IRandomRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)
-            && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
-            throw this.#taskNotConfiguredError;
-        }
-
-        switch (this.#environmentSettings.stableDiffusionApiType) {
-            case StableDiffusionApiType.ComfyUI:
-                return new ComfyUiRandomRenderTask(this, interaction);
-                default:
-                    throw this.#taskNotConfiguredError;
-                }
-            }
-
-    getReplyRenderTask(message: DiscordMessage): IReplyRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Audio)
-            && !this.#featureService.hasFeature(SupportedFeature.Txt2Img)
-            && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
-            throw this.#taskNotConfiguredError;
-        }
-
-        switch (this.#environmentSettings.stableDiffusionApiType) {
-            case StableDiffusionApiType.ComfyUI:
-                if(this.#environmentSettings.botFunction === BotFunction.Audio
-                    && this.#featureService.hasFeature(SupportedFeature.Txt2Audio)
-                ) {
-                    return new ComfyUiReplyAudioTask(this, message);
-                } else if(this.#environmentSettings.botFunction === BotFunction.Images
-                    && (this.#featureService.hasFeature(SupportedFeature.Txt2Img)
-                        || this.#featureService.hasFeature(SupportedFeature.Txt2Vid))) {
-                    return new ComfyUiReplyRenderTask(this, message);
-                } else {
-                    throw this.#taskNotConfiguredError;
-                }
-            default:
-                throw this.#taskNotConfiguredError;
-        }
-    }
-
-    getRetryRenderTask(interaction: ButtonInteraction): IRetryRenderTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Audio)
-            && !this.#featureService.hasFeature(SupportedFeature.Txt2Img)
-            && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
-            throw this.#taskNotConfiguredError;
-        }
-
-        switch (this.#environmentSettings.stableDiffusionApiType) {
-            case StableDiffusionApiType.ComfyUI:
-                if (this.#featureService.hasFeature(SupportedFeature.Txt2Audio)) {
-                    return new ComfyUiRetryAudioTask(this, interaction);
-                } else if(this.#featureService.hasFeature(SupportedFeature.Txt2Img)
-                    || this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
-                    return new ComfyUiRetryRenderTask(this, interaction);
-                } else {
-                    throw this.#taskNotConfiguredError;
-                }
-            default:
-                throw this.#taskNotConfiguredError;
-        }
-    }
-
-    getShowSourceTask(interaction: ButtonInteraction): IShowSourceTask {
-        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Img)
-            && !this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
-            throw this.#taskNotConfiguredError;
-        }
-
-        switch (this.#environmentSettings.stableDiffusionApiType) {
-            case StableDiffusionApiType.ComfyUI:
-                return new ComfyUiShowSourceTask(this, interaction);
-            default:
-                throw this.#taskNotConfiguredError;
-        }
-    }
-
-    getLlmPromptResponseTask(message: DiscordMessage, context: OllamaMessage[]): IPromptResponseTask {
-        if(!this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
-            throw this.#taskNotConfiguredError;
-        }
-
-        return new OllamaPromptResponseTask(this, message, context);
-    }
-
-    getLlmEmojiResponseTask(reaction: MessageReaction, user: User, context: OllamaMessage[]): IEmojiResponseTask {
+    getLlmGenerateTask(prompt: string): BaseTask<IHttpExchange<GenerateRequest, GenerateResponse>> {
         if(!this.featureService.hasFeature(SupportedFeature.Txt2Txt)) {
             throw this.#taskNotConfiguredError;
         }
 
-        return new OllamaEmojiResponseTask(this, reaction, user, context);
+        return new OllamaGenerateTask(this, prompt);
+    }
+
+    getEmojiReactionTask(reaction: MessageReaction, user: User, context: OllamaMessage[] = []): BaseTask<unknown> {
+        switch (this.environmentSettings.botFunction) {
+            case BotFunction.Chat:
+                return new OllamaEmojiReactionTask(this, reaction, user, context);
+            default:
+                throw this.#taskNotConfiguredError;
+        }
+    }
+
+    getMessageTask(message: DiscordMessage, context: OllamaMessage[] = []): BaseTask<unknown> {
+        switch(this.#environmentSettings.botFunction) {
+            case BotFunction.Chat:
+                return new OllamaMessageTask(this, message, context);
+            case BotFunction.Media:
+                return new ComfyUiMessageTask(this, message);
+            default:
+                throw this.#taskNotConfiguredError;
+        }
+    }
+
+    getInteractionTask(interaction: ButtonInteraction): BaseTask<unknown> {
+        switch(this.#environmentSettings.botFunction) {
+            case BotFunction.Chat:
+                switch (interaction.customId as BotInteraction) {
+                    case BotInteraction.Help:
+                        return new ShowHelpTask(this, interaction);
+                    default:
+                        throw this.#taskNotConfiguredError;
+                }
+            case BotFunction.Media:
+                switch(interaction.customId as BotInteraction) {
+                    case BotInteraction.Retry:
+                    case BotInteraction.GuidanceScaleMinus:
+                    case BotInteraction.GuidanceScalePlus:
+                    case BotInteraction.ExpandPrompt:
+                    case BotInteraction.Randomize:
+                        return new ComfyUiInteractionTask(this, interaction);
+                    case BotInteraction.ShowSource:
+                        return new ShowDescriptionTask(this, interaction);
+                    case BotInteraction.Help:
+                        return new ShowHelpTask(this, interaction);
+                    default:
+                        throw this.#taskNotConfiguredError;
+                }
+            default:
+                throw this.#taskNotConfiguredError;
+        }
+    }
+
+    getAttachmentTask(
+        message: DiscordMessage,
+        prompt: string): BaseTask<unknown> {
+        return new ComfyUiAttachmentTask(this, message, prompt);
+    }
+
+    getCustomInteractionTask(interaction: ButtonInteraction, workflow: IWorkflow) {
+        switch (workflow.type) {
+            case SupportedFeature.Img2Img:
+                return new ComfyUiImg2ImgInteractionTask(this, interaction, workflow);
+            default:
+                throw this.#taskNotConfiguredError;
+        }
+    }
+
+    getWorkflowMutator(interactionType: BotInteraction, workflow: IWorkflow): IWorkflowMutator {
+        const mutators: IWorkflowMutator[] = [
+            new GuidanceScaleMutator(this),
+            new JsonMutator(this),
+            new MessageToMediaMutator(this),
+            new MessageToMusicMutator(this),
+            new ExpandPromptMutator(this),
+            new RandomPromptMutator(this),
+            new RetryMutator(this)
+        ];
+
+        const supportedMutators = mutators.filter(
+            mutator => mutator.interactions.includes(interactionType)
+                && mutator.types.includes(workflow.type));
+
+        if(supportedMutators.length === 1) {
+            return supportedMutators[0];
+        } else if(supportedMutators.length > 1) {
+            return getRandomArrayEntry(supportedMutators);
+        } else {
+            throw this.#taskNotConfiguredError;
+        }
     }
 
     constructor() {
@@ -371,16 +280,22 @@ export class ServiceContainer implements IServiceContainer {
         });
 
         switch (this.#environmentSettings.botFunction) {
-            case BotFunction.Audio:
-                this.#generativeChatClient = new GenerativeAudioChatClient(this);
+            case BotFunction.Chat:
+                this.#helpService = new ChatHelpService(this);
+                this.#generativeChatClient = new GenerativeChatClient(this);
                 break;
-            case BotFunction.Images:
-                this.#helpService = new ImageHelpService(this);
-                this.#generativeChatClient = new GenerativeImageChatClient(this);
+            case BotFunction.Media:
+                this.#helpService = new MediaHelpService(this);
+                this.#generativeChatClient = new GenerativeMediaChatClient(this);
                 break;
-            case BotFunction.Text:
-                this.#helpService = new TextHelpService(this);
-                this.#generativeChatClient = new GenerativeTextChatClient(this);
+        }
+
+        switch(this.#environmentSettings.taskQueueStrategy) {
+            case TaskQueueStrategy.Parallel:
+                this.#parallelizationStrategy = new ParallelStrategy();
+                break;
+            default:
+                this.#parallelizationStrategy = new SerialStrategy();
                 break;
         }
     }

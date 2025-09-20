@@ -3,6 +3,7 @@
 
 # Build Files
 build/
+Code Review.md
 *.js
 
 # Caches

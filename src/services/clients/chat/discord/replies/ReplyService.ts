@@ -218,7 +218,46 @@ export class ReplyService implements IReplyService {
         return `<@${user.id}>`;
     }
 
-    getAttachmentsByType(interaction: Message | ButtonInteraction, contentTypes: Array<ContentType>): Array<Attachment> {
+    async getPreviousMessage(message: Message): Promise<Message | null> {
+        if (message.reference !== null) {
+            const priorMessage = await message.fetchReference();
+
+            if (priorMessage.content !== null && priorMessage.content.length > 0) {
+                return priorMessage;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    extractPrompt(message: Message): string {
+        const messageContent = message.content || '';
+
+        // Find the last occurrence of backticks
+        const lastBacktickIndex = messageContent.lastIndexOf('`');
+
+        // If no backticks found, return empty string
+        if (lastBacktickIndex === -1) {
+            return '';
+        }
+
+        // Find the second to last backtick
+        const secondLastBacktickIndex = messageContent.lastIndexOf('`', lastBacktickIndex - 1);
+
+        // If no second to last backtick found, return empty string
+        if (secondLastBacktickIndex === -1) {
+            return '';
+        }
+
+        // Return the substring between the last two backticks
+        return messageContent.substring(secondLastBacktickIndex + 1, lastBacktickIndex);
+    }
+
+    getAttachments(interaction: Message | ButtonInteraction): Attachment[] {
+        return this.getAttachmentsByType(interaction, []);
+    }
+
+    getAttachmentsByType(interaction: Message | ButtonInteraction, contentTypes: ContentType[]): Attachment[] {
         this.#logger.info('Looking for attachments of the following types on a message:', contentTypes);
 
         let attachments: Array<Attachment>;
@@ -229,14 +268,18 @@ export class ReplyService implements IReplyService {
             attachments = Array.from(interaction.message.attachments, ([name, value]) => ({ name, value })).map(x => x.value);
         }
 
-        const matchingAttachments = attachments.filter(attachment =>
-            contentTypes.includes(Object.values(ContentType)
-                .find(contentTypeValue => contentTypeValue.toString() === attachment.contentType)));
+        let matchingAttachments: Attachment[] = attachments;
+
+        if(contentTypes.length > 0) {
+            matchingAttachments = attachments.filter(attachment =>
+                contentTypes.includes(Object.values(ContentType)
+                    .find(contentTypeValue => contentTypeValue.toString() === attachment.contentType)));
+        }
 
         return matchingAttachments;
     }
 
-    getAudioAttachments(interaction: Message | ButtonInteraction): Array<Attachment> {
+    getAudioAttachments(interaction: Message | ButtonInteraction): Attachment[] {
         const audioTypes = [
             ContentType.Mp3
         ];
@@ -244,7 +287,7 @@ export class ReplyService implements IReplyService {
         return this.getAttachmentsByType(interaction, audioTypes);
     }
 
-    getImageAttachments(interaction: Message | ButtonInteraction): Array<Attachment> {
+    getImageAttachments(interaction: Message | ButtonInteraction): Attachment[] {
         const imageTypes = [
             ContentType.Jpeg,
             ContentType.Jpg,
@@ -255,9 +298,9 @@ export class ReplyService implements IReplyService {
         return this.getAttachmentsByType(interaction, imageTypes);
     }
 
-    async getAttachedImagesAsBase64(interaction: Message | ButtonInteraction): Promise<Array<string>> {
+    async getAttachedImagesAsBase64(interaction: Message | ButtonInteraction): Promise<string[]> {
         const imageAttachments = this.getImageAttachments(interaction);
-        const imagesAsBase64: Array<string> = [];
+        const imagesAsBase64: string[] = [];
 
         if(imageAttachments.length === 0) {
             return imagesAsBase64;

@@ -1,35 +1,35 @@
 import { Client as DiscordClient } from 'discord.js';
 
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
-import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { ApiResourceType } from '../../../../parallelization/ApiResourceType.js';
+import { IParallelizationStrategy } from '../../../../parallelization/IParallelizationStrategy.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 
 export class LoginTask extends BaseTask<void> {
     get taskChannel(): string {
-        return 'Discord';
+        return this.#parallelizationStrategy.getTaskChannel(ApiResourceType.Chat, null);
     }
 
     #services: IServiceContainer;
 
     #environmentSettings: IEnvironmentSettings;
     #discordClient: DiscordClient;
+    #parallelizationStrategy: IParallelizationStrategy;
     #taskQueue: ITaskQueue;
-
-    protected logger: ILogger;
 
     constructor(services: IServiceContainer) {
         super(services);
+        this.logger = services.getLogger('LoginTask');
 
         this.#services = services;
 
         this.#environmentSettings = services.environmentSettings;
         this.#discordClient = services.discordClient;
+        this.#parallelizationStrategy = services.parallelizationStrategy;
         this.#taskQueue = services.taskQueue;
-
-        this.logger = services.getLogger('LoginTask');
     }
 
     async process(): Promise<void> {

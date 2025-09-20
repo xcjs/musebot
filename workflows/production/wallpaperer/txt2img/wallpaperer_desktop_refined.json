@@ -213,7 +213,7 @@
       "upscale_method": "lanczos",
       "keep_proportion": false,
       "divisible_by": 8,
-      "crop": "disabled",
+      "crop": "center",
       "image": ["139", 0]
     },
     "class_type": "ImageResizeKJ",

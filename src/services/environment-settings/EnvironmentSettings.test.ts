@@ -7,7 +7,7 @@ import { beforeEach, describe, expect, it } from '@jest/globals';
 import nodePackage from '../../../package.json' with { type: 'json' };
 import { BotFunction } from '../../enums/BotFunction.js';
 import { NodeEnvironment } from '../../enums/NodeEnvironment.js';
-import { StableDiffusionApiType } from '../clients/images/stable-diffusion/enums/StableDiffusionApiType.js';
+import { TaskQueueStrategy } from '../../enums/TaskQueueStrategy.js';
 import { EnvironmentKey } from './constants/EnvironmentKey.js';
 import { EnvironmentSettings } from './EnvironmentSettings';
 
@@ -21,8 +21,7 @@ beforeEach(() => {
         // NODE_ENV should be preserved as Jest sets this to "test".
         [EnvironmentKey.NodeEnvironment]: process.env[EnvironmentKey.NodeEnvironment] || NodeEnvironment.Test,
         // Preset all minimally required values for most tests to pass.
-        [EnvironmentKey.BotFunction]: BotFunction.Images,
-        [EnvironmentKey.StableDiffusionApiType]: StableDiffusionApiType.ComfyUI,
+        [EnvironmentKey.BotFunction]: BotFunction.Media,
         [EnvironmentKey.AuthenticationToken]: mockToken,
         [EnvironmentKey.StableDiffusionHosts]: mockUrl
     };
@@ -87,14 +86,17 @@ describe('EnvironmentSettings', () => {
         });
 
         it.each([
-            BotFunction.Images,
-            BotFunction.Text
-        ])('should accept any valid BotFunction value', (botFunction: BotFunction) => {
-            process.env[EnvironmentKey.BotFunction] = botFunction;
+            [BotFunction.Chat, BotFunction.Chat],
+            [BotFunction.Media, BotFunction.Media],
+            [BotFunction.Audio, BotFunction.Media],
+            [BotFunction.Images, BotFunction.Media],
+            [BotFunction.Text, BotFunction.Chat]
+        ])('should accept any valid BotFunction value', (expectedBotFunction: BotFunction, actualBotFunction: BotFunction) => {
+            process.env[EnvironmentKey.BotFunction] = expectedBotFunction;
             process.env[EnvironmentKey.OllamaHosts] = mockUrl;
             const environmentSettings = new EnvironmentSettings();
 
-            expect(environmentSettings.botFunction).toBe(botFunction);
+            expect(environmentSettings.botFunction).toBe(actualBotFunction);
         });
 
         it('should not accept any invalid value', () => {
@@ -235,33 +237,26 @@ describe('EnvironmentSettings', () => {
         });
     });
 
-    describe('stableDiffusionTaskChannel', () => {
-        it('should default an empty string', () => {
+    describe('taskQueueStrategy', () => {
+        it('should default to serial', () => {
             const environmentSettings = new EnvironmentSettings();
-            expect(environmentSettings.stableDiffusionTaskChannel).toBe('');
+            expect(environmentSettings.taskQueueStrategy).toBe(TaskQueueStrategy.Serial);
         });
 
-        it('should prefer the provided value', () => {
-            const mockTaskChannel = 'ComfyUI';
-            process.env[EnvironmentKey.StableDiffusionTaskChannel] = mockTaskChannel;
+        it('should support serial', () => {
+            const mockTaskQueueStrategy = 'serial';
+            process.env[EnvironmentKey.TaskQueueStrategy] = mockTaskQueueStrategy;
             const environmentSettings = new EnvironmentSettings();
 
-            expect(environmentSettings.stableDiffusionTaskChannel).toBe(mockTaskChannel);
-        });
-    });
-
-    describe('ollamaTaskChannel', () => {
-        it('should default an empty string', () => {
-            const environmentSettings = new EnvironmentSettings();
-            expect(environmentSettings.ollamaTaskChannel).toBe('');
+            expect(environmentSettings.taskQueueStrategy).toBe(TaskQueueStrategy.Serial);
         });
 
-        it('should prefer the provided value', () => {
-            const mockTaskChannel = 'Ollama';
-            process.env[EnvironmentKey.OllamaTaskChannel] = mockTaskChannel;
+        it('should support parallel', () => {
+            const mockTaskQueueStrategy = 'parallel';
+            process.env[EnvironmentKey.TaskQueueStrategy] = mockTaskQueueStrategy;
             const environmentSettings = new EnvironmentSettings();
 
-            expect(environmentSettings.ollamaTaskChannel).toBe(mockTaskChannel);
+            expect(environmentSettings.taskQueueStrategy).toBe(TaskQueueStrategy.Parallel);
         });
     });
 
@@ -447,27 +442,6 @@ describe('EnvironmentSettings', () => {
         });
     });
 
-    describe('stableDiffusionApiType', () => {
-        it.each([
-            StableDiffusionApiType.ComfyUI,
-        ])('it should work with each supported API definition', (apiType: StableDiffusionApiType) => {
-            process.env[EnvironmentKey.StableDiffusionApiType] = apiType;
-
-            const environmentSettings = new EnvironmentSettings();
-
-            expect(environmentSettings.stableDiffusionApiType).toBe(apiType);
-        });
-
-        it('should throw an exception if an invalid API type is provided', () => {
-            const invalidApiType = 'invalidApiType';
-            process.env[EnvironmentKey.StableDiffusionApiType] = invalidApiType;
-
-            expect(() => {
-                new EnvironmentSettings();
-            }).toThrow();
-        });
-    });
-
     describe('stableDiffusionHosts', () => {
         const mockHosts = [
             mockUrl,
@@ -500,7 +474,7 @@ describe('EnvironmentSettings', () => {
 
         it('should throw an exception for invalid URLs', () => {
             const invalidUrl = 'invalidUrl';
-            process.env[EnvironmentKey.StableDiffusionApiType] = invalidUrl;
+            process.env[EnvironmentKey.StableDiffusionHosts] = invalidUrl;
 
             expect(() => {
                 new EnvironmentSettings();

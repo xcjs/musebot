@@ -4,7 +4,7 @@ import { SupportedFeature } from '../../../../../features/enum/SupportedFeature.
 import { IFeatureService } from '../../../../../features/IFeatureService.js';
 import { ILogger } from '../../../../../ILogger.js';
 import { IServiceContainer } from '../../../../../IServiceContainer.js';
-import { IWorkflowService } from '../../../../images/comfy-ui/services/IWorkflowService.js';
+import { IWorkflowService } from '../../../../media/comfy-ui/services/IWorkflowService.js';
 import { BaseComponent } from '../BaseComponent.js';
 import { DynamicButton } from '../buttons/DynamicButton.js';
 import { IActionRowBuilderFactory } from '../IActionRowBuilderFactory.js';

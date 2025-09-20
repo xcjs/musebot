@@ -5,7 +5,7 @@ import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { splitText } from '../../../../../utilities/string-utilities.js';
 import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
-import { LargeLanguageModelActionRow } from '../components/buttonRows/LargeLanguageModelActionRow.js';
+import { ChatActionRow } from '../components/buttonRows/ChatActionRow.js';
 import { DiscordConstants } from '../enums/DiscordConstants.js';
 
 export class OllamaReplyService {
@@ -22,9 +22,9 @@ export class OllamaReplyService {
     async reply(
         message: Message,
         exchange: IHttpExchange<ChatRequest, ChatResponse>,
-        prependedText: string = ''): Promise<Array<Message>> {
+        prependedText: string = ''): Promise<Message[]> {
         const responses = splitText(`${prependedText} ${exchange.response.message.content}`, DiscordConstants.ContentMaxLength);
-        const replies: Array<Message> = [];
+        const replies: Message[] = [];
 
         this.#logger.info(`Replying with ${responses.length} messages.`);
 
@@ -35,7 +35,7 @@ export class OllamaReplyService {
             if(i === responses.length - 1) {
                 replies.push(await message.reply({
                     content: response,
-                    components: new LargeLanguageModelActionRow(this.#services).build()
+                    components: new ChatActionRow(this.#services).build()
                 }));
             } else {
                 replies.push(await message.reply(response));

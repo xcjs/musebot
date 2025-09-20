@@ -1,25 +1,30 @@
-import { ImageContainer, ImagesResponse } from 'comfy-ui-client';
 import { ActionRowBuilder, AttachmentBuilder, BaseMessageOptions, ButtonBuilder, ButtonInteraction, Message } from 'discord.js';
 
 import { MAX_FILE_NAME_LENGTH } from '../../../../../constants/FileConstants.js';
-import { APPLICATION_NAME } from '../../../../../constants/Globals.js';
+import { ContentType } from '../../../../../enums/ContentType.js';
+import { ContentTypeCategory } from '../../../../../enums/ContentTypeCategory.js';
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
+import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
+import { IContentTypeService } from '../../../../features/IContentTypeService.js';
 import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
-import { ComfyUiClient } from '../../../images/comfy-ui/ComfyUiClient.js';
-import { AudioContainer, AudiosResponse } from '../../../images/comfy-ui/extensions/AudioResponse.js';
-import { SerializableRenderRequest } from '../../../images/stable-diffusion/models/SerializableRenderRequest.js';
+import { ComfyUiClient } from '../../../media/comfy-ui/ComfyUiClient.js';
+import { MediaCollectionResponse, MediaContainer } from '../../../media/comfy-ui/extensions/MediaResponse.js';
+import { SerializableRenderRequest } from '../../../media/comfy-ui/models/SerializableRenderRequest.js';
 import { IReplyService } from '../../IReplyService.js';
 import { Img2ImgActionRow } from '../components/buttonRows/Img2ImgActionRow.js';
 import { StatefulAudioGenerationActionRow } from '../components/buttonRows/StatefulAudioGenerationActionRow.js';
 import { StatefulImageGenerationActionRows } from '../components/buttonRows/StatefulImageGenerationActionRows.js';
+import { StatelessAudioGenerationActionRow } from '../components/buttonRows/StatelessAudioGenerationActionRow.js';
 import { StatelessImageGenerationActionRow } from '../components/buttonRows/StatelessImageGenerationActionRow.js';
 import { DiscordConstants } from '../enums/DiscordConstants.js';
 
 export class ComfyUiReplyService {
     #services: IServiceContainer;
 
+    #environmentSettings: IEnvironmentSettings;
     #comfyUiClient: ComfyUiClient;
+    #contentTypeService: IContentTypeService;
     #replyService: IReplyService;
 
     #logger: ILogger;
@@ -31,7 +36,9 @@ export class ComfyUiReplyService {
     constructor(services: IServiceContainer) {
         this.#services = services;
 
+        this.#environmentSettings = services.environmentSettings;
         this.#comfyUiClient = services.comfyUiClient;
+        this.#contentTypeService = services.contentTypeService;
         this.#replyService = services.replyService;
 
         this.#logger = services.getLogger('ComfyUiReplyService');
@@ -40,7 +47,7 @@ export class ComfyUiReplyService {
     async reply(interaction: Message | ButtonInteraction,
         reply: BaseMessageOptions,
         isEdit: boolean = false,
-        renderExchange: IHttpExchange<Array<SerializableRenderRequest | null>, ImagesResponse | AudiosResponse>): Promise<void> {
+        renderExchange: IHttpExchange<Array<SerializableRenderRequest | null>, MediaCollectionResponse>): Promise<void> {
 
         if(reply.content === undefined || reply.content === null) {
             reply.content = '';
@@ -55,80 +62,39 @@ export class ComfyUiReplyService {
             return await this.#replyService.replyWithError(interaction);
         }
 
-        const jsonDescriptions: Array<string | null> = [];
+        const jsonDescriptions: string[] = renderExchange.request.map((request) => {
+            const requestString = JSON.stringify(request);
+            return requestString.length <= DiscordConstants.ContentMaxLength
+                ? requestString
+                : '';
+        });
 
-        const isStatefulResponse = renderExchange.request.filter((_, i) => {
-            const stringRequest = renderExchange.request[i];
-
-            if(stringRequest !== null) {
-                const description = JSON.stringify(stringRequest);
-                jsonDescriptions.push(description);
-                return description.length <= DiscordConstants.ImageDescriptionMaxLength;
-            } else {
-                jsonDescriptions.push(null);
-                return false;
-            }
-        }).length === renderExchange.request.length;
-
-        const fileAttachments: Array<AttachmentBuilder> = [];
+        const fileAttachments: AttachmentBuilder[] = [];
         let components: ActionRowBuilder<ButtonBuilder>[] = [];
 
-        for (const mediaResponse of Object.values(renderExchange.response)) {
-            this.#logger.info(`Attaching render(s):`, mediaResponse);
+        for (const mediaContainerCollection of Object.values(renderExchange.response)) {
+            this.#logger.info(`Attaching render(s):`, mediaContainerCollection);
             let i = 0;
 
-            for (const mediaContainer of mediaResponse) {
-                let file: Buffer<ArrayBuffer>;
+            for (const mediaContainer of mediaContainerCollection) {
                 let extension = '';
 
-                const audioContainer = (mediaContainer as AudioContainer).audio !== undefined
-                    ? (mediaContainer as AudioContainer) : null;
+                const file = Buffer.from(await mediaContainer.blob.arrayBuffer());
 
-                const imageContainer = (mediaContainer as ImageContainer).image !== undefined
-                    ? (mediaContainer as ImageContainer) : null;
-
-                if(audioContainer !== null) {
-                    file = Buffer.from(await (mediaContainer as AudioContainer).blob.arrayBuffer());
-
-                    if (audioContainer.audio.filename !== undefined) {
-                        extension = audioContainer.audio.filename.substring(
-                            audioContainer.audio.filename.lastIndexOf('.'),
-                            audioContainer.audio.filename.length);
-                    } else if (audioContainer.audio['content-type'] !== undefined) {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                        const contentType: string = audioContainer.audio['content-type'];
-                        extension = `.${contentType.substring(contentType.lastIndexOf('/') + 1, contentType.length)}`;
-                    } else {
-                        // If all else fails, it's most likely an MP3 sound.
-                        extension = '.mp3';
-                    }
-
-                    components = isStatefulResponse
-                        ? new StatefulAudioGenerationActionRow(this.#services, renderExchange.request[0]).build()
-                        : [];
-                } else if(imageContainer !== null) {
-                    file = Buffer.from(await (mediaContainer as ImageContainer).blob.arrayBuffer());
-
-                    if (imageContainer.image.filename !== undefined) {
-                        extension = imageContainer.image.filename.substring(
-                            imageContainer.image.filename.lastIndexOf('.'),
-                            imageContainer.image.filename.length);
-                    } else if (imageContainer.image['content-type'] !== undefined) {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                        const contentType: string = imageContainer.image['content-type'];
-                        extension = `.${contentType.substring(contentType.lastIndexOf('/') + 1, contentType.length)}`;
-                    } else {
-                        // If all else fails, it's most likely a PNG image.
-                        extension = '.png';
-                    }
-
-                    components = isStatefulResponse ?
-                        new StatefulImageGenerationActionRows(this.#services, renderExchange.request[0]).build()
-                            .concat(await new Img2ImgActionRow(this.#services).buildAsync()) :
-                        new StatelessImageGenerationActionRow(this.#services).build()
-                            .concat(await new Img2ImgActionRow(this.#services).buildAsync());
+                if (mediaContainer.media.filename !== undefined) {
+                    extension = mediaContainer.media.filename.substring(
+                        mediaContainer.media.filename.lastIndexOf('.'),
+                        mediaContainer.media.filename.length);
+                } else if (mediaContainer.blob.type !== undefined) {
+                    const contentType = mediaContainer.blob.type;
+                    extension = `.${contentType.substring(contentType.lastIndexOf('/') + 1, contentType.length)}`;
                 } else {
-                    throw new Error('Unsupported media container was used.');
+                    extension = '.octet';
+                }
+
+                // Allow the action bar to be set from the first piece of media content.
+                if(components.length === 0) {
+                    components = await this.#buildActionRows(mediaContainer, renderExchange.request);
                 }
 
                 const filename = this.getFileNameFromPrompt(renderExchange.request[i]
@@ -136,10 +102,8 @@ export class ComfyUiReplyService {
 
                 fileAttachments.push(new AttachmentBuilder(
                     file, {
-                        name: `${filename}${extension}`,
-                        description: isStatefulResponse
-                            ? jsonDescriptions[i] || jsonDescriptions[0]
-                            : null,
+                    name: `${filename}${extension}`,
+                    description: jsonDescriptions[i] || jsonDescriptions[0]
                     }
                 ));
 
@@ -155,9 +119,42 @@ export class ComfyUiReplyService {
 
     getFileNameFromPrompt(renderRequest: SerializableRenderRequest | null): string {
         if(renderRequest === null) {
-            return `${APPLICATION_NAME}_${new Date().getTime()}_stateless`;
+            return `${this.#environmentSettings.applicationName}_${new Date().getTime()}_stateless`;
         }
 
-        return `${APPLICATION_NAME}_${renderRequest.seed}_${renderRequest.prompt}`.substring(0, MAX_FILE_NAME_LENGTH);
+        return `${this.#environmentSettings.applicationName}_${renderRequest.seed}_${renderRequest.prompt}`.substring(0, MAX_FILE_NAME_LENGTH);
+    }
+
+    async #buildActionRows(mediaContainer: MediaContainer, requests: SerializableRenderRequest[]): Promise<ActionRowBuilder<ButtonBuilder>[]> {
+        if (mediaContainer === null) {
+            return [];
+        }
+
+        const contentType = mediaContainer.blob.type as ContentType;
+        const contentTypeCategory = this.#contentTypeService.getContentTypeCategoryFromContentType(contentType);
+
+        const isStatefulResponse = requests.filter((request) => {
+            if (request !== null) {
+                const description = JSON.stringify(request);
+                return description.length <= DiscordConstants.MaxAttachmentDescriptionLength;
+            } else {
+                return false;
+            }
+        }).length === requests.length;
+
+        switch(contentTypeCategory) {
+            case ContentTypeCategory.Audio:
+                return isStatefulResponse
+                    ? new StatefulAudioGenerationActionRow(this.#services, requests[0]).build()
+                    : new StatelessAudioGenerationActionRow(this.#services).build();
+            case ContentTypeCategory.Image:
+                return isStatefulResponse ?
+                    new StatefulImageGenerationActionRows(this.#services, requests[0]).build()
+                        .concat(await new Img2ImgActionRow(this.#services).buildAsync()) :
+                    new StatelessImageGenerationActionRow(this.#services).build()
+                        .concat(await new Img2ImgActionRow(this.#services).buildAsync());
+            default:
+                return [];
+        }
     }
 }

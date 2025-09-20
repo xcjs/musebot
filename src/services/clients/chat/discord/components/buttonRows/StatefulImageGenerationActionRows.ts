@@ -1,7 +1,7 @@
 import { ActionRowBuilder, ButtonBuilder } from 'discord.js';
 
 import { IServiceContainer } from '../../../../../IServiceContainer.js';
-import { SerializableRenderRequest } from '../../../../images/stable-diffusion/models/SerializableRenderRequest.js';
+import { SerializableRenderRequest } from '../../../../media/comfy-ui/models/SerializableRenderRequest.js';
 import { BaseComponent } from '../BaseComponent.js';
 import { HelpButton } from '../buttons/HelpButton.js';
 import { ExpandPromptButton } from '../buttons/images/ExpandPromptButton.js';
@@ -51,5 +51,9 @@ export class StatefulImageGenerationActionRows extends BaseComponent<ActionRowBu
         ];
 
         return this.#actionRowBuilderFactory.buildActionRows(this.#buttons);
+    }
+
+    override buildAsync(): Promise<ActionRowBuilder<ButtonBuilder>[]> {
+        throw new Error('Method not implemented.');
     }
 }

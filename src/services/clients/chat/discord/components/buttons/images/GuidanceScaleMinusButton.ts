@@ -4,8 +4,8 @@ import { BotInteraction } from '../../../../../../../enums/BotInteraction.js';
 import { IEnvironmentSettings } from '../../../../../../environment-settings/IEnvironmentSettings.js';
 import { SupportedFeature } from '../../../../../../features/enum/SupportedFeature.js';
 import { IServiceContainer } from '../../../../../../IServiceContainer.js';
-import { GuidanceScaleLimit } from '../../../../../images/stable-diffusion/enums/GuidanceScaleLimit.js';
-import { SerializableRenderRequest } from '../../../../../images/stable-diffusion/models/SerializableRenderRequest.js';
+import { SerializableRenderRequest } from '../../../../../media/comfy-ui/models/SerializableRenderRequest.js';
+import { guidanceScaleMin } from '../../../../../media/stable-diffusion/constants/constants.js';
 import { BaseComponent } from '../../BaseComponent.js';
 
 export class GuidanceScaleMinusButton extends BaseComponent<ButtonBuilder> {
@@ -16,7 +16,9 @@ export class GuidanceScaleMinusButton extends BaseComponent<ButtonBuilder> {
     override get isSupported(): boolean {
         let isSupported = true;
 
-        isSupported = this.featureService.hasFeature(SupportedFeature.Txt2Img)
+        isSupported = this.featureService.hasFeature(SupportedFeature.Txt2Audio)
+            || this.featureService.hasFeature(SupportedFeature.Txt2Img)
+            || this.featureService.hasFeature(SupportedFeature.Txt2Music)
             || this.featureService.hasFeature(SupportedFeature.Txt2Vid);
 
         if(this.#renderRequest === null) {
@@ -25,7 +27,7 @@ export class GuidanceScaleMinusButton extends BaseComponent<ButtonBuilder> {
 
         isSupported = isSupported
             && this.#renderRequest.cfgScale - this.#environmentSettings.stableDiffusionGuidanceScaleInterval
-            >= GuidanceScaleLimit.Min;
+            >= guidanceScaleMin;
 
         return isSupported;
     }
@@ -53,5 +55,9 @@ export class GuidanceScaleMinusButton extends BaseComponent<ButtonBuilder> {
             .setCustomId(BotInteraction.GuidanceScaleMinus)
             .setLabel(this.label)
             .setStyle(ButtonStyle.Secondary);
+    }
+
+    override buildAsync(): Promise<ButtonBuilder> {
+        throw new Error('Method not implemented.');
     }
 }

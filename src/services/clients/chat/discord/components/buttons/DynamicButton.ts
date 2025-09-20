@@ -1,6 +1,6 @@
 import { ButtonBuilder, ButtonStyle } from 'discord.js';
 
-import { APPLICATION_NAME } from '../../../../../../constants/Globals.js';
+import { IEnvironmentSettings } from '../../../../../environment-settings/IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../../IServiceContainer.js';
 import { BaseComponent } from '../BaseComponent.js';
 
@@ -25,6 +25,8 @@ export class DynamicButton extends BaseComponent<ButtonBuilder> {
         return this.#helpText;
     }
 
+    #environmentSettings: IEnvironmentSettings;
+
     constructor(services: IServiceContainer,
         label: string,
         title: string | undefined,
@@ -34,10 +36,12 @@ export class DynamicButton extends BaseComponent<ButtonBuilder> {
         this.#label = label;
 
         this.#title = title
-            || `Your ${APPLICATION_NAME} administrator has not provided a title for this workflow. Ask them to add one!`;
+            || `Your ${this.#environmentSettings.applicationName} `
+                + `administrator has not provided a title for this workflow. Ask them to add one!`;
 
         this.#helpText = helpText
-            || `Your ${APPLICATION_NAME} administrator has not provided help text explaining this workflow. Ask them to add some!`;
+            || `Your ${this.#environmentSettings.applicationName} `
+                + `administrator has not provided help text explaining this workflow. Ask them to add some!`;
     }
 
     override build(): ButtonBuilder {
@@ -45,5 +49,9 @@ export class DynamicButton extends BaseComponent<ButtonBuilder> {
             .setCustomId(this.#label)
             .setLabel(this.#label)
             .setStyle(ButtonStyle.Secondary);
+    }
+
+    override buildAsync(): Promise<ButtonBuilder> {
+        throw new Error('Method not implemented.');
     }
 }

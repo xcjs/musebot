@@ -12,11 +12,10 @@ export enum EnvironmentKey {
     OllamaModels = 'MUSEBOT_OLLAMA_MODELS',
     OllamaStreamsResponse = 'MUSEBOT_OLLAMA_STREAMS_RESPONSE',
     OllamaSystemPrompt = 'MUSEBOT_OLLAMA_SYSTEM_PROMPT',
-    OllamaTaskChannel = 'MUSEBOT_TASK_QUEUE_CHANNEL_OLLAMA',
     StableDiffusionApiType = 'MUSEBOT_STABLE_DIFFUSION_API_TYPE',
     StableDiffusionHosts = 'MUSEBOT_STABLE_DIFFUSION_HOSTS',
     StableDiffusionOllamaPrompts = 'MUSEBOT_STABLE_DIFFUSION_OLLAMA_PROMPTS',
-    StableDiffusionTaskChannel = 'MUSEBOT_TASK_QUEUE_CHANNEL_STABLE_DIFFUSION',
     TaskQueueMaxAttempts = 'MUSEBOT_TASK_QUEUE_MAX_ATTEMPTS',
     TaskQueueRetryDelayMs = 'MUSEBOT_TASK_QUEUE_RETRY_DELAY_MS',
+    TaskQueueStrategy = 'MUSEBOT_TASK_QUEUE_STRATEGY'
 }

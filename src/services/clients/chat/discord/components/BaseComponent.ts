@@ -24,11 +24,7 @@ export abstract class BaseComponent<ComponentType> {
         this.featureService = services.featureService;
     }
 
-    build(): ComponentType {
-        throw new Error('The build() implementation must be overridden.');
-    }
+    abstract build(): ComponentType;
 
-    buildAsync(): Promise<ComponentType> {
-        throw new Error('The buildAsync() implementation must be overridden.');
-    }
+    abstract buildAsync(): Promise<ComponentType>;
 }

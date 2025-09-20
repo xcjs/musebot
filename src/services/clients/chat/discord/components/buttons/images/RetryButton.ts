@@ -13,6 +13,7 @@ export class RetryButton extends BaseComponent<ButtonBuilder> {
     override get isSupported(): boolean {
         return this.featureService.hasFeature(SupportedFeature.Txt2Audio)
             || this.featureService.hasFeature(SupportedFeature.Txt2Img)
+            || this.featureService.hasFeature(SupportedFeature.Txt2Music)
             || this.featureService.hasFeature(SupportedFeature.Txt2Vid);
     }
 
@@ -21,7 +22,7 @@ export class RetryButton extends BaseComponent<ButtonBuilder> {
     }
 
     override get helpText(): string {
-        return 'Retries your prompt and responds with a different image.';
+        return 'Retries your prompt and responds with a different output.';
     }
 
     constructor(services: IServiceContainer) {
@@ -33,5 +34,9 @@ export class RetryButton extends BaseComponent<ButtonBuilder> {
             .setCustomId(BotInteraction.Retry)
             .setLabel(this.label)
             .setStyle(ButtonStyle.Secondary);
+    }
+
+    override buildAsync(): Promise<ButtonBuilder> {
+        throw new Error('Method not implemented.');
     }
 }

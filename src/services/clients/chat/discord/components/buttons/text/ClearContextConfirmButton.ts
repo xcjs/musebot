@@ -33,4 +33,8 @@ export class ClearContextConfirmButton extends BaseComponent<ButtonBuilder> {
             .setLabel(this.label)
             .setStyle(ButtonStyle.Danger);
     }
+
+    override buildAsync(): Promise<ButtonBuilder> {
+        throw new Error('Method not implemented.');
+    }
 }

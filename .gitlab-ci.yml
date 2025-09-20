@@ -4,10 +4,12 @@ stages:
   - Test
   - Build
   - Publish
+  - Review
 
 Install Dependencies:
   stage: Setup
   image: node:20
+  needs: []
   tags:
     - docker
   script:
@@ -25,6 +27,7 @@ Install Dependencies:
 Lint:
   stage: Lint
   image: node:20
+  needs: ["Install Dependencies"]
   tags:
     - docker
   script:
@@ -33,6 +36,7 @@ Lint:
 Test:
   stage: Test
   image: node:20
+  needs: ["Install Dependencies"]
   tags:
     - docker
   script:
@@ -46,6 +50,7 @@ Test:
 Build Docker Image:
   stage: Build
   image: docker:stable
+  needs: ["Install Dependencies", "Lint", "Test"]
   services:
     - docker:stable-dind
   except:
@@ -58,6 +63,7 @@ Build Docker Image:
 Build Distributable:
   stage: Build
   image: node:20
+  needs: ["Install Dependencies", "Lint", "Test"]
   tags:
     - docker
   script:
@@ -95,6 +101,7 @@ Build Distributable:
 Publish Docker Image:
   stage: Publish
   image: docker:stable
+  needs: ["Build Docker Image"]
   services:
     - docker:stable-dind
   only:
@@ -106,3 +113,63 @@ Publish Docker Image:
   script:
     - docker build -t $CI_REGISTRY/xcjs/musebot:latest .
     - docker push $CI_REGISTRY/xcjs/musebot:latest
+
+Review with gemma3:1b-it-qat:
+  stage: Review
+  image:
+    name: ollama/ollama:latest
+    entrypoint: [""]
+  script:
+    - .gitlab-ci/review.sh "gemma3:1b-it-qat"
+  needs: []
+  when: manual
+  tags:
+    - docker
+  artifacts:
+    paths:
+      - Code Review.md
+
+Review with gemma3n:latest:
+  stage: Review
+  image:
+    name: ollama/ollama:latest
+    entrypoint: [""]
+  script:
+    - .gitlab-ci/review.sh "gemma3n:latest"
+  needs: []
+  when: manual
+  tags:
+    - docker
+  artifacts:
+    paths:
+      - Code Review.md
+
+Review with qwen2.5-coder:latest:
+  stage: Review
+  image:
+    name: ollama/ollama:latest
+    entrypoint: [""]
+  script:
+    - .gitlab-ci/review.sh "qwen2.5-coder:latest"
+  needs: []
+  when: manual
+  tags:
+    - docker
+  artifacts:
+    paths:
+      - Code Review.md
+
+Review with gemma3:12b-it-qat:
+  stage: Review
+  image:
+    name: ollama/ollama:latest
+    entrypoint: [""]
+  script:
+    - .gitlab-ci/review.sh "gemma3:12b-it-qat"
+  needs: []
+  when: manual
+  tags:
+    - docker
+  artifacts:
+    paths:
+      - Code Review.md

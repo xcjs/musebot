@@ -15,13 +15,19 @@ export interface IReplyService {
 
     mention(user: User): string;
 
+    getPreviousMessage(message: Message): Promise<Message | null>;
+
+    extractPrompt(message: Message): string;
+
     replyWithError(interaction: Message | ButtonInteraction): Promise<void>;
 
-    getAttachmentsByType(interaction: Message | ButtonInteraction, contentTypes: Array<ContentType>): Array<Attachment>;
+    getAttachments(interaction: Message | ButtonInteraction): Attachment[];
 
-    getAudioAttachments(interaction: Message | ButtonInteraction): Array<Attachment>;
+    getAttachmentsByType(interaction: Message | ButtonInteraction, contentTypes: ContentType[] | undefined): Attachment[];
 
-    getImageAttachments(interaction: Message | ButtonInteraction): Array<Attachment>;
+    getAudioAttachments(interaction: Message | ButtonInteraction): Attachment[];
 
-    getAttachedImagesAsBase64(interaction: Message | ButtonInteraction): Promise<Array<string>>;
+    getImageAttachments(interaction: Message | ButtonInteraction): Attachment[];
+
+    getAttachedImagesAsBase64(interaction: Message | ButtonInteraction): Promise<string[]>;
 }

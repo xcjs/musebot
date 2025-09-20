@@ -7,57 +7,132 @@ import dotenv from 'dotenv';
 import nodePackage from '../../../package.json' with { type: 'json' };
 import { BotFunction } from '../../enums/BotFunction.js';
 import { NodeEnvironment } from '../../enums/NodeEnvironment.js';
-import { StableDiffusionApiType } from '../clients/images/stable-diffusion/enums/StableDiffusionApiType.js';
+import { TaskQueueStrategy } from '../../enums/TaskQueueStrategy.js';
+import { toTitleCase } from '../../utilities/string-utilities.js';
 import { ILogger } from '../ILogger.js';
 import { Logger } from '../Logger.js';
 import { EnvironmentKey } from './constants/EnvironmentKey.js';
 import { IEnvironmentSettings } from './IEnvironmentSettings.js';
 
 export class EnvironmentSettings implements IEnvironmentSettings {
-    packageName: string;
-    version: string;
-
-    nodeEnvironment: NodeEnvironment;
-
-    botFunction: BotFunction;
-
-    maxTaskAttempts: number = 10;
-    taskRetryDelayMilliseconds: number = 1000;
-
-    discordToken: string;
-    discordChannels: string[] = [];
-    discordChannelsDisallowed: string[] = [];
-
-    botRequiresMention: boolean = true;
-    botResponseRate: number = 100;
-    botPrivateMessageUsers: string[] = [];
-    errorMessage: string = 'An error occurred while generating a response. Please try again later.';
-
-    stableDiffusionApiType: StableDiffusionApiType;
-    stableDiffusionHosts: URL[] = [];
-    stableDiffusionModels: string[] = [];
-    stableDiffusionGuidanceScaleInterval: number = .5;
-    stableDiffusionTaskChannel: string = '';
-
-    get hasStableDiffusionOutputAsSeparateTask() {
-        return false;
+    #packageName: string;
+    get packageName(): string {
+        return this.#packageName;
     }
 
-    ollamaHosts: URL[] = [];
-    ollamaModels: string[] = [];
-    ollamaSystemPrompt: string;
-    ollamaStreamsResponse: boolean = false;
-    ollamaTaskChannel: string = '';
+    #version: string;
+    get version(): string {
+        return this.#version;
+    }
 
-    stableDiffusionOllamaPrompts: string[] = ['Describe something or someone with extraordinary detail.'];
+    #nodeEnvironment: NodeEnvironment;
+    get nodeEnvironment(): NodeEnvironment {
+        return this.#nodeEnvironment;
+    }
+
+    #botFunction: BotFunction;
+    get botFunction(): BotFunction {
+        return this.#botFunction;
+    }
+
+    #maxTaskAttempts: number = 10;
+    get maxTaskAttempts(): number {
+        return this.#maxTaskAttempts;
+    }
+
+    #taskRetryDelayMilliseconds: number = 1000;
+    get taskRetryDelayMilliseconds(): number {
+        return this.#taskRetryDelayMilliseconds;
+    }
+
+    #taskQueueStrategy: TaskQueueStrategy;
+    get taskQueueStrategy(): TaskQueueStrategy {
+        return this.#taskQueueStrategy;
+    }
+
+    #discordToken: string;
+    get discordToken(): string {
+        return this.#discordToken;
+    }
+
+    #discordChannels: string[] = [];
+    get discordChannels(): string[] {
+        return this.#discordChannels;
+    }
+
+    #discordChannelsDisallowed: string[] = [];
+    get discordChannelsDisallowed(): string[] {
+        return this.#discordChannelsDisallowed;
+    }
+
+    #botRequiresMention: boolean = true;
+    get botRequiresMention(): boolean {
+        return this.#botRequiresMention;
+    }
+
+    #botResponseRate: number = 100;
+    get botResponseRate(): number {
+        return this.#botResponseRate;
+    }
+
+    #botPrivateMessageUsers: string[] = [];
+    get botPrivateMessageUsers(): string[] {
+        return this.#botPrivateMessageUsers;
+    }
+
+    #errorMessage: string = 'An error occurred while generating a response. Please try again later.';
+    get errorMessage(): string {
+        return this.#errorMessage;
+    }
+
+    #stableDiffusionHosts: URL[] = [];
+    get stableDiffusionHosts(): URL[] {
+        return this.#stableDiffusionHosts;
+    }
+
+    #stableDiffusionGuidanceScaleInterval: number = .5;
+    get stableDiffusionGuidanceScaleInterval(): number {
+        return this.#stableDiffusionGuidanceScaleInterval;
+    }
+
+    #ollamaHosts: URL[] = [];
+    get ollamaHosts(): URL[] {
+        return this.#ollamaHosts;
+    }
+
+    #ollamaModels: string[] = [];
+    get ollamaModels() {
+        return this.#ollamaModels;
+    }
+
+    #ollamaSystemPrompt: string;
+    get ollamaSystemPrompt(): string {
+        return this.#ollamaSystemPrompt;
+    }
+
+    #ollamaStreamsResponse: boolean = false;
+    get ollamaStreamsResponse(): boolean {
+        return this.#ollamaStreamsResponse;
+    }
+
+    #stableDiffusionOllamaPrompts: string[] = ['Describe something or someone with extraordinary detail.'];
+    get stableDiffusionOllamaPrompts(): string[] {
+        return this.#stableDiffusionOllamaPrompts;
+    }
 
     #logger: ILogger;
 
-    get isProduction() {
+    get applicationName(): string {
+        return toTitleCase(this.packageName);
+    }
+
+    get isProduction(): boolean {
         return this.nodeEnvironment === NodeEnvironment.Production;
     }
 
     constructor() {
+        this.#logger = new Logger('EnvironmentSettings');
+
         // If this loads environment variables during a test, it can pollute
         // the results.
         /* c8 ignore start */
@@ -66,43 +141,37 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         }
         /* c8 ignore stop */
 
-        this.packageName = nodePackage.name;
-        this.version = nodePackage.version;
+        this.#packageName = nodePackage.name;
+        this.#version = nodePackage.version;
 
-        this.nodeEnvironment = this.#readEnum<NodeEnvironment>(EnvironmentKey.NodeEnvironment, Object.values(NodeEnvironment));
-        this.botFunction = this.#readEnum<BotFunction>(EnvironmentKey.BotFunction, Object.values(BotFunction));
+        this.#nodeEnvironment = this.#readEnum<NodeEnvironment>(EnvironmentKey.NodeEnvironment, Object.values(NodeEnvironment));
+        this.#botFunction = this.#mapLegacyFunctionsToCurrent(
+            this.#readEnum<BotFunction>(EnvironmentKey.BotFunction, Object.values(BotFunction)));
 
-        this.maxTaskAttempts = this.#readDefaultableNumber(EnvironmentKey.TaskQueueMaxAttempts, this.maxTaskAttempts);
-        this.taskRetryDelayMilliseconds = this.#readDefaultableNumber(EnvironmentKey.TaskQueueRetryDelayMs, this.taskRetryDelayMilliseconds);
+        this.#maxTaskAttempts = this.#readDefaultableNumber(EnvironmentKey.TaskQueueMaxAttempts, this.maxTaskAttempts);
+        this.#taskRetryDelayMilliseconds = this.#readDefaultableNumber(EnvironmentKey.TaskQueueRetryDelayMs, this.taskRetryDelayMilliseconds);
+        this.#taskQueueStrategy = this.#readEnum(EnvironmentKey.TaskQueueStrategy, Object.values(TaskQueueStrategy), TaskQueueStrategy.Serial);
 
-        this.discordToken = this.#readRequiredString(EnvironmentKey.AuthenticationToken);
-        this.discordChannels = this.#readDelimitedList(EnvironmentKey.ChatChannels, ',');
-        this.discordChannelsDisallowed = this.#readDelimitedList(EnvironmentKey.ChatChannelsDisallowed, ',');
+        this.#discordToken = this.#readRequiredString(EnvironmentKey.AuthenticationToken);
+        this.#discordChannels = this.#readDelimitedList(EnvironmentKey.ChatChannels, ',');
+        this.#discordChannelsDisallowed = this.#readDelimitedList(EnvironmentKey.ChatChannelsDisallowed, ',');
 
-        this.botRequiresMention = this.#readBoolean(EnvironmentKey.BotRequiresMention);
-        this.botResponseRate = this.#readDefaultableRangedInteger(EnvironmentKey.BotResponseRate, 1, 100, 100);
-        this.botPrivateMessageUsers = this.#readDelimitedList(EnvironmentKey.BotPrivateMessageUsers, ',');
-        this.errorMessage = this.#readDefaultableString(EnvironmentKey.BotErrorMessage, this.errorMessage);
+        this.#botRequiresMention = this.#readBoolean(EnvironmentKey.BotRequiresMention);
+        this.#botResponseRate = this.#readDefaultableRangedInteger(EnvironmentKey.BotResponseRate, 1, 100, 100);
+        this.#botPrivateMessageUsers = this.#readDelimitedList(EnvironmentKey.BotPrivateMessageUsers, ',');
+        this.#errorMessage = this.#readDefaultableString(EnvironmentKey.BotErrorMessage, this.errorMessage);
 
-        this.stableDiffusionApiType = this.#readEnum<StableDiffusionApiType>
-            (EnvironmentKey.StableDiffusionApiType, Object.values(StableDiffusionApiType));
-
-        this.stableDiffusionHosts = this.#readDelimitedList(EnvironmentKey.StableDiffusionHosts, ',')
+        this.#stableDiffusionHosts = this.#readDelimitedList(EnvironmentKey.StableDiffusionHosts, ',')
             .map(x => new URL(x));
 
-        this.stableDiffusionTaskChannel = this.#readDefaultableString(EnvironmentKey.StableDiffusionTaskChannel, this.stableDiffusionTaskChannel);
-
-        this.ollamaHosts = this.#readDelimitedList(EnvironmentKey.OllamaHosts, ',')
+        this.#ollamaHosts = this.#readDelimitedList(EnvironmentKey.OllamaHosts, ',')
             .map(x => new URL(x));
 
-        this.ollamaModels = this.#readDelimitedList(EnvironmentKey.OllamaModels, ',');
-        this.ollamaSystemPrompt = this.#readDefaultableString(EnvironmentKey.OllamaSystemPrompt, '');
-        this.ollamaStreamsResponse = this.#readBoolean(EnvironmentKey.OllamaStreamsResponse);
-        this.ollamaTaskChannel = this.#readDefaultableString(EnvironmentKey.OllamaTaskChannel, this.ollamaTaskChannel);
+        this.#ollamaModels = this.#readDelimitedList(EnvironmentKey.OllamaModels, ',');
+        this.#ollamaSystemPrompt = this.#readDefaultableString(EnvironmentKey.OllamaSystemPrompt, '');
+        this.#ollamaStreamsResponse = this.#readBoolean(EnvironmentKey.OllamaStreamsResponse);
 
-        this.stableDiffusionOllamaPrompts = this.#readDelimitedList(EnvironmentKey.StableDiffusionOllamaPrompts, '|');
-
-        this.#logger = new Logger('EnvironmentSettings');
+        this.#stableDiffusionOllamaPrompts = this.#readDelimitedList(EnvironmentKey.StableDiffusionOllamaPrompts, '|');
 
         this.#validate();
 
@@ -128,6 +197,7 @@ export class EnvironmentSettings implements IEnvironmentSettings {
 
         this.#logger.info(`${EnvironmentKey.TaskQueueMaxAttempts}: ${this.maxTaskAttempts}`);
         this.#logger.info(`${EnvironmentKey.TaskQueueRetryDelayMs}: ${this.taskRetryDelayMilliseconds}`);
+        this.#logger.info(`${EnvironmentKey.TaskQueueStrategy}: ${this.taskQueueStrategy}`);
 
         this.#logger.info(`${EnvironmentKey.BotFunction}: ${this.botFunction}`);
 
@@ -138,15 +208,12 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         this.#logger.info(`${EnvironmentKey.BotPrivateMessageUsers}: ${this.botPrivateMessageUsers.join(', ')}`);
         this.#logger.info(`${EnvironmentKey.BotErrorMessage}: ${this.errorMessage}`);
 
-        this.#logger.info(`${EnvironmentKey.StableDiffusionApiType}: ${this.stableDiffusionApiType}`);
         this.#logger.info(`${EnvironmentKey.StableDiffusionHosts}: ${this.stableDiffusionHosts.join(', ')}`);
-        this.#logger.info(`${EnvironmentKey.StableDiffusionTaskChannel}: ${this.stableDiffusionTaskChannel}`);
 
         this.#logger.info(`${EnvironmentKey.OllamaHosts}: ${this.ollamaHosts.join(', ')}`);
         this.#logger.info(`${EnvironmentKey.OllamaModels}: ${this.ollamaModels.join(', ')}`);
         this.#logger.info(`${EnvironmentKey.OllamaSystemPrompt}: ${this.ollamaSystemPrompt}`);
         this.#logger.info(`${EnvironmentKey.OllamaStreamsResponse}: ${this.ollamaStreamsResponse}`);
-        this.#logger.info(`${EnvironmentKey.OllamaTaskChannel}: ${this.ollamaTaskChannel}`);
 
         this.#logger.info(`${EnvironmentKey.StableDiffusionOllamaPrompts}: ${this.stableDiffusionOllamaPrompts.join(' | ')}`);
     }
@@ -158,11 +225,11 @@ export class EnvironmentSettings implements IEnvironmentSettings {
     * It also logs informational messages if certain configurations are not provided.
     */
     #validate(): void {
-        if(this.botFunction === BotFunction.Images && this.stableDiffusionHosts.length === 0) {
+        if(this.botFunction === BotFunction.Media && this.stableDiffusionHosts.length === 0) {
             throw new Error(`${EnvironmentKey.StableDiffusionHosts} requires at least one value.`);
         }
 
-        if(this.botFunction === BotFunction.Text && this.ollamaHosts.length === 0) {
+        if(this.botFunction === BotFunction.Chat && this.ollamaHosts.length === 0) {
             throw new Error(`${EnvironmentKey.OllamaHosts} requires at least one value.`);
         }
 
@@ -180,8 +247,8 @@ export class EnvironmentSettings implements IEnvironmentSettings {
     * @returns {T} - The validated value from the environment variable.
     * @throws {Error} - Throws an error if the environment variable is not one of the allowed values.
     */
-    #readEnum<T>(key: EnvironmentKey, enumValues: T[]): T {
-        const valueString = process.env[key].trim() as T;
+    #readEnum<T>(key: EnvironmentKey, enumValues: T[], defaultValue: T | null = null): T {
+        const valueString = process.env[key]?.trim() as T || defaultValue;
 
         if(!((Object.values(enumValues) as string[]).includes(valueString as string))) {
             throw new Error(`${key} must be one of the following values: ${Object.values(enumValues).join(', ')}`);
@@ -295,5 +362,38 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         }
 
         return value;
+    }
+
+    /**
+     * Maps legacy `BotFunction` values to their modern equivalents (`BotFunction.Chat` or `BotFunction.Media`).
+     *
+     * This function handles the deprecation of the `Audio`, `Images, and `Text` `BotFunction` values. When encountering
+     * either of these legacy values, a warning is logged (unless running in a test environment) indicating that the
+     * configuration should be updated to use `Chat` or `Media` instead.
+     *
+     * @param {BotFunction} botFunction - The `BotFunction` value to map.
+     * @returns {BotFunction} The mapped `BotFunction` value.
+     */
+    #mapLegacyFunctionsToCurrent(botFunction: BotFunction): BotFunction {
+        const warningMessage = `The ${EnvironmentKey.BotFunction} value configured has been deprecated and should be `
+            + `updated with either ${BotFunction.Chat} or ${BotFunction.Media}.`;
+
+        switch(botFunction) {
+            case BotFunction.Audio:
+            case BotFunction.Images:
+                if(this.nodeEnvironment !== NodeEnvironment.Test) {
+                    this.#logger.warn(warningMessage);
+                }
+
+                return BotFunction.Media;
+            case BotFunction.Text:
+                if (this.nodeEnvironment !== NodeEnvironment.Test) {
+                    this.#logger.warn(warningMessage);
+                }
+
+                return BotFunction.Chat;
+            default:
+                return botFunction;
+        }
     }
 }
