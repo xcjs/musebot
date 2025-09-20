@@ -218,21 +218,39 @@ export class ReplyService implements IReplyService {
         return `<@${user.id}>`;
     }
 
-    async getAllAntecedentPrompts(message: Message): Promise<string[]> {
-        const prompts: string[] = [];
-        let currentMessage = message;
+    async getPreviousMessage(message: Message): Promise<Message | null> {
+        if (message.reference !== null) {
+            const priorMessage = await message.fetchReference();
 
-        while (currentMessage.reference !== null) {
-            const antecedentMessage = await currentMessage.fetchReference();
-
-            if (antecedentMessage.content !== null && antecedentMessage.content.length > 0) {
-                prompts.push(this.getMessageWithoutBotMentions(antecedentMessage));
+            if (priorMessage.content !== null && priorMessage.content.length > 0) {
+                return priorMessage;
             }
+        } else {
+            return null;
+        }
+    }
 
-            currentMessage = antecedentMessage;
+    extractPrompt(message: Message): string {
+        const messageContent = message.content || '';
+
+        // Find the last occurrence of backticks
+        const lastBacktickIndex = messageContent.lastIndexOf('`');
+
+        // If no backticks found, return empty string
+        if (lastBacktickIndex === -1) {
+            return '';
         }
 
-        return prompts.reverse();
+        // Find the second to last backtick
+        const secondLastBacktickIndex = messageContent.lastIndexOf('`', lastBacktickIndex - 1);
+
+        // If no second to last backtick found, return empty string
+        if (secondLastBacktickIndex === -1) {
+            return '';
+        }
+
+        // Return the substring between the last two backticks
+        return messageContent.substring(secondLastBacktickIndex + 1, lastBacktickIndex);
     }
 
     getAttachments(interaction: Message | ButtonInteraction): Attachment[] {

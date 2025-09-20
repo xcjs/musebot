@@ -38,16 +38,18 @@ export class MessageToMediaMutator implements IWorkflowMutator {
     }
 
     async mutate(renderRequest: SerializableRenderRequest, interaction: Message, workflow: IWorkflow): Promise<SerializableRenderRequest> {
-        const prompt = interaction.type === MessageType.Reply
-            ? `${((await this.#replyService.getAllAntecedentPrompts(interaction)).join('\n\n'))} ${interaction.content}`.trim()
-            : this.#replyService.getMessageWithoutBotMentions(interaction);
-
+        let prompt = this.#replyService.getMessageWithoutBotMentions(interaction);;
         const userMention = `${interaction.member?.user.toString() || 'You'}`
+        this.#contentMessage = `${userMention} generated \`${prompt}\``;
 
-        if(interaction.type == MessageType.Default) {
-            this.#contentMessage = `${userMention} generated ${prompt}`
-        } else if(interaction.type === MessageType.Reply) {
-            this.#contentMessage = `${userMention} retried \`${renderRequest.prompt}\` as \`${prompt}\``
+        if(interaction.type === MessageType.Reply) {
+            const previousMessage = await this.#replyService.getPreviousMessage(interaction);
+
+            if(previousMessage !== null) {
+                const priorPrompt = this.#replyService.extractPrompt(previousMessage);
+                prompt = `${priorPrompt} ${interaction.content}`.trim();
+                this.#contentMessage = `${userMention} generated \`${priorPrompt}\` as \`${prompt}\``;
+            }
         }
 
         renderRequest.workflow = workflow.name;
@@ -55,6 +57,6 @@ export class MessageToMediaMutator implements IWorkflowMutator {
         renderRequest.num = 1;
         renderRequest.refreshSeed();
 
-        return renderRequest;
+        return await Promise.resolve(renderRequest);
     }
 }

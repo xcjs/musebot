@@ -60,6 +60,7 @@ export class ComfyUiMessageTask extends ComfyUiBaseTask {
         const mutator = this.#services.getWorkflowMutator(interactionType, workflow);
 
         const prompts: Prompt[] = [];
+        let content = '';
 
         for (let i = 0; i < defaultRenderRequest.num; i++) {
             const renderRequest = await mutator.mutate(defaultRenderRequest, this.#message, workflow);
@@ -77,6 +78,7 @@ export class ComfyUiMessageTask extends ComfyUiBaseTask {
 
             renderRequests.push(renderRequest);
             prompts.push(prompt);
+            content = mutator.contentMessage;
         }
 
         if(renderRequests.length === 0 || prompts.length === 0) {
@@ -89,7 +91,7 @@ export class ComfyUiMessageTask extends ComfyUiBaseTask {
             response: mediaCollectionResponse
         };
 
-        await this.comfyUiReplyService.reply(this.#message, {}, false, exchange);
+        await this.comfyUiReplyService.reply(this.#message, { content }, false, exchange);
     }
 
     override async postProcess(): Promise<void> {

@@ -15,7 +15,9 @@ export interface IReplyService {
 
     mention(user: User): string;
 
-    getAllAntecedentPrompts(message: Message): Promise<string[]>;
+    getPreviousMessage(message: Message): Promise<Message | null>;
+
+    extractPrompt(message: Message): string;
 
     replyWithError(interaction: Message | ButtonInteraction): Promise<void>;
 
