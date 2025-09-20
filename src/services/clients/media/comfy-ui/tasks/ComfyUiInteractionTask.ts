@@ -45,7 +45,7 @@ export class ComfyUiInteractionTask extends ComfyUiBaseTask {
             .find(workflow => workflow.name === renderRequest.workflow))
             .filter(workflow => workflow !== undefined);
 
-        if(workflows.length === 0 && inputRenderRequests.length === 0) {
+        if(workflows.length === 0) {
             // Some interactions do not require an existing SerializableRenderRequest.
             // If we've made it this far, assume the interaction creates a novel
             // piece of media and provide it a workflow and render request to work from.
