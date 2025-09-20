@@ -33,7 +33,7 @@ export class ComfyUiInteractionTask extends ComfyUiBaseTask {
         await super.process();
 
         const attachments = this.#replyService.getAttachments(this.#interaction)
-            .filter(attachment => attachment.description.length > 0);
+            .filter(attachment => attachment.description?.length > 0);
 
         if(attachments.length === 0) {
             // No attachments means there's no work to do.
