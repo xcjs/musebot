@@ -22,7 +22,7 @@ export class MessageToMediaMutator implements IWorkflowMutator {
     }
 
     get contentMessage() {
-        return '';
+        return this.#contentMessage;
     }
 
     get additionalAttachments(): AttachmentBuilder[] {
@@ -30,6 +30,8 @@ export class MessageToMediaMutator implements IWorkflowMutator {
     }
 
     #replyService: IReplyService;
+
+    #contentMessage = '';
 
     constructor(services: IServiceContainer) {
         this.#replyService = services.replyService;
@@ -39,6 +41,14 @@ export class MessageToMediaMutator implements IWorkflowMutator {
         const prompt = interaction.type === MessageType.Reply
             ? `${((await this.#replyService.getAllAntecedentPrompts(interaction)).join('\n\n'))} ${interaction.content}`.trim()
             : this.#replyService.getMessageWithoutBotMentions(interaction);
+
+        const userMention = `${interaction.member?.user.toString() || 'You'}`
+
+        if(interaction.type == MessageType.Default) {
+            this.#contentMessage = `${userMention} generated ${prompt}`
+        } else if(interaction.type === MessageType.Reply) {
+            this.#contentMessage = `${userMention} retried \`${renderRequest.prompt}\` as \`${prompt}\``
+        }
 
         renderRequest.workflow = workflow.name;
         renderRequest.prompt = prompt;
