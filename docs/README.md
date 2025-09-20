@@ -2,6 +2,9 @@
 
 ![Musebot Logo](assets/images/logos/musebot.jpg)
 
+Thanks for purchasing a copy of Musebot! I'm excited to see how people utilize
+it, and I hope it brings you a lot of inspiration!
+
 Musebot is an interactive chat bot designed for use in the Discord chat service.
 
 The goal of Musebot is to bring self-hosted generative AI solutions to Discord
@@ -16,6 +19,11 @@ Musebot currently supports the following generative AI solutions:
 While some documentation is included on these systems, please refer to the
 respective documentation provided by these projects for basic installation and
 configuration.
+
+## Musebot Discord Instance
+
+If you need help or support, please visit the
+[XCJS Discord](https://xcjs.com/discord) instance.
 
 ## 1. Discord Configuration
 
@@ -35,12 +43,9 @@ be configured, although you are welcome to set up more.
    optional.
 
    Only one supported backend _needs_ to be configured, but feel free to
-   configure multiple based on your needs. Additionally, only one backend per
-   media type (images, large language models, etc.) should be configured. For
-   example, don't configure both ComfyUI _and_ SwarmUI as they both generate
-   images.
+   configure multiple based on your needs. (Ollama and/or SwarmUI/ComfyUI).
 
-### Image/Video Generation
+### Media Generation
 
 #### SwarmUI
 
@@ -56,9 +61,9 @@ Standalone ComfyUI integration (that is, without
 as a wrapper) is supported, but for more advanced users. There is no
 documentation for standalone ComfyUI integration at this time.
 
-If you need help with ComfyUI configuration for Musebot, some of the
-[SwarmUI documentation](Integrations/SwarmUI/index.html) may offer some clues, albeit with some adjustments
-here and there.
+If you need help with ComfyUI configuration for Musebot, most of the
+[SwarmUI documentation](Integrations/SwarmUI/index.html) may offer some clues,
+albeit with some adjustments here and there.
 
 ### Large Language Model Inferencing
 

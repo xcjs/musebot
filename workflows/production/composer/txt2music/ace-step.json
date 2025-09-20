@@ -116,11 +116,20 @@
       "filename_prefix": "audio/ComfyUI",
       "quality": "V0",
       "audioUI": "",
-      "audio": ["18", 0]
+      "audio": ["76", 0]
     },
     "class_type": "SaveAudioMP3",
     "_meta": {
       "title": "Save Audio (MP3)"
+    }
+  },
+  "76": {
+    "inputs": {
+      "value": ["18", 0]
+    },
+    "class_type": "UnloadAllModels",
+    "_meta": {
+      "title": "UnloadAllModels"
     }
   }
 }
