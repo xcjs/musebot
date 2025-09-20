@@ -3,6 +3,8 @@ import { AttachmentBuilder, ButtonInteraction } from 'discord.js';
 
 import { BotInteraction } from '../../../../../enums/BotInteraction.js';
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
+import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
+import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.js';
@@ -32,21 +34,30 @@ export class ComfyUiInteractionTask extends ComfyUiBaseTask {
     override async process(): Promise<void> {
         await super.process();
 
-        const attachments = this.#replyService.getAttachments(this.#interaction)
+        const attachmentsWithRenderRequests = this.#replyService.getAttachments(this.#interaction)
             .filter(attachment => attachment.description?.length > 0);
 
-        if(attachments.length === 0) {
-            // No attachments means there's no work to do.
-            return;
-        }
-
-        const inputRenderRequests = attachments
+        const inputRenderRequests = attachmentsWithRenderRequests
             .map(attachment => SerializableRenderRequest.fromJson(attachment.description));
         const outputRenderRequests: SerializableRenderRequest[] = [];
 
         const workflows = inputRenderRequests.map(renderRequest => this.workflowService.workflows
             .find(workflow => workflow.name === renderRequest.workflow))
             .filter(workflow => workflow !== undefined);
+
+        if(workflows.length === 0 && inputRenderRequests.length === 0) {
+            // Some interactions do not require an existing SerializableRenderRequest.
+            // If we've made it this far, assume the interaction creates a novel
+            // piece of media and provide it a workflow and render request to work from.
+            const newMediaWorkflow = getRandomArrayEntry(this.workflowService.workflows.filter(x =>
+                x.type.startsWith('txt2')
+                && x.type !== SupportedFeature.Txt2Txt));
+
+            const newMediaRenderRequest = this.workflowService.getWorkflowDefaults(newMediaWorkflow);
+
+            workflows.push(newMediaWorkflow);
+            inputRenderRequests.push(newMediaRenderRequest);
+        }
 
         let i = 0;
         const prompts: Prompt[] = [];
