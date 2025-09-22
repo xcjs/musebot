@@ -86,8 +86,7 @@ export class MediaHelpService extends BaseHelpService implements IHelpService {
             helpArticle += await this.buildHelpArticleFromActionRows(actionRows);
         }
 
-        if (this.#featureService.hasFeature(SupportedFeature.Txt2Music)
-        ) {
+        if (this.#featureService.hasFeature(SupportedFeature.Txt2Music)) {
             const actionRows = new StatefulAudioGenerationActionRow(this.#services, null);
             helpArticle += '## Music Generation\n\n';
 
