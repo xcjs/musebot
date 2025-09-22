@@ -90,6 +90,14 @@ export class MediaHelpService extends BaseHelpService implements IHelpService {
         ) {
             const actionRows = new StatefulAudioGenerationActionRow(this.#services, null);
             helpArticle += '## Music Generation\n\n';
+
+            helpArticle += '### ACE-Step\n\n';
+
+            helpArticle += 'ACE-Step is currently the most capable foundational AI music generation model. If this'
+            + ` instance of ${applicationName} is using ACE-Step, consider the following tips:\n\n`
+            + '#### Tags\n\n'
+            + '#### Lyrics\n\n';
+
             helpArticle += await this.buildHelpArticleFromActionRows(actionRows);
         }
 
