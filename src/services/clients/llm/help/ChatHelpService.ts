@@ -21,6 +21,7 @@ export class ChatHelpService extends BaseHelpService implements IHelpService {
 
         this.#services = services;
 
+        this.#environmentSettings = services.environmentSettings;
         this.#replyService = services.replyService;
     }
 
