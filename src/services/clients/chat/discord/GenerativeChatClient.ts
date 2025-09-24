@@ -2,7 +2,6 @@ import { ButtonInteraction, Client as DiscordClient, Events, Message as DiscordM
 import { Message as OllamaMessage } from 'ollama';
 
 import { BotInteraction } from '../../../../enums/BotInteraction.js';
-import { IHelpService } from '../../../help/IHelpService.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
 import { ITaskQueue } from '../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
@@ -17,7 +16,6 @@ export class GenerativeChatClient extends BaseDiscordClient {
     #discordClient: DiscordClient;
     #typingService: ITypingService;
     #replyService: IReplyService;
-    #helpService: IHelpService;
     #taskQueue: ITaskQueue;
 
     #context: OllamaMessage[] = [];
@@ -31,7 +29,6 @@ export class GenerativeChatClient extends BaseDiscordClient {
         this.#discordClient = services.discordClient;
         this.#typingService = services.typingService;
         this.#replyService = services.replyService;
-        this.#helpService = services.helpService;
         this.#taskQueue = services.taskQueue;
 
         this.#registerEvents();
