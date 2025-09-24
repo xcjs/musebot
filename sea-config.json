@@ -1,0 +1,4 @@
+{
+    "main": "build/tsc/src/app.js",
+    "output": "build/sea/sea-prep.blob"
+ }
