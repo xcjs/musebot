@@ -57,6 +57,7 @@ export abstract class BaseTask<T> {
         return this.#startedTime;
     }
 
+    set onBefore(callback: (payload: T) => void) { }
     set onSuccess(callback: (payload: T) => void) { }
 
     parallelizationStrategy: IParallelizationStrategy;
@@ -84,14 +85,19 @@ export abstract class BaseTask<T> {
         this.#maxAttempts = services.environmentSettings.maxTaskAttempts;
     }
 
+    async preProcess(): Promise<void> {
+        this.logger.info(`Pre-processing task ${this.#id}.}`);
+        await Promise.resolve();
+    }
+
     async process(): Promise<void> {
         this.#startedTime = new Date();
-        this.logger.info(`Starting task ${this.#id} at ${this.startedTime.toISOString()}`);
+        this.logger.info(`Processing task ${this.#id}.`);
         await Promise.resolve();
     }
 
     async postProcess(): Promise<void> {
-        this.logger.info(`Post-processing task ${this.#id} at ${new Date().toISOString()}`);
+        this.logger.info(`Post-processing task ${this.#id}.`);
         await Promise.resolve();
     }
 }
