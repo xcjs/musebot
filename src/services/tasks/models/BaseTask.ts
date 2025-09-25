@@ -57,7 +57,6 @@ export abstract class BaseTask<T> {
         return this.#startedTime;
     }
 
-    set onBefore(callback: (payload: T) => void) { }
     set onSuccess(callback: (payload: T) => void) { }
 
     parallelizationStrategy: IParallelizationStrategy;
@@ -83,11 +82,6 @@ export abstract class BaseTask<T> {
         this.#id = randomUUID();
         this.#createdTime = new Date();
         this.#maxAttempts = services.environmentSettings.maxTaskAttempts;
-    }
-
-    async preProcess(): Promise<void> {
-        this.logger.info(`Pre-processing task ${this.#id}.}`);
-        await Promise.resolve();
     }
 
     async process(): Promise<void> {
