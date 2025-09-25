@@ -63,6 +63,7 @@ export class TaskQueue implements ITaskQueue {
                     .filter(x => x.taskStatus !== TaskStatus.Delayed)
                     .map((x) => {
                         x.taskStatus = TaskStatus.Busy;
+                        void x.preProcess();
                         return x.process();
                     });
 
