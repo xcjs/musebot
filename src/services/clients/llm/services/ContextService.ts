@@ -47,7 +47,7 @@ export class ContextService<ChatMessageType, LlmMessageType> implements IContext
     }
 
     clearContext() {
-        this.#context = this.#context.filter(x => x.keepInContext);
+        this.#context = this.#context.filter(x => x.isReadOnly);
     }
 }
 
