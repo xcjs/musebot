@@ -22,26 +22,15 @@ export class DiscordOllamaContextMessageFactory implements IContextMessageFactor
 
         return {
             messageId: null,
+            associatedMessageId: null,
+            userId: null,
+            associatedUserId: null,
             channelId: null,
             serverId: null,
-            userId: null,
             chatMessage: null,
             timestamp: new Date(),
             llmMessage: ollamaMessage,
             isReadOnly: true
-        };
-    }
-
-    fromMessagePair(chatMessage: DiscordMessage, llmMessage: OllamaMessage): ContextMessage<DiscordMessage, OllamaMessage> {
-        return {
-            messageId: null,
-            channelId: chatMessage.channelId,
-            serverId: chatMessage.guildId,
-            userId: null,
-            timestamp: new Date(),
-            chatMessage,
-            llmMessage,
-            isReadOnly: false
         };
     }
 
@@ -63,7 +52,11 @@ export class DiscordOllamaContextMessageFactory implements IContextMessageFactor
         } as ContextMessage<DiscordMessage, OllamaMessage>;
     }
 
-    fromChatPrompt(prompt: string, userId: string): ContextMessage<DiscordMessage, OllamaMessage> {
+    fromChatPrompt(prompt: string,
+        userId: string,
+        serverId: string | null,
+        channelId: string | null,
+        associatedMessageId: string | null): ContextMessage<DiscordMessage, OllamaMessage> {
         const ollamaMessage: OllamaMessage = {
             role: OllamaRole.Assistant,
             content: prompt
@@ -71,25 +64,32 @@ export class DiscordOllamaContextMessageFactory implements IContextMessageFactor
 
         return {
             messageId: null,
-            channelId: null,
-            serverId: null,
+            associatedMessageId,
             userId,
-            chatMessage: null,
+            associatedUserId: null,
+            channelId,
+            serverId,
             timestamp: new Date(),
+            chatMessage: null,
             llmMessage: ollamaMessage,
             isReadOnly: false
         };
     }
 
-    fromLlmResponse(llmMessage: OllamaMessage, userId: string | null, channelId: string | null, serverId: string | null)
-        : ContextMessage<DiscordMessage, OllamaMessage> {
+    fromLlmMessage(llmMessage: OllamaMessage,
+        associatedUserId: string | null,
+        serverId: string | null,
+        channelId: string | null,
+        associatedMessageId: string | null): ContextMessage<DiscordMessage, OllamaMessage> {
         return {
             messageId: null,
+            associatedMessageId,
+            userId: null,
+            associatedUserId,
             channelId,
             serverId,
-            userId,
-            chatMessage: null,
             timestamp: new Date(),
+            chatMessage: null,
             llmMessage,
             isReadOnly: false
         };

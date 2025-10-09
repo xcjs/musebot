@@ -40,8 +40,6 @@ export class OllamaEmojiReactionTask extends OllamaBaseTask<void> {
         const prompt = `${userMention} reacted to your response with ${this.#reaction.emoji.name}. React to them regarding their reaction.`
         const context = this.contextService.getContextByChannelId(this.#reaction.message.channelId);
 
-        this.contextService.addContext([this.contextMessageFactory.fromChatPrompt(prompt, this.#user.id)]);
-
         if (this.environmentSettings.ollamaStreamsResponse) {
             await this.#processAsStream(prompt, context);
             return;
@@ -49,11 +47,20 @@ export class OllamaEmojiReactionTask extends OllamaBaseTask<void> {
 
         const exchange = await this.ollamaClient.sendMessage(prompt, context);
 
-        this.contextService.addContext([this.contextMessageFactory.fromLlmResponse(
-            exchange.exchange.response.message,
-            this.#user.id,
-            this.#reaction.message.channelId,
-            this.#reaction.message.guildId)]);
+        this.contextService.addContext([
+            this.contextMessageFactory.fromChatPrompt(prompt,
+                this.#user.id,
+                this.#reaction.message.guildId,
+                this.#reaction.message.channelId,
+                this.#reaction.message.id)]);
+
+        this.contextService.addContext([
+            this.contextMessageFactory.fromLlmMessage(exchange.exchange.response.message,
+                this.#user.id,
+                this.#reaction.message.guildId,
+                this.#reaction.message.channelId,
+                this.#reaction.message.id
+            )]);
 
         const replies = await this.ollamaReplyService.reply(this.#reaction.message as DiscordMessage, exchange.exchange, userMention);
 
@@ -98,11 +105,20 @@ export class OllamaEmojiReactionTask extends OllamaBaseTask<void> {
             }
 
             if (response.done) {
-                this.contextService.addContext([this.contextMessageFactory.fromLlmResponse(
-                    response.message,
-                    this.#user.id,
-                    this.#reaction.message.channelId,
-                    this.#reaction.message.guildId)]);
+                this.contextService.addContext([
+                    this.contextMessageFactory.fromChatPrompt(prompt,
+                        this.#user.id,
+                        this.#reaction.message.guildId,
+                        this.#reaction.message.channelId,
+                        this.#reaction.message.id)]);
+
+                this.contextService.addContext([
+                    this.contextMessageFactory.fromLlmMessage(response.message,
+                        this.#user.id,
+                        this.#reaction.message.guildId,
+                        this.#reaction.message.channelId,
+                        this.#reaction.message.id
+                    )]);
 
                 if (this.#featureService.hasFeature(SupportedFeature.Txt2Img)
                     && replies.length > 0) {

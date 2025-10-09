@@ -37,7 +37,6 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
         await super.process();
 
         const formattedMessage = `${this.#message.author.displayName}: ${this.replyService.getMessageWithoutBotMentions(this.#message)}`;
-        this.contextService.addContext([this.contextMessageFactory.fromChatMessage(this.#message)]);
         const context = this.contextService.getContextByChannelId(this.#message.channelId);
 
         if (this.environmentSettings.ollamaStreamsResponse) {
@@ -46,8 +45,11 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
         }
 
         const exchange = await this.ollamaClient.sendMessage(formattedMessage, context);
-        const contextMessage = this.contextMessageFactory.fromMessagePair(this.#message, exchange.exchange.response.message);
-        this.contextService.addContext([contextMessage]);
+
+        this.contextService.addContext([this.contextMessageFactory.fromChatMessage(this.#message)]);
+        this.contextService.addContext([
+            this.contextMessageFactory.fromLlmMessage(exchange.exchange.response.message,
+                this.#message.id, this.#message.author.id, this.#message.channelId, this.#message.guildId)]);
 
         const replies = await this.ollamaReplyService.reply(this.#message, exchange.exchange);
 
@@ -117,7 +119,14 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
             responseBatch = '';
 
             if (response.done) {
-                this.contextService.addContext([this.contextMessageFactory.fromMessagePair(this.#message, response.message)]);
+                this.contextService.addContext([this.contextMessageFactory.fromChatMessage(this.#message)]);
+                this.contextService.addContext([
+                    this.contextMessageFactory.fromLlmMessage(response.message,
+                        this.#message.author.id,
+                        this.#message.guildId,
+                        this.#message.channelId,
+                        this.#message.guildId
+                    )]);
 
                 if (this.#featureService.hasFeature(SupportedFeature.Txt2Img)
                     && replies.length > 0) {

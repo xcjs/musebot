@@ -18,12 +18,7 @@ export class ContextService<ChatMessageType, LlmMessageType> implements IContext
     addContext(context: ContextMessage<ChatMessageType, LlmMessageType>[]): void {
         context.forEach((newMessage) => {
             this.#logger.info('Adding new context to the channel:', newMessage.channelId);
-
-            if (!this.#context.find(x =>
-                x.messageId !== null
-                && x.messageId === newMessage.messageId)) {
                 this.#context.push(newMessage);
-            }
         });
     }
 

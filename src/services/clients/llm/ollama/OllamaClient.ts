@@ -6,6 +6,7 @@ import { getRandomArrayEntry, getRandomInt } from '../../../../utilities/random-
 import { IEnvironmentSettings } from '../../../environment-settings/IEnvironmentSettings.js';
 import { ILogger } from '../../../ILogger.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
+import { OllamaRole } from './enums/OllamaRole.js';
 
 export class OllamaClient {
     #environmentSettings: IEnvironmentSettings;
@@ -60,14 +61,17 @@ export class OllamaClient {
 
     async sendMessage(prompt: string, context: Message[]): Promise<IHttpExchangeWithAttachedData<ChatRequest, ChatResponse, Message[]>> {
         const request: ChatRequest = {
-            messages: context,
+            messages: [...context, {
+                content: prompt,
+                role: OllamaRole.User
+            }],
             model: this.#model
         };
 
         this.#logger.info('Calling Ollama API with the prompt:', prompt);
 
         if (context.length > 0) {
-            this.#logger.info(`A context of ${context.length} messages is provided.`);
+            this.#logger.info(`A context of ${context.length} message(s) is provided.`);
         }
 
         try {
@@ -91,7 +95,10 @@ export class OllamaClient {
 
     async sendMessageAndGetStream(prompt: string, context: Message[]): Promise<IHttpExchangeWithAttachedData<ChatRequest, AsyncIterable<ChatResponse>, Message[]> | null> {
         const request: ChatRequest = {
-            messages: context,
+            messages: [...context, {
+                content: prompt,
+                role: OllamaRole.User
+            }],
             model: this.#model
         };
 
