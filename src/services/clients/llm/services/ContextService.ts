@@ -26,28 +26,34 @@ export class ContextService<ChatMessageType, LlmMessageType> implements IContext
         });
     }
 
-    getContextByServerId(serverId: string): ContextMessage<ChatMessageType, LlmMessageType>[] {
+    getContextByServerId(serverId: string): LlmMessageType[] {
         this.#logger.info('Getting context by server:', serverId);
-        return this.#context.filter(x => x.serverId === serverId);
+        return this.#context.filter(x =>
+            x.serverId === null // Include system or global messages.
+            || x.serverId === serverId)
+            .map(x => x.llmMessage);
     }
 
-    getContextByChannelId(channelId: string): ContextMessage<ChatMessageType, LlmMessageType>[] {
+    getContextByChannelId(channelId: string): LlmMessageType[] {
         this.#logger.info('Getting context by channel:', channelId);
-        return this.#context.filter(x => x.channelId === channelId);
+        return this.#context.filter(x =>
+            x.channelId === null // Include system or global messages.
+            || x.channelId === channelId)
+            .map(x => x.llmMessage);
     }
 
-    getContextByUserId(userId: string): ContextMessage<ChatMessageType, LlmMessageType>[] {
+    getContextByUserId(userId: string): LlmMessageType[] {
         this.#logger.info('Getting context by user:', userId);
-        return this.#context.filter(x => x.userId === userId);
+        return this.#context.filter(x =>
+            x.userId === null // Include system or global messages.
+            || x.userId === userId)
+            .map(x => x.llmMessage);
     }
 
-    getBaseLlmContext(): LlmMessageType[] {
-        this.#logger.info('Getting base LLM context...');
-        return this.#context.map(x => x.llmMessage);
-    }
-
-    clearContext() {
-        this.#context = this.#context.filter(x => x.isReadOnly);
+    clearContext(channelId: string) {
+        this.#context = this.#context.filter(
+            x => x.isReadOnly
+            || x.channelId !== channelId);
     }
 }
 

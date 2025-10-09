@@ -6,7 +6,7 @@ import {
     MessageReaction,
     Partials,
     User} from 'discord.js';
-import { GenerateRequest, GenerateResponse, Message as OllamaMessage } from 'ollama';
+import { GenerateRequest, GenerateResponse } from 'ollama';
 
 import { BotFunction } from '../enums/BotFunction.js';
 import { BotInteraction } from '../enums/BotInteraction.js';
@@ -170,7 +170,6 @@ export class ServiceContainer implements IServiceContainer {
         return this.#contextMessageFactory as IContextMessageFactory<ChatMessageType, LlmMessageType>;
     }
 
-    // TODO: Resolve conflict between providing a generic factory function and returning a concrete type.
     #contextService: IContextService<unknown, unknown> | null;
     getContextService<ChatMessageType, LlmMessageType>(): IContextService<ChatMessageType, LlmMessageType> {
         if(this.#contextService === null) {
@@ -188,19 +187,19 @@ export class ServiceContainer implements IServiceContainer {
         return new OllamaGenerateTask(this, prompt);
     }
 
-    getEmojiReactionTask(reaction: MessageReaction, user: User, context: OllamaMessage[] = []): BaseTask<unknown> {
+    getEmojiReactionTask(reaction: MessageReaction, user: User): BaseTask<unknown> {
         switch (this.environmentSettings.botFunction) {
             case BotFunction.Chat:
-                return new OllamaEmojiReactionTask(this, reaction, user, context);
+                return new OllamaEmojiReactionTask(this, reaction, user);
             default:
                 throw this.#taskNotConfiguredError;
         }
     }
 
-    getMessageTask(message: DiscordMessage, context: OllamaMessage[] = []): BaseTask<unknown> {
+    getMessageTask(message: DiscordMessage): BaseTask<unknown> {
         switch(this.#environmentSettings.botFunction) {
             case BotFunction.Chat:
-                return new OllamaMessageTask(this, message, context);
+                return new OllamaMessageTask(this, message);
             case BotFunction.Media:
                 return new ComfyUiMessageTask(this, message);
             default:

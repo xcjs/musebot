@@ -14,10 +14,10 @@ export class DiscordOllamaContextMessageFactory implements IContextMessageFactor
         this.#replyService = services.replyService;
     }
 
-    fromSystemContext(context: string): ContextMessage<DiscordMessage, OllamaMessage> {
+    fromSystemPrompt(prompt: string): ContextMessage<DiscordMessage, OllamaMessage> {
         const ollamaMessage: OllamaMessage = {
             role: OllamaRole.System,
-            content: context
+            content: prompt
         };
 
         return {
@@ -28,25 +28,70 @@ export class DiscordOllamaContextMessageFactory implements IContextMessageFactor
             chatMessage: null,
             timestamp: new Date(),
             llmMessage: ollamaMessage,
-            keepInContext: true
+            isReadOnly: true
         };
     }
 
-    fromDiscordMessage(discordMessage: DiscordMessage): ContextMessage<DiscordMessage, OllamaMessage> {
+    fromMessagePair(chatMessage: DiscordMessage, llmMessage: OllamaMessage): ContextMessage<DiscordMessage, OllamaMessage> {
+        return {
+            messageId: null,
+            channelId: chatMessage.channelId,
+            serverId: chatMessage.guildId,
+            userId: null,
+            timestamp: new Date(),
+            chatMessage,
+            llmMessage,
+            isReadOnly: false
+        };
+    }
+
+    fromChatMessage(chatMessage: DiscordMessage): ContextMessage<DiscordMessage, OllamaMessage> {
         const ollamaMessage: OllamaMessage = {
             role: OllamaRole.User,
-            content: `${discordMessage.author.displayName}: ${this.#replyService.getMessageWithoutBotMentions(discordMessage)}`
+            content: `${chatMessage.author.displayName}: ${this.#replyService.getMessageWithoutBotMentions(chatMessage)}`
         }
 
         return {
-            messageId: discordMessage.id,
-            channelId: discordMessage.channelId,
-            serverId: discordMessage.guildId,
-            userId: discordMessage.author.id,
+            messageId: chatMessage.id,
+            channelId: chatMessage.channelId,
+            serverId: chatMessage.guildId,
+            userId: chatMessage.author.id,
             timestamp: new Date(),
-            chatMessage: discordMessage,
+            chatMessage,
             llmMessage: ollamaMessage,
-            keepInContext: false
+            isReadOnly: false,
         } as ContextMessage<DiscordMessage, OllamaMessage>;
+    }
+
+    fromChatPrompt(prompt: string, userId: string): ContextMessage<DiscordMessage, OllamaMessage> {
+        const ollamaMessage: OllamaMessage = {
+            role: OllamaRole.Assistant,
+            content: prompt
+        };
+
+        return {
+            messageId: null,
+            channelId: null,
+            serverId: null,
+            userId,
+            chatMessage: null,
+            timestamp: new Date(),
+            llmMessage: ollamaMessage,
+            isReadOnly: false
+        };
+    }
+
+    fromLlmResponse(llmMessage: OllamaMessage, userId: string | null, channelId: string | null, serverId: string | null)
+        : ContextMessage<DiscordMessage, OllamaMessage> {
+        return {
+            messageId: null,
+            channelId,
+            serverId,
+            userId,
+            chatMessage: null,
+            timestamp: new Date(),
+            llmMessage,
+            isReadOnly: false
+        };
     }
 }

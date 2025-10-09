@@ -4,7 +4,7 @@ import {
     Message as DiscordMessage,
     MessageReaction,
     User} from 'discord.js';
-import { GenerateRequest, GenerateResponse, Message as OllamaMessage } from 'ollama';
+import { GenerateRequest, GenerateResponse } from 'ollama';
 
 import { BotInteraction } from '../enums/BotInteraction.js';
 import { IHttpExchange } from '../models/IHttpExchange.js';
@@ -16,6 +16,8 @@ import { IGenerativeChatClient } from './clients/chat/IGenerativeChatClient.js';
 import { IReplyService } from './clients/chat/IReplyService.js';
 import { ITypingService } from './clients/chat/ITypingService.js';
 import { OllamaClient } from './clients/llm/ollama/OllamaClient.js';
+import { IContextMessageFactory } from './clients/llm/services/IContextMessageFactory.js';
+import { IContextService } from './clients/llm/services/IContextService.js';
 import { ComfyUiClient } from './clients/media/comfy-ui/ComfyUiClient.js';
 import { IWorkflow } from './clients/media/comfy-ui/models/IWorkflow.js';
 import { IWorkflowService } from './clients/media/comfy-ui/services/IWorkflowService.js';
@@ -56,10 +58,12 @@ export interface IServiceContainer {
     // Factories --------------------------------------------------------------/
     getLogger(prefix: string): ILogger;
 
+    getContextMessageFactory<ChatMessageType, LlmMessageType>(): IContextMessageFactory<ChatMessageType, LlmMessageType>;
+    getContextService<ChatMessageType, LlmMessageType>(): IContextService<ChatMessageType, LlmMessageType>
     getLlmGenerateTask(prompt: string): BaseTask<IHttpExchange<GenerateRequest, GenerateResponse>>;
-    getEmojiReactionTask(reaction: MessageReaction, user: User, context: OllamaMessage[]): BaseTask<unknown>;
+    getEmojiReactionTask(reaction: MessageReaction, user: User): BaseTask<unknown>;
 
-    getMessageTask(message: DiscordMessage, context: OllamaMessage[]): BaseTask<unknown>;
+    getMessageTask(message: DiscordMessage): BaseTask<unknown>;
     getInteractionTask(interaction: ButtonInteraction): BaseTask<unknown>;
     getAttachmentTask(message: DiscordMessage, prompt: string): BaseTask<unknown>;
     getCustomInteractionTask(interaction: ButtonInteraction, workflow: IWorkflow): BaseTask<unknown>;
