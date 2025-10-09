@@ -20,7 +20,8 @@ export class ContextService<ChatMessageType, LlmMessageType> implements IContext
             this.#logger.info('Adding new context to the channel:', newMessage.channelId);
 
             if (!this.#context.find(x =>
-                x.messageId === newMessage.messageId)) {
+                x.messageId !== null
+                && x.messageId === newMessage.messageId)) {
                 this.#context.push(newMessage);
             }
         });

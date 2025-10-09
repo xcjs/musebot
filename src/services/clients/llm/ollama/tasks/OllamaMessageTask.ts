@@ -37,6 +37,7 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
         await super.process();
 
         const formattedMessage = `${this.#message.author.displayName}: ${this.replyService.getMessageWithoutBotMentions(this.#message)}`;
+        this.contextService.addContext([this.contextMessageFactory.fromChatMessage(this.#message)]);
         const context = this.contextService.getContextByChannelId(this.#message.channelId);
 
         if (this.environmentSettings.ollamaStreamsResponse) {
