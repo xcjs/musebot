@@ -11,7 +11,7 @@ export class Logger implements ILogger {
             paddedPrefix += ' ';
         }
 
-        return `${paddedPrefix} | `;
+        return `${new Date().toLocaleString('sv').replace(' ', 'T')} | ${paddedPrefix} | `;
     }
 
     get isDebug() {

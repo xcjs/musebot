@@ -6,7 +6,7 @@ import {
     MessageReaction,
     Partials,
     User} from 'discord.js';
-import { GenerateRequest, GenerateResponse, Message as OllamaMessage } from 'ollama';
+import { GenerateRequest, GenerateResponse } from 'ollama';
 
 import { BotFunction } from '../enums/BotFunction.js';
 import { BotInteraction } from '../enums/BotInteraction.js';
@@ -19,6 +19,7 @@ import { IActionRowBuilderFactory } from './clients/chat/discord/components/IAct
 import { DiscordConstants } from './clients/chat/discord/enums/DiscordConstants.js';
 import { GenerativeChatClient } from './clients/chat/discord/GenerativeChatClient.js';
 import { GenerativeMediaChatClient } from './clients/chat/discord/GenerativeMediaChatClient.js';
+import { DiscordOllamaContextMessageFactory } from './clients/chat/discord/ollama/DiscordOllamaContextMessageFactory.js';
 import { OllamaReplyService } from './clients/chat/discord/ollama/OllamaReplyService.js';
 import { OllamaStreamingReplyService } from './clients/chat/discord/ollama/OllamaStreamingReplyService.js';
 import { ReplyService } from './clients/chat/discord/replies/ReplyService.js';
@@ -32,6 +33,9 @@ import { OllamaClient } from './clients/llm/ollama/OllamaClient.js';
 import { OllamaEmojiReactionTask } from './clients/llm/ollama/tasks/OllamaEmojiReactionTask.js';
 import { OllamaGenerateTask } from './clients/llm/ollama/tasks/OllamaGenerateTask.js';
 import { OllamaMessageTask } from './clients/llm/ollama/tasks/OllamaMessageTask.js';
+import { ContextService } from './clients/llm/services/ContextService.js';
+import { IContextMessageFactory } from './clients/llm/services/IContextMessageFactory.js';
+import { IContextService } from './clients/llm/services/IContextService.js';
 import { ComfyUiClient } from './clients/media/comfy-ui/ComfyUiClient.js';
 import { IWorkflow } from './clients/media/comfy-ui/models/IWorkflow.js';
 import { IWorkflowService } from './clients/media/comfy-ui/services/IWorkflowService.js';
@@ -157,6 +161,24 @@ export class ServiceContainer implements IServiceContainer {
         return new Logger(prefix);
     }
 
+    #contextMessageFactory: IContextMessageFactory<unknown, unknown> | null = null;
+    getContextMessageFactory<ChatMessageType, LlmMessageType>(): IContextMessageFactory<ChatMessageType, LlmMessageType> {
+        if(this.#contextMessageFactory === null) {
+            this.#contextMessageFactory = new DiscordOllamaContextMessageFactory(this);
+        }
+
+        return this.#contextMessageFactory as IContextMessageFactory<ChatMessageType, LlmMessageType>;
+    }
+
+    #contextService: IContextService<unknown, unknown> | null = null;
+    getContextService<ChatMessageType, LlmMessageType>(): IContextService<ChatMessageType, LlmMessageType> {
+        if(this.#contextService === null) {
+            this.#contextService = new ContextService<ChatMessageType, LlmMessageType>(this);
+        }
+
+        return this.#contextService as IContextService<ChatMessageType, LlmMessageType>;
+    }
+
     getLlmGenerateTask(prompt: string): BaseTask<IHttpExchange<GenerateRequest, GenerateResponse>> {
         if(!this.featureService.hasFeature(SupportedFeature.Txt2Txt)) {
             throw this.#taskNotConfiguredError;
@@ -165,19 +187,19 @@ export class ServiceContainer implements IServiceContainer {
         return new OllamaGenerateTask(this, prompt);
     }
 
-    getEmojiReactionTask(reaction: MessageReaction, user: User, context: OllamaMessage[] = []): BaseTask<unknown> {
+    getEmojiReactionTask(reaction: MessageReaction, user: User): BaseTask<unknown> {
         switch (this.environmentSettings.botFunction) {
             case BotFunction.Chat:
-                return new OllamaEmojiReactionTask(this, reaction, user, context);
+                return new OllamaEmojiReactionTask(this, reaction, user);
             default:
                 throw this.#taskNotConfiguredError;
         }
     }
 
-    getMessageTask(message: DiscordMessage, context: OllamaMessage[] = []): BaseTask<unknown> {
+    getMessageTask(message: DiscordMessage): BaseTask<unknown> {
         switch(this.#environmentSettings.botFunction) {
             case BotFunction.Chat:
-                return new OllamaMessageTask(this, message, context);
+                return new OllamaMessageTask(this, message);
             case BotFunction.Media:
                 return new ComfyUiMessageTask(this, message);
             default:

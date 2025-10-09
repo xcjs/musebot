@@ -57,7 +57,7 @@ export class GenerativeMediaChatClient extends BaseDiscordClient {
         this.logger.info('Replying to message...');
         await this.#typingService.startTyping(message);
 
-        this.#taskQueue.add(this.#services.getMessageTask(message, []) as BaseTask<void>);
+        this.#taskQueue.add(this.#services.getMessageTask(message) as BaseTask<void>);
     }
 
     async #onInteraction(interaction: ButtonInteraction): Promise<void> {

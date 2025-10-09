@@ -60,29 +60,30 @@ export class OllamaClient {
     }
 
     async sendMessage(prompt: string, context: Message[]): Promise<IHttpExchangeWithAttachedData<ChatRequest, ChatResponse, Message[]>> {
-        const messages = this.#buildChatContext(prompt, context);
-
         const request: ChatRequest = {
-            messages,
+            messages: [...context, {
+                content: prompt,
+                role: OllamaRole.User
+            }],
             model: this.#model
         };
 
         this.#logger.info('Calling Ollama API with the prompt:', prompt);
 
         if (context.length > 0) {
-            this.#logger.info(`A context of ${context.length} messages is provided.`);
+            this.#logger.info(`A context of ${context.length} message(s) is provided.`);
         }
 
         try {
             const response = await this.#client.chat({ ...request, stream: false });
-            messages.push(response.message);
+            context.push(response.message);
 
             return {
                 exchange: {
                     request,
                     response
                 },
-                data: messages
+                data: context
             };
         } catch(error) {
             this.#logger.error('Failed to send Ollama a message:', error);
@@ -93,10 +94,11 @@ export class OllamaClient {
     }
 
     async sendMessageAndGetStream(prompt: string, context: Message[]): Promise<IHttpExchangeWithAttachedData<ChatRequest, AsyncIterable<ChatResponse>, Message[]> | null> {
-        const messages = this.#buildChatContext(prompt, context);
-
         const request: ChatRequest = {
-            messages,
+            messages: [...context, {
+                content: prompt,
+                role: OllamaRole.User
+            }],
             model: this.#model
         };
 
@@ -114,7 +116,7 @@ export class OllamaClient {
                     request,
                     response
                 },
-                data: messages
+                data: context
             };
         } catch(error) {
             this.#logger.error('An error occurred while sending Ollama a message and retrieving a stream:', error);
@@ -138,25 +140,5 @@ export class OllamaClient {
         this.#logger.info(`Selected model: ${model}`);
 
         return model;
-    }
-
-    #buildChatContext(prompt: string, context: Message[]): Message[] {
-        let chatMessages: Message[] = [];
-
-        if (!context.find(x => x.role === OllamaRole.System.toString())) {
-            chatMessages.push({
-                role: OllamaRole.System.toString(),
-                content: this.#environmentSettings.ollamaSystemPrompt,
-            });
-        }
-
-        chatMessages = chatMessages.concat(context);
-
-        chatMessages.push({
-            role: OllamaRole.User.toString(),
-            content: prompt
-        });
-
-        return chatMessages;
     }
 }

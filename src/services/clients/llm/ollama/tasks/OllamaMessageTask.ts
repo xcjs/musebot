@@ -9,28 +9,19 @@ import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.js';
-import { OllamaRole } from '../enums/OllamaRole.js';
 import { OllamaBaseTask } from './OllamaBaseTask.js';
 
-export class OllamaMessageTask extends OllamaBaseTask<OllamaMessage[]> {
-    override set onSuccess(callback: (payload: OllamaMessage[]) => void) {
-        this.#onSuccess = callback;
-    }
-
+export class OllamaMessageTask extends OllamaBaseTask<void> {
     #services: IServiceContainer;
 
     #featureService: IFeatureService;
     #taskQueue: ITaskQueue;
 
     #message: DiscordMessage;
-    #context: OllamaMessage[] = [];
-
-    #onSuccess: (payload: OllamaMessage[]) => void = () => { };
 
     constructor(
         services: IServiceContainer,
-        message: DiscordMessage,
-        context: OllamaMessage[]) {
+        message: DiscordMessage) {
         super(services);
         this.logger = services.getLogger('OllamaMessageTask');
 
@@ -40,21 +31,25 @@ export class OllamaMessageTask extends OllamaBaseTask<OllamaMessage[]> {
         this.#taskQueue = services.taskQueue;
 
         this.#message = message;
-        this.#context = context;
     }
 
     override async process(): Promise<void> {
         await super.process();
 
         const formattedMessage = `${this.#message.author.displayName}: ${this.replyService.getMessageWithoutBotMentions(this.#message)}`;
+        const context = this.contextService.getContextByChannelId(this.#message.channelId);
 
         if (this.environmentSettings.ollamaStreamsResponse) {
-            await this.#processAsStream(formattedMessage, this.#context);
+            await this.#processAsStream(formattedMessage, context);
             return;
         }
 
-        const exchange = await this.ollamaClient.sendMessage(formattedMessage, this.#context);
-        this.#context = exchange.data;
+        const exchange = await this.ollamaClient.sendMessage(formattedMessage, context);
+
+        this.contextService.addContext([this.contextMessageFactory.fromChatMessage(this.#message)]);
+        this.contextService.addContext([
+            this.contextMessageFactory.fromLlmMessage(exchange.exchange.response.message,
+                this.#message.id, this.#message.author.id, this.#message.channelId, this.#message.guildId)]);
 
         const replies = await this.ollamaReplyService.reply(this.#message, exchange.exchange);
 
@@ -70,9 +65,6 @@ export class OllamaMessageTask extends OllamaBaseTask<OllamaMessage[]> {
         switch (this.taskStatus) {
             case TaskStatus.Dead:
                 await this.replyService.replyWithError(this.#message);
-                break;
-            case TaskStatus.Successful:
-                this.#onSuccess(this.#context);
                 break;
         }
 
@@ -127,10 +119,14 @@ export class OllamaMessageTask extends OllamaBaseTask<OllamaMessage[]> {
             responseBatch = '';
 
             if (response.done) {
-                this.#context = [...exchange.data, {
-                    role: OllamaRole.Assistant,
-                    content: fullResponse
-                }];
+                this.contextService.addContext([this.contextMessageFactory.fromChatMessage(this.#message)]);
+                this.contextService.addContext([
+                    this.contextMessageFactory.fromLlmMessage(response.message,
+                        this.#message.author.id,
+                        this.#message.guildId,
+                        this.#message.channelId,
+                        this.#message.guildId
+                    )]);
 
                 if (this.#featureService.hasFeature(SupportedFeature.Txt2Img)
                     && replies.length > 0) {

@@ -86,12 +86,12 @@ export abstract class BaseTask<T> {
 
     async process(): Promise<void> {
         this.#startedTime = new Date();
-        this.logger.info(`Starting task ${this.#id} at ${this.startedTime.toISOString()}`);
+        this.logger.info(`Processing task ${this.#id}.`);
         await Promise.resolve();
     }
 
     async postProcess(): Promise<void> {
-        this.logger.info(`Post-processing task ${this.#id} at ${new Date().toISOString()}`);
+        this.logger.info(`Post-processing task ${this.#id}.`);
         await Promise.resolve();
     }
 }
