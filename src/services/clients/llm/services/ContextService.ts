@@ -25,16 +25,18 @@ export class ContextService<ChatMessageType, LlmMessageType> implements IContext
     getContextByServerId(serverId: string): LlmMessageType[] {
         this.#logger.info('Getting context by server:', serverId);
         return this.#context.filter(x =>
-            x.serverId === null // Include system or global messages.
-            || x.serverId === serverId)
+            !x.isPrivate
+            && (x.serverId === null // Include system or global messages.
+                || x.serverId === serverId))
             .map(x => x.llmMessage);
     }
 
     getContextByChannelId(channelId: string): LlmMessageType[] {
         this.#logger.info('Getting context by channel:', channelId);
         return this.#context.filter(x =>
-            x.channelId === null // Include system or global messages.
-            || x.channelId === channelId)
+            !x.isPrivate
+            && (x.channelId === null // Include system or global messages.
+                || x.channelId === channelId))
             .map(x => x.llmMessage);
     }
 

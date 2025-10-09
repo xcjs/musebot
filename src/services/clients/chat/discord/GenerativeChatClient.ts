@@ -1,4 +1,4 @@
-import { ButtonInteraction, Client as DiscordClient, Events, Message as DiscordMessage, MessageReaction, User } from 'discord.js';
+import { ButtonInteraction, Client as DiscordClient, Events, Message as DiscordMessage, MessageReaction, TextChannel,User } from 'discord.js';
 import { Message as OllamaMessage } from 'ollama';
 
 import { BotInteraction } from '../../../../enums/BotInteraction.js';
@@ -24,6 +24,8 @@ export class GenerativeChatClient extends BaseDiscordClient {
     #replyService: IReplyService;
     #taskQueue: ITaskQueue;
 
+    #channelTopicsCached: string[] = [];
+
     constructor(services: IServiceContainer) {
         super(services);
         this.logger = services.getLogger('GenerativeChatClient');
@@ -38,7 +40,7 @@ export class GenerativeChatClient extends BaseDiscordClient {
         this.#taskQueue = services.taskQueue;
 
         const systemPrompt = this.#environmentSettings.ollamaSystemPrompt;
-        this.#contextService.addContext([this.#contextMessageFactory.fromSystemPrompt(systemPrompt)]);
+        this.#contextService.addContext([this.#contextMessageFactory.fromSystemPrompt(systemPrompt, null)]);
 
         this.#registerEvents();
     }
@@ -58,6 +60,11 @@ export class GenerativeChatClient extends BaseDiscordClient {
 
         if(!this.#replyService.shouldReply(message, null)) {
             return;
+        }
+
+        if(message.guildId !== null
+            && !this.#channelTopicsCached.find(x => x === message.channelId)) {
+            this.#contextService.addContext([this.#contextMessageFactory.fromSystemPrompt((message.channel as TextChannel).topic, message.channelId)]);
         }
 
         this.logger.info('Replying to message...');

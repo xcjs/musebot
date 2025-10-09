@@ -14,7 +14,7 @@ export class DiscordOllamaContextMessageFactory implements IContextMessageFactor
         this.#replyService = services.replyService;
     }
 
-    fromSystemPrompt(prompt: string): ContextMessage<DiscordMessage, OllamaMessage> {
+    fromSystemPrompt(prompt: string, channelId: string | null): ContextMessage<DiscordMessage, OllamaMessage> {
         const ollamaMessage: OllamaMessage = {
             role: OllamaRole.System,
             content: prompt
@@ -25,12 +25,13 @@ export class DiscordOllamaContextMessageFactory implements IContextMessageFactor
             associatedMessageId: null,
             userId: null,
             associatedUserId: null,
-            channelId: null,
+            channelId: channelId,
             serverId: null,
             chatMessage: null,
             timestamp: new Date(),
             llmMessage: ollamaMessage,
-            isReadOnly: true
+            isReadOnly: true,
+            isPrivate: false
         };
     }
 
@@ -49,6 +50,7 @@ export class DiscordOllamaContextMessageFactory implements IContextMessageFactor
             chatMessage,
             llmMessage: ollamaMessage,
             isReadOnly: false,
+            isPrivate: chatMessage.guildId === null
         } as ContextMessage<DiscordMessage, OllamaMessage>;
     }
 
@@ -72,7 +74,8 @@ export class DiscordOllamaContextMessageFactory implements IContextMessageFactor
             timestamp: new Date(),
             chatMessage: null,
             llmMessage: ollamaMessage,
-            isReadOnly: false
+            isReadOnly: false,
+            isPrivate: serverId === null
         };
     }
 
@@ -91,7 +94,8 @@ export class DiscordOllamaContextMessageFactory implements IContextMessageFactor
             timestamp: new Date(),
             chatMessage: null,
             llmMessage,
-            isReadOnly: false
+            isReadOnly: false,
+            isPrivate: serverId === null
         };
     }
 }

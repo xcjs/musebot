@@ -12,4 +12,5 @@ export interface ContextMessage<ChatMessageType, LlmMessageType> {
 
     // When true, preserves the message when context is cleared.
     isReadOnly: boolean;
+    isPrivate: boolean;
 }
