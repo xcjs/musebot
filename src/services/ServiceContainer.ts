@@ -161,7 +161,7 @@ export class ServiceContainer implements IServiceContainer {
         return new Logger(prefix);
     }
 
-    #contextMessageFactory: IContextMessageFactory<unknown, unknown> | null;
+    #contextMessageFactory: IContextMessageFactory<unknown, unknown> | null = null;
     getContextMessageFactory<ChatMessageType, LlmMessageType>(): IContextMessageFactory<ChatMessageType, LlmMessageType> {
         if(this.#contextMessageFactory === null) {
             this.#contextMessageFactory = new DiscordOllamaContextMessageFactory(this);
@@ -170,7 +170,7 @@ export class ServiceContainer implements IServiceContainer {
         return this.#contextMessageFactory as IContextMessageFactory<ChatMessageType, LlmMessageType>;
     }
 
-    #contextService: IContextService<unknown, unknown> | null;
+    #contextService: IContextService<unknown, unknown> | null = null;
     getContextService<ChatMessageType, LlmMessageType>(): IContextService<ChatMessageType, LlmMessageType> {
         if(this.#contextService === null) {
             this.#contextService = new ContextService<ChatMessageType, LlmMessageType>(this);
