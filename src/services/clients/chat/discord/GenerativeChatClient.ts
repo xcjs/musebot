@@ -65,6 +65,7 @@ export class GenerativeChatClient extends BaseDiscordClient {
         if(message.guildId !== null
             && !this.#channelTopicsCached.find(x => x === message.channelId)) {
             this.#contextService.addContext([this.#contextMessageFactory.fromSystemPrompt((message.channel as TextChannel).topic, message.channelId)]);
+            this.#channelTopicsCached.push(message.channelId);
         }
 
         this.logger.info('Replying to message...');
