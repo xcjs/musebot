@@ -10,7 +10,7 @@ import { IWorkflowMutator } from './IWorkflowMutator.js';
 
 export class ContextualMediaMutator implements IWorkflowMutator {
     get interactions(): BotInteraction[] {
-        return [BotInteraction.Reply];
+        return [BotInteraction.ContextualReply];
     }
 
     get types(): SupportedFeature[] {

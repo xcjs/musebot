@@ -53,6 +53,8 @@ export class ComfyUiMessageTask extends ComfyUiBaseTask {
             if(imageAttachments.length > 0) {
                 interactionType = BotInteraction.ContextualReply;
                 imagesAsBase64 = await this.#replyService.getAttachedImagesAsBase64(previousMessage);
+            } else {
+                interactionType = BotInteraction.Reply;
             }
         } else if(textPrompt.startsWith('{')) {
             interactionType = BotInteraction.JsonMessage;
