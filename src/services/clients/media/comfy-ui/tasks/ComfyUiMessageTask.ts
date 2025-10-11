@@ -1,12 +1,14 @@
 import { Prompt } from 'comfy-ui-client';
-import { Message } from 'discord.js';
+import { Attachment, Message, MessageType } from 'discord.js';
 
 import { BotInteraction } from '../../../../../enums/BotInteraction.js';
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
+import { IFeatureService } from '../../../../features/IFeatureService.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
+import { IReplyService } from '../../../chat/IReplyService.js';
 import { MediaCollectionResponse } from '../extensions/MediaResponse.js';
 import { IWorkflow } from '../models/IWorkflow.js';
 import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
@@ -15,6 +17,9 @@ import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 export class ComfyUiMessageTask extends ComfyUiBaseTask {
     #services: IServiceContainer;
 
+    #featureService: IFeatureService;
+    #replyService: IReplyService;
+
     #message: Message;
 
     constructor(services: IServiceContainer, message: Message) {
@@ -22,6 +27,9 @@ export class ComfyUiMessageTask extends ComfyUiBaseTask {
         this.logger = services.getLogger('ComfyUiMessageTask');
 
         this.#services = services;
+
+        this.#featureService = services.featureService;
+        this.#replyService = services.replyService;
 
         this.#message = message;
     }
@@ -33,8 +41,20 @@ export class ComfyUiMessageTask extends ComfyUiBaseTask {
         const renderRequests: SerializableRenderRequest[] = [];
 
         let interactionType = BotInteraction.Message;
+        let imageAttachments: Attachment[] = [];
+        let imagesAsBase64: string[] = [];
 
-        if(textPrompt.startsWith('{')) {
+        if(this.#message.type === MessageType.Reply
+            && this.#featureService.hasFeature(SupportedFeature.ContextualImg2Img)
+        ) {
+            const previousMessage = await this.#replyService.getPreviousMessage(this.#message);
+            imageAttachments = this.#replyService.getImageAttachments(previousMessage);
+
+            if(imageAttachments.length > 0) {
+                interactionType = BotInteraction.ContextualReply;
+                imagesAsBase64 = await this.#replyService.getAttachedImagesAsBase64(previousMessage);
+            }
+        } else if(textPrompt.startsWith('{')) {
             interactionType = BotInteraction.JsonMessage;
         }
 
@@ -42,6 +62,12 @@ export class ComfyUiMessageTask extends ComfyUiBaseTask {
         let defaultRenderRequest: SerializableRenderRequest;
 
         switch(interactionType) {
+            case BotInteraction.ContextualReply:
+                workflow = getRandomArrayEntry(this.workflowService.workflows.filter(
+                    x => x.type === SupportedFeature.ContextualImg2Img));
+                defaultRenderRequest = this.workflowService.getWorkflowDefaults(workflow);
+                defaultRenderRequest.num = imageAttachments.length;
+                break;
             case BotInteraction.JsonMessage:
                 const renderRequest = SerializableRenderRequest.fromJson(textPrompt);
                 workflow = this.workflowService.workflows.find(x => x.name === renderRequest.workflow);
@@ -63,6 +89,7 @@ export class ComfyUiMessageTask extends ComfyUiBaseTask {
         let content = '';
 
         for (let i = 0; i < defaultRenderRequest.num; i++) {
+            defaultRenderRequest.image = imagesAsBase64[i];
             const renderRequest = await mutator.mutate(defaultRenderRequest, this.#message, workflow);
 
             if(renderRequest === null) {

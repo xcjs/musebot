@@ -39,6 +39,7 @@ import { IContextService } from './clients/llm/services/IContextService.js';
 import { ComfyUiClient } from './clients/media/comfy-ui/ComfyUiClient.js';
 import { IWorkflow } from './clients/media/comfy-ui/models/IWorkflow.js';
 import { IWorkflowService } from './clients/media/comfy-ui/services/IWorkflowService.js';
+import { ContextualMediaMutator } from './clients/media/comfy-ui/services/workflow-mutators/ContextualMediaMutator.js';
 import { ExpandPromptMutator } from './clients/media/comfy-ui/services/workflow-mutators/ExpandPromptMutator.js';
 import { GuidanceScaleMutator } from './clients/media/comfy-ui/services/workflow-mutators/GuidanceScaleMutator.js';
 import { IWorkflowMutator } from './clients/media/comfy-ui/services/workflow-mutators/IWorkflowMutator.js';
@@ -253,6 +254,7 @@ export class ServiceContainer implements IServiceContainer {
 
     getWorkflowMutator(interactionType: BotInteraction, workflow: IWorkflow): IWorkflowMutator {
         const mutators: IWorkflowMutator[] = [
+            new ContextualMediaMutator(this),
             new GuidanceScaleMutator(this),
             new JsonMutator(this),
             new MessageToMediaMutator(this),

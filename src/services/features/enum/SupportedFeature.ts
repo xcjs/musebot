@@ -1,4 +1,5 @@
 export enum SupportedFeature {
+    ContextualImg2Img = 'img2img/contextual',
     Img2Img = 'img2img',
     Img2Vid = 'img2vid',
     Txt2Audio = 'txt2audio',
