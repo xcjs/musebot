@@ -44,16 +44,19 @@ export class ComfyUiMessageTask extends ComfyUiBaseTask {
         let imageAttachments: Attachment[] = [];
         let imagesAsBase64: string[] = [];
 
-        if(this.#message.type === MessageType.Reply
-            && this.#featureService.hasFeature(SupportedFeature.ContextualImg2Img)
-        ) {
-            const previousMessage = await this.#replyService.getPreviousMessage(this.#message);
-            imageAttachments = this.#replyService.getImageAttachments(previousMessage);
+        if(this.#message.type === MessageType.Reply) {
+            if (this.#featureService.hasFeature(SupportedFeature.ContextualImg2Img)) {
+                const previousMessage = await this.#replyService.getPreviousMessage(this.#message);
+                imageAttachments = this.#replyService.getImageAttachments(previousMessage);
 
-            if(imageAttachments.length > 0) {
-                interactionType = BotInteraction.ContextualReply;
-                imagesAsBase64 = await this.#replyService.getAttachedImagesAsBase64(previousMessage);
-            } else {
+                if(imageAttachments.length > 0) {
+                    interactionType = BotInteraction.ContextualReply;
+                    imagesAsBase64 = await this.#replyService.getAttachedImagesAsBase64(previousMessage);
+                } else {
+                    interactionType = BotInteraction.Reply;
+                }
+            }
+            else {
                 interactionType = BotInteraction.Reply;
             }
         } else if(textPrompt.startsWith('{')) {
