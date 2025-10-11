@@ -1,4 +1,4 @@
-import { AttachmentBuilder, Message, MessageType } from 'discord.js';
+import { AttachmentBuilder, Message } from 'discord.js';
 
 import { BotInteraction } from '../../../../../../enums/BotInteraction.js';
 import { SupportedFeature } from '../../../../../features/enum/SupportedFeature.js';
@@ -8,17 +8,13 @@ import { IWorkflow } from '../../models/IWorkflow.js';
 import { SerializableRenderRequest } from '../../models/SerializableRenderRequest.js';
 import { IWorkflowMutator } from './IWorkflowMutator.js';
 
-export class MessageToMediaMutator implements IWorkflowMutator {
+export class ContextualMediaMutator implements IWorkflowMutator {
     get interactions(): BotInteraction[] {
-        return [BotInteraction.Message, BotInteraction.Reply];
+        return [BotInteraction.ContextualReply];
     }
 
     get types(): SupportedFeature[] {
-        return [
-            SupportedFeature.Txt2Audio,
-            SupportedFeature.Txt2Img,
-            SupportedFeature.Txt2Vid
-        ];
+        return [SupportedFeature.ContextualImg2Img];
     }
 
     get contentMessage() {
@@ -38,19 +34,10 @@ export class MessageToMediaMutator implements IWorkflowMutator {
     }
 
     async mutate(renderRequest: SerializableRenderRequest, interaction: Message, workflow: IWorkflow): Promise<SerializableRenderRequest> {
-        let prompt = this.#replyService.getMessageWithoutBotMentions(interaction);
+        const prompt = this.#replyService.getMessageWithoutBotMentions(interaction);
         const userMention = `${interaction.member?.user.toString() || 'You'}`;
-        this.#contentMessage = `${userMention} generated \`${prompt}\``;
 
-        if(interaction.type === MessageType.Reply) {
-            const previousMessage = await this.#replyService.getPreviousMessage(interaction);
-
-            if(previousMessage !== null) {
-                const priorPrompt = this.#replyService.extractPrompt(previousMessage);
-                prompt = `${priorPrompt} ${interaction.content}`.trim();
-                this.#contentMessage = `${userMention} generated \`${priorPrompt}\` as \`${prompt}\``;
-            }
-        }
+        this.#contentMessage = `${userMention} edited an image by instructing \`${prompt}\``;
 
         renderRequest.workflow = workflow.name;
         renderRequest.prompt = prompt;

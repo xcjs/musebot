@@ -3,6 +3,7 @@ export enum BotInteraction {
     Message = 'message',
     JsonMessage = 'jsonMessage',
     Reply = 'reply',
+    ContextualReply = 'contextualReply',
     Reaction = 'reaction',
     // LLM Button Interactions
     ClearContext = 'clearContext',
