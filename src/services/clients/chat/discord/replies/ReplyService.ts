@@ -1,4 +1,5 @@
 import { Attachment, BaseMessageOptions, ButtonInteraction, Client as DiscordClient, Message, MessageReaction, MessageType, User  } from 'discord.js';
+import sharp from 'sharp';
 
 import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
 import { ContentType } from '../../../../../enums/ContentType.js';
@@ -314,8 +315,13 @@ export class ReplyService implements IReplyService {
 
         for (const attachment of imageAttachments) {
             const imageResponse = await fetch(attachment.url);
-            const imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
-            imagesAsBase64.push(imageBuffer.toString(BufferEncoding.Base64));
+            let imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
+
+            // Strip image metadata to prevent it from accumulating.
+            const sharpImage = sharp(imageBuffer);
+            imageBuffer = await sharpImage.toBuffer() as Buffer<ArrayBuffer>;
+
+            imagesAsBase64.push((await sharpImage.toBuffer()).toString(BufferEncoding.Base64));
         }
 
         return imagesAsBase64;
