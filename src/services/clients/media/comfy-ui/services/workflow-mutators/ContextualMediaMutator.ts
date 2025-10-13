@@ -10,7 +10,11 @@ import { IWorkflowMutator } from './IWorkflowMutator.js';
 
 export class ContextualMediaMutator implements IWorkflowMutator {
     get interactions(): BotInteraction[] {
-        return [BotInteraction.ContextualReply];
+        return [
+            BotInteraction.ContextualReply,
+            BotInteraction.ImageMessage,
+            BotInteraction.ImageMessageWithPrompt
+        ];
     }
 
     get types(): SupportedFeature[] {
@@ -37,7 +41,9 @@ export class ContextualMediaMutator implements IWorkflowMutator {
         const prompt = this.#replyService.getMessageWithoutBotMentions(interaction);
         const userMention = `${interaction.member?.user.toString() || 'You'}`;
 
-        this.#contentMessage = `${userMention} edited an image by instructing \`${prompt}\``;
+        if(prompt.length > 0) {
+            this.#contentMessage = `${userMention} edited an image by instructing \`${prompt}\``;
+        }
 
         renderRequest.workflow = workflow.name;
         renderRequest.prompt = prompt;

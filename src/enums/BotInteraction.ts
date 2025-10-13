@@ -2,7 +2,7 @@ export enum BotInteraction {
     // Chat Interactions
     Message = 'message',
     ImageMessage = 'imageMessage',
-    ImagesMessageWithPrompt = 'imageMessageWithPrompt',
+    ImageMessageWithPrompt = 'imageMessageWithPrompt',
     JsonMessage = 'jsonMessage',
     Reply = 'reply',
     ContextualReply = 'contextualReply',

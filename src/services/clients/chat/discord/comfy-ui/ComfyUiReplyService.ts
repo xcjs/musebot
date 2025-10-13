@@ -1,11 +1,13 @@
-import { ActionRowBuilder, AttachmentBuilder, BaseMessageOptions, ButtonBuilder, ButtonInteraction, Message } from 'discord.js';
+import { ActionRowBuilder, Attachment, AttachmentBuilder, BaseMessageOptions, ButtonBuilder, ButtonInteraction, Message } from 'discord.js';
 
 import { MAX_FILE_NAME_LENGTH } from '../../../../../constants/FileConstants.js';
 import { ContentType } from '../../../../../enums/ContentType.js';
 import { ContentTypeCategory } from '../../../../../enums/ContentTypeCategory.js';
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
+import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { IContentTypeService } from '../../../../features/IContentTypeService.js';
+import { IFeatureService } from '../../../../features/IFeatureService.js';
 import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { ComfyUiClient } from '../../../media/comfy-ui/ComfyUiClient.js';
@@ -25,6 +27,7 @@ export class ComfyUiReplyService {
     #environmentSettings: IEnvironmentSettings;
     #comfyUiClient: ComfyUiClient;
     #contentTypeService: IContentTypeService;
+    #featureService: IFeatureService;
     #replyService: IReplyService;
 
     #logger: ILogger;
@@ -39,6 +42,7 @@ export class ComfyUiReplyService {
         this.#environmentSettings = services.environmentSettings;
         this.#comfyUiClient = services.comfyUiClient;
         this.#contentTypeService = services.contentTypeService;
+        this.#featureService = services.featureService;
         this.#replyService = services.replyService;
 
         this.#logger = services.getLogger('ComfyUiReplyService');
@@ -115,6 +119,25 @@ export class ComfyUiReplyService {
         reply.components = components;
 
         await this.#replyService.reply(interaction, reply, isEdit);
+    }
+
+    async replyWithImageActionRows(interaction: Message | ButtonInteraction,
+        imageAttachments: Attachment[]): Promise<void>
+    {
+        if(imageAttachments.length === 0) {
+            return;
+        }
+
+        let actionRows = new StatelessImageGenerationActionRow(this.#services).build();
+
+        if(this.#featureService.hasFeature(SupportedFeature.Img2Img)) {
+            actionRows = actionRows.concat(await new Img2ImgActionRow(this.#services).buildAsync());
+        }
+
+        await this.#replyService.reply(interaction, {
+            files: imageAttachments,
+            components: actionRows
+        }, false);
     }
 
     getFileNameFromPrompt(renderRequest: SerializableRenderRequest | null): string {
