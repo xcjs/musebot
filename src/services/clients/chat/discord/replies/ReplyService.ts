@@ -230,11 +230,7 @@ export class ReplyService implements IReplyService {
 
     async getPreviousMessage(message: Message): Promise<Message | null> {
         if (message.reference !== null) {
-            const priorMessage = await message.fetchReference();
-
-            if (priorMessage.content !== null && priorMessage.content.length > 0) {
-                return priorMessage;
-            }
+            return await message.fetchReference();
         } else {
             return null;
         }
