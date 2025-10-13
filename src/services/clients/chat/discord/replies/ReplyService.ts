@@ -321,7 +321,7 @@ export class ReplyService implements IReplyService {
             const sharpImage = sharp(imageBuffer);
             imageBuffer = await sharpImage.toBuffer() as Buffer<ArrayBuffer>;
 
-            imagesAsBase64.push((await sharpImage.toBuffer()).toString(BufferEncoding.Base64));
+            imagesAsBase64.push(imageBuffer.toString(BufferEncoding.Base64));
         }
 
         return imagesAsBase64;
