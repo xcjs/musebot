@@ -1,5 +1,5 @@
 import { Prompt } from 'comfy-ui-client';
-import { Attachment, Message, MessageType } from 'discord.js';
+import { Message, MessageType } from 'discord.js';
 
 import { BotInteraction } from '../../../../../enums/BotInteraction.js';
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
@@ -41,8 +41,16 @@ export class ComfyUiMessageTask extends ComfyUiBaseTask {
         const renderRequests: SerializableRenderRequest[] = [];
 
         let interactionType = BotInteraction.Message;
-        let imageAttachments: Attachment[] = [];
+
+        // Default to getting images from the current message.
+        let imageAttachments = this.#replyService.getImageAttachments(this.#message);
         let imagesAsBase64: string[] = [];
+
+        // If images are included in the current message, go ahead and encode
+        // them.
+        if(imageAttachments.length > 0) {
+            imagesAsBase64 = await this.#replyService.getAttachedImagesAsBase64(this.#message);
+        }
 
         if(this.#message.type === MessageType.Reply) {
             if (this.#featureService.hasFeature(SupportedFeature.ContextualImg2Img)) {
@@ -61,13 +69,25 @@ export class ComfyUiMessageTask extends ComfyUiBaseTask {
             }
         } else if(textPrompt.startsWith('{')) {
             interactionType = BotInteraction.JsonMessage;
+        } else if(imageAttachments.length > 0) {
+            if(textPrompt.length > 0 && this.#featureService.hasFeature(SupportedFeature.ContextualImg2Img)) {
+                interactionType = BotInteraction.ImageMessageWithPrompt;
+            } else {
+                interactionType = BotInteraction.ImageMessage;
+            }
         }
+
+        this.logger.info('Setting the interaction type as:', interactionType);
 
         let workflow: IWorkflow;
         let defaultRenderRequest: SerializableRenderRequest;
 
         switch(interactionType) {
+            case BotInteraction.ImageMessage:
+                await this.comfyUiReplyService.replyWithImageActionRows(this.#message, imageAttachments);
+                return;
             case BotInteraction.ContextualReply:
+            case BotInteraction.ImageMessageWithPrompt:
                 workflow = getRandomArrayEntry(this.workflowService.workflows.filter(
                     x => x.type === SupportedFeature.ContextualImg2Img));
                 defaultRenderRequest = this.workflowService.getWorkflowDefaults(workflow);

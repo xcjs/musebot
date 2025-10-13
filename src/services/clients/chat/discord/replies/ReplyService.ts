@@ -5,6 +5,8 @@ import { ContentType } from '../../../../../enums/ContentType.js';
 import { getRandomInt } from '../../../../../utilities/random-utilities.js';
 import { splitText } from '../../../../../utilities/string-utilities.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
+import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
+import { IFeatureService } from '../../../../features/IFeatureService.js';
 import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { IReplyService } from '../../IReplyService.js';
@@ -13,11 +15,13 @@ import { DiscordConstants } from '../enums/DiscordConstants.js';
 export class ReplyService implements IReplyService {
     #environmentSettings: IEnvironmentSettings;
     #discordClient: DiscordClient;
+    #featureService: IFeatureService;
     #logger: ILogger;
 
     constructor(services: IServiceContainer) {
         this.#environmentSettings = services.environmentSettings;
         this.#discordClient = services.discordClient;
+        this.#featureService = services.featureService;
 
         this.#logger = services.getLogger('ReplyService');
     }
@@ -116,8 +120,14 @@ export class ReplyService implements IReplyService {
                 return false;
             }
 
-            // The message has no content and is not a reaction.
-            if (message.content.length === 0) {
+            // The message has no content, no image attachments,
+            //  and is not a reaction.
+            if (message.content.length === 0
+                && (this.getImageAttachments(message).length === 0
+                    || (!this.#featureService.hasFeature(SupportedFeature.Img2Img)
+                        && !this.#featureService.hasFeature(SupportedFeature.Img2Vid)
+                        && !this.#featureService.hasFeature(SupportedFeature.ContextualImg2Img)))
+            ) {
                 this.#logger.info('Not replying to a message with no content.');
                 return false;
             }
