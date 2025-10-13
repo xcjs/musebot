@@ -230,11 +230,7 @@ export class ReplyService implements IReplyService {
 
     async getPreviousMessage(message: Message): Promise<Message | null> {
         if (message.reference !== null) {
-            const priorMessage = await message.fetchReference();
-
-            if (priorMessage.content !== null && priorMessage.content.length > 0) {
-                return priorMessage;
-            }
+            return await message.fetchReference();
         } else {
             return null;
         }
@@ -270,7 +266,7 @@ export class ReplyService implements IReplyService {
     getAttachmentsByType(interaction: Message | ButtonInteraction, contentTypes: ContentType[]): Attachment[] {
         this.#logger.info('Looking for attachments of the following types on a message:', contentTypes);
 
-        let attachments: Array<Attachment>;
+        let attachments: Attachment[] = [];
 
         if (interaction instanceof Message) {
             attachments = Array.from(interaction.attachments, ([name, value]) => ({ name, value })).map(x => x.value);
@@ -278,7 +274,7 @@ export class ReplyService implements IReplyService {
             attachments = Array.from(interaction.message.attachments, ([name, value]) => ({ name, value })).map(x => x.value);
         }
 
-        let matchingAttachments: Attachment[] = attachments;
+        let matchingAttachments: Attachment[] = [];
 
         if(contentTypes.length > 0) {
             matchingAttachments = attachments.filter(attachment =>
