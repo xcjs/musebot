@@ -275,7 +275,7 @@ export class ReplyService implements IReplyService {
             attachments = Array.from(interaction.message.attachments, ([name, value]) => ({ name, value })).map(x => x.value);
         }
 
-        let matchingAttachments: Attachment[] = [];
+        let matchingAttachments: Attachment[] = attachments;
 
         if(contentTypes.length > 0) {
             matchingAttachments = attachments.filter(attachment =>
