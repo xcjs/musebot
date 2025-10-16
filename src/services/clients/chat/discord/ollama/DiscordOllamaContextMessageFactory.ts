@@ -14,7 +14,7 @@ export class DiscordOllamaContextMessageFactory implements IContextMessageFactor
         this.#replyService = services.replyService;
     }
 
-    fromSystemPrompt(prompt: string, channelId: string | null): ContextMessage<DiscordMessage, OllamaMessage> {
+    fromSystemPrompt(prompt: string, channelId: string | null, isReadOnly = true): ContextMessage<DiscordMessage, OllamaMessage> {
         const ollamaMessage: OllamaMessage = {
             role: OllamaRole.System,
             content: prompt
@@ -30,7 +30,7 @@ export class DiscordOllamaContextMessageFactory implements IContextMessageFactor
             chatMessage: null,
             timestamp: new Date(),
             llmMessage: ollamaMessage,
-            isReadOnly: true,
+            isReadOnly: isReadOnly,
             isPrivate: false
         };
     }

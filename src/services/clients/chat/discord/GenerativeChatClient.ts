@@ -40,7 +40,7 @@ export class GenerativeChatClient extends BaseDiscordClient {
         this.#taskQueue = services.taskQueue;
 
         const systemPrompt = this.#environmentSettings.ollamaSystemPrompt;
-        this.#contextService.addContext([this.#contextMessageFactory.fromSystemPrompt(systemPrompt, null)]);
+        this.#contextService.addContext([this.#contextMessageFactory.fromSystemPrompt(systemPrompt, null, true)]);
 
         this.#registerEvents();
     }
@@ -64,7 +64,7 @@ export class GenerativeChatClient extends BaseDiscordClient {
 
         if(message.guildId !== null
             && !this.#channelTopicsCached.find(x => x === message.channelId)) {
-            this.#contextService.addContext([this.#contextMessageFactory.fromSystemPrompt((message.channel as TextChannel).topic, message.channelId)]);
+            this.#contextService.addContext([this.#contextMessageFactory.fromSystemPrompt((message.channel as TextChannel).topic, message.channelId, false)]);
             this.#channelTopicsCached.push(message.channelId);
         }
 
@@ -122,6 +122,7 @@ export class GenerativeChatClient extends BaseDiscordClient {
      async #clearContext(interaction: ButtonInteraction): Promise<void> {
         this.logger.info('Clearing the large language model context...');
         this.#contextService.clearContext(interaction.channelId);
+        this.#channelTopicsCached = [];
 
         try{
             // eslint-disable-next-line @typescript-eslint/no-base-to-string

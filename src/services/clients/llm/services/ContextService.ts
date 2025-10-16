@@ -54,4 +54,3 @@ export class ContextService<ChatMessageType, LlmMessageType> implements IContext
             || x.channelId !== channelId);
     }
 }
-
