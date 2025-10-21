@@ -58,8 +58,8 @@ export class ComfyUiClient {
             await this.#client.disconnect();
 
             results.forEach(result => {
-                if (result.status === PromisedSettledResultStatus.Fulfilled) {
-                    mediaCollectionResponses.push(result.value);
+                if (result.status === PromisedSettledResultStatus.Fulfilled.toString()) {
+                    mediaCollectionResponses.push((result as PromiseFulfilledResult<MediaCollectionResponse>).value);
                 } else {
                     this.#logger.error('Error rendering prompt:', prompt, result);
                 }
