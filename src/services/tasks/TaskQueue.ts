@@ -71,14 +71,15 @@ export class TaskQueue implements ITaskQueue {
                 const postProcessingPromises = processPromisesResults.map((promise, i) => {
                     const task = tasks[i];
 
-                    if (promise.status === PromisedSettledResultStatus.Fulfilled) {
+                    if (promise.status === PromisedSettledResultStatus.Fulfilled.toString()) {
                         task.taskStatus = TaskStatus.Successful;
                         return task.postProcess();
                     }
 
                     if (promise.status === PromisedSettledResultStatus.Rejected.toString()) {
                         task.taskStatus = TaskStatus.Failed;
-                        this.#logger.error(`Task ${task.id} was rejected ${task.numAttempts} time(s):`, task, promise.reason);
+                        this.#logger.error(`Task ${task.id} was rejected ${task.numAttempts} time(s):`, task,
+                            (promise as PromiseRejectedResult).reason);
 
                         if (task.numAttempts >= this.#environmentSettings.maxTaskAttempts) {
                             return task.postProcess();
