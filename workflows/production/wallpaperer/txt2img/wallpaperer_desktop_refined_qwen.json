@@ -60,7 +60,7 @@
     "inputs": {
       "seed": "{{{ seed }}}",
       "steps": "{{{ steps }}}",
-      "cfg": 1,
+      "cfg": "{{{ cfgScale }}}",
       "sampler_name": "{{{ sampler }}}",
       "scheduler": "{{{ scheduler }}}",
       "denoise": 0.20000000000000004,
@@ -158,7 +158,7 @@
     "inputs": {
       "seed": "{{{ seed }}}",
       "steps": "{{{ steps }}}",
-      "cfg": "{{{ cfgScale }}}",
+      "cfg": 2.5,
       "sampler_name": "{{{ sampler }}}",
       "scheduler": "{{{ scheduler }}}",
       "denoise": 1,
