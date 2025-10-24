@@ -146,7 +146,7 @@
   },
   "117": {
     "inputs": {
-      "text": "retrofuturism",
+      "text": "{{{ prompt }}}",
       "clip": ["115", 0]
     },
     "class_type": "CLIPTextEncode",
