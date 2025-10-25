@@ -180,12 +180,12 @@ export class ServiceContainer implements IServiceContainer {
         return this.#contextService as IContextService<ChatMessageType, LlmMessageType>;
     }
 
-    getLlmGenerateTask(prompt: string): BaseTask<IHttpExchange<GenerateRequest, GenerateResponse>> {
+    getLlmGenerateTask(prompt: string, temperature: number | undefined): BaseTask<IHttpExchange<GenerateRequest, GenerateResponse>> {
         if(!this.featureService.hasFeature(SupportedFeature.Txt2Txt)) {
             throw this.#taskNotConfiguredError;
         }
 
-        return new OllamaGenerateTask(this, prompt);
+        return new OllamaGenerateTask(this, prompt, temperature);
     }
 
     getEmojiReactionTask(reaction: MessageReaction, user: User): BaseTask<unknown> {

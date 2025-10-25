@@ -6,6 +6,7 @@ import { IHttpExchange } from '../../../../../../models/IHttpExchange.js';
 import { SupportedFeature } from '../../../../../features/enum/SupportedFeature.js';
 import { IServiceContainer } from '../../../../../IServiceContainer.js';
 import { ITaskQueue } from '../../../../../tasks/ITaskQueue.js';
+import { OLLAMA_TEMPERATURE_DEFAULT } from '../../../../llm/ollama/constants/OllamaConstants.js';
 import { IWorkflow } from '../../models/IWorkflow.js';
 import { SerializableRenderRequest } from '../../models/SerializableRenderRequest.js';
 import { IWorkflowMutator } from './IWorkflowMutator.js';
@@ -61,7 +62,7 @@ export class ExpandPromptMutator implements IWorkflowMutator {
             prompt = `The following is a prompt used to generate a piece of media from ${feature} ` +
                 ` - expand it with meticulous detail so it can be generated better: ${prompt}`;
 
-            const task = this.#services.getLlmGenerateTask(prompt);
+            const task = this.#services.getLlmGenerateTask(prompt, OLLAMA_TEMPERATURE_DEFAULT);
 
             const callback = (payload: IHttpExchange<GenerateRequest, GenerateResponse>) => {
                 resolve(payload.response.response);

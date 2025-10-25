@@ -12,12 +12,13 @@ export class OllamaGenerateTask extends OllamaBaseTask<IHttpExchange<GenerateReq
     }
 
     #prompt: string;
+    #temperature: number | undefined = undefined;
 
     #ollamaExchange: IHttpExchange<GenerateRequest, GenerateResponse>;
 
     #onSuccess: (payload: IHttpExchange<GenerateRequest, GenerateResponse>) => void = () => { };
 
-    constructor(services: IServiceContainer, prompt: string) {
+    constructor(services: IServiceContainer, prompt: string, temperature: number | undefined = undefined) {
         super(services);
         this.logger = services.getLogger('OllamaGenerateTask');
 
@@ -25,11 +26,12 @@ export class OllamaGenerateTask extends OllamaBaseTask<IHttpExchange<GenerateReq
         this.ollamaClient = services.ollamaClient;
 
         this.#prompt = prompt;
+        this.#temperature = temperature;
     }
 
     override async process(): Promise<void> {
         this.logger.info('Starting task with prompt:', this.#prompt);
-        this.#ollamaExchange = await this.ollamaClient.generate(this.#prompt);
+        this.#ollamaExchange = await this.ollamaClient.generate(this.#prompt, this.#temperature);
     }
 
     override async postProcess(): Promise<void> {

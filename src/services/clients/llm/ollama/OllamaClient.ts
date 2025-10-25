@@ -36,11 +36,15 @@ export class OllamaClient {
         this.#model = this.#selectModel(this.#environmentSettings.ollamaModels);
     }
 
-    async generate(prompt: string): Promise<IHttpExchange<GenerateRequest, GenerateResponse>> {
+    async generate(prompt: string, temperature: number | undefined = undefined): Promise<IHttpExchange<GenerateRequest, GenerateResponse>> {
         const request: GenerateRequest = {
             prompt,
             model: this.#model
         };
+
+        if(temperature !== undefined) {
+            request.options.temperature = temperature;
+        }
 
         this.#logger.info(`Calling Ollama API with the prompt: ${prompt}`);
 
