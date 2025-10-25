@@ -1,0 +1,3 @@
+export const OLLAMA_TEMPERATURE_DEFAULT = 0.8;
+export const OLLAMA_TEMPERATURE_MIN = 0;
+export const OLLAMA_TEMPERATURE_MAX = 2;

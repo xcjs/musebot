@@ -1,6 +1,5 @@
 import { BaseGuildTextChannel, ButtonInteraction, DMChannel, Message } from 'discord.js';
 
-import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
@@ -8,7 +7,6 @@ import { ITypingService } from '../../ITypingService.js';
 import { IChannelTypingIndicator } from '../models/IChannelTypingIndicator.js';
 
 export class TypingService implements ITypingService {
-    #environmentSettings: IEnvironmentSettings;
     #taskQueue: ITaskQueue;
     #logger: ILogger;
 
@@ -18,7 +16,6 @@ export class TypingService implements ITypingService {
     #typingIndicators: Array<IChannelTypingIndicator> = [];
 
     constructor(services: IServiceContainer) {
-        this.#environmentSettings = services.environmentSettings;
         this.#taskQueue = services.taskQueue;
 
         this.#logger = services.getLogger('TypingService');

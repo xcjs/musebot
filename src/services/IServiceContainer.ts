@@ -60,7 +60,7 @@ export interface IServiceContainer {
 
     getContextMessageFactory<ChatMessageType, LlmMessageType>(): IContextMessageFactory<ChatMessageType, LlmMessageType>;
     getContextService<ChatMessageType, LlmMessageType>(): IContextService<ChatMessageType, LlmMessageType>
-    getLlmGenerateTask(prompt: string): BaseTask<IHttpExchange<GenerateRequest, GenerateResponse>>;
+    getLlmGenerateTask(prompt: string, temperature: number | undefined): BaseTask<IHttpExchange<GenerateRequest, GenerateResponse>>;
     getEmojiReactionTask(reaction: MessageReaction, user: User): BaseTask<unknown>;
 
     getMessageTask(message: DiscordMessage): BaseTask<unknown>;
