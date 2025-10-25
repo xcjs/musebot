@@ -43,7 +43,9 @@ export class OllamaClient {
         };
 
         if(temperature !== undefined) {
-            request.options.temperature = temperature;
+            request.options = {
+                temperature
+            };
         }
 
         this.#logger.info(`Calling Ollama API with the prompt: ${prompt}`);
