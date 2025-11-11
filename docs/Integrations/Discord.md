@@ -53,7 +53,7 @@ Discord. This guide will walk you through each required menu and setting.
 1. Click the `Bot` link in the left navigation menu.
 
    ![Bot Menu Item](../../assets/images/discord/menu-bot.png)
-2. Under `Build-A-Bot`, you can optionally set an icon and banner that will
+2. Under the `Bot`, heading you can optionally set an icon and banner that will
    be displayed under your bot's Discord profile.
 3. You can also explicitly set your bot's username if you wish to do so under
    `Username`.
