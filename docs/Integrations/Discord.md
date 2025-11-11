@@ -106,7 +106,8 @@ channel IDs up:
 
 1. In Discord, go to `User Settings` » `Advanced` » `Enable Developer Mode`.
 2. Right click on a channel for Musebot to use and click `Copy Channel ID`.
-3. Add the channel ID(s) to the `MUSEBOT_DISCORD_CHANNELS` environment variable.
+3. Add the channel ID(s) to the `MUSEBOT_DISCORD_CHANNELS` environment variable
+   in Musebot's `.env` configuration file.
 
 Additionally, Musebot can work across multiple Discord servers as long as the
 bot is added to the server by an administrator or owner. Channel IDs are unique
