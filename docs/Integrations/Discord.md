@@ -27,7 +27,7 @@ Discord. This guide will walk you through each required menu and setting.
 
    ![General Information Menu Item](../../assets/images/discord/menu-general-information.png)
 2. Name your application, add a profile image, and save your changes. Provide a
-   Provide a description, tags, or other information if you want.
+   description, tags, or other information if you want.
 3. Save your changes.
 
    ![Save Changes Button](../../assets/images/discord/save-changes.png)
