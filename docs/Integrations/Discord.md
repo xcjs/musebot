@@ -84,7 +84,7 @@ Discord. This guide will walk you through each required menu and setting.
 1. Click the `OAuth2` link in the left navigation menu.
 
    ![OAuth2 Menu Item](../../assets/images/discord/menu-oauth2.png)
-2. Under the `OAuth2 URL Generator` in the `Scopes` checklist, check `Bot`.
+2. Under the `OAuth2 URL Generator` in the `Scopes` checklist, check `bot`.
 3. In the `Bot Permissions` checklist, check the following checkboxes:
 
     * View Channels
