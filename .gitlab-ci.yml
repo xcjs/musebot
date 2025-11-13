@@ -49,10 +49,10 @@ Test:
 
 Build Docker Image:
   stage: Build
-  image: docker:stable
+  image: docker:dind
   needs: ["Install Dependencies", "Lint", "Test"]
   services:
-    - docker:stable-dind
+    - docker:dind
   except:
     - main
   tags:
@@ -102,10 +102,10 @@ Build Distributable:
 
 Publish Docker Image:
   stage: Publish
-  image: docker:stable
+  image: docker:dind
   needs: ["Install Dependencies", "Lint", "Test"]
   services:
-    - docker:stable-dind
+    - docker:dind
   only:
     - main
   tags:
