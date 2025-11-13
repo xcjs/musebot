@@ -1,13 +1,17 @@
+import { IEnvironmentSettings } from '../../environment-settings/IEnvironmentSettings.js';
 import { ILogger } from '../../ILogger.js';
 import { IServiceContainer } from '../../IServiceContainer.js';
 import { TaskStatus } from '../enums/TaskStatus.js';
+import { ITaskQueue } from '../ITaskQueue.js';
 import { BaseTask } from './BaseTask.js';
 
 export class TaskChannel {
+    #environmentSettings: IEnvironmentSettings;
+    #taskQueue: ITaskQueue;
+    #logger: ILogger;
+
     #name: string;
     #queue: BaseTask<unknown>[] = [];
-
-    #logger: ILogger;
 
     get name(): string {
         return this.#name;
@@ -27,9 +31,11 @@ export class TaskChannel {
     }
 
     constructor(services: IServiceContainer, name: string) {
-        this.#name = name;
-
         this.#logger = services.getLogger('TaskChannel');
+        this.#environmentSettings = services.environmentSettings;
+        this.#taskQueue = services.taskQueue;
+
+        this.#name = name;
 
         this.#logger.info(`Created a new task channel called ${name}.`);
     }
@@ -39,30 +45,13 @@ export class TaskChannel {
 
         const incompleteTasks = this.#queue.filter(task => {
             if (task.taskStatus === TaskStatus.Idle
-                || task.taskStatus === TaskStatus.Busy
-                || task.taskStatus === TaskStatus.Delayed
-                || task.taskStatus === TaskStatus.Failed) {
+                || task.taskStatus === TaskStatus.Busy) {
                 return task;
             }
         });
 
-        const failedTasks = incompleteTasks.filter(
-            x => x.taskStatus === TaskStatus.Failed || x.taskStatus === TaskStatus.Delayed)
-            // eslint-disable-next-line @typescript-eslint/unbound-method
-            .sort(this.#compareByDate);
-
-        const nonFailedTasks = incompleteTasks.filter(
-            x => x.taskStatus !== TaskStatus.Failed && x.taskStatus !== TaskStatus.Delayed)
-            // eslint-disable-next-line @typescript-eslint/unbound-method
-            .sort(this.#compareByDate);
-
-        this.#queue = [];
-
-        nonFailedTasks.concat(failedTasks).forEach((task) => {
-            if(this.#queue.find(queueTask => queueTask.id === task.id) === undefined) {
-                this.#queue.push(task);
-            }
-        });
+        // eslint-disable-next-line @typescript-eslint/unbound-method
+        this.#queue = incompleteTasks.sort(this.#compareByDate);
     }
 
     #compareByDate(a: BaseTask<unknown>, b: BaseTask<unknown>): number {

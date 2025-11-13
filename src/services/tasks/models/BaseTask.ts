@@ -1,6 +1,5 @@
 import { randomUUID, UUID } from 'node:crypto';
 
-import { IEnvironmentSettings } from '../../environment-settings/IEnvironmentSettings.js';
 import { ILogger } from '../../ILogger.js';
 import { IServiceContainer } from '../../IServiceContainer.js';
 import { IParallelizationStrategy } from '../../parallelization/IParallelizationStrategy.js';
@@ -12,29 +11,15 @@ export abstract class BaseTask<T> {
     }
 
     get taskStatus(): TaskStatus {
-        if (this.#taskStatus === TaskStatus.Delayed
-            && Date.now() >= this.#delayUntil.getTime()) {
-            this.#taskStatus = TaskStatus.Failed;
-        }
-
         return this.#taskStatus;
     }
 
     set taskStatus(taskStatus: TaskStatus) {
-        if(taskStatus === TaskStatus.Delayed) {
-            taskStatus = TaskStatus.Failed;
-        }
-
         if (taskStatus === TaskStatus.Failed) {
             this.#numAttempts++;
 
             if (this.#numAttempts >= this.#maxAttempts) {
                 this.#taskStatus = TaskStatus.Dead;
-            } else {
-                this.#taskStatus = TaskStatus.Delayed;
-                this.#delayUntil = new Date(Date.now() + this.#environmentSettings.taskRetryDelayMilliseconds);
-
-                this.logger.info(`Delaying task ${this.#id} until ${this.#delayUntil.toLocaleDateString()}.`)
             }
         } else {
             this.#taskStatus = taskStatus;
@@ -62,8 +47,6 @@ export abstract class BaseTask<T> {
     parallelizationStrategy: IParallelizationStrategy;
     logger: ILogger;
 
-    #environmentSettings: IEnvironmentSettings;
-
     #id: UUID;
     #taskStatus: TaskStatus = TaskStatus.Idle;
     #numAttempts = 0;
@@ -74,8 +57,6 @@ export abstract class BaseTask<T> {
 
     constructor(services: IServiceContainer) {
         this.parallelizationStrategy = services.parallelizationStrategy;
-
-        this.#environmentSettings = services.environmentSettings;
 
         this.logger = services.getLogger('BaseTask');
 
