@@ -3,7 +3,7 @@ FROM node:20 AS builder
 WORKDIR /home/node/app
 COPY . .
 
-RUN npm ci && npm run build:bin
+RUN npm ci && npm install --save-dev @parcel/rust-linux-x64-gnu && npm run build:bin
 
 USER node
 
