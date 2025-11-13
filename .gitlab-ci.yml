@@ -17,7 +17,6 @@ Install Dependencies:
     - npm install --cpu=x64 --os=linux --libc=glibc sharp
     - npm install --cpu=x64 --os=darwin sharp
     - npm install --cpu=x64 --os=win32 sharp
-    - npm install --save-dev @parcel/rust-linux-x64-gnu
     - npm list
   artifacts:
     name: node_modules
