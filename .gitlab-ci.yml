@@ -14,9 +14,9 @@ Install Dependencies:
     - docker
   script:
     - npm ci
-    - npm install --cpu=x64 --os=linux --libc=glibc sharp
     - npm install --cpu=x64 --os=darwin sharp
     - npm install --cpu=x64 --os=win32 sharp
+    - npm install --cpu=x64 --os=linux --libc=glibc sharp
     - npm list
   artifacts:
     name: node_modules
