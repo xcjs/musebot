@@ -6,7 +6,7 @@ stages:
   - Publish
   - Review
 
-Install Dependencies:
+Install Linux Dependencies:
   stage: Setup
   image: node:24
   needs: []
@@ -14,12 +14,26 @@ Install Dependencies:
     - docker
   script:
     - npm ci
-    - npm install --cpu=x64 --os=darwin sharp
-    - npm install --cpu=x64 --os=win32 sharp
     - npm install --cpu=x64 --os=linux --libc=glibc sharp
     - npm list
   artifacts:
     name: node_modules
+    paths:
+      - node_modules_linux
+    expire_in: 1 week
+
+Install Windows Dependencies:
+  stage: Setup
+  image: node:24
+  needs: []
+  tags:
+    - docker
+  script:
+    - npm ci
+    - npm install --cpu=x64 --os=win32 sharp
+    - npm list
+  artifacts:
+    name: node_modules_windows
     paths:
       - node_modules
     expire_in: 1 week
@@ -27,7 +41,7 @@ Install Dependencies:
 Lint:
   stage: Lint
   image: node:24
-  needs: ["Install Dependencies"]
+  needs: ["Install Linux Dependencies"]
   tags:
     - docker
   script:
@@ -36,7 +50,7 @@ Lint:
 Test:
   stage: Test
   image: node:24
-  needs: ["Install Dependencies"]
+  needs: ["Install Linux Dependencies"]
   tags:
     - docker
   script:
@@ -50,7 +64,7 @@ Test:
 Build Docker Image:
   stage: Build
   image: docker:dind
-  needs: ["Install Dependencies", "Lint", "Test"]
+  needs: ["Install Linux Dependencies", "Lint", "Test"]
   services:
     - docker:dind
   except:
@@ -60,10 +74,49 @@ Build Docker Image:
   script:
     - docker build -t $CI_REGISTRY/xcjs/musebot:build .
 
-Build Distributable:
+Build Linux Distributable:
   stage: Build
   image: node:24
-  needs: ["Install Dependencies", "Lint", "Test"]
+  needs: ["Install Linux Dependencies", "Lint", "Test"]
+  tags:
+    - docker
+  script:
+    - npm run build:bin
+    - mv build/pkg/musebot-linux build/pkg/musebot-linux-x86_64
+    - npm run build:docs
+    - cp -f .env.example build/pkg/.env
+    - cp -rf build/docs/ build/pkg/docs/
+    - mkdir -p build/pkg/workflows/img2img/contextual
+    - mkdir -p build/pkg/workflows/img2vid/
+    - mkdir -p build/pkg/workflows/txt2audio/
+    - mkdir -p build/pkg/workflows/txt2img/
+    - mkdir -p build/pkg/workflows/txt2music/
+    - mkdir -p build/pkg/workflows/txt2vid/
+    - cp -f workflows/production/composer/txt2music/ace-step.json build/pkg/workflows/txt2music/ace-step.json
+    - cp -f workflows/production/director/txt2img/wan.json build/pkg/workflows/txt2img/wan.json
+    - cp -f workflows/production/dreamshaper/txt2img/dreamshaper-xl_turbo_square.json build/pkg/workflows/txt2img/dreamshaper-xl_turbo_square.json
+    - cp -f workflows/production/flux/txt2img/flux-q8_square.json build/pkg/workflows/txt2img/flux-q8_square.json
+    - cp -f workflows/production/shared/img2img/01-upscale-detail.json build/pkg/workflows/img2img/01-upscale-detail.json
+    - cp -f workflows/production/shared/img2img/02-upscale-design.json build/pkg/workflows/img2img/02-upscale-design.json
+    - cp -f workflows/production/shared/img2img/03-extract-subject.json build/pkg/workflows/img2img/03-extract-subject.json
+    - cp -f workflows/production/shared/img2img/04-wan.json build/pkg/workflows/img2img/04-wan.json
+    - cp -f workflows/production/shared/img2img/contextual/kontext.json build/pkg/workflows/img2img/contextual/kontext.json
+    - cp -f LICENSE.md build/pkg/LICENSE.txt
+    - cp -f logo.jpg build/pkg/musebot.jpg
+    - cp -f logo.png build/pkg/musebot.png
+    - cp -f musebot.ico build/pkg/musebot.ico
+    - cp -f Dockerfile_dist build/pkg/Dockerfile
+    - cp -f docker-compose.yml build/pkg/docker-compose.yml
+  artifacts:
+    name: musebot_linux
+    paths:
+      - build/pkg/
+    expire_in: 1 week
+
+Build Windows Distributable:
+  stage: Build
+  image: node:24
+  needs: ["Install Windows Dependencies", "Lint", "Test"]
   tags:
     - docker
   script:
@@ -92,10 +145,8 @@ Build Distributable:
     - cp -f logo.jpg build/pkg/musebot.jpg
     - cp -f logo.png build/pkg/musebot.png
     - cp -f musebot.ico build/pkg/musebot.ico
-    - cp -f Dockerfile_dist build/pkg/Dockerfile
-    - cp -f docker-compose.yml build/pkg/docker-compose.yml
   artifacts:
-    name: musebot
+    name: musebot_win32
     paths:
       - build/pkg/
     expire_in: 1 week
@@ -103,7 +154,7 @@ Build Distributable:
 Publish Docker Image:
   stage: Publish
   image: docker:dind
-  needs: ["Install Dependencies", "Lint", "Test"]
+  needs: ["Install Linux Dependencies", "Lint", "Test"]
   services:
     - docker:dind
   only:
