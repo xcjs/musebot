@@ -82,6 +82,7 @@ Build Linux Distributable:
     - docker
   script:
     - npm run build:bin
+    - rm build/pkg/musebot-win.exe
     - mv build/pkg/musebot-linux build/pkg/musebot-linux-x86_64
     - npm run build:docs
     - cp -f .env.example build/pkg/.env
@@ -123,6 +124,7 @@ Build Windows Distributable:
     - npm install @parcel/rust-linux-x64-gnu
     - npm run build:bin
     - mv build/pkg/musebot-win.exe build/pkg/musebot-win-x86_64.exe
+    - rm build/pkg/musebot-linux
     - npm run build:docs
     - cp -f .env.example build/pkg/.env
     - cp -rf build/docs/ build/pkg/docs/
