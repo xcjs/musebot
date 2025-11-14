@@ -81,6 +81,7 @@ Build Linux Distributable:
   tags:
     - docker
   script:
+    - export artifactName="musebot_linux_$(npm pkg get version)"
     - npm run build:bin
     - mv build/pkg/musebot-linux build/pkg/musebot-linux-x86_64
     - npm run build:docs
@@ -108,7 +109,7 @@ Build Linux Distributable:
     - cp -f Dockerfile_dist build/pkg/Dockerfile
     - cp -f docker-compose.yml build/pkg/docker-compose.yml
   artifacts:
-    name: musebot_linux_$(npm pkg get version)
+    name: $artifactName
     paths:
       - build/pkg/
     expire_in: 1 week
@@ -120,6 +121,7 @@ Build Windows Distributable:
   tags:
     - docker
   script:
+    - export artifactName="musebot_win32_$(npm pkg get version)"
     - npm install @parcel/rust-linux-x64-gnu
     - npm run build:bin
     - mv build/pkg/musebot-win.exe build/pkg/musebot-win-x86_64.exe
@@ -146,7 +148,7 @@ Build Windows Distributable:
     - cp -f logo.png build/pkg/musebot.png
     - cp -f musebot.ico build/pkg/musebot.ico
   artifacts:
-    name: musebot_win32_$(npm pkg get version)
+    name: $artifactName
     paths:
       - build/pkg/
     expire_in: 1 week
