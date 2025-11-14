@@ -108,7 +108,7 @@ Build Linux Distributable:
     - cp -f Dockerfile_dist build/pkg/Dockerfile
     - cp -f docker-compose.yml build/pkg/docker-compose.yml
   artifacts:
-    name: musebot_linux
+    name: musebot_linux_$(npm pkg get version)
     paths:
       - build/pkg/
     expire_in: 1 week
@@ -146,7 +146,7 @@ Build Windows Distributable:
     - cp -f logo.png build/pkg/musebot.png
     - cp -f musebot.ico build/pkg/musebot.ico
   artifacts:
-    name: musebot_win32
+    name: musebot_win32_$(npm pkg get version)
     paths:
       - build/pkg/
     expire_in: 1 week
