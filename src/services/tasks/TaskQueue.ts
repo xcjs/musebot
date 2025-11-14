@@ -59,9 +59,7 @@ export class TaskQueue implements ITaskQueue {
             this.#logger.info(`Processing the task queue with ${numChannels} channel(s) and ${numTasks} task(s).`);
 
             try {
-                const processPromises = tasks
-                    .filter(x => x.taskStatus !== TaskStatus.Delayed)
-                    .map((x) => {
+                const processPromises = tasks.map((x) => {
                         x.taskStatus = TaskStatus.Busy;
                         return x.process();
                     });
@@ -83,6 +81,13 @@ export class TaskQueue implements ITaskQueue {
 
                         if (task.numAttempts >= this.#environmentSettings.maxTaskAttempts) {
                             return task.postProcess();
+                        } else {
+                            this.#logger.info('Scheduling a failed task to be resumed:', task.id);
+
+                            setTimeout(() => {
+                                task.taskStatus = TaskStatus.Idle;
+                                this.add(task);
+                            }, this.#environmentSettings.taskRetryDelayMilliseconds);
                         }
                     }
                 });

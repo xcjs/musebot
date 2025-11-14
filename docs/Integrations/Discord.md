@@ -27,7 +27,7 @@ Discord. This guide will walk you through each required menu and setting.
 
    ![General Information Menu Item](../../assets/images/discord/menu-general-information.png)
 2. Name your application, add a profile image, and save your changes. Provide a
-   Provide a description, tags, or other information if you want.
+   description, tags, or other information if you want.
 3. Save your changes.
 
    ![Save Changes Button](../../assets/images/discord/save-changes.png)
@@ -53,7 +53,7 @@ Discord. This guide will walk you through each required menu and setting.
 1. Click the `Bot` link in the left navigation menu.
 
    ![Bot Menu Item](../../assets/images/discord/menu-bot.png)
-2. Under `Build-A-Bot`, you can optionally set an icon and banner that will
+2. Under the `Bot`, heading you can optionally set an icon and banner that will
    be displayed under your bot's Discord profile.
 3. You can also explicitly set your bot's username if you wish to do so under
    `Username`.
@@ -84,7 +84,7 @@ Discord. This guide will walk you through each required menu and setting.
 1. Click the `OAuth2` link in the left navigation menu.
 
    ![OAuth2 Menu Item](../../assets/images/discord/menu-oauth2.png)
-2. Under the `OAuth2 URL Generator` in the `Scopes` checklist, check `Bot`.
+2. Under the `OAuth2 URL Generator` in the `Scopes` checklist, check `bot`.
 3. In the `Bot Permissions` checklist, check the following checkboxes:
 
     * View Channels
@@ -106,7 +106,8 @@ channel IDs up:
 
 1. In Discord, go to `User Settings` » `Advanced` » `Enable Developer Mode`.
 2. Right click on a channel for Musebot to use and click `Copy Channel ID`.
-3. Add the channel ID(s) to the `MUSEBOT_DISCORD_CHANNELS` environment variable.
+3. Add the channel ID(s) to the `MUSEBOT_DISCORD_CHANNELS` environment variable
+   in Musebot's `.env` configuration file.
 
 Additionally, Musebot can work across multiple Discord servers as long as the
 bot is added to the server by an administrator or owner. Channel IDs are unique
