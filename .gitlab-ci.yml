@@ -17,9 +17,9 @@ Install Linux Dependencies:
     - npm install --cpu=x64 --os=linux --libc=glibc sharp
     - npm list
   artifacts:
-    name: node_modules
+    name: node_modules_linux
     paths:
-      - node_modules_linux
+      - node_modules
     expire_in: 1 week
 
 Install Windows Dependencies:
