@@ -14,7 +14,7 @@
   },
   "4": {
     "inputs": {
-      "unet_name": "Wan/txt2img/wan2.1-t2v-14b-Q5_0.gguf"
+      "unet_name": "Wan/txt2vid/wan2.1-t2v-14b-Q5_0.gguf"
     },
     "class_type": "UnetLoaderGGUF",
     "_meta": {
