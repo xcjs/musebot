@@ -84,7 +84,7 @@
   },
   "26": {
     "inputs": {
-      "guidance": 4,
+      "guidance": "{{{ cfgScale }}}",
       "conditioning": ["6", 0]
     },
     "class_type": "FluxGuidance",
@@ -96,7 +96,7 @@
     "inputs": {
       "width": "{{{ width }}}",
       "height": "{{{ height }}}",
-      "batch_size": 1
+      "batch_size": "{{{ num }}}"
     },
     "class_type": "EmptyFlux2LatentImage",
     "_meta": {
