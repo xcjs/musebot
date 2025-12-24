@@ -63,7 +63,7 @@
       "cfg": "{{{ cfgScale }}}",
       "sampler_name": "{{{ sampler }}}",
       "scheduler": "{{{ scheduler }}}",
-      "denoise": 0.20000000000000004,
+      "denoise": 1,
       "model": ["116", 0],
       "positive": ["117", 0],
       "negative": ["121", 0],
