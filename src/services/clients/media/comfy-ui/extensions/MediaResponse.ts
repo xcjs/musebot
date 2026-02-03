@@ -17,4 +17,11 @@ export interface AudioContainer extends ImageContainer {
     audio: OutputMedia;
 }
 
+export interface VideoContainer extends ImageContainer {
+    format: string;
+    frame_rate: number;
+    fullpath: string;
+    workflow: string;
+}
+
 export type OutputMedia = OutputImage

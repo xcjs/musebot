@@ -1,4 +1,5 @@
 export enum SupportedNode  {
     Audio = 'audio',
-    Images = 'images'
+    Images = 'images',
+    Video = 'gifs'
 }
