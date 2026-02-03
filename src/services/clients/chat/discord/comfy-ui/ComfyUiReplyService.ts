@@ -171,6 +171,7 @@ export class ComfyUiReplyService {
                     ? new StatefulAudioGenerationActionRow(this.#services, requests[0]).build()
                     : new StatelessAudioGenerationActionRow(this.#services).build();
             case ContentTypeCategory.Image:
+            case ContentTypeCategory.Video:
                 return isStatefulResponse ?
                     new StatefulImageGenerationActionRows(this.#services, requests[0]).build()
                         .concat(await new Img2ImgActionRow(this.#services).buildAsync()) :
