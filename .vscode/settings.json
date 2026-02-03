@@ -20,6 +20,7 @@
         "ESRGAN",
         "firstpass",
         "firstphase",
+        "fullpath",
         "gfpgan",
         "gradio",
         "Heun",
