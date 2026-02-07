@@ -1,0 +1,27 @@
+name: XCJS Open WebUI
+version: 1.0.0
+schema: v1
+models:
+  - name: XCJS Open WebUI
+    provider: openai
+    env:
+      useLegacyCompletionsEndpoint: false
+    defaultCompletionOptions:
+     contextLength: 16384
+    model: AUTODETECT
+    apiBase: https://llm.home.xcjs.com/api
+    apiKey: '${{secrets.OPEN_WEBUI_TOKEN}}'
+    roles:
+      - apply
+      - autocomplete
+      - chat
+      - edit
+      - summarize
+context:
+  - provider: code
+  - provider: docs
+  - provider: diff
+  - provider: terminal
+  - provider: problems
+  - provider: folder
+  - provider: codebase
