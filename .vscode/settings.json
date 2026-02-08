@@ -69,6 +69,7 @@
         "tmax",
         "tmin",
         "tqdm",
+        "tschema",
         "tseslint",
         "uncond",
         "unet",
