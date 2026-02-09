@@ -52,6 +52,7 @@
     "typescript": "^5.8.3"
   },
   "devDependencies": {
+    "@babel/helper-compilation-targets": "^7.28.6",
     "@babel/preset-typescript": "^7.27.1",
     "@jest/globals": "^30.2.0",
     "@yao-pkg/pkg": "^6.9.0",
