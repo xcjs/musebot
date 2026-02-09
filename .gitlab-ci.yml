@@ -134,7 +134,7 @@ Build Windows Distributable:
     - mkdir -p build/pkg/workflows/txt2img/
     - mkdir -p build/pkg/workflows/txt2music/
     - mkdir -p build/pkg/workflows/txt2vid/
-    - cp -f workflows/production/composer/txt2music/ace-step.json build/pkg/workflows/txt2music/ace-step.json
+    - cp -f workflows/production/composer/txt2music/ace-step-1.5.json build/pkg/workflows/txt2music/ace-step-1.5.json
     - cp -f workflows/production/director/txt2img/wan.json build/pkg/workflows/txt2img/wan.json
     - cp -f workflows/production/dreamshaper/txt2img/dreamshaper-xl_turbo_square.json build/pkg/workflows/txt2img/dreamshaper-xl_turbo_square.json
     - cp -f workflows/production/flux/txt2img/flux-q8_square.json build/pkg/workflows/txt2img/flux-q8_square.json
