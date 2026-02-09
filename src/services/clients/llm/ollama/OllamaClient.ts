@@ -7,6 +7,7 @@ import { IEnvironmentSettings } from '../../../environment-settings/IEnvironment
 import { ILogger } from '../../../ILogger.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
 import { OllamaRole } from './enums/OllamaRole.js';
+import { IStructuredRequestData } from './models/IStructuredRequestData.js';
 
 export class OllamaClient {
     #environmentSettings: IEnvironmentSettings;
@@ -56,6 +57,34 @@ export class OllamaClient {
             return {
                 request,
                 response
+            };
+        } catch (error) {
+            this.#logger.error('Failed to send Ollama a message:', error);
+
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            throw new Error(error);
+        }
+    }
+
+    async generateStructured<TOutput>(prompt: string, requestData: IStructuredRequestData): Promise<IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, TOutput>> {
+        const request: GenerateRequest = {
+            system: requestData.systemPrompt,
+            prompt,
+            model: this.#model,
+            format: requestData.schema
+        };
+
+        this.#logger.info(`Calling Ollama API with the prompt: ${prompt}`);
+
+        try {
+            const response = await this.#client.generate({ ...request, stream: false });
+
+            return {
+                exchange: {
+                    request,
+                    response,
+                },
+                data: JSON.parse(response.response) as TOutput
             };
         } catch (error) {
             this.#logger.error('Failed to send Ollama a message:', error);

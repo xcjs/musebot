@@ -1,6 +1,6 @@
 {
   "name": "musebot",
-  "version": "8.4.0",
+  "version": "8.5.0",
   "description": "A Discord bot that connects to various generative AI APIs.",
   "private": "true",
   "license": "XCJS Software License Agreement",
@@ -47,6 +47,7 @@
     "ollama": "^0.6.0",
     "parcel": "^2.15.4",
     "sharp": "^0.34.2",
+    "tschema": "^3.2.0",
     "typescript": "^5.8.3"
   },
   "devDependencies": {
