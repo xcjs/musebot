@@ -14,8 +14,7 @@
   "type": "module",
   "pkg": {
     "assets": [
-      "node_modules/@img/**/**",
-      "node_modules/tschema/**"
+      "node_modules/@img/**/**"
     ],
     "targets": [
       "node24-linux-x64",
@@ -48,11 +47,9 @@
     "ollama": "^0.6.0",
     "parcel": "^2.15.4",
     "sharp": "^0.34.2",
-    "tschema": "^3.2.0",
     "typescript": "^5.8.3"
   },
   "devDependencies": {
-    "@babel/helper-compilation-targets": "^7.28.6",
     "@babel/preset-typescript": "^7.27.1",
     "@jest/globals": "^30.2.0",
     "@yao-pkg/pkg": "^6.9.0",
