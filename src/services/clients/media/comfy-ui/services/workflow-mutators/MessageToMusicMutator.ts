@@ -8,6 +8,7 @@ import { IReplyService } from '../../../../chat/IReplyService.js';
 import { OllamaClient } from '../../../../llm/ollama/OllamaClient.js';
 import { IWorkflow } from '../../models/IWorkflow.js';
 import { songPromptMetadataRequestData, SongPromptMetadataRequestType } from '../../models/music/SongPromptMetadataRequestType.js';
+import { SongPromptType } from '../../models/music/SongPromptType.js';
 import { SongPromptTypeRequestType, songPromptTypeRequestTypeData } from '../../models/music/SongPromptTypeRequestType.js';
 import { SerializableRenderRequest } from '../../models/SerializableRenderRequest.js';
 import { IWorkflowMutator } from './IWorkflowMutator.js';
@@ -66,7 +67,8 @@ export class MessageToMusicMutator implements IWorkflowMutator {
                 mutatedRequest.prompt = prompt;
             }
 
-            if (!songRequestTypeExchange.data.promptHasLyrics) {
+            if (songRequestTypeExchange.data.songPromptType === SongPromptType.Lyrical.toString()
+            && !songRequestTypeExchange.data.promptHasLyrics) {
                 mutatedRequest.prompt2 = songPromptMetadataExchange.data.lyrics;
             }
 
