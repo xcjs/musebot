@@ -14,7 +14,8 @@
   "type": "module",
   "pkg": {
     "assets": [
-      "node_modules/@img/**/**"
+      "node_modules/@img/**/**",
+      "node_modules/tschema/**"
     ],
     "targets": [
       "node24-linux-x64",
