@@ -71,7 +71,6 @@ export class MessageToMusicMutator implements IWorkflowMutator {
             && !songRequestTypeExchange.data.promptHasLyrics) {
                 mutatedRequest.prompt2 = songPromptMetadataExchange.data.lyrics;
             }
-
         }
 
         if (mutatedRequest.durationMin !== undefined
