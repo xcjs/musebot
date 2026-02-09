@@ -27,6 +27,10 @@ export class SerializableRenderRequest {
     title: string | undefined;
     helpText: string | undefined;
 
+    bpm: number | undefined;
+    keyScale: string | undefined;
+    timeSignature: number | undefined;
+
     constructor() {
 
     }
@@ -79,6 +83,10 @@ export class SerializableRenderRequest {
         instancedRequest.label = request.label;
         instancedRequest.title = request.title;
         instancedRequest.helpText = request.helpText;
+
+        instancedRequest.bpm = request.bpm;
+        instancedRequest.keyScale = request.keyScale;
+        instancedRequest.timeSignature = request.timeSignature;
 
         return instancedRequest;
     }
