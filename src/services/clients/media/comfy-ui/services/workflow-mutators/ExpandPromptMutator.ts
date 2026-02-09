@@ -60,7 +60,7 @@ export class ExpandPromptMutator implements IWorkflowMutator {
     async #getExpandedPrompt(prompt: string, feature: SupportedFeature): Promise<string> {
         return new Promise((resolve) => {
             prompt = `The following is a prompt used to generate a piece of media from ${feature} ` +
-                ` - expand it with meticulous detail so it can be generated better: ${prompt}`;
+                ` - expand it with meticulous detail to generate better results: ${prompt}`;
 
             const task = this.#services.getLlmGenerateTask(prompt, OLLAMA_TEMPERATURE_DEFAULT);
 
