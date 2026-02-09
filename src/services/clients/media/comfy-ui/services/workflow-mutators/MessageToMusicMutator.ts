@@ -5,7 +5,10 @@ import { getRandomInt } from '../../../../../../utilities/random-utilities.js';
 import { SupportedFeature } from '../../../../../features/enum/SupportedFeature.js';
 import { IServiceContainer } from '../../../../../IServiceContainer.js';
 import { IReplyService } from '../../../../chat/IReplyService.js';
+import { OllamaClient } from '../../../../llm/ollama/OllamaClient.js';
 import { IWorkflow } from '../../models/IWorkflow.js';
+import { songPromptMetadataRequestData, SongPromptMetadataRequestType } from '../../models/music/SongPromptMetadataRequestType.js';
+import { SongPromptTypeRequestType, songPromptTypeRequestTypeData } from '../../models/music/SongPromptTypeRequestType.js';
 import { SerializableRenderRequest } from '../../models/SerializableRenderRequest.js';
 import { IWorkflowMutator } from './IWorkflowMutator.js';
 
@@ -26,9 +29,11 @@ export class MessageToMusicMutator implements IWorkflowMutator {
         return [];
     }
 
+    #ollamaClient: OllamaClient;
     #replyService: IReplyService;
 
     constructor(services: IServiceContainer) {
+        this.#ollamaClient = services.ollamaClient;
         this.#replyService = services.replyService;
     }
 
@@ -41,12 +46,30 @@ export class MessageToMusicMutator implements IWorkflowMutator {
 
         const mutatedRequest = SerializableRenderRequest.fromSerializableRenderRequest(renderRequest);
 
-        if(prompt.indexOf(promptSeparator) > 0) {
+        const songRequestTypeExchange = await this.#ollamaClient.generateStructured<SongPromptTypeRequestType>(prompt, songPromptTypeRequestTypeData);
+        const songPromptMetadataExchange = await this.#ollamaClient.generateStructured<SongPromptMetadataRequestType>(prompt, songPromptMetadataRequestData);
+
+        mutatedRequest.bpm = songPromptMetadataExchange.data.bpm;
+        mutatedRequest.keyScale = songPromptMetadataExchange.data.keyScale;
+        mutatedRequest.timeSignature = songPromptMetadataExchange.data.timeSignature;
+
+        if (prompt.indexOf(promptSeparator) > 0
+        && songRequestTypeExchange.data.promptHasTags
+        && songRequestTypeExchange.data.promptHasLyrics) {
             mutatedRequest.prompt = prompt.split(promptSeparator)[0].trim();
             mutatedRequest.prompt2 = prompt.substring(
                 prompt.indexOf(promptSeparator), prompt.length).trim();
         } else {
-            mutatedRequest.prompt = prompt;
+            if (!songRequestTypeExchange.data.promptHasTags) {
+                mutatedRequest.prompt = songPromptMetadataExchange.data.tags.join(', ');
+            } else {
+                mutatedRequest.prompt = prompt;
+            }
+
+            if (!songRequestTypeExchange.data.promptHasLyrics) {
+                mutatedRequest.prompt2 = songPromptMetadataExchange.data.lyrics;
+            }
+
         }
 
         if (mutatedRequest.durationMin !== undefined
@@ -55,7 +78,6 @@ export class MessageToMusicMutator implements IWorkflowMutator {
         }
 
         mutatedRequest.workflow = workflow.name;
-        mutatedRequest.prompt = prompt;
         mutatedRequest.refreshSeed();
 
         return await Promise.resolve(mutatedRequest);
