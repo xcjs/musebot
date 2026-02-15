@@ -53,6 +53,7 @@ export abstract class BaseTask<T> {
     #maxAttempts = 0;
     #createdTime: Date;
     #startedTime: Date;
+    #dependencies: BaseTask<unknown>[] = [];
 
     constructor(services: IServiceContainer) {
         this.parallelizationStrategy = services.parallelizationStrategy;
@@ -62,6 +63,15 @@ export abstract class BaseTask<T> {
         this.#id = randomUUID();
         this.#createdTime = new Date();
         this.#maxAttempts = services.environmentSettings.maxTaskAttempts;
+    }
+
+    addDependency(task: BaseTask<unknown>) {
+        if(this.#taskStatus !== TaskStatus.Idle) {
+            this.logger.warn('Task dependencies cannot be added after a task has started.');
+            return;
+        }
+
+        this.#dependencies.push(task);
     }
 
     async process(): Promise<void> {
