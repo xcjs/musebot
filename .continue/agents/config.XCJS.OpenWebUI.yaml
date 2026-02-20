@@ -1,6 +1,7 @@
 name: XCJS Open WebUI
 version: 1.0.0
 schema: v1
+
 models:
   - name: XCJS Open WebUI
     provider: openai
@@ -10,7 +11,7 @@ models:
      contextLength: 16384
     model: AUTODETECT
     apiBase: https://llm.home.xcjs.com/api
-    apiKey: '${{secrets.OPEN_WEBUI_TOKEN}}'
+    apiKey: '${{secrets.XCJS_OPENWEBUI_TOKEN}}'
     roles:
       - apply
       - autocomplete
