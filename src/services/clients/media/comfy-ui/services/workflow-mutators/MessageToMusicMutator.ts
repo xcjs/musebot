@@ -88,7 +88,7 @@ export class MessageToMusicMutator implements IWorkflowMutator {
         if(this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
             return {
                 ...(await this.#ollamaClient.generateStructured<SongPromptRequestType>(prompt, songPromptTypeRequestTypeData)).data,
-                // These properties won't be used of LLM support is present.
+                // These properties won't be used if LLM support is present.
                 tags,
                 lyrics
             };
