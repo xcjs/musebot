@@ -1,15 +1,19 @@
 import { AttachmentBuilder, Message } from 'discord.js';
 
 import { BotInteraction } from '../../../../../../enums/BotInteraction.js';
-import { getRandomInt } from '../../../../../../utilities/random-utilities.js';
+import { getRandomArrayEntry, getRandomInt } from '../../../../../../utilities/random-utilities.js';
 import { SupportedFeature } from '../../../../../features/enum/SupportedFeature.js';
+import { IFeatureService } from '../../../../../features/IFeatureService.js';
 import { IServiceContainer } from '../../../../../IServiceContainer.js';
 import { IReplyService } from '../../../../chat/IReplyService.js';
 import { OllamaClient } from '../../../../llm/ollama/OllamaClient.js';
 import { IWorkflow } from '../../models/IWorkflow.js';
-import { songPromptMetadataRequestData, SongPromptMetadataRequestType } from '../../models/music/SongPromptMetadataRequestType.js';
+import { BpmConstants } from '../../models/music/BpmConstants.js';
+import { KeyScale } from '../../models/music/KeyScale.js';
+import { SongPromptMetadata, songPromptMetadataRequestData } from '../../models/music/SongPromptMetadataRequestType.js';
 import { SongPromptType } from '../../models/music/SongPromptType.js';
-import { SongPromptTypeRequestType, songPromptTypeRequestTypeData } from '../../models/music/SongPromptTypeRequestType.js';
+import { SongPromptRequestType, songPromptTypeRequestTypeData } from '../../models/music/SongPromptTypeRequestType.js';
+import { TimeSignature } from '../../models/music/TimeSignature.js';
 import { SerializableRenderRequest } from '../../models/SerializableRenderRequest.js';
 import { IWorkflowMutator } from './IWorkflowMutator.js';
 
@@ -30,10 +34,12 @@ export class MessageToMusicMutator implements IWorkflowMutator {
         return [];
     }
 
+    #featureService: IFeatureService;
     #ollamaClient: OllamaClient;
     #replyService: IReplyService;
 
     constructor(services: IServiceContainer) {
+        this.#featureService = services.featureService;
         this.#ollamaClient = services.ollamaClient;
         this.#replyService = services.replyService;
     }
@@ -41,37 +47,17 @@ export class MessageToMusicMutator implements IWorkflowMutator {
     async mutate(renderRequest: SerializableRenderRequest, interaction: Message, workflow: IWorkflow): Promise<SerializableRenderRequest> {
         const prompt = this.#replyService.getMessageWithoutBotMentions(interaction);
 
-        // Music models can contain up to two prompts - one for music
-        // genre/style and one for lyrics.
-        const promptSeparator = '\n\n';
-
         const mutatedRequest = SerializableRenderRequest.fromSerializableRenderRequest(renderRequest);
 
-        const songRequestTypeExchange = await this.#ollamaClient.generateStructured<SongPromptTypeRequestType>(prompt, songPromptTypeRequestTypeData);
-        const songPromptMetadataExchange = await this.#ollamaClient.generateStructured<SongPromptMetadataRequestType>(prompt, songPromptMetadataRequestData);
+        const songRequestType = await this.#getSongPromptType(prompt);
+        const songPromptMetadata = await this.#getSongPromptMetadata(prompt, songRequestType);
 
-        mutatedRequest.bpm = songPromptMetadataExchange.data.bpm;
-        mutatedRequest.keyScale = songPromptMetadataExchange.data.keyScale;
-        mutatedRequest.timeSignature = songPromptMetadataExchange.data.timeSignature;
+        mutatedRequest.prompt = songPromptMetadata.tags.join(', ');
+        mutatedRequest.prompt2 = songPromptMetadata.lyrics;
 
-        if (prompt.indexOf(promptSeparator) > 0
-        && songRequestTypeExchange.data.promptHasTags
-        && songRequestTypeExchange.data.promptHasLyrics) {
-            mutatedRequest.prompt = prompt.split(promptSeparator)[0].trim();
-            mutatedRequest.prompt2 = prompt.substring(
-                prompt.indexOf(promptSeparator), prompt.length).trim();
-        } else {
-            if (!songRequestTypeExchange.data.promptHasTags) {
-                mutatedRequest.prompt = songPromptMetadataExchange.data.tags.join(', ');
-            } else {
-                mutatedRequest.prompt = prompt;
-            }
-
-            if (songRequestTypeExchange.data.songPromptType === SongPromptType.Lyrical.toString()
-            && !songRequestTypeExchange.data.promptHasLyrics) {
-                mutatedRequest.prompt2 = songPromptMetadataExchange.data.lyrics;
-            }
-        }
+        mutatedRequest.bpm = songPromptMetadata.bpm;
+        mutatedRequest.keyScale = songPromptMetadata.keyScale;
+        mutatedRequest.timeSignature = songPromptMetadata.timeSignature;
 
         if (mutatedRequest.durationMin !== undefined
             && mutatedRequest.durationMax !== undefined) {
@@ -82,5 +68,66 @@ export class MessageToMusicMutator implements IWorkflowMutator {
         mutatedRequest.refreshSeed();
 
         return await Promise.resolve(mutatedRequest);
+    }
+
+    async #getSongPromptType(prompt: string): Promise<SongPromptRequestType & { tags: string[], lyrics: string }> {
+        // Music models can contain up to two prompts - one for music
+        // genre/style and one for lyrics.
+        const promptSeparator = '\n\n';
+        let tags: string[] = []
+        let lyrics = '';
+
+        if (prompt.indexOf(promptSeparator) > 0) {
+            tags = prompt.split(promptSeparator)[0].split(',').map(x => x.trim());
+            lyrics = prompt.substring(
+                prompt.indexOf(promptSeparator), prompt.length).trim();
+        } else {
+            tags = prompt.split(',').map(x => x.trim());
+        }
+
+        if(this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
+            return {
+                ...(await this.#ollamaClient.generateStructured<SongPromptRequestType>(prompt, songPromptTypeRequestTypeData)).data,
+                // These properties won't be used of LLM support is present.
+                tags,
+                lyrics
+            };
+        } else {
+            const promptHasLyrics = lyrics.length > 0;
+
+            return Promise.resolve({
+                songPromptType: promptHasLyrics ? SongPromptType.Lyrical : SongPromptType.Instrumental,
+                promptHasTags: tags.length > 0 ? true : false,
+                promptHasLyrics,
+                tags,
+                lyrics
+            });
+        }
+    }
+
+    async #getSongPromptMetadata(prompt: string, songPromptRequestType: SongPromptRequestType & { tags: string[], lyrics: string }): Promise<SongPromptMetadata> {
+        if(this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
+            const songPromptMetadata = (await this.#ollamaClient.generateStructured<SongPromptMetadata>(prompt, songPromptMetadataRequestData)).data;
+
+            // If user-provided lyrics are present, prioritize those what the
+            // LLM generates. This allows "weird" lyrical prompts to function
+            // as expected.
+            if(songPromptRequestType.promptHasLyrics
+                && songPromptRequestType.lyrics !== songPromptMetadata.lyrics
+            ) {
+                songPromptMetadata.lyrics = songPromptRequestType.lyrics
+            }
+
+            return songPromptMetadata;
+        } else {
+            return Promise.resolve({
+                timeSignature: getRandomArrayEntry(Object.values(TimeSignature)) as TimeSignature,
+                bpm: getRandomInt(BpmConstants.min, BpmConstants.max),
+                keyScale: getRandomArrayEntry(Object.values(KeyScale)),
+                songPromptType: SongPromptType.Instrumental,
+                tags: songPromptRequestType.tags,
+                lyrics: songPromptRequestType.lyrics
+            });
+        }
     }
 }

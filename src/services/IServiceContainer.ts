@@ -8,6 +8,7 @@ import { GenerateRequest, GenerateResponse } from 'ollama';
 
 import { BotInteraction } from '../enums/BotInteraction.js';
 import { IHttpExchange } from '../models/IHttpExchange.js';
+import { IHttpExchangeWithAttachedData } from '../models/IHttpExchangeWithAttachedData.js';
 import { ComfyUiReplyService } from './clients/chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IActionRowBuilderFactory } from './clients/chat/discord/components/IActionRowBuilderFactory.js';
 import { OllamaReplyService } from './clients/chat/discord/ollama/OllamaReplyService.js';
@@ -15,6 +16,7 @@ import { OllamaStreamingReplyService } from './clients/chat/discord/ollama/Ollam
 import { IGenerativeChatClient } from './clients/chat/IGenerativeChatClient.js';
 import { IReplyService } from './clients/chat/IReplyService.js';
 import { ITypingService } from './clients/chat/ITypingService.js';
+import { IStructuredRequestData } from './clients/llm/ollama/models/IStructuredRequestData.js';
 import { OllamaClient } from './clients/llm/ollama/OllamaClient.js';
 import { IContextMessageFactory } from './clients/llm/services/IContextMessageFactory.js';
 import { IContextService } from './clients/llm/services/IContextService.js';
@@ -61,6 +63,8 @@ export interface IServiceContainer {
     getContextMessageFactory<ChatMessageType, LlmMessageType>(): IContextMessageFactory<ChatMessageType, LlmMessageType>;
     getContextService<ChatMessageType, LlmMessageType>(): IContextService<ChatMessageType, LlmMessageType>
     getLlmGenerateTask(prompt: string, temperature: number | undefined): BaseTask<IHttpExchange<GenerateRequest, GenerateResponse>>;
+    getLlmGenerateStructuredTask<T>(prompt: string, structuredRequestData: IStructuredRequestData | undefined)
+        : BaseTask<IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, T>>;
     getEmojiReactionTask(reaction: MessageReaction, user: User): BaseTask<unknown>;
 
     getMessageTask(message: DiscordMessage): BaseTask<unknown>;
