@@ -109,9 +109,9 @@ export class MessageToMusicMutator implements IWorkflowMutator {
         if(this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
             const songPromptMetadata = (await this.#ollamaClient.generateStructured<SongPromptMetadata>(prompt, songPromptMetadataRequestData)).data;
 
-            // If user-provided lyrics are present, prioritize those what the
-            // LLM generates. This allows "weird" lyrical prompts to function
-            // as expected.
+            // If user-provided lyrics are present, prioritize those over what
+            // the LLM generates. This allows "weird" lyrical prompts to
+            // function as expected.
             if(songPromptRequestType.promptHasLyrics
                 && songPromptRequestType.lyrics !== songPromptMetadata.lyrics
             ) {
