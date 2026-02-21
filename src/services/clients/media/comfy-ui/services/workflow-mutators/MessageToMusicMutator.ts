@@ -1,12 +1,14 @@
 import { AttachmentBuilder, Message } from 'discord.js';
+import { GenerateRequest, GenerateResponse } from 'ollama';
 
 import { BotInteraction } from '../../../../../../enums/BotInteraction.js';
+import { IHttpExchangeWithAttachedData } from '../../../../../../models/IHttpExchangeWithAttachedData.js';
 import { getRandomArrayEntry, getRandomInt } from '../../../../../../utilities/random-utilities.js';
 import { SupportedFeature } from '../../../../../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../../../../../features/IFeatureService.js';
 import { IServiceContainer } from '../../../../../IServiceContainer.js';
+import { ITaskQueue } from '../../../../../tasks/ITaskQueue.js';
 import { IReplyService } from '../../../../chat/IReplyService.js';
-import { OllamaClient } from '../../../../llm/ollama/OllamaClient.js';
 import { IWorkflow } from '../../models/IWorkflow.js';
 import { BpmConstants } from '../../models/music/BpmConstants.js';
 import { KeyScale } from '../../models/music/KeyScale.js';
@@ -34,13 +36,15 @@ export class MessageToMusicMutator implements IWorkflowMutator {
         return [];
     }
 
+    #services: IServiceContainer;
     #featureService: IFeatureService;
-    #ollamaClient: OllamaClient;
+    #taskQueue: ITaskQueue;
     #replyService: IReplyService;
 
     constructor(services: IServiceContainer) {
+        this.#services = services;
         this.#featureService = services.featureService;
-        this.#ollamaClient = services.ollamaClient;
+        this.#taskQueue = services.taskQueue;
         this.#replyService = services.replyService;
     }
 
@@ -86,12 +90,20 @@ export class MessageToMusicMutator implements IWorkflowMutator {
         }
 
         if(this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
-            return {
-                ...(await this.#ollamaClient.generateStructured<SongPromptRequestType>(prompt, songPromptTypeRequestTypeData)).data,
-                // These properties won't be used if LLM support is present.
-                tags,
-                lyrics
-            };
+            return new Promise((resolve) => {
+                const task = this.#services.getLlmGenerateStructuredTask<SongPromptRequestType>(prompt, songPromptTypeRequestTypeData);
+
+                const callback = (payload: IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, SongPromptRequestType>) => {
+                    resolve({
+                        ...payload.data,
+                        tags,
+                        lyrics
+                    });
+                };
+
+                task.onSuccess = callback;
+                this.#taskQueue.add(task);
+            });
         } else {
             const promptHasLyrics = lyrics.length > 0;
 
@@ -107,18 +119,25 @@ export class MessageToMusicMutator implements IWorkflowMutator {
 
     async #getSongPromptMetadata(prompt: string, songPromptRequestType: SongPromptRequestType & { tags: string[], lyrics: string }): Promise<SongPromptMetadata> {
         if(this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
-            const songPromptMetadata = (await this.#ollamaClient.generateStructured<SongPromptMetadata>(prompt, songPromptMetadataRequestData)).data;
+            return new Promise((resolve) => {
+                const task = this.#services.getLlmGenerateStructuredTask<SongPromptMetadata>(prompt, songPromptMetadataRequestData);
 
-            // If user-provided lyrics are present, prioritize those over what
-            // the LLM generates. This allows "weird" lyrical prompts to
-            // function as expected.
-            if(songPromptRequestType.promptHasLyrics
-                && songPromptRequestType.lyrics !== songPromptMetadata.lyrics
-            ) {
-                songPromptMetadata.lyrics = songPromptRequestType.lyrics
-            }
+                const callback = (payload: IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, SongPromptMetadata>) => {
+                    // If user-provided lyrics are present, prioritize those over what
+                    // the LLM generates. This allows "weird" lyrical prompts to
+                    // function as expected.
+                    if (songPromptRequestType.promptHasLyrics
+                        && songPromptRequestType.lyrics !== payload.data.lyrics
+                    ) {
+                        payload.data.lyrics = songPromptRequestType.lyrics
+                    }
 
-            return songPromptMetadata;
+                    resolve(payload.data);
+                };
+
+                task.onSuccess = callback;
+                this.#taskQueue.add(task);
+            });
         } else {
             return Promise.resolve({
                 timeSignature: getRandomArrayEntry(Object.values(TimeSignature)) as TimeSignature,
