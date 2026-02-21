@@ -1,6 +1,7 @@
 name: XCJS Ollama (Tailscale)
 version: 1.0.0
 schema: v1
+
 models:
   - name: XCJS Ollama (Tailscale)
     provider: ollama

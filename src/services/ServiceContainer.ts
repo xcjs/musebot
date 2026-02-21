@@ -12,6 +12,7 @@ import { BotFunction } from '../enums/BotFunction.js';
 import { BotInteraction } from '../enums/BotInteraction.js';
 import { TaskQueueStrategy } from '../enums/TaskQueueStrategy.js';
 import { IHttpExchange } from '../models/IHttpExchange.js';
+import { IHttpExchangeWithAttachedData } from '../models/IHttpExchangeWithAttachedData.js';
 import { getRandomArrayEntry } from '../utilities/random-utilities.js';
 import { ComfyUiReplyService } from './clients/chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { ActionRowBuilderFactory } from './clients/chat/discord/components/ActionRowBuilderFactory.js';
@@ -29,8 +30,10 @@ import { IReplyService } from './clients/chat/IReplyService.js';
 import { ITypingService } from './clients/chat/ITypingService.js';
 import { ShowHelpTask } from './clients/internal/tasks/ShowHelpTask.js';
 import { ChatHelpService } from './clients/llm/help/ChatHelpService.js';
+import { IStructuredRequestData } from './clients/llm/ollama/models/IStructuredRequestData.js';
 import { OllamaClient } from './clients/llm/ollama/OllamaClient.js';
 import { OllamaEmojiReactionTask } from './clients/llm/ollama/tasks/OllamaEmojiReactionTask.js';
+import { OllamaGenerateStructuredTask } from './clients/llm/ollama/tasks/OllamaGenerateStructuredTask.js';
 import { OllamaGenerateTask } from './clients/llm/ollama/tasks/OllamaGenerateTask.js';
 import { OllamaMessageTask } from './clients/llm/ollama/tasks/OllamaMessageTask.js';
 import { ContextService } from './clients/llm/services/ContextService.js';
@@ -186,6 +189,14 @@ export class ServiceContainer implements IServiceContainer {
         }
 
         return new OllamaGenerateTask(this, prompt, temperature);
+    }
+
+    getLlmGenerateStructuredTask<T>(prompt: string, structuredRequestData: IStructuredRequestData | undefined): BaseTask<IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, T>> {
+        if (!this.featureService.hasFeature(SupportedFeature.Txt2Txt)) {
+            throw this.#taskNotConfiguredError;
+        }
+
+        return new OllamaGenerateStructuredTask<T>(this, prompt, structuredRequestData);
     }
 
     getEmojiReactionTask(reaction: MessageReaction, user: User): BaseTask<unknown> {

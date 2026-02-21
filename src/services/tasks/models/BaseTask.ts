@@ -53,7 +53,6 @@ export abstract class BaseTask<T> {
     #maxAttempts = 0;
     #createdTime: Date;
     #startedTime: Date;
-    #delayUntil: Date;
 
     constructor(services: IServiceContainer) {
         this.parallelizationStrategy = services.parallelizationStrategy;

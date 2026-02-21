@@ -1,21 +1,19 @@
-name: XCJS Ollama (LAN)
+name: Ollama (localhost)
 version: 1.0.0
 schema: v1
-
 models:
-  - name: XCJS Ollama (LAN)
+  - name: Ollama (localhost)
     provider: ollama
     defaultCompletionOptions:
      contextLength: 16384
     model: AUTODETECT
-    apiBase: http://ai.lan:11434
+    apiBase: http://localhost:11434
     roles:
       - apply
       - autocomplete
       - chat
       - edit
       - summarize
-
 context:
   - provider: code
   - provider: docs

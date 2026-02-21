@@ -1,14 +1,13 @@
-name: XCJS Ollama (LAN)
+name: LeadingEDJE LiteLLM
 version: 1.0.0
 schema: v1
 
 models:
-  - name: XCJS Ollama (LAN)
-    provider: ollama
-    defaultCompletionOptions:
-     contextLength: 16384
+  - name: LeadingEDJE LiteLLM
+    provider: openai
+    apiBase: https://litellm.leadingedje.com/v1
+    apiKey: '${{secrets.LE_LITELLM_TOKEN}}'
     model: AUTODETECT
-    apiBase: http://ai.lan:11434
     roles:
       - apply
       - autocomplete
