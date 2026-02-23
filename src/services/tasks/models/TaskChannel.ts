@@ -9,6 +9,8 @@ export class TaskChannel {
     #name: string;
     #queue: BaseTask<unknown>[] = [];
 
+    #postProcessors: Array<() => Promise<void>> = [];
+
     get name(): string {
         return this.#name;
     }
@@ -34,6 +36,10 @@ export class TaskChannel {
         this.#logger.info(`Created a new task channel called ${name}.`);
     }
 
+    registerPostProcessor(postProcessor: ()=> Promise<void>) {
+        this.#postProcessors.push(postProcessor);
+    }
+
     cleanQueue(): void {
         this.#logger.info(`Removing completed or dead entries from the ${this.#name} channel...`);
 
@@ -46,6 +52,12 @@ export class TaskChannel {
 
         // eslint-disable-next-line @typescript-eslint/unbound-method
         this.#queue = incompleteTasks.sort(this.#compareByDate);
+
+        if(this.#queue.length === 0 && this.#postProcessors.length > 0) {
+            this.#postProcessors.forEach((postProcessor) => {
+                void postProcessor();
+            });
+        }
     }
 
     #compareByDate(a: BaseTask<unknown>, b: BaseTask<unknown>): number {
