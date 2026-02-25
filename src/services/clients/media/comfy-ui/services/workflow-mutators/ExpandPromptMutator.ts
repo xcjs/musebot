@@ -32,9 +32,9 @@ export class ExpandPromptMutator implements IWorkflowMutator {
         return [];
     }
 
-    #services: IServiceContainer;
+    readonly #services: IServiceContainer;
 
-    #taskQueue: ITaskQueue;
+    readonly #taskQueue: ITaskQueue;
 
     #contentMessage = '';
 
