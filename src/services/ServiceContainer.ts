@@ -81,51 +81,51 @@ import { BaseTask } from './tasks/models/BaseTask.js';
 import { TaskQueue } from './tasks/TaskQueue.js';
 
 export class ServiceContainer implements IServiceContainer {
-    #taskNotConfiguredError = new Error('The task you are attempting to instantiate is not supported by your current configuration.');
+    readonly #taskNotConfiguredError = new Error('The task you are attempting to instantiate is not supported by your current configuration.');
 
     // Singletons -------------------------------------------------------------/
 
-    #environmentSettings: IEnvironmentSettings;
+    readonly #environmentSettings: IEnvironmentSettings;
     get environmentSettings(): IEnvironmentSettings {
         return this.#environmentSettings;
     }
 
-    #featureService: IFeatureService;
+    readonly #featureService: IFeatureService;
     get featureService(): IFeatureService {
         return this.#featureService;
     }
 
-    #taskQueue: ITaskQueue;
+    readonly #taskQueue: ITaskQueue;
     get taskQueue(): ITaskQueue {
         return this.#taskQueue;
     }
 
-    #typingService: ITypingService;
+    readonly #typingService: ITypingService;
     get typingService(): ITypingService {
         return this.#typingService;
     }
 
-    #discordClient: DiscordClient;
+    readonly #discordClient: DiscordClient;
     get discordClient(): DiscordClient {
         return this.#discordClient;
     }
 
-    #generativeChatClient: IGenerativeChatClient;
+    readonly #generativeChatClient: IGenerativeChatClient;
     get generativeChatClient(): IGenerativeChatClient {
         return this.#generativeChatClient;
     }
 
-    #helpService: IHelpService;
+    readonly #helpService: IHelpService;
     get helpService(): IHelpService {
         return this.#helpService;
     }
 
-    #workflowService: IWorkflowService;
+    readonly #workflowService: IWorkflowService;
     get workflowService(): IWorkflowService {
         return this.#workflowService;
     }
 
-    #parallelizationStrategy: IParallelizationStrategy;
+    readonly #parallelizationStrategy: IParallelizationStrategy;
     get parallelizationStrategy(): IParallelizationStrategy {
         return this.#parallelizationStrategy;
     }
