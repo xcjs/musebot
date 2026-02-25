@@ -7,13 +7,13 @@ import { ITypingService } from '../../ITypingService.js';
 import { IChannelTypingIndicator } from '../models/IChannelTypingIndicator.js';
 
 export class TypingService implements ITypingService {
-    #taskQueue: ITaskQueue;
-    #logger: ILogger;
+    readonly #taskQueue: ITaskQueue;
+    readonly #logger: ILogger;
 
     #interaction: Message | ButtonInteraction | null = null;
 
-    #sendTypingIntervalMilliseconds = 1000;
-    #typingIndicators: Array<IChannelTypingIndicator> = [];
+    readonly #sendTypingIntervalMilliseconds = 1000;
+    readonly #typingIndicators: Array<IChannelTypingIndicator> = [];
 
     constructor(services: IServiceContainer) {
         this.#taskQueue = services.taskQueue;
