@@ -75,6 +75,10 @@ export class ComfyUiClient {
         return multiMediaResponse;
     }
 
+    async free(): Promise<void> {
+        await this.#client.free();
+    }
+
     async disconnect(): Promise<void> {
         try {
             await this.#client.interrupt();

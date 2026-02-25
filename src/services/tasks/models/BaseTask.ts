@@ -3,6 +3,7 @@ import { randomUUID, UUID } from 'node:crypto';
 import { ILogger } from '../../ILogger.js';
 import { IServiceContainer } from '../../IServiceContainer.js';
 import { IParallelizationStrategy } from '../../parallelization/IParallelizationStrategy.js';
+import { ResourceType } from '../../parallelization/ResourceType.js';
 import { TaskStatus } from '../enums/TaskStatus.js';
 
 export abstract class BaseTask<T> {
@@ -40,6 +41,10 @@ export abstract class BaseTask<T> {
 
     get startedTime(): Date {
         return this.#startedTime;
+    }
+
+    get resourceType(): ResourceType {
+        return ResourceType.None;
     }
 
     set onSuccess(callback: (payload: T) => void) { }

@@ -2,15 +2,15 @@ import { Client as DiscordClient } from 'discord.js';
 
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
-import { ApiResourceType } from '../../../../parallelization/ApiResourceType.js';
 import { IParallelizationStrategy } from '../../../../parallelization/IParallelizationStrategy.js';
+import { ResourceType } from '../../../../parallelization/ResourceType.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 
 export class LoginTask extends BaseTask<void> {
     get taskChannel(): string {
-        return this.#parallelizationStrategy.getTaskChannel(ApiResourceType.Chat, null);
+        return this.#parallelizationStrategy.getTaskChannel(ResourceType.Chat, null);
     }
 
     #services: IServiceContainer;

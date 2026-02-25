@@ -2,7 +2,7 @@ import { AttachmentBuilder, ButtonInteraction } from 'discord.js';
 
 import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
-import { ApiResourceType } from '../../../../parallelization/ApiResourceType.js';
+import { ResourceType } from '../../../../parallelization/ResourceType.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
@@ -16,7 +16,7 @@ export class ShowDescriptionTask extends BaseTask<void> {
     #interaction: ButtonInteraction;
 
     override get taskChannel(): string {
-        return this.parallelizationStrategy.getTaskChannel(ApiResourceType.Chat, null);
+        return this.parallelizationStrategy.getTaskChannel(ResourceType.Chat, null);
     }
 
     constructor(services: IServiceContainer, interaction: ButtonInteraction) {

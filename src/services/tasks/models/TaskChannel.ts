@@ -1,17 +1,17 @@
-import { IEnvironmentSettings } from '../../environment-settings/IEnvironmentSettings.js';
 import { ILogger } from '../../ILogger.js';
 import { IServiceContainer } from '../../IServiceContainer.js';
+import { ITaskChannelPostProcessor } from '../../parallelization/ITaskChannelPostProcessor.js';
 import { TaskStatus } from '../enums/TaskStatus.js';
-import { ITaskQueue } from '../ITaskQueue.js';
 import { BaseTask } from './BaseTask.js';
 
 export class TaskChannel {
-    #environmentSettings: IEnvironmentSettings;
-    #taskQueue: ITaskQueue;
+    #services: IServiceContainer;
+
     #logger: ILogger;
 
     #name: string;
     #queue: BaseTask<unknown>[] = [];
+    #postProcessor: ITaskChannelPostProcessor | null = null;
 
     get name(): string {
         return this.#name;
@@ -31,9 +31,9 @@ export class TaskChannel {
     }
 
     constructor(services: IServiceContainer, name: string) {
+        this.#services = services;
+
         this.#logger = services.getLogger('TaskChannel');
-        this.#environmentSettings = services.environmentSettings;
-        this.#taskQueue = services.taskQueue;
 
         this.#name = name;
 
@@ -42,6 +42,10 @@ export class TaskChannel {
 
     cleanQueue(): void {
         this.#logger.info(`Removing completed or dead entries from the ${this.#name} channel...`);
+
+        if(this.hasTasks && this.#postProcessor === null) {
+            this.#postProcessor = this.#services.getTaskChannelPostProcessor(this.#queue[0].resourceType);
+        }
 
         const incompleteTasks = this.#queue.filter(task => {
             if (task.taskStatus === TaskStatus.Idle
@@ -52,6 +56,10 @@ export class TaskChannel {
 
         // eslint-disable-next-line @typescript-eslint/unbound-method
         this.#queue = incompleteTasks.sort(this.#compareByDate);
+
+        if(!this.hasTasks) {
+            void this.#postProcessor.postProcess();
+        }
     }
 
     #compareByDate(a: BaseTask<unknown>, b: BaseTask<unknown>): number {

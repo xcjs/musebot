@@ -1,17 +1,17 @@
-import { ApiResourceType } from './ApiResourceType.js';
 import { IParallelizationStrategy } from './IParallelizationStrategy.js';
+import { ResourceType } from './ResourceType.js';
 
 export class SerialStrategy implements IParallelizationStrategy {
     constructor() {
 
     }
 
-    getTaskChannel(resourceType: ApiResourceType, resourceUrl: URL | null = null): string {
+    getTaskChannel(resourceType: ResourceType, resourceUrl: URL | null = null): string {
         const parts: string[] = [];
 
-        if (resourceType === ApiResourceType.LargeLanguageModel
-            || resourceType === ApiResourceType.Media) {
-            resourceType = ApiResourceType.GenerativeAI
+        if (resourceType === ResourceType.LargeLanguageModel
+            || resourceType === ResourceType.Media) {
+            resourceType = ResourceType.GenerativeAI
         }
 
         parts.push(resourceType);

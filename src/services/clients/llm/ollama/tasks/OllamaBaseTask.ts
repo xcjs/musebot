@@ -3,7 +3,7 @@ import { Message as OllamaMessage } from 'ollama';
 
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
-import { ApiResourceType } from '../../../../parallelization/ApiResourceType.js';
+import { ResourceType } from '../../../../parallelization/ResourceType.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { OllamaReplyService } from '../../../chat/discord/ollama/OllamaReplyService.js';
 import { OllamaStreamingReplyService } from '../../../chat/discord/ollama/OllamaStreamingReplyService.js';
@@ -14,7 +14,11 @@ import { OllamaClient } from '../OllamaClient.js';
 
 export abstract class OllamaBaseTask<T> extends BaseTask<T> {
     override get taskChannel(): string {
-        return this.parallelizationStrategy.getTaskChannel(ApiResourceType.LargeLanguageModel, this.ollamaClient.host);
+        return this.parallelizationStrategy.getTaskChannel(this.resourceType, this.ollamaClient.host);
+    }
+
+    override get resourceType(): ResourceType | null {
+        return ResourceType.LargeLanguageModel;
     }
 
     environmentSettings: IEnvironmentSettings;
