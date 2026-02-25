@@ -2,6 +2,7 @@ import { randomUUID, UUID } from 'node:crypto';
 
 import { ILogger } from '../../ILogger.js';
 import { IServiceContainer } from '../../IServiceContainer.js';
+import { ApiResourceType } from '../../parallelization/ApiResourceType.js';
 import { IParallelizationStrategy } from '../../parallelization/IParallelizationStrategy.js';
 import { TaskStatus } from '../enums/TaskStatus.js';
 
@@ -40,6 +41,10 @@ export abstract class BaseTask<T> {
 
     get startedTime(): Date {
         return this.#startedTime;
+    }
+
+    get apiResourceType(): ApiResourceType | null {
+        return null;
     }
 
     set onSuccess(callback: (payload: T) => void) { }

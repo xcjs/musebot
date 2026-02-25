@@ -1,11 +1,17 @@
 import { ComfyUIClient, Prompt } from 'comfy-ui-client';
 import WebSocket from 'ws';
 
+import { ContentType } from '../../../../../enums/ContentType.js';
+import { HttpHeader } from '../../../../../enums/HttpHeader.js';
+import { HttpMethod } from '../../../../../enums/HttpMethod.js';
+import { IFreeMemoryRequest } from '../models/requests/IFreeMemoryRequest.js';
 import { ComfyUiMessage, ComfyUiMessageType } from './ComfyUiMessage.js';
 import { MediaCollectionResponse, MediaContainer, OutputMedia } from './MediaResponse.js';
 import { SupportedNode } from './SupportedNode.js';
 
 export class ExtendedComfyUIClient extends ComfyUIClient {
+    #baseUrl = `http://${this.serverAddress}/`;
+
     async getMultiMedia(prompt: Prompt): Promise<MediaCollectionResponse> {
         if (!this.ws) {
             throw new Error(
@@ -90,7 +96,7 @@ export class ExtendedComfyUIClient extends ComfyUIClient {
         type: string,
     ): Promise<Blob> {
         const res = await fetch(
-            `http://${this.serverAddress}/view?` +
+            `${this.#baseUrl}view?` +
             new URLSearchParams({
                 filename,
                 subfolder,
@@ -100,5 +106,20 @@ export class ExtendedComfyUIClient extends ComfyUIClient {
 
         const blob = await res.blob();
         return blob;
+    }
+
+    async free(): Promise<void> {
+        const requestBody: IFreeMemoryRequest = {
+            unload_models: true,
+            free_memory: true
+        };
+
+        await fetch(`${this.#baseUrl}free`, {
+            method: HttpMethod.Post,
+            headers: {
+                [HttpHeader.ContentType]: ContentType.Json
+            },
+            body: JSON.stringify(requestBody)
+        });
     }
 }

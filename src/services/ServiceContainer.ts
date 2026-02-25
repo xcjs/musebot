@@ -70,6 +70,7 @@ import { ILogger } from './ILogger.js';
 import { IServiceContainer } from './IServiceContainer.js';
 import { Logger } from './Logger.js';
 import { IParallelizationStrategy } from './parallelization/IParallelizationStrategy.js';
+import { ITaskChannelPostProcessor } from './parallelization/ITaskChannelPostProcessor.js';
 import { ParallelStrategy } from './parallelization/ParallelStrategy.js';
 import { SerialStrategy } from './parallelization/SerialStrategy.js';
 import { ITaskQueue } from './tasks/ITaskQueue.js';
@@ -124,6 +125,10 @@ export class ServiceContainer implements IServiceContainer {
     #parallelizationStrategy: IParallelizationStrategy;
     get parallelizationStrategy(): IParallelizationStrategy {
         return this.#parallelizationStrategy;
+    }
+
+    getTaskChannelPostProcessor(): ITaskChannelPostProcessor {
+
     }
 
     // Transients -------------------------------------------------------------/
