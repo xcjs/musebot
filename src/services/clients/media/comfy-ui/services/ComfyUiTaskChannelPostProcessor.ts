@@ -2,7 +2,7 @@ import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { ITaskChannelPostProcessor } from '../../../../parallelization/ITaskChannelPostProcessor.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
 
-export class ComfyUiPostProcessor implements ITaskChannelPostProcessor {
+export class ComfyUiTaskChannelPostProcessor implements ITaskChannelPostProcessor {
   #comfyUiClient: ComfyUiClient;
 
   constructor(services: IServiceContainer) {

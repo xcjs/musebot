@@ -1,6 +1,6 @@
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
-import { ApiResourceType } from '../../../../parallelization/ApiResourceType.js';
+import { ResourceType } from '../../../../parallelization/ResourceType.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
@@ -9,11 +9,11 @@ import { IWorkflowService } from '../services/IWorkflowService.js';
 
 export abstract class ComfyUiBaseTask extends BaseTask<void> {
     override get taskChannel(): string {
-        return this.parallelizationStrategy.getTaskChannel(this.apiResourceType, this.comfyUiClient.host);
+        return this.parallelizationStrategy.getTaskChannel(this.resourceType, this.comfyUiClient.host);
     }
 
-    override get apiResourceType(): ApiResourceType | null {
-        return ApiResourceType.Media;
+    override get resourceType(): ResourceType | null {
+        return ResourceType.Media;
     }
 
     environmentSettings: IEnvironmentSettings;

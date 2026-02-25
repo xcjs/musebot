@@ -41,6 +41,7 @@ import { IContextMessageFactory } from './clients/llm/services/IContextMessageFa
 import { IContextService } from './clients/llm/services/IContextService.js';
 import { ComfyUiClient } from './clients/media/comfy-ui/ComfyUiClient.js';
 import { IWorkflow } from './clients/media/comfy-ui/models/IWorkflow.js';
+import { ComfyUiTaskChannelPostProcessor } from './clients/media/comfy-ui/services/ComfyUiTaskChannelPostProcessor.js';
 import { IWorkflowService } from './clients/media/comfy-ui/services/IWorkflowService.js';
 import { ContextualMediaMutator } from './clients/media/comfy-ui/services/workflow-mutators/ContextualMediaMutator.js';
 import { ExpandPromptMutator } from './clients/media/comfy-ui/services/workflow-mutators/ExpandPromptMutator.js';
@@ -71,7 +72,9 @@ import { IServiceContainer } from './IServiceContainer.js';
 import { Logger } from './Logger.js';
 import { IParallelizationStrategy } from './parallelization/IParallelizationStrategy.js';
 import { ITaskChannelPostProcessor } from './parallelization/ITaskChannelPostProcessor.js';
+import { NoOpTaskChannelPostProcessor } from './parallelization/NoOpTaskChannelPostProcessor.js';
 import { ParallelStrategy } from './parallelization/ParallelStrategy.js';
+import { ResourceType } from './parallelization/ResourceType.js';
 import { SerialStrategy } from './parallelization/SerialStrategy.js';
 import { ITaskQueue } from './tasks/ITaskQueue.js';
 import { BaseTask } from './tasks/models/BaseTask.js';
@@ -125,10 +128,6 @@ export class ServiceContainer implements IServiceContainer {
     #parallelizationStrategy: IParallelizationStrategy;
     get parallelizationStrategy(): IParallelizationStrategy {
         return this.#parallelizationStrategy;
-    }
-
-    getTaskChannelPostProcessor(): ITaskChannelPostProcessor {
-
     }
 
     // Transients -------------------------------------------------------------/
@@ -290,6 +289,16 @@ export class ServiceContainer implements IServiceContainer {
             return getRandomArrayEntry(supportedMutators);
         } else {
             throw this.#taskNotConfiguredError;
+        }
+    }
+
+    getTaskChannelPostProcessor(resourceType: ResourceType): ITaskChannelPostProcessor {
+        switch (resourceType) {
+            case ResourceType.Media:
+            case ResourceType.GenerativeAI:
+                return new ComfyUiTaskChannelPostProcessor(this);
+            default:
+                return new NoOpTaskChannelPostProcessor();
         }
     }
 

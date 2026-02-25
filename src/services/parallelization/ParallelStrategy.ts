@@ -1,4 +1,4 @@
-import { ApiResourceType } from './ApiResourceType.js';
+import { ResourceType } from './ResourceType.js';
 import { IParallelizationStrategy } from './IParallelizationStrategy.js';
 
 export class ParallelStrategy implements IParallelizationStrategy {
@@ -6,7 +6,7 @@ export class ParallelStrategy implements IParallelizationStrategy {
 
     }
 
-    getTaskChannel(resourceType: ApiResourceType, resourceUrl: URL | null): string {
+    getTaskChannel(resourceType: ResourceType, resourceUrl: URL | null): string {
         const parts: string[] = [];
         parts.push(resourceType);
 

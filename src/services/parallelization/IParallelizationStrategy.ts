@@ -1,5 +1,5 @@
-import { ApiResourceType } from './ApiResourceType.js';
+import { ResourceType } from './ResourceType.js';
 
 export interface IParallelizationStrategy {
-    getTaskChannel(resourceType: ApiResourceType, resourceUrl: URL | null): string;
+    getTaskChannel(resourceType: ResourceType, resourceUrl: URL | null): string;
 }

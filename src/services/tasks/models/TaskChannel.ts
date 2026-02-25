@@ -1,15 +1,17 @@
 import { ILogger } from '../../ILogger.js';
 import { IServiceContainer } from '../../IServiceContainer.js';
+import { ITaskChannelPostProcessor } from '../../parallelization/ITaskChannelPostProcessor.js';
 import { TaskStatus } from '../enums/TaskStatus.js';
 import { BaseTask } from './BaseTask.js';
 
 export class TaskChannel {
+    #services: IServiceContainer;
+
     #logger: ILogger;
 
     #name: string;
     #queue: BaseTask<unknown>[] = [];
-
-    #postProcessors: Array<() => Promise<void>> = [];
+    #postProcessor: ITaskChannelPostProcessor | null = null;
 
     get name(): string {
         return this.#name;
@@ -29,6 +31,8 @@ export class TaskChannel {
     }
 
     constructor(services: IServiceContainer, name: string) {
+        this.#services = services;
+
         this.#logger = services.getLogger('TaskChannel');
 
         this.#name = name;
@@ -36,12 +40,12 @@ export class TaskChannel {
         this.#logger.info(`Created a new task channel called ${name}.`);
     }
 
-    registerPostProcessor(postProcessor: ()=> Promise<void>) {
-        this.#postProcessors.push(postProcessor);
-    }
-
     cleanQueue(): void {
         this.#logger.info(`Removing completed or dead entries from the ${this.#name} channel...`);
+
+        if(this.hasTasks && this.#postProcessor === null) {
+            this.#postProcessor = this.#services.getTaskChannelPostProcessor(this.#queue[0].resourceType);
+        }
 
         const incompleteTasks = this.#queue.filter(task => {
             if (task.taskStatus === TaskStatus.Idle
@@ -53,10 +57,8 @@ export class TaskChannel {
         // eslint-disable-next-line @typescript-eslint/unbound-method
         this.#queue = incompleteTasks.sort(this.#compareByDate);
 
-        if(this.#queue.length === 0 && this.#postProcessors.length > 0) {
-            this.#postProcessors.forEach((postProcessor) => {
-                void postProcessor();
-            });
+        if(!this.hasTasks) {
+            void this.#postProcessor.postProcess();
         }
     }
 

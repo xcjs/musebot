@@ -1,9 +1,11 @@
-export enum ApiResourceType {
-    // Split Resource Types
+export enum ResourceType {
+    None = 'none',
+
+    // Atomic Resource Types
     Chat = 'Chat',
     Media = 'Media',
     LargeLanguageModel = 'LargeLanguageModel',
 
-    // Combined Resource Types
+    // Merged Resource Types
     GenerativeAI = 'GenerativeAI'
 }

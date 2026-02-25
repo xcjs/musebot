@@ -30,6 +30,8 @@ import { IFeatureService } from './features/IFeatureService.js';
 import { IHelpService } from './help/IHelpService.js';
 import { ILogger } from './ILogger.js';
 import { IParallelizationStrategy } from './parallelization/IParallelizationStrategy.js';
+import { ITaskChannelPostProcessor } from './parallelization/ITaskChannelPostProcessor.js';
+import { ResourceType } from './parallelization/ResourceType.js';
 import { ITaskQueue } from './tasks/ITaskQueue.js';
 import { BaseTask } from './tasks/models/BaseTask.js';
 
@@ -73,4 +75,6 @@ export interface IServiceContainer {
     getCustomInteractionTask(interaction: ButtonInteraction, workflow: IWorkflow): BaseTask<unknown>;
 
     getWorkflowMutator(interactionType: BotInteraction, workflow: IWorkflow): IWorkflowMutator;
+
+    getTaskChannelPostProcessor(resourceType: ResourceType): ITaskChannelPostProcessor;
 }
