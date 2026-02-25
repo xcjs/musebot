@@ -1,5 +1,5 @@
-import { ResourceType } from './ResourceType.js';
 import { IParallelizationStrategy } from './IParallelizationStrategy.js';
+import { ResourceType } from './ResourceType.js';
 
 export class ParallelStrategy implements IParallelizationStrategy {
     constructor() {
