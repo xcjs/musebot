@@ -161,23 +161,6 @@ export class OllamaClient {
         }
     }
 
-    async free(): Promise<void> {
-        const request: GenerateRequest = {
-            prompt: '',
-            model: this.#model,
-            keep_alive: 0
-        };
-
-        this.#logger.info('Unloading Ollama model and releasing memory.');
-
-        try {
-            await this.#client.generate({ ...request, stream: false });
-        } catch (error) {
-            this.#logger.error('Failed unload Ollama model:', error);
-            throw new Error(error as string);
-        }
-    }
-
     static calculateTokensPerSecond(response: ChatResponse): number {
         return response.eval_count / response.eval_duration * (10 ** 9);
     }
