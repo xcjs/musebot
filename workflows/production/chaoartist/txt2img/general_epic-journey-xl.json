@@ -4,9 +4,9 @@
     "promptNegative": "",
     "model": "",
     "seed": -1,
-    "width": 512,
-    "height": 512,
-    "sampler": "euler_ancestral",
+    "width": 1024,
+    "height": 1024,
+    "sampler": "dpmpp_2m_sde",
     "scheduler": "sgm_uniform",
     "cfgScale": 6,
     "steps": 30,
@@ -14,7 +14,7 @@
   },
   "4": {
     "inputs": {
-      "ckpt_name": "SDXL/Pixel/aziibpixelmixXL_v10.safetensors"
+      "ckpt_name": "SDXL/General/epicjourneyXL_v1PromptMeIDeliver.safetensors"
     },
     "class_type": "CheckpointLoaderSimple",
     "_meta": {
@@ -34,7 +34,7 @@
   },
   "6": {
     "inputs": {
-      "text": "{{{ prompt }}}, score_9, score_8_up, score_7_up, score_6_up, score_5_up, score_4_up, pixel art",
+      "text": "{{{ prompt }}}",
       "clip": [
         "4",
         1
@@ -47,7 +47,7 @@
   },
   "7": {
     "inputs": {
-      "text": "art, bad anatomy, bad hands, disfigured, text, logo, watermark, 3d, ugly, low quality, bad pose, blur, blurry, motion blur, bad-hands-5, noise, jpeg, jpg, {{{ promptNegative }}}",
+      "text": "deformed iris, deformed pupils, semi-realistic, cgi, 3d, render, sketch, cartoon, drawing, anime:1.4), text, close up, cropped, out of frame, worst quality, low quality, jpeg artifacts, ugly, duplicate, morbid, mutilated, extra fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, blurry, dehydrated, bad anatomy, bad proportions, extra limbs, cloned face, disfigured, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, {{{ promptNegative }}}",
       "clip": [
         "4",
         1
@@ -129,7 +129,7 @@
   },
   "101": {
     "inputs": {
-      "filename_prefix": "Musebot_Pixelator_PixelMix",
+      "filename_prefix": "Musebot",
       "images": ["8", 0]
     },
     "class_type": "SaveImage",

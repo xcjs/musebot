@@ -36,10 +36,10 @@ export class MessageToMusicMutator implements IWorkflowMutator {
         return [];
     }
 
-    #services: IServiceContainer;
-    #featureService: IFeatureService;
-    #taskQueue: ITaskQueue;
-    #replyService: IReplyService;
+    readonly #services: IServiceContainer;
+    readonly #featureService: IFeatureService;
+    readonly #taskQueue: ITaskQueue;
+    readonly #replyService: IReplyService;
 
     constructor(services: IServiceContainer) {
         this.#services = services;
@@ -107,13 +107,13 @@ export class MessageToMusicMutator implements IWorkflowMutator {
         } else {
             const promptHasLyrics = lyrics.length > 0;
 
-            return Promise.resolve({
+            return {
                 songPromptType: promptHasLyrics ? SongPromptType.Lyrical : SongPromptType.Instrumental,
-                promptHasTags: tags.length > 0 ? true : false,
+                promptHasTags: tags.length > 0,
                 promptHasLyrics,
                 tags,
                 lyrics
-            });
+            };
         }
     }
 
@@ -139,14 +139,13 @@ export class MessageToMusicMutator implements IWorkflowMutator {
                 this.#taskQueue.add(task);
             });
         } else {
-            return Promise.resolve({
+            return {
                 timeSignature: getRandomArrayEntry(Object.values(TimeSignature)) as TimeSignature,
                 bpm: getRandomInt(BpmConstants.min, BpmConstants.max),
                 keyScale: getRandomArrayEntry(Object.values(KeyScale)),
-                songPromptType: SongPromptType.Instrumental,
                 tags: songPromptRequestType.tags,
                 lyrics: songPromptRequestType.lyrics
-            });
+            };
         }
     }
 }

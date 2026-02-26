@@ -14,8 +14,8 @@
   },
   "103": {
     "inputs": {
-      "filename_prefix": "Musebot_Wallpaperer",
-      "images": ["110", 0]
+      "filename_prefix": "Musebot_Goliath_QwenImage",
+      "images": ["109", 0]
     },
     "class_type": "SaveImage",
     "_meta": {
@@ -92,15 +92,6 @@
     "class_type": "VAEDecode",
     "_meta": {
       "title": "VAE Decode"
-    }
-  },
-  "110": {
-    "inputs": {
-      "value": ["109", 0]
-    },
-    "class_type": "UnloadAllModels",
-    "_meta": {
-      "title": "UnloadAllModels"
     }
   },
   "113": {

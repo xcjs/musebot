@@ -37,13 +37,13 @@ export class RandomPromptMutator implements IWorkflowMutator {
         return this.#additionalAttachments;
     }
 
-    #services: IServiceContainer;
+    readonly #services: IServiceContainer;
 
-    #environmentSettings: IEnvironmentSettings;
-    #taskQueue: ITaskQueue;
+    readonly #environmentSettings: IEnvironmentSettings;
+    readonly #taskQueue: ITaskQueue;
 
     #contentMessage = '';
-    #additionalAttachments: AttachmentBuilder[] = [];
+    readonly #additionalAttachments: AttachmentBuilder[] = [];
 
     constructor(services: IServiceContainer) {
         this.#services = services;

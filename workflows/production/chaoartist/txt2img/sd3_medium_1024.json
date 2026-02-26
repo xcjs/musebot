@@ -4,17 +4,17 @@
     "promptNegative": "",
     "model": "",
     "seed": -1,
-    "width": 512,
-    "height": 512,
-    "sampler": "euler_ancestral",
+    "width": 1024,
+    "height": 1024,
+    "sampler": "dpmpp_2m",
     "scheduler": "sgm_uniform",
-    "cfgScale": 6,
-    "steps": 30,
+    "cfgScale": 3.5,
+    "steps": 28,
     "num": 1
   },
   "4": {
     "inputs": {
-      "ckpt_name": "SDXL/Pixel/aziibpixelmixXL_v10.safetensors"
+      "ckpt_name": "SD3.5/sd3.5_medium.safetensors"
     },
     "class_type": "CheckpointLoaderSimple",
     "_meta": {
@@ -27,18 +27,15 @@
       "height": "{{{ height }}}",
       "batch_size": "{{{ num }}}"
     },
-    "class_type": "EmptyLatentImage",
+    "class_type": "EmptySD3LatentImage",
     "_meta": {
-      "title": "Empty Latent Image"
+      "title": "EmptySD3LatentImage"
     }
   },
   "6": {
     "inputs": {
-      "text": "{{{ prompt }}}, score_9, score_8_up, score_7_up, score_6_up, score_5_up, score_4_up, pixel art",
-      "clip": [
-        "4",
-        1
-      ]
+      "text": "{{{ prompt }}}",
+      "clip": ["101", 0]
     },
     "class_type": "CLIPTextEncode",
     "_meta": {
@@ -47,11 +44,8 @@
   },
   "7": {
     "inputs": {
-      "text": "art, bad anatomy, bad hands, disfigured, text, logo, watermark, 3d, ugly, low quality, bad pose, blur, blurry, motion blur, bad-hands-5, noise, jpeg, jpg, {{{ promptNegative }}}",
-      "clip": [
-        "4",
-        1
-      ]
+      "text": "{{{ promptNegative }}}",
+      "clip": ["101", 0]
     },
     "class_type": "CLIPTextEncode",
     "_meta": {
@@ -60,14 +54,8 @@
   },
   "8": {
     "inputs": {
-      "samples": [
-        "10",
-        0
-      ],
-      "vae": [
-        "4",
-        2
-      ]
+      "samples": ["10", 0],
+      "vae": ["4", 2]
     },
     "class_type": "VAEDecode",
     "_meta": {
@@ -93,22 +81,10 @@
       "previews": "default",
       "tile_sample": false,
       "tile_size": 1024,
-      "model": [
-        "4",
-        0
-      ],
-      "positive": [
-        "6",
-        0
-      ],
-      "negative": [
-        "100",
-        0
-      ],
-      "latent_image": [
-        "5",
-        0
-      ]
+      "model": ["100", 0],
+      "positive": ["6", 0],
+      "negative": ["102", 0],
+      "latent_image": ["5", 0]
     },
     "class_type": "SwarmKSampler",
     "_meta": {
@@ -117,19 +93,37 @@
   },
   "100": {
     "inputs": {
-      "conditioning": [
-        "7",
-        0
-      ]
+      "shift": 3,
+      "model": ["4", 0]
+    },
+    "class_type": "ModelSamplingSD3",
+    "_meta": {
+      "title": "ModelSamplingSD3"
+    }
+  },
+  "101": {
+    "inputs": {
+      "clip_name1": "clip_g.safetensors",
+      "clip_name2": "clip_l.safetensors",
+      "clip_name3": "t5xxl_enconly.safetensors"
+    },
+    "class_type": "TripleCLIPLoader",
+    "_meta": {
+      "title": "TripleCLIPLoader"
+    }
+  },
+  "102": {
+    "inputs": {
+      "conditioning": ["7", 0]
     },
     "class_type": "ConditioningZeroOut",
     "_meta": {
       "title": "ConditioningZeroOut"
     }
   },
-  "101": {
+  "103": {
     "inputs": {
-      "filename_prefix": "Musebot_Pixelator_PixelMix",
+      "filename_prefix": "Musebot_SD3_Medium",
       "images": ["8", 0]
     },
     "class_type": "SaveImage",

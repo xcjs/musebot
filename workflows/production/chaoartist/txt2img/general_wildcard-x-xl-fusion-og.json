@@ -4,17 +4,17 @@
     "promptNegative": "",
     "model": "",
     "seed": -1,
-    "width": 512,
-    "height": 512,
-    "sampler": "euler_ancestral",
-    "scheduler": "sgm_uniform",
-    "cfgScale": 6,
-    "steps": 30,
+    "width": 1024,
+    "height": 1024,
+    "sampler": "dpmpp_sde",
+    "scheduler": "karras",
+    "cfgScale": 7,
+    "steps": 32,
     "num": 1
   },
   "4": {
     "inputs": {
-      "ckpt_name": "SDXL/Pixel/aziibpixelmixXL_v10.safetensors"
+      "ckpt_name": "SDXL/General/wildcardxXLFusion_fusionOG.safetensors"
     },
     "class_type": "CheckpointLoaderSimple",
     "_meta": {
@@ -34,7 +34,7 @@
   },
   "6": {
     "inputs": {
-      "text": "{{{ prompt }}}, score_9, score_8_up, score_7_up, score_6_up, score_5_up, score_4_up, pixel art",
+      "text": "{{{ prompt }}}",
       "clip": [
         "4",
         1
@@ -47,7 +47,7 @@
   },
   "7": {
     "inputs": {
-      "text": "art, bad anatomy, bad hands, disfigured, text, logo, watermark, 3d, ugly, low quality, bad pose, blur, blurry, motion blur, bad-hands-5, noise, jpeg, jpg, {{{ promptNegative }}}",
+      "text": "canvas frame, cartoon, 3d, ((disfigured)), ((bad art)), ((deformed)),((extra limbs)),((close up)),((b&w)), wierd colors, blurry, (((duplicate))), ((morbid)), ((mutilated)), [out of frame], extra fingers, mutated hands, ((poorly drawn hands)), ((poorly drawn face)), (((mutation))), (((deformed))), ((ugly)), blurry, ((bad anatomy)), (((bad proportions))), ((extra limbs)), cloned face, (((disfigured))), out of frame, ugly, extra limbs, (bad anatomy), gross proportions, (malformed limbs), ((missing arms)), ((missing legs)), (((extra arms))), (((extra legs))), mutated hands, (fused fingers), (too many fingers), (((long neck))), Photoshop, video game, ugly, tiling, poorly drawn hands, poorly drawn feet, poorly drawn face, out of frame, mutation, mutated, extra limbs, extra legs, extra arms, disfigured, deformed, cross-eye, body out of frame, blurry, bad art, bad anatomy, 3d render, {{{ promptNegative }}}",
       "clip": [
         "4",
         1
@@ -129,7 +129,7 @@
   },
   "101": {
     "inputs": {
-      "filename_prefix": "Musebot_Pixelator_PixelMix",
+      "filename_prefix": "Musebot",
       "images": ["8", 0]
     },
     "class_type": "SaveImage",

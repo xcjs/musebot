@@ -4,17 +4,17 @@
     "promptNegative": "",
     "model": "",
     "seed": -1,
-    "width": 512,
-    "height": 512,
-    "sampler": "euler_ancestral",
+    "width": 1024,
+    "height": 1024,
+    "sampler": "dpmpp_2m_sde",
     "scheduler": "sgm_uniform",
-    "cfgScale": 6,
+    "cfgScale": 5,
     "steps": 30,
     "num": 1
   },
   "4": {
     "inputs": {
-      "ckpt_name": "SDXL/Pixel/aziibpixelmixXL_v10.safetensors"
+      "ckpt_name": "SDXL/Anime/animaPencilXL_v500.safetensors"
     },
     "class_type": "CheckpointLoaderSimple",
     "_meta": {
@@ -34,7 +34,7 @@
   },
   "6": {
     "inputs": {
-      "text": "{{{ prompt }}}, score_9, score_8_up, score_7_up, score_6_up, score_5_up, score_4_up, pixel art",
+      "text": "{{{ prompt }}}",
       "clip": [
         "4",
         1
@@ -47,7 +47,7 @@
   },
   "7": {
     "inputs": {
-      "text": "art, bad anatomy, bad hands, disfigured, text, logo, watermark, 3d, ugly, low quality, bad pose, blur, blurry, motion blur, bad-hands-5, noise, jpeg, jpg, {{{ promptNegative }}}",
+      "text": "{{{ promptNegative }}}",
       "clip": [
         "4",
         1
@@ -129,8 +129,11 @@
   },
   "101": {
     "inputs": {
-      "filename_prefix": "Musebot_Pixelator_PixelMix",
-      "images": ["8", 0]
+      "filename_prefix": "Musebot",
+      "images": [
+        "8",
+        0
+      ]
     },
     "class_type": "SaveImage",
     "_meta": {
