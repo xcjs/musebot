@@ -182,7 +182,7 @@
       "lossless": true,
       "quality": 95,
       "method": "default",
-      "images": ["108", 0]
+      "images": ["105", 0]
     },
     "class_type": "SaveAnimatedWEBP",
     "_meta": {
@@ -190,15 +190,6 @@
     }
   },
   "108": {
-    "inputs": {
-      "value": ["105", 0]
-    },
-    "class_type": "UnloadAllModels",
-    "_meta": {
-      "title": "UnloadAllModels"
-    }
-  },
-  "109": {
     "inputs": {
       "filename_prefix": "Musebot_Dreamshaper",
       "images": ["8", 0]

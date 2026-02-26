@@ -129,20 +129,8 @@
   },
   "101": {
     "inputs": {
-      "value": [
-        "8",
-        0
-      ]
-    },
-    "class_type": "UnloadAllModels",
-    "_meta": {
-      "title": "UnloadAllModels"
-    }
-  },
-  "102": {
-    "inputs": {
       "filename_prefix": "Musebot",
-      "images": ["101", 0]
+      "images": ["8", 0]
     },
     "class_type": "SaveImage",
     "_meta": {

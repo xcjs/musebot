@@ -129,21 +129,9 @@
   },
   "101": {
     "inputs": {
-      "value": [
-        "8",
-        0
-      ]
-    },
-    "class_type": "UnloadAllModels",
-    "_meta": {
-      "title": "UnloadAllModels"
-    }
-  },
-  "102": {
-    "inputs": {
       "filename_prefix": "Musebot_Dreamshaper",
       "images": [
-        "101",
+        "8",
         0
       ]
     },
