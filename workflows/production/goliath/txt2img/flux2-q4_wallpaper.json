@@ -136,17 +136,8 @@
   },
   "71": {
     "inputs": {
-      "value": ["8", 0]
-    },
-    "class_type": "UnloadAllModels",
-    "_meta": {
-      "title": "UnloadAllModels"
-    }
-  },
-  "76": {
-    "inputs": {
       "filename_prefix": "Musebot_Goliath_Flux2",
-      "images": ["71", 0]
+      "images": ["8", 0]
     },
     "class_type": "SaveImage",
     "_meta": {

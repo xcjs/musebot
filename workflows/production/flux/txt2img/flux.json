@@ -129,20 +129,11 @@
   "107": {
     "inputs": {
       "filename_prefix": "Musebot_Flux",
-      "images": ["108", 0]
+      "images": ["8", 0]
     },
     "class_type": "SaveImage",
     "_meta": {
       "title": "Save Image"
-    }
-  },
-  "108": {
-    "inputs": {
-      "value": ["8", 0]
-    },
-    "class_type": "UnloadAllModels",
-    "_meta": {
-      "title": "UnloadAllModels"
     }
   }
 }

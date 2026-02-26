@@ -129,7 +129,7 @@
   "103": {
     "inputs": {
       "filename_prefix": "Musebot_Tallpaperer_9x20",
-      "images": ["121", 0]
+      "images": ["120", 0]
     },
     "class_type": "SaveImage",
     "_meta": {
@@ -192,15 +192,6 @@
     "class_type": "VAEDecodeTiled",
     "_meta": {
       "title": "VAE Decode (Tiled)"
-    }
-  },
-  "121": {
-    "inputs": {
-      "value": ["120", 0]
-    },
-    "class_type": "UnloadAllModels",
-    "_meta": {
-      "title": "UnloadAllModels"
     }
   },
   "122": {

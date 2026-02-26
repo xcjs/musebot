@@ -187,19 +187,10 @@
       "title": "VAE Decode (Tiled)"
     }
   },
-  "143": {
-    "inputs": {
-      "value": ["142", 0]
-    },
-    "class_type": "UnloadAllModels",
-    "_meta": {
-      "title": "UnloadAllModels"
-    }
-  },
   "144": {
     "inputs": {
       "filename_prefix": "Musebot_Wallpaperer_16x9_Refined",
-      "images": ["143", 0]
+      "images": ["142", 0]
     },
     "class_type": "SaveImage",
     "_meta": {

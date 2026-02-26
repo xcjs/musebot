@@ -29,18 +29,6 @@
       "title": "Upscale Image (using Model)"
     }
   },
-  "103": {
-    "inputs": {
-      "value": [
-        "28",
-        0
-      ]
-    },
-    "class_type": "UnloadAllModels",
-    "_meta": {
-      "title": "UnloadAllModels"
-    }
-  },
   "104": {
     "inputs": {
       "image": "{{{ image }}}"
@@ -76,7 +64,7 @@
       "quality": 85,
       "method": "default",
       "images": [
-        "103",
+        "28",
         0
       ]
     },

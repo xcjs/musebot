@@ -21,15 +21,6 @@
       "title": "🧹BRIA RMBG"
     }
   },
-  "117": {
-    "inputs": {
-      "value": ["115", 0]
-    },
-    "class_type": "UnloadAllModels",
-    "_meta": {
-      "title": "UnloadAllModels"
-    }
-  },
   "118": {
     "inputs": {
       "filename_prefix": "ComfyUI",
@@ -37,7 +28,7 @@
       "lossless": true,
       "quality": 100,
       "method": "default",
-      "images": ["117", 0]
+      "images": ["115", 0]
     },
     "class_type": "SaveAnimatedWEBP",
     "_meta": {
