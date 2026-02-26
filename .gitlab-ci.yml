@@ -95,8 +95,8 @@ Build Linux Distributable:
     - mkdir -p build/pkg/workflows/txt2vid/
     - cp -f workflows/production/composer/txt2music/ace-step-1.5.json build/pkg/workflows/txt2music/ace-step-1.5.json
     - cp -f workflows/production/director/txt2img/wan.json build/pkg/workflows/txt2img/wan.json
-    - cp -f workflows/production/dreamshaper/txt2img/dreamshaper-xl_turbo_square.json build/pkg/workflows/txt2img/dreamshaper-xl_turbo_square.json
-    - cp -f workflows/production/flux/txt2img/flux-q8_square.json build/pkg/workflows/txt2img/flux-q8_square.json
+    - cp -f workflows/production/dreamshaper/txt2img/general_dreamshaper-xl-turbo.json build/pkg/workflows/txt2img/general_dreamshaper-xl-turbo.json
+    - cp -f workflows/production/flux/txt2img/flux-q8_square.json build/pkg/workflows/txt2img/flux.json
     - cp -f workflows/production/shared/img2img/01-upscale-detail.json build/pkg/workflows/img2img/01-upscale-detail.json
     - cp -f workflows/production/shared/img2img/02-upscale-design.json build/pkg/workflows/img2img/02-upscale-design.json
     - cp -f workflows/production/shared/img2img/03-extract-subject.json build/pkg/workflows/img2img/03-extract-subject.json
@@ -136,8 +136,8 @@ Build Windows Distributable:
     - mkdir -p build/pkg/workflows/txt2vid/
     - cp -f workflows/production/composer/txt2music/ace-step-1.5.json build/pkg/workflows/txt2music/ace-step-1.5.json
     - cp -f workflows/production/director/txt2img/wan.json build/pkg/workflows/txt2img/wan.json
-    - cp -f workflows/production/dreamshaper/txt2img/dreamshaper-xl_turbo_square.json build/pkg/workflows/txt2img/dreamshaper-xl_turbo_square.json
-    - cp -f workflows/production/flux/txt2img/flux-q8_square.json build/pkg/workflows/txt2img/flux-q8_square.json
+    - cp -f workflows/production/dreamshaper/txt2img/general_dreamshaper-xl-turbo.json build/pkg/workflows/txt2img/general_dreamshaper-xl-turbo.json
+    - cp -f workflows/production/flux/txt2img/flux-q8_square.json build/pkg/workflows/txt2img/flux.json
     - cp -f workflows/production/shared/img2img/01-upscale-detail.json build/pkg/workflows/img2img/01-upscale-detail.json
     - cp -f workflows/production/shared/img2img/02-upscale-design.json build/pkg/workflows/img2img/02-upscale-design.json
     - cp -f workflows/production/shared/img2img/03-extract-subject.json build/pkg/workflows/img2img/03-extract-subject.json
