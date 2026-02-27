@@ -147,7 +147,7 @@
   },
   "106": {
     "inputs": {
-      "vae_name": "v1.5/ace_1.5_vae.safetensors"
+      "vae_name": "ACE-Step/v1.5/ace_1.5_vae.safetensors"
     },
     "class_type": "VAELoader",
     "_meta": {
