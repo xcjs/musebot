@@ -156,7 +156,7 @@
   },
   "107": {
     "inputs": {
-      "filename_prefix": "audio/ComfyUI",
+      "filename_prefix": "audio/Musebot_Composer_",
       "quality": "V0",
       "audioUI": "",
       "audio": [
