@@ -38,7 +38,7 @@ export class GenerativeMediaChatClient extends BaseDiscordClient {
         this.#registerEvents();
     }
 
-    #registerEvents() {
+    #registerEvents(): void {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this;
 
@@ -79,7 +79,7 @@ export class GenerativeMediaChatClient extends BaseDiscordClient {
         await this.#typingService.startTyping(interaction);
     }
 
-    async #onCustomInteraction(interaction: ButtonInteraction) {
+    async #onCustomInteraction(interaction: ButtonInteraction): Promise<void> {
         let isWorkflowInteraction = false;
         let workflow: IWorkflow;
 

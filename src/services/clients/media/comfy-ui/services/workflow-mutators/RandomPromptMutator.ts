@@ -75,7 +75,7 @@ export class RandomPromptMutator implements IWorkflowMutator {
             const prompt = getRandomArrayEntry(this.#environmentSettings.stableDiffusionOllamaPrompts);
             const task = this.#services.getLlmGenerateTask(prompt, OLLAMA_TEMPERATURE_MAX);
 
-            const callback = (payload: IHttpExchange<GenerateRequest, GenerateResponse>) => {
+            const callback = (payload: IHttpExchange<GenerateRequest, GenerateResponse>): void => {
                 this.additionalAttachments.push(
                     this.#packageExpandedPromptAsMarkdown(payload.response.response));
 

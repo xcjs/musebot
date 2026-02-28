@@ -25,7 +25,7 @@ export class ExtendedComfyUIClient extends ComfyUIClient {
         return new Promise<MediaCollectionResponse>((resolve, reject) => {
             const multiMediaResponse: MediaCollectionResponse = {};
 
-            const onMessage = async (data: WebSocket.RawData, isBinary: boolean) => {
+            const onMessage = async (data: WebSocket.RawData, isBinary: boolean): Promise<void> => {
                 // Image previews are binary data.
                 if (isBinary) {
                     return;

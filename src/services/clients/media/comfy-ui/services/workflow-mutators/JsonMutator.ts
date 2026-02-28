@@ -23,7 +23,7 @@ export class JsonMutator implements IWorkflowMutator {
         ];
     }
 
-    get contentMessage() {
+    get contentMessage(): string {
         return '';
     }
 

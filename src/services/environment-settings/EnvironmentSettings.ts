@@ -101,7 +101,7 @@ export class EnvironmentSettings implements IEnvironmentSettings {
     }
 
     #ollamaModels: string[] = [];
-    get ollamaModels() {
+    get ollamaModels(): string[] {
         return this.#ollamaModels;
     }
 

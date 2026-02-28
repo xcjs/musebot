@@ -4,7 +4,7 @@ import { ILogger } from './ILogger.js';
 export class Logger implements ILogger {
     static longestPrefix = 0;
 
-    get prefix() {
+    get prefix(): string {
         let paddedPrefix = `${this.#prefix}`;
 
         while (paddedPrefix.length < Logger.longestPrefix) {
@@ -14,7 +14,7 @@ export class Logger implements ILogger {
         return `${new Date().toLocaleString('sv').replace(' ', 'T')} | ${paddedPrefix} | `;
     }
 
-    get isDebug() {
+    get isDebug(): boolean {
         return process.debugPort !== null && process.debugPort > 0;
     }
 
@@ -28,7 +28,7 @@ export class Logger implements ILogger {
         }
     }
 
-    debug(message: string, ...args: unknown[]) {
+    debug(message: string, ...args: unknown[]): void {
         if (process.env.NODE_ENV !== NodeEnvironment.Development.toString()) {
             return;
         }
@@ -40,7 +40,7 @@ export class Logger implements ILogger {
         }
     }
 
-    info(message: string, ...args: unknown[]) {
+    info(message: string, ...args: unknown[]): void {
         if (args.length > 0) {
             console.info(this.#formatMessage(message), ...(this.isDebug ? args : this.#jsonifyArgs(args)))
         } else {
@@ -48,7 +48,7 @@ export class Logger implements ILogger {
         }
     }
 
-    success(message: string, ...args: unknown[]) {
+    success(message: string, ...args: unknown[]): void {
         if (args.length > 0) {
             console.log(this.#formatMessage(message), ...(this.isDebug ? args : this.#jsonifyArgs(args)))
         } else {
@@ -56,7 +56,7 @@ export class Logger implements ILogger {
         }
     }
 
-    warn(message: string, ...args: unknown[]) {
+    warn(message: string, ...args: unknown[]): void {
         if (args.length > 0) {
             console.warn(this.#formatMessage(message), ...(this.isDebug ? args : this.#jsonifyArgs(args)))
         } else {
@@ -64,7 +64,7 @@ export class Logger implements ILogger {
         }
     }
 
-    error(message: string, ...args: unknown[]) {
+    error(message: string, ...args: unknown[]): void {
         if (args.length > 0) {
             console.error(this.#formatMessage(message), ...(this.isDebug ? args : this.#jsonifyArgs(args)))
         } else {
@@ -72,7 +72,7 @@ export class Logger implements ILogger {
         }
     }
 
-    fatal(message: string, ...args: unknown[]) {
+    fatal(message: string, ...args: unknown[]): void {
         if (args.length > 0) {
             console.error(this.#formatMessage(message), ...(this.isDebug ? args : this.#jsonifyArgs(args)))
         } else {
