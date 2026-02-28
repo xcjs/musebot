@@ -14,11 +14,11 @@ import { SerializableRenderRequest } from '../models/SerializableRenderRequest.j
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 
 export class ComfyUiInteractionTask extends ComfyUiBaseTask {
-    #services: IServiceContainer;
+    readonly #services: IServiceContainer;
 
-    #replyService: IReplyService;
+    readonly #replyService: IReplyService;
 
-    #interaction: ButtonInteraction;
+    readonly #interaction: ButtonInteraction;
 
     constructor(services: IServiceContainer, interaction: ButtonInteraction) {
         super(services);
@@ -70,8 +70,16 @@ export class ComfyUiInteractionTask extends ComfyUiBaseTask {
             }
 
             const mutator = this.#services.getWorkflowMutator(this.#interaction.customId as BotInteraction, workflow);
+
             const renderRequest = await mutator.mutate(inputRenderRequests[i], this.#interaction, workflow);
-            const prompt = this.workflowService.renderWorkflow(workflow, renderRequest);
+            let mutatedWorkflow = workflow;
+
+            // Some mutators can select a new workflow. TODO: This should probably be handled within the mutator.
+            if (renderRequest.workflow !== workflow.name) {
+                mutatedWorkflow = this.workflowService.workflows.find(x => x.name === workflow.name);
+            }
+
+            const prompt = this.workflowService.renderWorkflow(mutatedWorkflow, renderRequest);
 
             content = mutator.contentMessage;
             additionalAttachments = additionalAttachments.concat(mutator.additionalAttachments);

@@ -15,12 +15,12 @@ import { SerializableRenderRequest } from '../models/SerializableRenderRequest.j
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 
 export class ComfyUiMessageTask extends ComfyUiBaseTask {
-    #services: IServiceContainer;
+    readonly #services: IServiceContainer;
 
-    #featureService: IFeatureService;
-    #replyService: IReplyService;
+    readonly #featureService: IFeatureService;
+    readonly #replyService: IReplyService;
 
-    #message: Message;
+    readonly #message: Message;
 
     constructor(services: IServiceContainer, message: Message) {
         super(services);
@@ -94,9 +94,8 @@ export class ComfyUiMessageTask extends ComfyUiBaseTask {
                 defaultRenderRequest.num = imageAttachments.length;
                 break;
             case BotInteraction.JsonMessage:
-                const renderRequest = SerializableRenderRequest.fromJson(textPrompt);
-                workflow = this.workflowService.workflows.find(x => x.name === renderRequest.workflow);
-                defaultRenderRequest = renderRequest;
+                workflow = this.workflowService.workflows.find(x => x.name === defaultRenderRequest.workflow);
+                defaultRenderRequest = SerializableRenderRequest.fromJson(textPrompt);
                 break;
             default:
                 workflow = getRandomArrayEntry(this.workflowService.workflows.filter(x =>
@@ -116,6 +115,9 @@ export class ComfyUiMessageTask extends ComfyUiBaseTask {
         for (let i = 0; i < defaultRenderRequest.num; i++) {
             defaultRenderRequest.image = imagesAsBase64[i];
             const renderRequest = await mutator.mutate(defaultRenderRequest, this.#message, workflow);
+
+            // Some mutators can select a different workflow.
+            workflow = this.workflowService.workflows.find(x => x.name === renderRequest.workflow);
 
             if(renderRequest === null) {
                 continue;

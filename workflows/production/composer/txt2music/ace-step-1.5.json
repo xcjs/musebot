@@ -103,6 +103,7 @@
       "temperature": 0.85,
       "top_p": 0.9,
       "top_k": 0,
+      "min_p": 0,
       "clip": [
         "105",
         0
@@ -147,7 +148,7 @@
   },
   "106": {
     "inputs": {
-      "vae_name": "v1.5/ace_1.5_vae.safetensors"
+      "vae_name": "ACE-Step/v1.5/ace_1.5_vae.safetensors"
     },
     "class_type": "VAELoader",
     "_meta": {
@@ -156,7 +157,7 @@
   },
   "107": {
     "inputs": {
-      "filename_prefix": "audio/ComfyUI",
+      "filename_prefix": "audio/Musebot_Composer_",
       "quality": "V0",
       "audioUI": "",
       "audio": [
