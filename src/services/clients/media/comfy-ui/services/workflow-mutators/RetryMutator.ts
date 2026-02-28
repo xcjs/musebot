@@ -31,7 +31,7 @@ export class RetryMutator implements IWorkflowMutator {
         return [];
     }
 
-    #workflowService: IWorkflowService;
+    readonly #workflowService: IWorkflowService;
     #contentMessage = '';
 
     constructor(services: IServiceContainer) {
