@@ -10,8 +10,8 @@ export function toTitleCase(text: string): string {
     );
 }
 
-export function splitText(text: string, lineLength: number): Array<string> {
-    const splitText: Array<string> = [];
+export function splitText(text: string, lineLength: number): string[] {
+    const splitText: string[] = [];
 
     while(text.length > 0) {
         if(text.length > lineLength) {
