@@ -76,7 +76,7 @@ export class ComfyUiInteractionTask extends ComfyUiBaseTask {
 
             // Some mutators can select a new workflow. TODO: This should probably be handled within the mutator.
             if (renderRequest.workflow !== workflow.name) {
-                mutatedWorkflow = this.workflowService.workflows.find(x => x.name === workflow.name);
+                mutatedWorkflow = this.workflowService.workflows.find(x => x.name === renderRequest.workflow);
             }
 
             const prompt = this.workflowService.renderWorkflow(mutatedWorkflow, renderRequest);
