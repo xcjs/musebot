@@ -14,11 +14,11 @@ import { SerializableRenderRequest } from '../models/SerializableRenderRequest.j
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 
 export class ComfyUiInteractionTask extends ComfyUiBaseTask {
-    #services: IServiceContainer;
+    readonly #services: IServiceContainer;
 
-    #replyService: IReplyService;
+    readonly #replyService: IReplyService;
 
-    #interaction: ButtonInteraction;
+    readonly #interaction: ButtonInteraction;
 
     constructor(services: IServiceContainer, interaction: ButtonInteraction) {
         super(services);
