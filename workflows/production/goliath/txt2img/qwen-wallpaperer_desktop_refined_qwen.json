@@ -116,23 +116,21 @@
   },
   "115": {
     "inputs": {
-      "clip_name": "qwen_2.5_vl_7b_fp8_scaled.safetensors",
-      "type": "qwen_image",
-      "device": "default"
+      "clip_name": "Qwen/Qwen2.5-VL-7B-Instruct-UD-Q8_K_XL.gguf",
+      "type": "qwen_image"
     },
-    "class_type": "CLIPLoader",
+    "class_type": "CLIPLoaderGGUF",
     "_meta": {
-      "title": "Load CLIP"
+      "title": "CLIPLoader (GGUF)"
     }
   },
   "116": {
     "inputs": {
-      "unet_name": "Qwen/qwen_image_distill_full_fp8_e4m3fn.safetensors",
-      "weight_dtype": "default"
+      "unet_name": "Qwen/Qwen_Image-Q4_0.gguf"
     },
-    "class_type": "UNETLoader",
+    "class_type": "UnetLoaderGGUF",
     "_meta": {
-      "title": "Load Diffusion Model"
+      "title": "Unet Loader (GGUF)"
     }
   },
   "117": {

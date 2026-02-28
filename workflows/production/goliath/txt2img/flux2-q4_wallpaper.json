@@ -125,13 +125,12 @@
   },
   "70": {
     "inputs": {
-      "clip_name": "Mistral-Small-3.2-24B-Instruct-2506-Q4_K_M.gguf",
-      "type": "flux2",
-      "device": "cpu"
+      "clip_name": "Flux.2/Mistral-Small-3.2-24B-Instruct-2506-Q4_K_S.gguf",
+      "type": "flux2"
     },
-    "class_type": "CLIPLoaderGGUFMultiGPU",
+    "class_type": "CLIPLoaderGGUF",
     "_meta": {
-      "title": "CLIPLoaderGGUFMultiGPU"
+      "title": "CLIPLoader (GGUF)"
     }
   },
   "71": {
