@@ -81,7 +81,9 @@
         "upscalers",
         "upscaling",
         "webui",
-        "xattention"
+        "xattention",
+        "XCJS",
+        "Zackary"
     ],
     "cmake.ignoreCMakeListsMissing": true,
     "typescript.preferences.importModuleSpecifierEnding": "js"
