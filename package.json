@@ -34,7 +34,7 @@
     "build:bin": "npx pkg .",
     "prebuild:docs": "npx recursive-copy-cli -w docs/assets/ build/docs/assets/",
     "build:docs": "npx sitedown --assets docs/assets/ docs/ -b build/docs/",
-    "lint": "eslint .",
+    "lint": "eslint",
     "lint:fix": "eslint --fix .",
     "test": "jest --silent"
   },
