@@ -103,6 +103,21 @@ describe('Logger', () => {
             
             process.env.NODE_ENV = originalEnv;
         });
+
+        it('should call console.debug with args when NODE_ENV is development', () => {
+            const originalEnv = process.env.NODE_ENV;
+            process.env.NODE_ENV = 'development';
+            
+            logger.debug('Test message', { key: 'value' });
+            
+            expect(consoleDebugSpy).toHaveBeenCalledTimes(1);
+            expect(consoleDebugSpy).toHaveBeenCalledWith(
+                expect.stringContaining('Test message'),
+                { key: 'value' }
+            );
+            
+            process.env.NODE_ENV = originalEnv;
+        });
     });
 
     describe('success()', () => {
@@ -119,6 +134,14 @@ describe('Logger', () => {
             logger.success('Test', 'arg1', 'arg2');
             
             expect(consoleLogSpy).toHaveBeenCalledTimes(1);
+        });
+
+        it('should handle args with objects', () => {
+            logger.success('Test message', { key: 'value' });
+            
+            expect(consoleLogSpy).toHaveBeenCalledTimes(1);
+            // Args are either passed directly or JSON stringified depending on isDebug
+            expect(consoleLogSpy).toHaveBeenCalled();
         });
     });
 
@@ -176,6 +199,37 @@ describe('Logger', () => {
             
             // The prefix should be padded
             expect(consoleInfoSpy).toHaveBeenCalled();
+        });
+    });
+
+    describe('args handling', () => {
+        it('should handle objects in args', () => {
+            const obj = { name: 'test', value: 123 };
+            logger.info('Message', obj);
+            
+            // Args are either passed directly or JSON stringified
+            expect(consoleInfoSpy).toHaveBeenCalledTimes(1);
+            expect(consoleInfoSpy).toHaveBeenCalledWith(
+                expect.stringContaining('Message'),
+                expect.anything()
+            );
+        });
+
+        it('should handle multiple args', () => {
+            logger.info('Message', { a: 1 }, { b: 2 });
+            
+            expect(consoleInfoSpy).toHaveBeenCalledTimes(1);
+        });
+
+        it('should handle arrays in args', () => {
+            logger.info('Message', [1, 2, 3]);
+            
+            // Args are either passed directly or JSON stringified
+            expect(consoleInfoSpy).toHaveBeenCalledTimes(1);
+            expect(consoleInfoSpy).toHaveBeenCalledWith(
+                expect.stringContaining('Message'),
+                expect.anything()
+            );
         });
     });
 });
