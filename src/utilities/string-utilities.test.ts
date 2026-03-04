@@ -1,8 +1,45 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { splitText } from './string-utilities.js';
+import {
+    endsWithWhitespace,
+    hasOnly,
+    isOnlyWhitespace,
+    splitText,
+    toTitleCase,
+    wrapText
+} from './string-utilities.js';
 
 describe('string-utilities', () => {
+    describe('toTitleCase()', () => {
+        it('should convert lowercase text to title case', () => {
+            expect(toTitleCase('hello world')).toBe('Hello World');
+        });
+
+        it('should convert uppercase text to title case', () => {
+            expect(toTitleCase('HELLO WORLD')).toBe('Hello World');
+        });
+
+        it('should handle mixed case text', () => {
+            expect(toTitleCase('hELLO wORLD')).toBe('Hello World');
+        });
+
+        it('should return empty string for null input', () => {
+            expect(toTitleCase(null as unknown as string)).toBe('');
+        });
+
+        it('should return empty string for empty string input', () => {
+            expect(toTitleCase('')).toBe('');
+        });
+
+        it('should handle single word', () => {
+            expect(toTitleCase('test')).toBe('Test');
+        });
+
+        it('should handle text with multiple spaces', () => {
+            expect(toTitleCase('hello  world')).toBe('Hello  World');
+        });
+    });
+
     describe('splitText()', () => {
         it('should split text one character above the line length', () => {
             const lineLength = 10;
@@ -43,6 +80,184 @@ describe('string-utilities', () => {
 
             expect(lines.length).toBe(1);
             expect(lines[0]).toBe(text);
+        });
+
+        it('should split at newline character', () => {
+            const text = 'hello\nworld test';
+            const lineLength = 15;
+
+            const lines = splitText(text, lineLength);
+
+            expect(lines.length).toBe(2);
+            expect(lines[0]).toBe('hello');
+            // Note: splitText includes the newline in the remaining text
+            expect(lines[1]).toBe('\nworld test');
+        });
+
+        it('should split at space when no newline available', () => {
+            const text = 'hello world test';
+            const lineLength = 8;
+
+            const lines = splitText(text, lineLength);
+
+            // Splits at 'hello' (5 chars, before space), space stays with next part
+            expect(lines.length).toBe(3);
+            expect(lines[0]).toBe('hello');
+            expect(lines[1]).toBe(' world');
+            expect(lines[2]).toBe(' test');
+        });
+
+        it('should split at line length when no newline or space', () => {
+            const text = 'helloworldtest';
+            const lineLength = 5;
+
+            const lines = splitText(text, lineLength);
+
+            expect(lines.length).toBe(3);
+            expect(lines[0]).toBe('hello');
+            expect(lines[1]).toBe('world');
+            expect(lines[2]).toBe('test');
+        });
+
+        it('should handle empty string', () => {
+            const lines = splitText('', 10);
+
+            // Empty string returns empty array
+            expect(lines.length).toBe(0);
+        });
+    });
+
+    describe('wrapText()', () => {
+        it('should wrap text at line length', () => {
+            const text = 'hello world';
+            const lineLength = 6;
+
+            const wrapped = wrapText(text, lineLength);
+
+            // wrapText includes the space before the newline
+            expect(wrapped).toBe('hello \nworld\n');
+        });
+
+        it('should add newline to text shorter than line length', () => {
+            const text = 'hello';
+            const lineLength = 10;
+
+            const wrapped = wrapText(text, lineLength);
+
+            expect(wrapped).toBe('hello\n');
+        });
+
+        it('should wrap at newline character', () => {
+            const text = 'hello\nworld test';
+            const lineLength = 15;
+
+            const wrapped = wrapText(text, lineLength);
+
+            // Note: includes the newline from input
+            expect(wrapped).toBe('hello\n\nworld test\n');
+        });
+
+        it('should wrap at space when available', () => {
+            const text = 'hello world test';
+            const lineLength = 8;
+
+            const wrapped = wrapText(text, lineLength);
+
+            // Splits at 'hello ' (6 chars), then 'world ' (6 chars)
+            expect(wrapped).toBe('hello \nworld \ntest\n');
+        });
+
+        it('should handle empty string', () => {
+            const wrapped = wrapText('', 10);
+
+            // Empty string returns empty string
+            expect(wrapped).toBe('');
+        });
+    });
+
+    describe('isOnlyWhitespace()', () => {
+        it('should return true for string with only spaces', () => {
+            expect(isOnlyWhitespace('   ')).toBe(true);
+        });
+
+        it('should return true for string with only tabs', () => {
+            expect(isOnlyWhitespace('\t\t')).toBe(true);
+        });
+
+        it('should return true for string with only newlines', () => {
+            expect(isOnlyWhitespace('\n\n')).toBe(true);
+        });
+
+        it('should return true for string with mixed whitespace', () => {
+            expect(isOnlyWhitespace(' \t\n ')).toBe(true);
+        });
+
+        it('should return true for empty string', () => {
+            expect(isOnlyWhitespace('')).toBe(true);
+        });
+
+        it('should return false for string with non-whitespace', () => {
+            expect(isOnlyWhitespace('  hello  ')).toBe(false);
+        });
+
+        it('should return false for string with single character', () => {
+            expect(isOnlyWhitespace('a')).toBe(false);
+        });
+    });
+
+    describe('endsWithWhitespace()', () => {
+        it('should return true for string ending with space', () => {
+            expect(endsWithWhitespace('hello ')).toBe(true);
+        });
+
+        it('should return true for string ending with newline', () => {
+            expect(endsWithWhitespace('hello\n')).toBe(true);
+        });
+
+        it('should return false for string not ending with whitespace', () => {
+            expect(endsWithWhitespace('hello')).toBe(false);
+        });
+
+        it('should return false for string ending with tab', () => {
+            expect(endsWithWhitespace('hello\t')).toBe(false);
+        });
+
+        it('should return false for empty string', () => {
+            expect(endsWithWhitespace('')).toBe(false);
+        });
+
+        it('should return false for string with whitespace in middle', () => {
+            expect(endsWithWhitespace('hel lo')).toBe(false);
+        });
+    });
+
+    describe('hasOnly()', () => {
+        it('should return true when text contains only the search character', () => {
+            expect(hasOnly('aaaaa', 'a')).toBe(true);
+        });
+
+        it('should return true when text contains only the search character with whitespace', () => {
+            expect(hasOnly('  aaa  ', 'a')).toBe(true);
+        });
+
+        it('should return false when text contains other characters', () => {
+            expect(hasOnly('aabaa', 'a')).toBe(false);
+        });
+
+        it('should return true for empty string', () => {
+            expect(hasOnly('', 'a')).toBe(true);
+        });
+
+        it('should return true for string with only whitespace', () => {
+            expect(hasOnly('   ', 'a')).toBe(true);
+        });
+
+        it('should work with multi-character search string', () => {
+            expect(hasOnly('ababab', 'ab')).toBe(true);
+        });
+
+        it('should return false when multi-character search does not match completely', () => {
+            expect(hasOnly('ababa', 'ab')).toBe(false);
         });
     });
 });
