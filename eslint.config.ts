@@ -4,6 +4,9 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
+  {
+    ignores: ['dist/', 'coverage/']
+  },
   ...tseslint.configs.recommendedTypeChecked,
   {
     languageOptions: {
@@ -12,7 +15,6 @@ export default tseslint.config(
         tsconfigRootDir: import.meta.dirname
       },
     },
-    ignores: ['dist/']
   },
   {
     ...pluginJs.configs.recommended,
