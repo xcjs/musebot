@@ -258,7 +258,7 @@ export class ServiceContainer implements IServiceContainer {
         return new ComfyUiAttachmentTask(this, message, prompt);
     }
 
-    getCustomInteractionTask(interaction: ButtonInteraction, workflow: IWorkflow) {
+    getCustomInteractionTask(interaction: ButtonInteraction, workflow: IWorkflow): BaseTask<unknown> {
         switch (workflow.type) {
             case SupportedFeature.Img2Img:
                 return new ComfyUiImg2ImgInteractionTask(this, interaction, workflow);

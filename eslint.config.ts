@@ -25,6 +25,7 @@ export default tseslint.config(
       'simple-import-sort': simpleImportSort,
     },
     rules: {
+      '@typescript-eslint/explicit-function-return-type': 'error',
       '@typescript-eslint/no-floating-promises': 'error',
       'simple-import-sort/exports': 'error',
       'simple-import-sort/imports': 'error'

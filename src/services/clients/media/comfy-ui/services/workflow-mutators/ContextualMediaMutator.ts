@@ -21,7 +21,7 @@ export class ContextualMediaMutator implements IWorkflowMutator {
         return [SupportedFeature.ContextualImg2Img];
     }
 
-    get contentMessage() {
+    get contentMessage(): string {
         return this.#contentMessage;
     }
 

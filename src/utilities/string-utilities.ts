@@ -10,8 +10,8 @@ export function toTitleCase(text: string): string {
     );
 }
 
-export function splitText(text: string, lineLength: number): Array<string> {
-    const splitText: Array<string> = [];
+export function splitText(text: string, lineLength: number): string[] {
+    const splitText: string[] = [];
 
     while(text.length > 0) {
         if(text.length > lineLength) {
@@ -67,6 +67,6 @@ export function endsWithWhitespace(text: string): boolean {
     return text.endsWith('\n') || text.endsWith(' ');
 }
 
-export function hasOnly(containingText: string, searchText: string) {
-    return containingText.trim().replaceAll(searchText, '').length == 0;
+export function hasOnly(containingText: string, searchText: string): boolean {
+    return containingText.trim().replaceAll(searchText, '').length === 0;
 }

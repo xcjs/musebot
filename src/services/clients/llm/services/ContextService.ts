@@ -48,7 +48,7 @@ export class ContextService<ChatMessageType, LlmMessageType> implements IContext
             .map(x => x.llmMessage);
     }
 
-    clearContext(channelId: string) {
+    clearContext(channelId: string): void {
         this.#context = this.#context.filter(
             x => x.isReadOnly
             || x.channelId !== channelId);

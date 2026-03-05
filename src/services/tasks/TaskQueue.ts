@@ -16,7 +16,7 @@ export class TaskQueue implements ITaskQueue {
 
     #channels: Array<TaskChannel> = [];
 
-    get isActive() {
+    get isActive(): boolean {
         return this.#channels.filter(channel => channel.hasTasks).length > 0;
     }
 
@@ -117,7 +117,7 @@ export class TaskQueue implements ITaskQueue {
         return tasks;
     }
 
-    #cleanChannels() {
+    #cleanChannels(): void {
         this.#channels.forEach(channel => {
             channel.cleanQueue();
         });

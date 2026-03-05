@@ -28,7 +28,7 @@ export class MessageToMusicMutator implements IWorkflowMutator {
         return [SupportedFeature.Txt2Music];
     }
 
-    get contentMessage() {
+    get contentMessage(): string {
         return '';
     }
 
@@ -93,7 +93,7 @@ export class MessageToMusicMutator implements IWorkflowMutator {
             return new Promise((resolve) => {
                 const task = this.#services.getLlmGenerateStructuredTask<SongPromptRequestType>(prompt, songPromptTypeRequestTypeData);
 
-                const callback = (payload: IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, SongPromptRequestType>) => {
+                const callback = (payload: IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, SongPromptRequestType>): void => {
                     resolve({
                         ...payload.data,
                         tags,
@@ -122,7 +122,7 @@ export class MessageToMusicMutator implements IWorkflowMutator {
             return new Promise((resolve) => {
                 const task = this.#services.getLlmGenerateStructuredTask<SongPromptMetadata>(prompt, songPromptMetadataRequestData);
 
-                const callback = (payload: IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, SongPromptMetadata>) => {
+                const callback = (payload: IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, SongPromptMetadata>): void => {
                     // If user-provided lyrics are present, prioritize those over what
                     // the LLM generates. This allows "weird" lyrical prompts to
                     // function as expected.
