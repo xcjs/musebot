@@ -1,4 +1,4 @@
-import { describe, expect, it, jest } from '@jest/globals';
+import { describe, expect, it } from '@jest/globals';
 
 import { getRandomArrayEntry, getRandomInt } from './random-utilities.js';
 
@@ -61,7 +61,7 @@ describe('random-utilities', () => {
         });
 
         it('should return null for empty array', () => {
-            const result = getRandomArrayEntry([]);
+            const result = getRandomArrayEntry<number>([]);
             expect(result).toBeNull();
         });
 
@@ -91,7 +91,7 @@ describe('random-utilities', () => {
             const results = new Set<number>();
             
             for (let i = 0; i < 100; i++) {
-                results.add(getRandomArrayEntry(arr) as number);
+                results.add(getRandomArrayEntry(arr));
             }
             
             // With 100 calls on a 5-element array, we should see multiple different values

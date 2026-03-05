@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it } from '@jest/globals';
 
 import { ParallelStrategy } from './ParallelStrategy.js';
-import { SerialStrategy } from './SerialStrategy.js';
 import { ResourceType } from './ResourceType.js';
+import { SerialStrategy } from './SerialStrategy.js';
 
 describe('SerialStrategy', () => {
     let strategy: SerialStrategy;

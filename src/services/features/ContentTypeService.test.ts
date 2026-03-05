@@ -1,4 +1,4 @@
-import { describe, expect, it, jest, beforeEach, afterEach } from '@jest/globals';
+import { beforeEach, describe, expect, it } from '@jest/globals';
 
 import { ContentType } from '../../enums/ContentType.js';
 import { ContentTypeCategory } from '../../enums/ContentTypeCategory.js';
