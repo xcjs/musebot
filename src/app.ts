@@ -7,10 +7,9 @@ const environmentSettings = services.environmentSettings;
 const featureService = services.featureService;
 const client = services.generativeChatClient;
 
-try {
-    await featureService.loadFeatures();
+featureService.loadFeatures().then(() => {
     client.login();
-} catch (error) {
+}).catch((error) => {
     console.error(`Failed to load supported features.`
         + ` Check your workflows/workflow permissions and restart ${environmentSettings.applicationName}:`, error);
-}
+});
