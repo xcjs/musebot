@@ -26,7 +26,6 @@ const config: Config = {
     'src/**/*.ts',
     '!src/**/*.test.ts',
     '!src/**/*.d.ts',
-    '!src/app.ts',
     '!src/polyfills.ts',
   ],
 
