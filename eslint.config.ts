@@ -4,6 +4,9 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
+  {
+    ignores: ['dist/', 'coverage/']
+  },
   ...tseslint.configs.recommendedTypeChecked,
   {
     languageOptions: {
@@ -12,7 +15,6 @@ export default tseslint.config(
         tsconfigRootDir: import.meta.dirname
       },
     },
-    ignores: ['dist/']
   },
   {
     ...pluginJs.configs.recommended,
@@ -28,6 +30,12 @@ export default tseslint.config(
       '@typescript-eslint/no-floating-promises': 'error',
       'simple-import-sort/exports': 'error',
       'simple-import-sort/imports': 'error'
+    }
+  },
+  {
+    files: ['src/**/*.test.ts'],
+    rules: {
+      '@typescript-eslint/unbound-method': 'off'
     }
   }
 );
