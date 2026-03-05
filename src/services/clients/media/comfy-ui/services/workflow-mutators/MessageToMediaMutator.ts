@@ -21,7 +21,7 @@ export class MessageToMediaMutator implements IWorkflowMutator {
         ];
     }
 
-    get contentMessage() {
+    get contentMessage(): string {
         return this.#contentMessage;
     }
 

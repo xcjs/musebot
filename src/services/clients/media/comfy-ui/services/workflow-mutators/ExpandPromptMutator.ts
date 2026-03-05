@@ -64,7 +64,7 @@ export class ExpandPromptMutator implements IWorkflowMutator {
 
             const task = this.#services.getLlmGenerateTask(prompt, OLLAMA_TEMPERATURE_DEFAULT);
 
-            const callback = (payload: IHttpExchange<GenerateRequest, GenerateResponse>) => {
+            const callback = (payload: IHttpExchange<GenerateRequest, GenerateResponse>): void => {
                 resolve(payload.response.response);
             };
 

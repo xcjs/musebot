@@ -15,112 +15,112 @@ import { EnvironmentKey } from './constants/EnvironmentKey.js';
 import { IEnvironmentSettings } from './IEnvironmentSettings.js';
 
 export class EnvironmentSettings implements IEnvironmentSettings {
-    #packageName: string;
+    readonly #packageName: string;
     get packageName(): string {
         return this.#packageName;
     }
 
-    #version: string;
+    readonly #version: string;
     get version(): string {
         return this.#version;
     }
 
-    #nodeEnvironment: NodeEnvironment;
+    readonly #nodeEnvironment: NodeEnvironment;
     get nodeEnvironment(): NodeEnvironment {
         return this.#nodeEnvironment;
     }
 
-    #botFunction: BotFunction;
+    readonly #botFunction: BotFunction;
     get botFunction(): BotFunction {
         return this.#botFunction;
     }
 
-    #maxTaskAttempts: number = 10;
+    readonly #maxTaskAttempts: number = 10;
     get maxTaskAttempts(): number {
         return this.#maxTaskAttempts;
     }
 
-    #taskRetryDelayMilliseconds: number = 1000;
+    readonly #taskRetryDelayMilliseconds: number = 1000;
     get taskRetryDelayMilliseconds(): number {
         return this.#taskRetryDelayMilliseconds;
     }
 
-    #taskQueueStrategy: TaskQueueStrategy;
+    readonly #taskQueueStrategy: TaskQueueStrategy;
     get taskQueueStrategy(): TaskQueueStrategy {
         return this.#taskQueueStrategy;
     }
 
-    #discordToken: string;
+    readonly #discordToken: string;
     get discordToken(): string {
         return this.#discordToken;
     }
 
-    #discordChannels: string[] = [];
+    readonly #discordChannels: string[] = [];
     get discordChannels(): string[] {
         return this.#discordChannels;
     }
 
-    #discordChannelsDisallowed: string[] = [];
+    readonly #discordChannelsDisallowed: string[] = [];
     get discordChannelsDisallowed(): string[] {
         return this.#discordChannelsDisallowed;
     }
 
-    #botRequiresMention: boolean = true;
+    readonly #botRequiresMention: boolean = true;
     get botRequiresMention(): boolean {
         return this.#botRequiresMention;
     }
 
-    #botResponseRate: number = 100;
+    readonly #botResponseRate: number = 100;
     get botResponseRate(): number {
         return this.#botResponseRate;
     }
 
-    #botPrivateMessageUsers: string[] = [];
+    readonly #botPrivateMessageUsers: string[] = [];
     get botPrivateMessageUsers(): string[] {
         return this.#botPrivateMessageUsers;
     }
 
-    #errorMessage: string = 'An error occurred while generating a response. Please try again later.';
+    readonly #errorMessage: string = 'An error occurred while generating a response. Please try again later.';
     get errorMessage(): string {
         return this.#errorMessage;
     }
 
-    #stableDiffusionHosts: URL[] = [];
+    readonly #stableDiffusionHosts: URL[] = [];
     get stableDiffusionHosts(): URL[] {
         return this.#stableDiffusionHosts;
     }
 
-    #stableDiffusionGuidanceScaleInterval: number = .5;
+    readonly #stableDiffusionGuidanceScaleInterval: number = .5;
     get stableDiffusionGuidanceScaleInterval(): number {
         return this.#stableDiffusionGuidanceScaleInterval;
     }
 
-    #ollamaHosts: URL[] = [];
+    readonly #ollamaHosts: URL[] = [];
     get ollamaHosts(): URL[] {
         return this.#ollamaHosts;
     }
 
-    #ollamaModels: string[] = [];
-    get ollamaModels() {
+    readonly #ollamaModels: string[] = [];
+    get ollamaModels(): string[] {
         return this.#ollamaModels;
     }
 
-    #ollamaSystemPrompt: string;
+    readonly #ollamaSystemPrompt: string;
     get ollamaSystemPrompt(): string {
         return this.#ollamaSystemPrompt;
     }
 
-    #ollamaStreamsResponse: boolean = false;
+    readonly #ollamaStreamsResponse: boolean = false;
     get ollamaStreamsResponse(): boolean {
         return this.#ollamaStreamsResponse;
     }
 
-    #stableDiffusionOllamaPrompts: string[] = ['Describe something or someone with extraordinary detail.'];
+    readonly #stableDiffusionOllamaPrompts: string[] = ['Describe something or someone with extraordinary detail.'];
     get stableDiffusionOllamaPrompts(): string[] {
         return this.#stableDiffusionOllamaPrompts;
     }
 
-    #logger: ILogger;
+    readonly #logger: ILogger;
 
     get applicationName(): string {
         return toTitleCase(this.packageName);
@@ -265,9 +265,9 @@ export class EnvironmentSettings implements IEnvironmentSettings {
     * @returns {number} - The parsed number from the environment variable, or the default value if parsing fails.
     */
     #readDefaultableNumber(key: EnvironmentKey, defaultValue: number): number {
-        const value = parseInt(process.env[key]?.trim());
+        const value = Number.parseInt(process.env[key]?.trim());
 
-        return isNaN(value)
+        return Number.isNaN(value)
             ? defaultValue
             : value;
     }
@@ -336,9 +336,9 @@ export class EnvironmentSettings implements IEnvironmentSettings {
     * @returns {number} - The parsed integer from the environment variable, or the default value if parsing fails.
     */
     #readDefaultableInteger(key: EnvironmentKey, defaultValue: number): number {
-        const value = parseInt(process.env[key]);
+        const value = Number.parseInt(process.env[key]);
 
-        if(isNaN(value)) {
+        if(Number.isNaN(value)) {
             return defaultValue;
         }
 

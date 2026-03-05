@@ -6,12 +6,12 @@ import { SupportedFeature } from './enum/SupportedFeature.js';
 import { IFeatureService } from './IFeatureService.js';
 
 export class FeatureService implements IFeatureService {
-    #environmentSettings: IEnvironmentSettings;
-    #workflowService: IWorkflowService;
+    readonly #environmentSettings: IEnvironmentSettings;
+    readonly #workflowService: IWorkflowService;
 
-    #logger: ILogger;
+    readonly #logger: ILogger;
 
-    #supportedFeatures: SupportedFeature[] = [];
+    readonly #supportedFeatures: SupportedFeature[] = [];
 
     get supportedFeatures(): SupportedFeature[] {
         return this.#supportedFeatures;
