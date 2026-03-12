@@ -2,7 +2,6 @@
 title: 'Home'
 ---
 
-
 # Musebot
 
 Thanks for purchasing a copy of Musebot! I'm excited to see how people utilize

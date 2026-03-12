@@ -2,8 +2,8 @@
   "compilerOptions": {
     "esModuleInterop": true,
     "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "Node",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "outDir": "build/tsc",
     "sourceMap": true,
     "skipLibCheck": true,

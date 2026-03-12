@@ -1,6 +1,7 @@
 import { viteBundler } from '@vuepress/bundler-vite'
-import { defaultTheme, DefaultThemeOptions } from '@vuepress/theme-default'
-import { defineUserConfig, Theme } from 'vuepress'
+import { defaultTheme } from '@vuepress/theme-default'
+import { slimsearchPlugin } from '@vuepress/plugin-slimsearch';
+import { defineUserConfig, PluginConfig } from 'vuepress'
 
 export default defineUserConfig({
   bundler: viteBundler(),
@@ -15,6 +16,7 @@ export default defineUserConfig({
       }
     ]
   ],
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   theme: defaultTheme({
     logo: 'images/musebot.jpg',
     navbar: [
@@ -35,5 +37,11 @@ export default defineUserConfig({
         link: '/integrations/swarm-ui/',
       },
     ],
-  } as DefaultThemeOptions) as Theme,
+  }),
+  plugins: [
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    slimsearchPlugin({
+      indexContent: true
+    }),
+  ] as PluginConfig
 });

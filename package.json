@@ -53,6 +53,8 @@
     "@babel/preset-typescript": "^7.27.1",
     "@jest/globals": "^30.2.0",
     "@vuepress/bundler-vite": "^2.0.0-rc.26",
+    "@vuepress/plugin-search": "^2.0.0-rc.125",
+    "@vuepress/plugin-slimsearch": "^2.0.0-rc.125",
     "@vuepress/theme-default": "^2.0.0-rc.125",
     "@yao-pkg/pkg": "^6.9.0",
     "eslint": "^9.30.1",
