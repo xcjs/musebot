@@ -307,7 +307,14 @@ This should look something like:
    "duration": 30,
    // Do not set duration (above) if you want to provide a random range.
    "durationMin": 90,
-   "durationMax": 240
+   "durationMax": 240,
+   // Extra ACE-Step v1.5 properties begin here. Only use these if using
+   // txt2music workflows with ACE-Step v1.5. Ollama integration with a model
+   // supporting structured requests is required to automatically fill in the
+   // below values. Otherwise they have to be hardcoded.
+   "bpm": 140,
+   "keyScale": "Bb major",
+   "timeSignature": 4
   },
   // The exported  ComfyUI (API) workflow nodes should begin here.
 }
