@@ -9,8 +9,4 @@ USER node
 
 FROM nginx:latest
 
-RUN mkdir /app
-
-WORKDIR /app
-
 COPY --from=builder /home/node/app/docs/dist /usr/share/nginx/html
