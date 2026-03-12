@@ -5,6 +5,8 @@ import { defineUserConfig, Theme } from 'vuepress'
 export default defineUserConfig({
   bundler: viteBundler(),
   lang: 'en-US',
+  // @ts-expect-error An empty base is valid despite the type information.
+  base: '',
   title: 'Musebot',
   description: 'Generative AI - In _Your_ Discord',
   theme: defaultTheme({
