@@ -9,4 +9,4 @@ USER node
 
 FROM nginx:latest
 
-COPY --from=builder /home/node/app/docs/dist /usr/share/nginx/html
+COPY --from=builder /home/node/app/docs/.vuepress/dist /usr/share/nginx/html
