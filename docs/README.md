@@ -5,8 +5,6 @@ title: 'Home'
 
 # Musebot
 
-![Musebot Logo](images/musebot.jpg)
-
 Thanks for purchasing a copy of Musebot! I'm excited to see how people utilize
 it, and I hope it brings you a lot of inspiration!
 
