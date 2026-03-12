@@ -9,7 +9,7 @@ import { BotFunction } from '../../enums/BotFunction.js';
 import { NodeEnvironment } from '../../enums/NodeEnvironment.js';
 import { TaskQueueStrategy } from '../../enums/TaskQueueStrategy.js';
 import { EnvironmentKey } from './constants/EnvironmentKey.js';
-import { EnvironmentSettings } from './EnvironmentSettings';
+import { EnvironmentSettings } from './EnvironmentSettings.js';
 
 const mockToken = 'mockToken';
 const mockUrl = 'http://localhost/';
