@@ -32,8 +32,8 @@
     "watch": "tsc -w",
     "prebuild:bin": "npm run parcel",
     "build:bin": "npx pkg .",
-    "prebuild:docs": "npx recursive-copy-cli -w docs/assets/ build/docs/assets/",
-    "build:docs": "npx sitedown --assets docs/assets/ docs/ -b build/docs/",
+    "docs:dev": "vuepress dev docs",
+    "docs:build": "vuepress build docs",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint --fix .",
     "test": "jest --silent"
@@ -52,16 +52,18 @@
   "devDependencies": {
     "@babel/preset-typescript": "^7.27.1",
     "@jest/globals": "^30.2.0",
+    "@vuepress/bundler-vite": "^2.0.0-rc.26",
+    "@vuepress/theme-default": "^2.0.0-rc.125",
     "@yao-pkg/pkg": "^6.9.0",
     "eslint": "^9.30.1",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "globals": "^16.3.0",
     "jest": "^30.2.0",
     "jiti": "^2.4.2",
-    "recursive-copy-cli": "^1.0.20",
-    "sitedown": "^5.1.3",
+    "sass-embedded": "^1.98.0",
     "ts-jest": "^29.4.0",
     "ts-node": "^10.9.2",
-    "typescript-eslint": "^8.36.0"
+    "typescript-eslint": "^8.36.0",
+    "vuepress": "^2.0.0-rc.26"
   }
 }

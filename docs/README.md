@@ -1,6 +1,6 @@
 # Musebot
 
-![Musebot Logo](assets/images/logos/musebot.jpg)
+![Musebot Logo](images/musebot.jpg)
 
 Thanks for purchasing a copy of Musebot! I'm excited to see how people utilize
 it, and I hope it brings you a lot of inspiration!
@@ -27,7 +27,7 @@ If you need help or support, please visit the
 
 ## 1. Discord Configuration
 
-Refer to the included [Discord Integration](Integrations/Discord/index.html)
+Refer to the included [Discord Integration](integrations/discord/README.md)
 documentation.
 
 ## 2. Generative AI API Configuration
@@ -49,7 +49,7 @@ be configured, although you are welcome to set up more.
 
 #### SwarmUI
 
-Refer to the included [SwarmUI Integration](Integrations/SwarmUI/index.html)
+Refer to the included [SwarmUI Integration](integrations/swarm-ui/README.md)
 documentation.
 
 #### ComfyUI
@@ -57,19 +57,19 @@ documentation.
 **Note:** _If you're new to ComfyUI, consider using SwarmUI instead._
 
 Standalone ComfyUI integration (that is, without
-[SwarmUI](Integrations/SwarmUI/index.html)
+[SwarmUI](integrations/swarm-ui/README.md)
 as a wrapper) is supported, but for more advanced users. There is no
 documentation for standalone ComfyUI integration at this time.
 
 If you need help with ComfyUI configuration for Musebot, most of the
-[SwarmUI documentation](Integrations/SwarmUI/index.html) may offer some clues,
+[SwarmUI documentation](integrations/swarm-ui/README.md) may offer some clues,
 albeit with some adjustments here and there.
 
 ### Large Language Model Inferencing
 
 #### Ollama
 
-Refer to the included [Ollama Integration](Integrations/Ollama/index.html)
+Refer to the included [Ollama Integration](integrations/ollama/README.md)
 documentation.
 
 ## 3. Musebot Installation
@@ -85,7 +85,6 @@ Your download should include an application for each supported platform:
 | Docker           | x86_64        |                          |
 | Linux            | x86_64        | `musebot-linux-x86_64`   |
 | Windows          | x86_64        | `musebot-win-x86_64.exe` |
-| Mac OS X         | x86_64        | `musebot-macos-x86_64`   |
 
 ### Docker
 
@@ -115,17 +114,6 @@ Your download should include an application for each supported platform:
    directory as the Musebot executable. The `.env` file is documented to explain
    the use case of each provided environment variable.
 4. Execute `./musebot-linux-x86_64`
-
-### Mac OS X
-
-1. Extract musebot wherever fits your use case or environment.
-2. Ensure that musebot is set as executable.
-
-   `musebot-macos-x86_64`
-3. Configure Musebot using the provided `.env` file and place it in the same
-   directory as the Musebot executable. The `.env` file is documented to explain
-   the use case of each provided environment variable.
-4. Execute `./musebot-macos-x86_64`
 
 ### Windows
 

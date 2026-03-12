@@ -1,6 +1,6 @@
 # SwarmUI Integration
 
-![SwarmUI Logo](../../assets/images/logos/swarmui.jpg)
+![SwarmUI Logo](images/swarm-ui/swarm-ui.jpg)
 
 [SwarmUI](https://github.com/mcmonkeyprojects/SwarmUI) is a media studio
 application for image, video, and other multimedia generation. It primarily acts
@@ -43,6 +43,7 @@ in your preferred shell.
    ```bash
       . venv/bin/activate
    ```
+
 2. Install [ComfyUI-Manager](https://github.com/ltdrdata/ComfyUI-Manager). This
    does require that you have both `git` and `python` (version 3) installed.
 
@@ -59,7 +60,7 @@ in your preferred shell.
    nodes can be installed from within it through the "Custom Nodes Manager", or
    you can continue with the following provided CLI instructions.
 
-   ![ComfyUI-Manager](../../assets/images/comfyui/comfyui-manager.jpg)
+   ![ComfyUI-Manager](images/comfy-ui/comfyui-manager.jpg)
 3. Install [ComfyUI-KJNodes](https://github.com/kijai/ComfyUI-KJNodes):
 
    ```bash
@@ -97,13 +98,13 @@ in your preferred shell.
    [http://localhost:7801](http://localhost:7801)
 2. Locate the `Comfy Workflow` tab in SwarmUI and navigate using it:
 
-   ![Comfy Workflow Tab](../../assets/images/swarmui/comfy-workflow-tab.png)
+   ![Comfy Workflow Tab](images/swarm-ui/comfy-workflow-tab.png)
 3. Look for the large gear icon in the bottom left of ComfyUI.
 
-   ![ComfyUI Settings Icon](../../assets/images/comfyui/settings.png)
+   ![ComfyUI Settings Icon](images/comfy-ui/settings.png)
 4. Enable `Dev Mode` in the settings modal:
 
-   ![ComfyUI Settings Modal](../../assets/images/comfyui/settings-modal.png)
+   ![ComfyUI Settings Modal](images/comfy-ui/settings-modal.png)
 
 ## 3. Connect SwarmUI to Musebot
 
@@ -167,20 +168,20 @@ configuration) is included for with Musebot.
 
 1. Navigate to the `Comfy Workflow` tab in SwarmUI:
 
-   ![Comfy Workflow Tab](../../assets/images/swarmui/comfy-workflow-tab.png)
+   ![Comfy Workflow Tab](images/swarm-ui/comfy-workflow-tab.png)
 2. Load or create a workflow in ComfyUI. If you've successfully generated an
    image or other piece of media using the `Generate` tab, SwarmUI contains
    an extremely useful `Import From Generate Tab` button that will automatically
    build a ComfyUI workflow for you based on your last render:
 
-   ![SwarmUI Import From Generate Tab](../../assets/images/swarmui/import-button.png)
+   ![SwarmUI Import From Generate Tab](images/swarm-ui/import-button.png)
 
 3. Find the `Workflow` menu in the Comfy UI user interface:
 
-   ![ComfyUI Workflow Menu](../../assets/images/comfyui/workflow-menu.png)
+   ![ComfyUI Workflow Menu](images/comfy-ui/workflow-menu.png)
 4. Select the `Export (API)` menu item:
 
-   ![ComfyUI Workflow Menu Items](../../assets/images/comfyui/workflow-menu-items.png)
+   ![ComfyUI Workflow Menu Items](images/comfy-ui/workflow-menu-items.png)
 
    You will then name the workflow and will be asked to save it. Navigate to
    Musebot's workflow directory and save your workflow in the correct directory
