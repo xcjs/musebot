@@ -1,3 +1,8 @@
+---
+title: 'Home'
+---
+
+
 # Musebot
 
 ![Musebot Logo](images/musebot.jpg)
