@@ -7,23 +7,18 @@ export default defineUserConfig({
   bundler: viteBundler(),
   lang: 'en-US',
   title: 'Musebot',
-  description: 'Generative AI - In _Your_ Discord',
+  description: 'Generative AI for Discord',
   head: [
     [
       'link', {
         rel: 'icon',
-        href: '/images/musebot.jpg'
+        href: 'images/musebot.jpg'
       }
     ]
   ],
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   theme: defaultTheme({
     logo: 'images/musebot.jpg',
     navbar: [
-      {
-        text: 'Musebot',
-        link: '/',
-      },
       {
         text: 'Discord',
         link: '/integrations/discord/',
@@ -39,7 +34,6 @@ export default defineUserConfig({
     ],
   }),
   plugins: [
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     slimsearchPlugin({
       indexContent: true
     }),
