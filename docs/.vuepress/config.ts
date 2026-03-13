@@ -1,6 +1,6 @@
 import { viteBundler } from '@vuepress/bundler-vite'
 import { defaultTheme } from '@vuepress/theme-default'
-import { slimsearchPlugin } from '@vuepress/plugin-slimsearch';
+import { searchPlugin } from '@vuepress/plugin-search';
 import { defineUserConfig, PluginConfig } from 'vuepress'
 
 export default defineUserConfig({
@@ -34,8 +34,12 @@ export default defineUserConfig({
     ],
   }),
   plugins: [
-    slimsearchPlugin({
-      indexContent: true
+    searchPlugin({
+      locales: {
+        '/': {
+          placeholder: 'Search',
+        }
+      }
     }),
   ] as PluginConfig
 });
