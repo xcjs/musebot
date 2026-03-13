@@ -71,13 +71,6 @@ in your preferred shell.
    ```
 
 4. Install
-   [ComfyUI-Unload-Model](https://github.com/SeanScripts/ComfyUI-Unload-Model)
-
-   ```bash
-    git clone https://github.com/SeanScripts/ComfyUI-Unload-Model.git
-   ```
-
-5. Install
    [comfyui-tooling-nodes](https://github.com/Acly/comfyui-tooling-nodes).
 
    ```bash
@@ -87,7 +80,7 @@ in your preferred shell.
     cd ..
    ```
 
-6. Restart SwarmUI and/or ComfyUI. Once again, the ComfyUI backend can be
+5. Restart SwarmUI and/or ComfyUI. Once again, the ComfyUI backend can be
    restarted from within SwarmUI. (`Server` tab » `Backends` tab » `Restart All
    Backends` button)
 
