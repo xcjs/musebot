@@ -1,4 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type Dictionary<Key extends keyof any, Value> = {
+export type Dictionary<Key extends keyof unknown, Value> = {
     [key in Key]: Value; // Mapped types syntax
 };
