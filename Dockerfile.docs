@@ -1,0 +1,12 @@
+FROM node:24 AS builder
+
+WORKDIR /home/node/app
+COPY . .
+
+RUN npm ci && npm run docs:build
+
+USER node
+
+FROM nginx:latest
+
+COPY --from=builder /home/node/app/docs/.vuepress/dist /usr/share/nginx/html

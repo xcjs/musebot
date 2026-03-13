@@ -138,7 +138,7 @@ The `BotFunction` enum determines mode at startup:
 
 - **`Dockerfile`** — Multi-stage: builds pkg binary on Node 24, copies to
   Debian slim for production
-- **`Dockerfile_dist`** — Simpler distribution image for pre-built binaries
+- **`Dockerfile.dist`** — Simpler distribution image for pre-built binaries
 - **`docker-compose.yml`** — Runs container with `.env` file and `workflows/`
   volume mount
 

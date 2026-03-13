@@ -1,17 +1,14 @@
-import { IEnvironmentSettings } from '../../../environment-settings/IEnvironmentSettings.js';
 import { ILogger } from '../../../ILogger.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
 import { ContextMessage } from '../ollama/models/ContextMessage.js';
 import { IContextService } from './IContextService.js';
 
 export class ContextService<ChatMessageType, LlmMessageType> implements IContextService<ChatMessageType, LlmMessageType> {
-    #environmentSettings: IEnvironmentSettings;
-    #logger: ILogger;
+    readonly #logger: ILogger;
 
     #context: ContextMessage<ChatMessageType, LlmMessageType>[] = [];
 
     constructor(services: IServiceContainer) {
-        this.#environmentSettings = this.#environmentSettings;
         this.#logger = services.getLogger('ContextService');
     }
 

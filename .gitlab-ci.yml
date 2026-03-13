@@ -61,7 +61,7 @@ Test:
       - coverage
     expire_in: 1 week
 
-Build Docker Image:
+Build Musebot Docker Image:
   stage: Build
   image: docker:dind
   needs: ["Install Linux Dependencies", "Lint", "Test"]
@@ -72,7 +72,20 @@ Build Docker Image:
   tags:
     - docker
   script:
-    - docker build -t $CI_REGISTRY/xcjs/musebot:build .
+    - docker build --rm -t $CI_REGISTRY/xcjs/musebot:build-$CI_JOB_ID .
+
+Build Docs Docker Image:
+  stage: Build
+  image: docker:dind
+  needs: ["Install Linux Dependencies", "Lint"]
+  services:
+    - docker:dind
+  except:
+    - main
+  tags:
+    - docker
+  script:
+    - docker build --rm -f Dockerfile.docs -t $CI_REGISTRY/xcjs/musebot/docs:build-$CI_JOB_ID .
 
 Build Linux Distributable:
   stage: Build
@@ -84,9 +97,8 @@ Build Linux Distributable:
     - npm run build:bin
     - rm build/pkg/musebot-win.exe
     - mv build/pkg/musebot-linux build/pkg/musebot-linux-x86_64
-    - npm run build:docs
     - cp -f .env.example build/pkg/.env
-    - cp -rf build/docs/ build/pkg/docs/
+    - cp -rf docs/ build/pkg/docs/
     - mkdir -p build/pkg/workflows/img2img/contextual
     - mkdir -p build/pkg/workflows/img2vid/
     - mkdir -p build/pkg/workflows/txt2audio/
@@ -106,7 +118,7 @@ Build Linux Distributable:
     - cp -f logo.jpg build/pkg/musebot.jpg
     - cp -f logo.png build/pkg/musebot.png
     - cp -f musebot.ico build/pkg/musebot.ico
-    - cp -f Dockerfile_dist build/pkg/Dockerfile
+    - cp -f Dockerfile.dist build/pkg/Dockerfile
     - cp -f docker-compose.yml build/pkg/docker-compose.yml
   artifacts:
     name: musebot_linux
@@ -125,9 +137,8 @@ Build Windows Distributable:
     - npm run build:bin
     - mv build/pkg/musebot-win.exe build/pkg/musebot-win-x86_64.exe
     - rm build/pkg/musebot-linux
-    - npm run build:docs
     - cp -f .env.example build/pkg/.env
-    - cp -rf build/docs/ build/pkg/docs/
+    - cp -rf docs/ build/pkg/docs/
     - mkdir -p build/pkg/workflows/img2img/contextual
     - mkdir -p build/pkg/workflows/img2vid/
     - mkdir -p build/pkg/workflows/txt2audio/
@@ -153,7 +164,7 @@ Build Windows Distributable:
       - build/pkg/
     expire_in: 1 week
 
-Publish Docker Image:
+Publish Musebot Docker Image:
   stage: Publish
   image: docker:dind
   needs: ["Install Linux Dependencies", "Lint", "Test"]
@@ -168,6 +179,22 @@ Publish Docker Image:
   script:
     - docker build -t $CI_REGISTRY/xcjs/musebot:latest .
     - docker push $CI_REGISTRY/xcjs/musebot:latest
+
+Publish Docs Docker Image:
+  stage: Publish
+  image: docker:dind
+  needs: ["Install Linux Dependencies", "Lint"]
+  services:
+    - docker:dind
+  only:
+    - main
+  tags:
+    - docker
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - docker build -f Dockerfile.docs -t $CI_REGISTRY/xcjs/musebot/docs:latest .
+    - docker push $CI_REGISTRY/xcjs/musebot/docs:latest
 
 Review with gemma3:1b-it-qat:
   stage: Review
