@@ -16,14 +16,9 @@ export default defineUserConfig({
       }
     ]
   ],
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   theme: defaultTheme({
     logo: 'images/musebot.jpg',
     navbar: [
-      {
-        text: 'Musebot',
-        link: '/',
-      },
       {
         text: 'Discord',
         link: '/integrations/discord/',
@@ -39,7 +34,6 @@ export default defineUserConfig({
     ],
   }),
   plugins: [
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     slimsearchPlugin({
       indexContent: true
     }),
