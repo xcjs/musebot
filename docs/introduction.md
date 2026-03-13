@@ -18,4 +18,4 @@ your community—without relying on external APIs or cloud services.
 ## Download Musebot
 
 Musebot can be purchased affordably for download from the official
-[XCJS Discord](https://discord.com/servers/xcjs-198965819978416128).
+[XCJS Discord](https://discord.com/channels/198965819978416128/shop).
