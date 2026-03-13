@@ -98,8 +98,7 @@ Build Linux Distributable:
     - rm build/pkg/musebot-win.exe
     - mv build/pkg/musebot-linux build/pkg/musebot-linux-x86_64
     - cp -f .env.example build/pkg/.env
-    - npm run docs:build
-    - cp -rf docs/.vuepress/dist/ build/pkg/docs/
+    - cp -rf docs/ build/pkg/docs/
     - mkdir -p build/pkg/workflows/img2img/contextual
     - mkdir -p build/pkg/workflows/img2vid/
     - mkdir -p build/pkg/workflows/txt2audio/
@@ -139,8 +138,7 @@ Build Windows Distributable:
     - mv build/pkg/musebot-win.exe build/pkg/musebot-win-x86_64.exe
     - rm build/pkg/musebot-linux
     - cp -f .env.example build/pkg/.env
-    - npm run docs:build
-    - cp -rf docs/.vuepress/dist/ build/pkg/docs/
+    - cp -rf docs/ build/pkg/docs/
     - mkdir -p build/pkg/workflows/img2img/contextual
     - mkdir -p build/pkg/workflows/img2vid/
     - mkdir -p build/pkg/workflows/txt2audio/
