@@ -7,12 +7,12 @@ export default defineUserConfig({
   bundler: viteBundler(),
   lang: 'en-US',
   title: 'Musebot',
-  description: 'Generative AI - In _Your_ Discord',
+  description: 'Generative AI as Entertainment for Discord',
   head: [
     [
       'link', {
         rel: 'icon',
-        href: '/images/musebot.jpg'
+        href: 'images/musebot.jpg'
       }
     ]
   ],
