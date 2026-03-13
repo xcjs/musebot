@@ -12,12 +12,12 @@ export default defineUserConfig({
     [
       'link', {
         rel: 'icon',
-        href: 'images/musebot.jpg'
+        href: '/images/musebot.jpg'
       }
     ]
   ],
   theme: defaultTheme({
-    logo: 'images/musebot.jpg',
+    logo: '/images/musebot.jpg',
     navbar: [
       {
         text: 'Discord',
