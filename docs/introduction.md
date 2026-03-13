@@ -7,7 +7,7 @@ generative AI systems. It transforms your Discord server into an
 interactive platform for two distinct modes of creativity:
 
 * **Chat Function** leverages local large language models (via Ollama) for
-  context-aware,conversations
+  context-aware conversations
 * **Media Function** connects to SwarmUI or ComfyUI to generate images,
   video, music, and other media from text or image prompts.
 
