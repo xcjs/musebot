@@ -1,6 +1,6 @@
-# Discord Integration
+# Discord
 
-![Discord Logo](images/discord.jpg)
+![Discord Logo](../images/discord/discord.jpg)
 
 ## Bot Registration
 
@@ -18,41 +18,41 @@ Discord. This guide will walk you through each required menu and setting.
    application. It does not need to be "Musebot", but can be any character or
    concept you desire. Agree to Discord's terms by checking the box.
 
-   ![New Application Button](images/new-application.png)
+   ![New Application Button](../images/discord/new-application.png)
 
 ### 2. General Information
 
 1. You should already be under the `General Information` menu item, but if not,
    click the `General Information` menu item/link.
 
-   ![General Information Menu Item](images/menu-general-information.png)
+   ![General Information Menu Item](../images/discord/menu-general-information.png)
 2. Name your application, add a profile image, and save your changes. Provide a
    description, tags, or other information if you want.
 3. Save your changes.
 
-   ![Save Changes Button](images/save-changes.png)
+   ![Save Changes Button](../images/discord/save-changes.png)
 
 ### 3. Installation
 
 1. Click the `Installation` link in the left navigation menu.
 
-   ![Installation Menu Item](images/menu-installation.png)
+   ![Installation Menu Item](../images/discord/menu-installation.png)
 2. Under `Installation Contexts`, make sure `User Install` is _not_ checked and
    `Guild Install` _is_ checked.
 
-   ![Installation Contexts Section](images/installation-contexts.png)
+   ![Installation Contexts Section](../images/discord/installation-contexts.png)
 3. Make sure `Install Link` is set to `None`.
 
-   ![Install Link Section](images/install-link.png)
+   ![Install Link Section](../images/discord/install-link.png)
 4. Save your changes.
 
-   ![Save Changes Button](images/save-changes.png)
+   ![Save Changes Button](../images/discord/save-changes.png)
 
 ### 4. Bot
 
 1. Click the `Bot` link in the left navigation menu.
 
-   ![Bot Menu Item](images/menu-bot.png)
+   ![Bot Menu Item](../images/discord/menu-bot.png)
 2. Under the `Bot`, heading you can optionally set an icon and banner that will
    be displayed under your bot's Discord profile.
 3. You can also explicitly set your bot's username if you wish to do so under
@@ -61,29 +61,29 @@ Discord. This guide will walk you through each required menu and setting.
    `Reset Token` button. Copy the value and save it under
    `MUSEBOT_DISCORD_TOKEN` in your `.env` file.
 
-   ![Reset Token Button](images/reset-token.png)
+   ![Reset Token Button](../images/discord/reset-token.png)
 5. It is recommended that unless you know what you're doing, disable the toggle
    titled `Public Bot`.
 
-   ![Public Bot Section](images/public-bot.png)
+   ![Public Bot Section](../images/discord/public-bot.png)
 6. The `Presence Intent` toggle can be or remain disabled.
 
-   ![Presence Intent Section](images/presence-intent.png)
+   ![Presence Intent Section](../images/discord/presence-intent.png)
 7. Enable the `Server Members Intent` toggle.
 
-   ![Server Members Intent Section](images/server-members-intent.png)
+   ![Server Members Intent Section](../images/discord/server-members-intent.png)
 8. Enable the `Message Content Intent` toggle.
 
-   ![Message Content Intent Section](images/message-content-intent.png)
+   ![Message Content Intent Section](../images/discord/message-content-intent.png)
 9. Save your changes.
 
-   ![Save Changes Button](images/save-changes.png)
+   ![Save Changes Button](../images/discord/save-changes.png)
 
 ### 5. OAuth2
 
 1. Click the `OAuth2` link in the left navigation menu.
 
-   ![OAuth2 Menu Item](images/menu-oauth2.png)
+   ![OAuth2 Menu Item](../images/discord/menu-oauth2.png)
 2. Under the `OAuth2 URL Generator` in the `Scopes` checklist, check `bot`.
 3. In the `Bot Permissions` checklist, check the following checkboxes:
 
@@ -93,7 +93,7 @@ Discord. This guide will walk you through each required menu and setting.
 
    `Integration Type` should be set to `Guild Install`.
 
-   ![OAuth2 URL Generator](images/oauth2-url-generator.png)
+   ![OAuth2 URL Generator](../images/discord/oauth2-url-generator.png)
 4. Copy the generated link at the bottom of the page and paste it into a new
     browser tab. You will be asked to login and/or confirm the bot and its
     requested permissions.

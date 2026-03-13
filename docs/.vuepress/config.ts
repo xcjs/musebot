@@ -8,29 +8,18 @@ export default defineUserConfig({
   lang: 'en-US',
   title: 'Musebot',
   description: 'Generative AI for Discord',
-  head: [
-    [
-      'link', {
-        rel: 'icon',
-        href: 'images/musebot.jpg'
-      }
-    ]
-  ],
   theme: defaultTheme({
     logo: '/images/musebot.jpg',
     navbar: [
       {
-        text: 'Discord',
-        link: '/integrations/discord/',
-      },
-      {
-        text: 'Ollama',
-        link: '/integrations/ollama/',
-      },
-      {
-        text: 'SwarmUI',
-        link: '/integrations/swarm-ui/',
-      },
+        text: 'Integrations',
+        prefix: 'integrations',
+        children: [
+          'discord.md',
+          'ollama.md',
+          'swarm-ui.md',
+        ]
+      }
     ],
   }),
   plugins: [

@@ -1,6 +1,6 @@
-# Ollama Integration
+# Ollama
 
-![Ollama Logo](images/ollama.jpg)
+![Ollama Logo](../images/ollama/ollama.jpg)
 
 Ollama is an easy-to-use solution for downloading and running popular large
 language models and can be downloaded from
