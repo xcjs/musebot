@@ -206,7 +206,8 @@ to matching directories within `./workflows`:
    Musebot's interface. The img2vid output must either be an animated `.gif` or
    `.webp`. Workflows can be named any valid file name, but if you want them in
    a specific order, consider prefixing them with numbers.
-* `txt2audio` (Experimental):
+* `txt2audio` (Experimental): Audio workflows should output compressed lossy
+   audio to fit within Discord's file attachment limit.
 * `txt2img`: These workflows accept a text prompt and return one or several
    images. If you provide multiple workflows in this directory, Musebot will
    choose a random one.
@@ -218,8 +219,8 @@ to matching directories within `./workflows`:
    1. Music tags/style/genre/instruments/mood (```{{{ prompt }}}```)
    2. Lyrics (```{{{ prompt2 }}}```)
 
-   ACE-Step is the recommended model for this workflow.
-* `txt2vid` (Experimental): These workflows accept a text prompt and return a
+   ACE-Step v1.5 is the recommended model for this workflow.
+* `txt2vid`: These workflows accept a text prompt and return a
    video. Be aware of your Discord account's/instance's upload limits. If you
    provide multiple workflows in this directory, Musebot will choose a random
    one.
