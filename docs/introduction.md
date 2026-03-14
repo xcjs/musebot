@@ -19,13 +19,14 @@ your community - without relying on external APIs or cloud services.
 
 ## Download Musebot
 
-Musebot can be purchased affordably for download from the official [XCJS
-Discord](https://discord.com/channels/198965819978416128/shop).
+Musebot can be purchased affordably for download from the official
+[XCJS Discord](https://discord.com/channels/198965819978416128/shop).
 
 ## Quick Setup
 
 This guide will help you get Musebot up and running with its two core
-integrations: **Ollama** for chat and **SwarmUI/ComfyUI** for media generation.
+integrations: **Ollama** for chat and/or **SwarmUI/ComfyUI** for media
+generation.
 
 ---
 
@@ -34,8 +35,8 @@ integrations: **Ollama** for chat and **SwarmUI/ComfyUI** for media generation.
 Before installing Musebot, ensure you have one of the following AI backends
 running:
 
-* **For Chat Functionality:** Install and run [Ollama](https://ollama.com/). Download a
-  model, for example:
+* **For Chat Functionality:** Install and run [Ollama](https://ollama.com/).
+  Download a model, for example:
 
     ```bash
     ollama pull mistral-nemo
@@ -57,8 +58,8 @@ running:
 
 ### **Step 2: Download & Install**
 
-1. Download the [latest Musebot
-   release](https://discord.com/channels/198965819978416128/1342750267749302362).
+1. Download the
+   [latest Musebot release](https://discord.com/channels/198965819978416128/1342750267749302362).
 2. Extract the files into a new, empty directory.
 3. Copy `.env.example` to `.env`.
 
