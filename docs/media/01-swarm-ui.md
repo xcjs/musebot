@@ -132,7 +132,7 @@ Most image generation models can be found on:
 
 Image generation models are typically distributed as either of the following
 file formats. Don't worry _too much_ about the difference, but they do require
-begin copied to different directories within `SwarmUI/`.
+being copied to different directories within `SwarmUI/`.
 
 * `*.safetensors`: Typically installed in `SwarmUI/Models/Stable-Diffusion/`
 * `*.gguf`: Typically installed in `SwarmUI/Models/diffusion_models/`

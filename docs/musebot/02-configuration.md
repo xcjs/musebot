@@ -168,11 +168,11 @@ restart the bot for any changes to be applied.
 
 #### `MUSEBOT_TASK_QUEUE_STRATEGY`
 
-* **Description:** Determines if tasks from different users are executed
-  `serial` (one after the other) or `parallel` (at the same time). Use
-  `parallel` only if your hardware (e.g., multiple GPUs) and host configuration
-  support it. For example, running Ollama and ComfyUI on the same host with one
-  GPU will likely cause conflicts in `parallel` mode.
+* **Description:** Determines if tasks are executed in `serial` (one after the
+  other) or `parallel` (at the same time). Use `parallel` only if your hardware
+  (e.g., multiple GPUs) and host configuration support it. For example, running
+  Ollama and ComfyUI on the same host with one GPU will likely cause conflicts
+  in `parallel` mode.
 * **Required:** No
 * **Type:** `String`
 * **Default:** `serial`
