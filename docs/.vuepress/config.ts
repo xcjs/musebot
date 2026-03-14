@@ -12,15 +12,33 @@ export default defineUserConfig({
     logo: '/images/musebot.jpg',
     navbar: [
       {
-        text: 'Integrations',
-        prefix: 'integrations',
+        text: 'Introduction',
+        link: 'introduction.md'
+      },
+      {
+        text: 'Musebot',
+        prefix: 'musebot',
         children: [
-          'discord.md',
-          'ollama.md',
-          'swarm-ui.md',
+          '01-discord.md',
+          '02-configuration.md'
+        ]
+      },
+      {
+        text: 'Chat',
+        prefix: 'chat',
+        children: [
+          '01-ollama.md'
+        ]
+      },
+      {
+        text: 'Media',
+        prefix: 'media',
+        children: [
+          '01-swarm-ui.md'
         ]
       }
     ],
+    sidebarDepth: 6
   }),
   plugins: [
     searchPlugin({
@@ -30,5 +48,21 @@ export default defineUserConfig({
         }
       }
     }),
-  ] as PluginConfig
+  ] as PluginConfig,
+
+  head: [
+    [
+      "script",
+      {},
+      `\
+         (function () {
+          const script = document.createElement('script');
+          script.defer = true;
+          script.src = 'https://analytics.xcjs.com/script.js';
+          script.setAttribute('data-website-id', 'f4568a0e-2305-4fcf-8efe-43bca77cbb2c');
+          document.head.appendChild(script);
+        })();
+      `,
+    ],
+  ]
 });
