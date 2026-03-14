@@ -12,6 +12,17 @@ export default defineUserConfig({
     logo: '/images/musebot.jpg',
     navbar: [
       {
+        text: 'Introduction',
+        link: 'introduction.md'
+      },
+      {
+        text: 'Reference',
+        prefix: 'reference',
+        children: [
+
+        ]
+      },
+      {
         text: 'Integrations',
         prefix: 'integrations',
         children: [
@@ -21,6 +32,7 @@ export default defineUserConfig({
         ]
       }
     ],
+    sidebarDepth: 6
   }),
   plugins: [
     searchPlugin({
@@ -30,5 +42,21 @@ export default defineUserConfig({
         }
       }
     }),
-  ] as PluginConfig
+  ] as PluginConfig,
+
+  head: [
+    [
+      "script",
+      {},
+      `\
+         (function () {
+          const script = document.createElement('script');
+          script.defer = true;
+          script.src = 'https://analytics.xcjs.com/script.js';
+          script.setAttribute('data-website-id', 'f4568a0e-2305-4fcf-8efe-43bca77cbb2c');
+          document.head.appendChild(script);
+        })();
+      `,
+    ],
+  ]
 });
