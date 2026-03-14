@@ -119,7 +119,8 @@ chmod +x musebot-linux-x86_64
 
 ##### Windows
 
-* Double-click `musebot-win-x86_64.exe` or run it from PowerShell/CMD.
+* Double-click `musebot-win-x86_64.exe` or run it from PowerShell or the
+  Command Prompt.
 
 ##### Docker
 
