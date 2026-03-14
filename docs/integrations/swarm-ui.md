@@ -449,9 +449,3 @@ even if it's numeric. Let's look at two examples:
   // ...
 }
 ```
-
-## Return
-
-Return to the main [Musebot Documentation](../../index.html) and continue from
-step 2 if you want to setup additional generative AI solutions or continue on to
-step 3.
