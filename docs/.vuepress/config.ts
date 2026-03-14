@@ -16,19 +16,25 @@ export default defineUserConfig({
         link: 'introduction.md'
       },
       {
-        text: 'Reference',
-        prefix: 'reference',
+        text: 'Musebot',
+        prefix: 'musebot',
         children: [
-
+          '01-discord.md',
+          '02-configuration.md'
         ]
       },
       {
-        text: 'Integrations',
-        prefix: 'integrations',
+        text: 'Chat',
+        prefix: 'chat',
         children: [
-          'discord.md',
-          'ollama.md',
-          'swarm-ui.md',
+          '01-ollama.md'
+        ]
+      },
+      {
+        text: 'Media',
+        prefix: 'media',
+        children: [
+          '01-swarm-ui.md'
         ]
       }
     ],
