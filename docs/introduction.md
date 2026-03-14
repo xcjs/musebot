@@ -69,7 +69,7 @@ running:
 
 Edit your new `.env` file and set the following **required** variables:
 
-#### 1. Bot Function: Choose Your Primary Mode
+#### 1. Bot Function
 
 ```properties
 MUSEBOT_FUNCTION=chat
