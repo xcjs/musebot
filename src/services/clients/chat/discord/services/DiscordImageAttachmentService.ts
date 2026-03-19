@@ -1,12 +1,11 @@
+import { ButtonInteraction, Message } from 'discord.js';
 import sharp from 'sharp';
 
 import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
-import { ButtonInteraction, Message } from 'discord.js';
-import { ContentType } from '../../../../../enums/ContentType.js';
 import { DiscordAttachmentService } from './DiscordAttachmentService.js';
 
 export class DiscordImageAttachmentService {
-    #attachmentService: DiscordAttachmentService;
+    readonly #attachmentService: DiscordAttachmentService;
 
     constructor(attachmentService: DiscordAttachmentService) {
         this.#attachmentService = attachmentService;

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 
 import { createMockLogger, createMockPostProcessor, createMockServiceContainer } from '../../../test-utils/mockServiceContainer.js';
@@ -10,9 +11,9 @@ import { TaskChannel } from './TaskChannel.js';
 
 // Mock BaseTask implementation
 class MockTask extends BaseTask<unknown> {
-    #taskChannelName: string;
-    #processMock: () => Promise<void>;
-    #postProcessMock: () => Promise<void>;
+    readonly #taskChannelName: string;
+    readonly #processMock: () => Promise<void>;
+    readonly #postProcessMock: () => Promise<void>;
 
     constructor(
         services: IServiceContainer,
@@ -22,8 +23,8 @@ class MockTask extends BaseTask<unknown> {
     ) {
         super(services);
         this.#taskChannelName = taskChannelName;
-        this.#processMock = processMock ?? (() => Promise.resolve());
-        this.#postProcessMock = postProcessMock ?? (() => Promise.resolve());
+        this.#processMock = processMock ?? ((): Promise<void> => Promise.resolve());
+        this.#postProcessMock = postProcessMock ?? ((): Promise<void> => Promise.resolve());
     }
 
     get taskChannel(): string {
@@ -55,13 +56,13 @@ describe('TaskChannel', () => {
     });
 
     describe('constructor', () => {
-        it('should create a TaskChannel with the given name', () => {
+        it('should create a TaskChannel with the given name', (): void => {
             const channel = new TaskChannel(mockServices, 'testChannel');
 
             expect(channel.name).toBe('testChannel');
         });
 
-        it('should log channel creation', () => {
+        it('should log channel creation', (): void => {
             new TaskChannel(mockServices, 'myChannel');
 
             expect(mockLogger.info).toHaveBeenCalledWith(
@@ -179,7 +180,7 @@ describe('TaskChannel', () => {
             const channel = new TaskChannel(services, 'testChannel');
             const task1 = new MockTask(services, 'testChannel');
             const task2 = new MockTask(services, 'testChannel');
-            
+
             task1.taskStatus = TaskStatus.Dead;
             task2.taskStatus = TaskStatus.Idle;
 
@@ -198,7 +199,7 @@ describe('TaskChannel', () => {
             const channel = new TaskChannel(services, 'testChannel');
             const task1 = new MockTask(services, 'testChannel');
             const task2 = new MockTask(services, 'testChannel');
-            
+
             task1.taskStatus = TaskStatus.Failed;
             task2.taskStatus = TaskStatus.Idle;
 
