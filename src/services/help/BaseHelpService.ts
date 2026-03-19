@@ -1,4 +1,4 @@
-import { Attachment, ButtonInteraction, Client, Interaction, Message, MessageReaction } from 'discord.js';
+import { Attachment, ButtonInteraction, Client, Message, MessageReaction } from 'discord.js';
 
 import { IActionRows } from '../clients/chat/discord/components/buttonRows/IActionRows.js';
 import { IReplyService } from '../clients/chat/IReplyService.js';

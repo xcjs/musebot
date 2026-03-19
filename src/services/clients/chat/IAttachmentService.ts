@@ -1,13 +1,13 @@
 import { ContentType } from '../../../enums/ContentType.js';
 
 export interface IAttachmentService<AttachmentType> {
-    getAttachments(interaction: any): AttachmentType[];
+    getAttachments(interaction: unknown): AttachmentType[];
 
-    getAttachmentsByType(interaction: any, contentTypes: ContentType[] | undefined): AttachmentType[];
+    getAttachmentsByType(interaction: unknown, contentTypes: ContentType[] | undefined): AttachmentType[];
 
-    getAudioAttachments(interaction: any): AttachmentType[];
+    getAudioAttachments(interaction: unknown): AttachmentType[];
 
-    getImageAttachments(interaction: any): AttachmentType[];
+    getImageAttachments(interaction: unknown): AttachmentType[];
 
-    getAttachedImagesAsBase64(interaction: any): Promise<string[]>;
+    getAttachedImagesAsBase64(interaction: unknown): Promise<string[]>;
 }

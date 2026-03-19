@@ -4,11 +4,8 @@ import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { ResourceType } from '../../../../parallelization/ResourceType.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
-import { IReplyService } from '../../../chat/IReplyService.js';
-
-type DiscordReplyService = IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
-
 import { ComfyUiClient } from '../ComfyUiClient.js';
+import { IReplyService } from '../../../chat/IReplyService.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
 
 export abstract class ComfyUiBaseTask extends BaseTask<void> {
@@ -24,7 +21,7 @@ export abstract class ComfyUiBaseTask extends BaseTask<void> {
     comfyUiClient: ComfyUiClient;
     workflowService: IWorkflowService;
     comfyUiReplyService: ComfyUiReplyService;
-    replyService: DiscordReplyService;
+    replyService: IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
 
     constructor(services: IServiceContainer) {
         super(services);

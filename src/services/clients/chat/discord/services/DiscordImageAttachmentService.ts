@@ -1,9 +1,8 @@
-import { ButtonInteraction, Message } from 'discord.js';
-
-import { ContentType } from '../../../../../enums/ContentType.js';
 import sharp from 'sharp';
 
 import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
+import { ButtonInteraction, Message } from 'discord.js';
+import { ContentType } from '../../../../../enums/ContentType.js';
 import { DiscordAttachmentService } from './DiscordAttachmentService.js';
 
 export class DiscordImageAttachmentService {

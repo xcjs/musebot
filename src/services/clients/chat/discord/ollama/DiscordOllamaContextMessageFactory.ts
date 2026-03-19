@@ -1,5 +1,4 @@
-import { Attachment, ButtonInteraction, Message, MessageReaction } from 'discord.js';
-import { Message as DiscordMessage } from 'discord.js';
+import { Attachment, ButtonInteraction, Message as DiscordMessage, MessageReaction } from 'discord.js';
 import { Message as OllamaMessage } from 'ollama';
 
 import { IServiceContainer } from '../../../../IServiceContainer.js';

@@ -21,8 +21,6 @@ import { StatelessAudioGenerationActionRow } from '../components/buttonRows/Stat
 import { StatelessImageGenerationActionRow } from '../components/buttonRows/StatelessImageGenerationActionRow.js';
 import { DiscordConstants } from '../enums/DiscordConstants.js';
 
-type DiscordReplyService = IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
-
 export class ComfyUiReplyService {
     #services: IServiceContainer;
 
