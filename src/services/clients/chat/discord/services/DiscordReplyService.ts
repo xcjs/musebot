@@ -4,7 +4,6 @@ import { ContentType } from '../../../../../enums/ContentType.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { IReplyService } from '../../IReplyService.js';
 import { DiscordAttachmentService } from '../services/DiscordAttachmentService.js';
-import { DiscordImageAttachmentService } from '../services/DiscordImageAttachmentService.js';
 import { DiscordMentionService } from '../services/DiscordMentionService.js';
 import { DiscordMessageExtractor } from '../services/DiscordMessageExtractor.js';
 import { DiscordReplyFilter } from './DiscordReplyFilter.js';
@@ -16,7 +15,6 @@ export class DiscordReplyService implements IReplyService<Message, MessageReacti
     readonly #mentionService: DiscordMentionService;
     readonly #extractor: DiscordMessageExtractor;
     readonly #attachmentService: DiscordAttachmentService;
-    readonly #imageService: DiscordImageAttachmentService;
 
     constructor(services: IServiceContainer) {
         this.#filter = new DiscordReplyFilter(services);
@@ -24,7 +22,6 @@ export class DiscordReplyService implements IReplyService<Message, MessageReacti
         this.#mentionService = new DiscordMentionService();
         this.#extractor = new DiscordMessageExtractor();
         this.#attachmentService = new DiscordAttachmentService();
-        this.#imageService = new DiscordImageAttachmentService(this.#attachmentService);
     }
 
     shouldReply(message: Message, reaction: MessageReaction | null): boolean {
@@ -82,7 +79,7 @@ export class DiscordReplyService implements IReplyService<Message, MessageReacti
     }
 
     async getAttachedImagesAsBase64(interaction: Message | ButtonInteraction): Promise<string[]> {
-        return this.#imageService.getAttachedImagesAsBase64(interaction);
+        return this.#attachmentService.getAttachedImagesAsBase64(interaction);
     }
 
     #getBotRoleMention(message: Message): string | null {
