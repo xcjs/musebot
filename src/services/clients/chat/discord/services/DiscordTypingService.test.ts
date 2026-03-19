@@ -5,7 +5,7 @@ import { ILogger } from '../../../../ILogger.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
 import { ITypingService } from '../../ITypingService.js';
-import { TypingService } from './TypingService.js';
+import { DiscordTypingService } from './DiscordTypingService.js';
 
 /**
  * Mock channel type with jest.Mock for sendTyping
@@ -68,7 +68,7 @@ describe('TypingService', () => {
 
         getLoggerFn = jest.fn<(prefix: string) => ILogger>().mockReturnValue(mockLogger as unknown as ILogger);
 
-        typingService = new TypingService({
+        typingService = new DiscordTypingService({
             taskQueue: mockTaskQueue,
             getLogger: getLoggerFn
         } as IServiceContainer);

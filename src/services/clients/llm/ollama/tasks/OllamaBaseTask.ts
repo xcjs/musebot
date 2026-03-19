@@ -1,3 +1,4 @@
+import { Attachment, ButtonInteraction, Message, MessageReaction } from 'discord.js';
 import { Message as DiscordMessage } from 'discord.js';
 import { Message as OllamaMessage } from 'ollama';
 
@@ -27,7 +28,7 @@ export abstract class OllamaBaseTask<T> extends BaseTask<T> {
     contextService: IContextService<DiscordMessage, OllamaMessage>;
     ollamaReplyService: OllamaReplyService;
     ollamaStreamingReplyService: OllamaStreamingReplyService;
-    replyService: IReplyService;
+    replyService: IReplyService<DiscordMessage, MessageReaction, Attachment, Message | ButtonInteraction>;
 
     constructor(services: IServiceContainer) {
         super(services);
@@ -38,7 +39,7 @@ export abstract class OllamaBaseTask<T> extends BaseTask<T> {
         this.contextService = services.getContextService<DiscordMessage, OllamaMessage>();
         this.ollamaReplyService = services.ollamaReplyService;
         this.ollamaStreamingReplyService = services.ollamaStreamingReplyService;
-        this.replyService = services.replyService;
+        this.replyService = services.getReplyService();
     }
 
     override async process(): Promise<void> {

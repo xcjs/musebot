@@ -1,5 +1,5 @@
 import { Prompt } from 'comfy-ui-client';
-import { Message, MessageType } from 'discord.js';
+import { Attachment, ButtonInteraction, Message, MessageReaction, MessageType } from 'discord.js';
 
 import { BotInteraction } from '../../../../../enums/BotInteraction.js';
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
@@ -9,6 +9,9 @@ import { IFeatureService } from '../../../../features/IFeatureService.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
+
+type DiscordReplyService = IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
+
 import { MediaCollectionResponse } from '../extensions/MediaResponse.js';
 import { IWorkflow } from '../models/IWorkflow.js';
 import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
@@ -18,7 +21,7 @@ export class ComfyUiMessageTask extends ComfyUiBaseTask {
     readonly #services: IServiceContainer;
 
     readonly #featureService: IFeatureService;
-    readonly #replyService: IReplyService;
+    readonly #replyService: DiscordReplyService;
 
     readonly #message: Message;
 
@@ -29,7 +32,7 @@ export class ComfyUiMessageTask extends ComfyUiBaseTask {
         this.#services = services;
 
         this.#featureService = services.featureService;
-        this.#replyService = services.replyService;
+        this.#replyService = services.getReplyService();
 
         this.#message = message;
     }

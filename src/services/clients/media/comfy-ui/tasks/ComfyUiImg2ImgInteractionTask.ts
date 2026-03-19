@@ -1,5 +1,5 @@
 import { Prompt } from 'comfy-ui-client';
-import { BaseMessageOptions, ButtonInteraction } from 'discord.js';
+import { Attachment, BaseMessageOptions, ButtonInteraction, Message, MessageReaction } from 'discord.js';
 import sharp from 'sharp';
 
 import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
@@ -9,6 +9,9 @@ import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
+
+type DiscordReplyService = IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
+
 import { ComfyUiClient } from '../ComfyUiClient.js';
 import { MediaCollectionResponse } from '../extensions/MediaResponse.js';
 import { IWorkflow } from '../models/IWorkflow.js';
@@ -21,7 +24,7 @@ export class ComfyUiImg2ImgInteractionTask extends ComfyUiBaseTask {
     #workflowService: IWorkflowService;
     #comfyUiClient: ComfyUiClient;
     #comfyUiReplyService: ComfyUiReplyService;
-    #replyService: IReplyService;
+    #replyService: DiscordReplyService;
 
     #interaction: ButtonInteraction;
     #workflow: IWorkflow;
@@ -34,7 +37,7 @@ export class ComfyUiImg2ImgInteractionTask extends ComfyUiBaseTask {
         this.#workflowService = services.workflowService;
         this.#comfyUiClient = services.comfyUiClient;
         this.#comfyUiReplyService = services.comfyUiReplyService;
-        this.#replyService = services.replyService;
+        this.#replyService = services.getReplyService();
 
         this.#interaction = interaction;
         this.#workflow = workflow;

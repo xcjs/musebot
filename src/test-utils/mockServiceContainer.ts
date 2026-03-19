@@ -76,7 +76,6 @@ export function createMockServiceContainer(config?: MockServiceContainerConfig):
 
         // Transients
         contentTypeService: null as never,
-        replyService: null as never,
         comfyUiClient: null as never,
         comfyUiReplyService: null as never,
         ollamaClient: null as never,
@@ -97,6 +96,7 @@ export function createMockServiceContainer(config?: MockServiceContainerConfig):
         getAttachmentTask: () => null as never,
         getCustomInteractionTask: () => null as never,
         getWorkflowMutator: () => null as never,
+        getReplyService: () => null as never,
 
         // Expose mocks for test access
         _logger: logger,

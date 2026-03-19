@@ -1,9 +1,13 @@
+import { Attachment, ButtonInteraction, Message, MessageReaction } from 'discord.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { ResourceType } from '../../../../parallelization/ResourceType.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
+
+type DiscordReplyService = IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
+
 import { ComfyUiClient } from '../ComfyUiClient.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
 
@@ -20,7 +24,7 @@ export abstract class ComfyUiBaseTask extends BaseTask<void> {
     comfyUiClient: ComfyUiClient;
     workflowService: IWorkflowService;
     comfyUiReplyService: ComfyUiReplyService;
-    replyService: IReplyService;
+    replyService: DiscordReplyService;
 
     constructor(services: IServiceContainer) {
         super(services);
@@ -29,7 +33,7 @@ export abstract class ComfyUiBaseTask extends BaseTask<void> {
         this.comfyUiClient = services.comfyUiClient;
         this.workflowService = services.workflowService;
         this.comfyUiReplyService = services.comfyUiReplyService;
-        this.replyService = services.replyService;
+        this.replyService = services.getReplyService();
     }
 
     override async process(): Promise<void> {

@@ -1,4 +1,4 @@
-import { AttachmentBuilder, ButtonInteraction } from 'discord.js';
+import { Attachment, AttachmentBuilder, ButtonInteraction, Message, MessageReaction } from 'discord.js';
 
 import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
@@ -7,11 +7,14 @@ import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
+
+type DiscordReplyService = IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
+
 import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
 
 export class ShowDescriptionTask extends BaseTask<void> {
     #comfyUiReplyService: ComfyUiReplyService;
-    #replyService: IReplyService;
+    #replyService: DiscordReplyService;
 
     #interaction: ButtonInteraction;
 
@@ -24,7 +27,7 @@ export class ShowDescriptionTask extends BaseTask<void> {
         this.logger = services.getLogger('ShowDescriptionTask');
 
         this.#comfyUiReplyService = services.comfyUiReplyService;
-        this.#replyService = services.replyService;
+        this.#replyService = services.getReplyService();
 
         this.#interaction = interaction;
     }

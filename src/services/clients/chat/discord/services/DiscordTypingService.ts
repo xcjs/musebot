@@ -6,7 +6,7 @@ import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
 import { ITypingService } from '../../ITypingService.js';
 import { IChannelTypingIndicator } from '../models/IChannelTypingIndicator.js';
 
-export class TypingService implements ITypingService {
+export class DiscordTypingService implements ITypingService {
     readonly #taskQueue: ITaskQueue;
     readonly #logger: ILogger;
 

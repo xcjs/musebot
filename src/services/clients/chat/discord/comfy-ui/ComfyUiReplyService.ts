@@ -1,4 +1,4 @@
-import { ActionRowBuilder, Attachment, AttachmentBuilder, BaseMessageOptions, ButtonBuilder, ButtonInteraction, Message } from 'discord.js';
+import { ActionRowBuilder, Attachment, AttachmentBuilder, BaseMessageOptions, ButtonBuilder, ButtonInteraction, Message, MessageReaction } from 'discord.js';
 
 import { MAX_FILE_NAME_LENGTH } from '../../../../../constants/FileConstants.js';
 import { ContentType } from '../../../../../enums/ContentType.js';
@@ -21,6 +21,8 @@ import { StatelessAudioGenerationActionRow } from '../components/buttonRows/Stat
 import { StatelessImageGenerationActionRow } from '../components/buttonRows/StatelessImageGenerationActionRow.js';
 import { DiscordConstants } from '../enums/DiscordConstants.js';
 
+type DiscordReplyService = IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
+
 export class ComfyUiReplyService {
     #services: IServiceContainer;
 
@@ -28,7 +30,7 @@ export class ComfyUiReplyService {
     #comfyUiClient: ComfyUiClient;
     #contentTypeService: IContentTypeService;
     #featureService: IFeatureService;
-    #replyService: IReplyService;
+    #replyService: IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
 
     #logger: ILogger;
 
@@ -43,7 +45,7 @@ export class ComfyUiReplyService {
         this.#comfyUiClient = services.comfyUiClient;
         this.#contentTypeService = services.contentTypeService;
         this.#featureService = services.featureService;
-        this.#replyService = services.replyService;
+        this.#replyService = services.getReplyService();
 
         this.#logger = services.getLogger('ComfyUiReplyService');
     }

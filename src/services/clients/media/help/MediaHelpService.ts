@@ -1,4 +1,4 @@
-import { Interaction } from 'discord.js';
+import { Attachment, ButtonInteraction, Interaction, Message, MessageReaction } from 'discord.js';
 
 import nodePackage from '../../../../../package.json' with { type: 'json' };
 import { DEVELOPER } from '../../../../constants/Globals.js';
@@ -14,12 +14,14 @@ import { StatefulImageGenerationActionRows } from '../../chat/discord/components
 import { DiscordConstants } from '../../chat/discord/enums/DiscordConstants.js';
 import { IReplyService } from '../../chat/IReplyService.js';
 
+type DiscordReplyService = IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
+
 export class MediaHelpService extends BaseHelpService implements IHelpService {
     #services: IServiceContainer;
 
     #environmentSettings: IEnvironmentSettings;
     #featureService: IFeatureService;
-    #replyService: IReplyService;
+    #replyService: DiscordReplyService;
 
     constructor(services: IServiceContainer) {
         super(services);
@@ -28,7 +30,7 @@ export class MediaHelpService extends BaseHelpService implements IHelpService {
 
         this.#environmentSettings = services.environmentSettings;
         this.#featureService = services.featureService;
-        this.#replyService = services.replyService;
+        this.#replyService = services.getReplyService();
     }
 
     async buildHelpArticle(interaction: Interaction): Promise<string> {

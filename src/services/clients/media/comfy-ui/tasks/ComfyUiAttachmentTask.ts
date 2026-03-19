@@ -1,4 +1,4 @@
-import { Message } from 'discord.js';
+import { Attachment, ButtonInteraction, Message, MessageReaction } from 'discord.js';
 
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
@@ -7,6 +7,9 @@ import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
+
+type DiscordReplyService = IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
+
 import { ComfyUiClient } from '../ComfyUiClient.js';
 import { MediaCollectionResponse } from '../extensions/MediaResponse.js';
 import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
@@ -17,7 +20,7 @@ export class ComfyUiAttachmentTask extends ComfyUiBaseTask {
     #workflowService: IWorkflowService;
     #comfyUiClient: ComfyUiClient;
     #comfyUiReplyService: ComfyUiReplyService;
-    #replyService: IReplyService;
+    #replyService: DiscordReplyService;
 
     #message: Message;
     #prompt: string;
@@ -32,7 +35,7 @@ export class ComfyUiAttachmentTask extends ComfyUiBaseTask {
         this.#workflowService = services.workflowService;
         this.#comfyUiClient = services.comfyUiClient;
         this.#comfyUiReplyService = services.comfyUiReplyService;
-        this.#replyService = services.replyService;
+        this.#replyService = services.getReplyService();
 
         this.#message = message;
         this.#prompt = prompt;

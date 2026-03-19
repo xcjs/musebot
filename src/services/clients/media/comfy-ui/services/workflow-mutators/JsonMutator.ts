@@ -1,4 +1,4 @@
-import { AttachmentBuilder, Message } from 'discord.js';
+import { Attachment, AttachmentBuilder, ButtonInteraction, Message, MessageReaction } from 'discord.js';
 
 import { BotInteraction } from '../../../../../../enums/BotInteraction.js';
 import { SupportedFeature } from '../../../../../features/enum/SupportedFeature.js';
@@ -31,10 +31,10 @@ export class JsonMutator implements IWorkflowMutator {
         return [];
     }
 
-    #replyService: IReplyService;
+    #replyService: IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
 
     constructor(services: IServiceContainer) {
-        this.#replyService = services.replyService;
+        this.#replyService = services.getReplyService();
     }
 
     // The parameters are required by the interface.

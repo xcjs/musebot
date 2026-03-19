@@ -1,4 +1,4 @@
-import { Interaction } from 'discord.js';
+import { Attachment, ButtonInteraction, Interaction, Message, MessageReaction } from 'discord.js';
 
 import nodePackage from '../../../../../package.json' with { type: 'json' };
 import { IEnvironmentSettings } from '../../../environment-settings/IEnvironmentSettings.js';
@@ -10,11 +10,13 @@ import { ChatConfirmClearActionRow } from '../../chat/discord/components/buttonR
 import { DiscordConstants } from '../../chat/discord/enums/DiscordConstants.js';
 import { IReplyService } from '../../chat/IReplyService.js';
 
+type DiscordReplyService = IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
+
 export class ChatHelpService extends BaseHelpService implements IHelpService {
     #services: IServiceContainer;
 
     #environmentSettings: IEnvironmentSettings;
-    #replyService: IReplyService;
+    #replyService: DiscordReplyService;
 
     constructor(services: IServiceContainer) {
         super(services);
@@ -22,7 +24,7 @@ export class ChatHelpService extends BaseHelpService implements IHelpService {
         this.#services = services;
 
         this.#environmentSettings = services.environmentSettings;
-        this.#replyService = services.replyService;
+        this.#replyService = services.getReplyService();
     }
 
     async buildHelpArticle(interaction: Interaction): Promise<string> {
