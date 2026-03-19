@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 
 import { createMockLogger, createMockPostProcessor, createMockServiceContainer } from '../../../test-utils/mockServiceContainer.js';
@@ -65,6 +64,7 @@ describe('TaskChannel', () => {
         it('should log channel creation', (): void => {
             new TaskChannel(mockServices, 'myChannel');
 
+            // eslint-disable-next-line @typescript-eslint/unbound-method
             expect(mockLogger.info).toHaveBeenCalledWith(
                 expect.stringContaining('myChannel')
             );
@@ -254,6 +254,7 @@ describe('TaskChannel', () => {
             channel.queue.push(task);
             channel.cleanQueue();
 
+            // eslint-disable-next-line @typescript-eslint/unbound-method
             expect(mockLogger.info).toHaveBeenCalledWith(
                 expect.stringContaining('Removing completed or dead entries')
             );
@@ -269,6 +270,7 @@ describe('TaskChannel', () => {
 
             await new Promise(resolve => setTimeout(resolve, 10));
 
+            // eslint-disable-next-line @typescript-eslint/unbound-method
             expect(mockPostProcessor.postProcess).toHaveBeenCalled();
         });
 
@@ -279,6 +281,7 @@ describe('TaskChannel', () => {
             channel.queue.push(task);
             channel.cleanQueue();
 
+            // eslint-disable-next-line @typescript-eslint/unbound-method
             expect(mockPostProcessor.postProcess).not.toHaveBeenCalled();
         });
     });
