@@ -97,8 +97,8 @@ export class ComfyUiMessageTask extends ComfyUiBaseTask {
                 defaultRenderRequest.num = imageAttachments.length;
                 break;
             case BotInteraction.JsonMessage:
-                workflow = this.workflowService.workflows.find(x => x.name === defaultRenderRequest.workflow);
                 defaultRenderRequest = SerializableRenderRequest.fromJson(textPrompt);
+                workflow = this.workflowService.workflows.find(x => x.name === defaultRenderRequest.workflow);
                 break;
             default:
                 workflow = getRandomArrayEntry(this.workflowService.workflows.filter(x =>
