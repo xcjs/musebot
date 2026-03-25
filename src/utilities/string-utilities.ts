@@ -52,7 +52,7 @@ export function wrapText(text: string, lineLength: number): string {
             wrappedText += text.substring(0, lineBreakPosition) + '\n';
             text = text.substring(lineBreakPosition);
         } else {
-            wrappedText += text + '\n';
+            wrappedText += `${text}\n`;
             text = '';
         }
     }
