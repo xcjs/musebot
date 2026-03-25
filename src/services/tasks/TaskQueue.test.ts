@@ -8,11 +8,10 @@ import { TaskStatus } from './enums/TaskStatus.js';
 import { BaseTask } from './models/BaseTask.js';
 import { TaskQueue } from './TaskQueue.js';
 
-// Mock BaseTask implementation
 class MockTask extends BaseTask<unknown> {
-    #taskChannelName: string;
-    #processMock: () => Promise<void>;
-    #postProcessMock: () => Promise<void>;
+    readonly #taskChannelName: string;
+    readonly #processMock: () => Promise<void>;
+    readonly #postProcessMock: () => Promise<void>;
 
     constructor(
         services: IServiceContainer,
@@ -22,8 +21,8 @@ class MockTask extends BaseTask<unknown> {
     ) {
         super(services);
         this.#taskChannelName = taskChannelName;
-        this.#processMock = processMock ?? (() => Promise.resolve());
-        this.#postProcessMock = postProcessMock ?? (() => Promise.resolve());
+        this.#processMock = processMock ?? ((): Promise<void> => Promise.resolve());
+        this.#postProcessMock = postProcessMock ?? ((): Promise<void> => Promise.resolve());
     }
 
     get taskChannel(): string {
@@ -60,27 +59,28 @@ describe('TaskQueue', () => {
     });
 
     describe('constructor', () => {
-        it('should create a TaskQueue with empty channels', () => {
+        it('should create a TaskQueue with empty channels', function (this: void): void {
             const queue = new TaskQueue(mockServices);
 
             expect(queue.isActive).toBe(false);
         });
 
-        it('should get logger from services', () => {
+        it('should get logger from services', function (this: void): void {
             new TaskQueue(mockServices);
 
+            // eslint-disable-next-line @typescript-eslint/unbound-method
             expect(mockServices.getLogger).toHaveBeenCalledWith('TaskQueue');
         });
     });
 
     describe('isActive', () => {
-        it('should return false when no channels exist', () => {
+        it('should return false when no channels exist', function (this: void): void {
             const queue = new TaskQueue(mockServices);
 
             expect(queue.isActive).toBe(false);
         });
 
-        it('should return false when channels have no tasks', () => {
+        it('should return false when channels have no tasks', function (this: void): void {
             const queue = new TaskQueue(mockServices);
 
             expect(queue.isActive).toBe(false);
@@ -88,29 +88,31 @@ describe('TaskQueue', () => {
     });
 
     describe('add()', () => {
-        it('should add a task to the queue', () => {
+        it('should add a task to the queue', function (this: void): void {
             const queue = new TaskQueue(mockServices);
             const task = new MockTask(mockServices, 'testChannel');
 
             queue.add(task);
 
+            // eslint-disable-next-line @typescript-eslint/unbound-method
             expect(mockLogger.info).toHaveBeenCalledWith(
                 expect.stringContaining('Adding task')
             );
         });
 
-        it('should create a new channel for new task channels', () => {
+        it('should create a new channel for new task channels', function (this: void): void {
             const queue = new TaskQueue(mockServices);
             const task = new MockTask(mockServices, 'newChannel');
 
             queue.add(task);
 
+            // eslint-disable-next-line @typescript-eslint/unbound-method
             expect(mockLogger.info).toHaveBeenCalledWith(
                 expect.stringContaining('Created a new task channel')
             );
         });
 
-        it('should reuse existing channel for same task channel name', () => {
+        it('should reuse existing channel for same task channel name', function (this: void): void {
             const queue = new TaskQueue(mockServices);
             const task1 = new MockTask(mockServices, 'sharedChannel');
             const task2 = new MockTask(mockServices, 'sharedChannel');
@@ -124,7 +126,7 @@ describe('TaskQueue', () => {
             expect(createCalls).toHaveLength(1);
         });
 
-        it('should not add duplicate tasks by id', () => {
+        it('should not add duplicate tasks by id', function (this: void): void {
             const queue = new TaskQueue(mockServices);
             const task = new MockTask(mockServices, 'testChannel');
 
@@ -137,12 +139,13 @@ describe('TaskQueue', () => {
             expect(addCalls.length).toBeGreaterThanOrEqual(2);
         });
 
-        it('should log the task channel name when adding', () => {
+        it('should log the task channel name when adding', function (this: void): void {
             const queue = new TaskQueue(mockServices);
             const task = new MockTask(mockServices, 'myCustomChannel');
 
             queue.add(task);
 
+            // eslint-disable-next-line @typescript-eslint/unbound-method
             expect(mockLogger.info).toHaveBeenCalledWith(
                 expect.stringContaining('myCustomChannel')
             );
@@ -150,9 +153,9 @@ describe('TaskQueue', () => {
     });
 
     describe('task processing', () => {
-        it('should process a task successfully', async () => {
+        it('should process a task successfully', async function (this: void): Promise<void> {
             let processCalled = false;
-            const processMock = () => {
+            const processMock = (): Promise<void> => {
                 processCalled = true;
                 return Promise.resolve();
             };
@@ -166,10 +169,10 @@ describe('TaskQueue', () => {
             expect(processCalled).toBe(true);
         });
 
-        it('should call postProcess after successful task', async () => {
+        it('should call postProcess after successful task', async function (this: void): Promise<void> {
             let postProcessCalled = false;
-            const processMock = () => Promise.resolve();
-            const postProcessMock = () => {
+            const processMock = (): Promise<void> => Promise.resolve();
+            const postProcessMock = (): Promise<void> => {
                 postProcessCalled = true;
                 return Promise.resolve();
             };
@@ -183,14 +186,14 @@ describe('TaskQueue', () => {
             expect(postProcessCalled).toBe(true);
         });
 
-        it('should handle multiple tasks in different channels', async () => {
+        it('should handle multiple tasks in different channels', async function (this: void): Promise<void> {
             let called1 = false;
             let called2 = false;
-            const processMock1 = () => {
+            const processMock1 = (): Promise<void> => {
                 called1 = true;
                 return Promise.resolve();
             };
-            const processMock2 = () => {
+            const processMock2 = (): Promise<void> => {
                 called2 = true;
                 return Promise.resolve();
             };
@@ -207,7 +210,7 @@ describe('TaskQueue', () => {
             expect(called2).toBe(true);
         });
 
-        it('should set task status to Busy when processing', async () => {
+        it('should set task status to Busy when processing', async function (this: void): Promise<void> {
             const queue = new TaskQueue(mockServices);
             const task = new MockTask(mockServices, 'testChannel');
 
@@ -218,9 +221,9 @@ describe('TaskQueue', () => {
             expect(task.taskStatus).toBe(TaskStatus.Successful);
         });
 
-        it('should handle task failure and retry', async () => {
+        it('should handle task failure and retry', async function (this: void): Promise<void> {
             let callCount = 0;
-            const processMock = () => {
+            const processMock = (): Promise<void> => {
                 callCount++;
                 if (callCount === 1) {
                     return Promise.reject(new Error('Task failed'));
@@ -235,18 +238,19 @@ describe('TaskQueue', () => {
             await jest.runAllTimersAsync();
 
             expect(callCount).toBeGreaterThanOrEqual(1);
+            // eslint-disable-next-line @typescript-eslint/unbound-method
             expect(mockLogger.error).toHaveBeenCalled();
         });
 
-        it('should mark task as dead after max attempts', async () => {
+        it('should mark task as dead after max attempts', async function (this: void): Promise<void> {
             const services = createMockServiceContainer({
                 logger: mockLogger,
                 postProcessor: mockPostProcessor,
                 environmentSettings: { maxTaskAttempts: 1 } as never,
             });
             let postProcessCalled = false;
-            const processMock = () => Promise.reject(new Error('Task failed'));
-            const postProcessMock = () => {
+            const processMock = (): Promise<void> => Promise.reject(new Error('Task failed'));
+            const postProcessMock = (): Promise<void> => {
                 postProcessCalled = true;
                 return Promise.resolve();
             };
@@ -261,8 +265,8 @@ describe('TaskQueue', () => {
             expect(postProcessCalled).toBe(true);
         });
 
-        it('should log error when task is rejected', async () => {
-            const processMock = () => Promise.reject(new Error('Test error'));
+        it('should log error when task is rejected', async (): Promise<void> => {
+            const processMock = (): Promise<never> => Promise.reject(new Error('Test error'));
             const queue = new TaskQueue(mockServices);
             const task = new MockTask(mockServices, 'testChannel', processMock);
 
@@ -270,6 +274,7 @@ describe('TaskQueue', () => {
 
             await jest.runAllTimersAsync();
 
+            // eslint-disable-next-line @typescript-eslint/unbound-method
             expect(mockLogger.error).toHaveBeenCalledWith(
                 expect.stringContaining('rejected'),
                 expect.anything(),
@@ -277,7 +282,7 @@ describe('TaskQueue', () => {
             );
         });
 
-        it('should log task queue processing info', async () => {
+        it('should log task queue processing info', async (): Promise<void> => {
             const queue = new TaskQueue(mockServices);
             const task = new MockTask(mockServices, 'testChannel');
 
@@ -285,12 +290,13 @@ describe('TaskQueue', () => {
 
             await jest.runAllTimersAsync();
 
+            // eslint-disable-next-line @typescript-eslint/unbound-method
             expect(mockLogger.info).toHaveBeenCalledWith(
                 expect.stringContaining('Processing the task queue')
             );
         });
 
-        it('should log when retrieving next tasks', async () => {
+        it('should log when retrieving next tasks', async (): Promise<void> => {
             const queue = new TaskQueue(mockServices);
             const task = new MockTask(mockServices, 'testChannel');
 
@@ -298,6 +304,7 @@ describe('TaskQueue', () => {
 
             await jest.runAllTimersAsync();
 
+            // eslint-disable-next-line @typescript-eslint/unbound-method
             expect(mockLogger.info).toHaveBeenCalledWith(
                 expect.stringContaining('Retrieving the next tasks')
             );
@@ -305,8 +312,8 @@ describe('TaskQueue', () => {
     });
 
     describe('error handling', () => {
-        it('should log error when task process throws', async () => {
-            const processMock = () => Promise.reject(new Error('Unexpected error'));
+        it('should log error when task process throws', async (): Promise<void> => {
+            const processMock = (): Promise<never> => Promise.reject(new Error('Unexpected error'));
             const queue = new TaskQueue(mockServices);
             const task = new MockTask(mockServices, 'testChannel', processMock);
 
@@ -314,6 +321,7 @@ describe('TaskQueue', () => {
 
             await jest.runAllTimersAsync();
 
+            // eslint-disable-next-line @typescript-eslint/unbound-method
             expect(mockLogger.error).toHaveBeenCalledWith(
                 expect.stringContaining('rejected'),
                 expect.anything(),

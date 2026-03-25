@@ -1,33 +1,38 @@
-import { Attachment, BaseMessageOptions, ButtonInteraction, Message, MessageReaction, User } from 'discord.js';
+import { BaseMessageOptions, User } from 'discord.js';
 
 import { ContentType } from '../../../enums/ContentType.js';
 
-export interface IReplyService {
-    shouldReply(message: Message, reaction: MessageReaction | null): boolean;
+export interface IReplyService<
+    MessageType,
+    ReactionType,
+    AttachmentType,
+    InteractionType
+> {
+    shouldReply(message: MessageType, reaction: ReactionType | null): boolean;
 
     reply(
-        interaction: Message | ButtonInteraction,
+        interaction: InteractionType,
         reply: BaseMessageOptions,
         isEdit: boolean
     ): Promise<void>;
 
-    getMessageWithoutBotMentions(message: Message): string;
+    getMessageWithoutBotMentions(message: MessageType): string;
 
     mention(user: User): string;
 
-    getPreviousMessage(message: Message): Promise<Message | null>;
+    getPreviousMessage(message: MessageType): Promise<MessageType | null>;
 
-    extractPrompt(message: Message): string;
+    extractPrompt(message: MessageType): string;
 
-    replyWithError(interaction: Message | ButtonInteraction): Promise<void>;
+    replyWithError(interaction: InteractionType): Promise<void>;
 
-    getAttachments(interaction: Message | ButtonInteraction): Attachment[];
+    getAttachments(interaction: InteractionType): AttachmentType[];
 
-    getAttachmentsByType(interaction: Message | ButtonInteraction, contentTypes: ContentType[] | undefined): Attachment[];
+    getAttachmentsByType(interaction: InteractionType, contentTypes: ContentType[] | undefined): AttachmentType[];
 
-    getAudioAttachments(interaction: Message | ButtonInteraction): Attachment[];
+    getAudioAttachments(interaction: InteractionType): AttachmentType[];
 
-    getImageAttachments(interaction: Message | ButtonInteraction): Attachment[];
+    getImageAttachments(interaction: InteractionType): AttachmentType[];
 
-    getAttachedImagesAsBase64(interaction: Message | ButtonInteraction): Promise<string[]>;
+    getAttachedImagesAsBase64(interaction: InteractionType): Promise<string[]>;
 }

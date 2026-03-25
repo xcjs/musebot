@@ -1,4 +1,4 @@
-import { AttachmentBuilder, Message } from 'discord.js';
+import { Attachment, AttachmentBuilder, ButtonInteraction, Message, MessageReaction } from 'discord.js';
 import { GenerateRequest, GenerateResponse } from 'ollama';
 
 import { BotInteraction } from '../../../../../../enums/BotInteraction.js';
@@ -39,13 +39,13 @@ export class MessageToMusicMutator implements IWorkflowMutator {
     readonly #services: IServiceContainer;
     readonly #featureService: IFeatureService;
     readonly #taskQueue: ITaskQueue;
-    readonly #replyService: IReplyService;
+    readonly #replyService: IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
 
     constructor(services: IServiceContainer) {
         this.#services = services;
         this.#featureService = services.featureService;
         this.#taskQueue = services.taskQueue;
-        this.#replyService = services.replyService;
+        this.#replyService = services.getReplyService();
     }
 
     async mutate(renderRequest: SerializableRenderRequest, interaction: Message, workflow: IWorkflow): Promise<SerializableRenderRequest> {

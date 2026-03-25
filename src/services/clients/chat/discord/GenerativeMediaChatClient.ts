@@ -1,4 +1,4 @@
-import { ButtonInteraction, Client as DiscordClient, Events, Message as DiscordMessage } from 'discord.js';
+import { Attachment, ButtonInteraction, Client as DiscordClient, Events, Message as DiscordMessage, MessageReaction } from 'discord.js';
 
 import { BotInteraction } from '../../../../enums/BotInteraction.js';
 import { IEnvironmentSettings } from '../../../environment-settings/IEnvironmentSettings.js';
@@ -17,7 +17,7 @@ export class GenerativeMediaChatClient extends BaseDiscordClient {
 
     #environmentSettings: IEnvironmentSettings;
     #discordClient: DiscordClient;
-    #replyService: IReplyService;
+    #replyService: IReplyService<DiscordMessage, MessageReaction, Attachment, DiscordMessage | ButtonInteraction>;
     #typingService: ITypingService;
     #workflowService: IWorkflowService;
     #taskQueue: ITaskQueue;
@@ -30,7 +30,7 @@ export class GenerativeMediaChatClient extends BaseDiscordClient {
 
         this.#environmentSettings = services.environmentSettings;
         this.#discordClient = services.discordClient;
-        this.#replyService = services.replyService;
+        this.#replyService = services.getReplyService();
         this.#typingService = services.typingService;
         this.#workflowService = services.workflowService;
         this.#taskQueue = services.taskQueue;

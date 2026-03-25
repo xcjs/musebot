@@ -1,4 +1,4 @@
-import { ButtonInteraction, Client as DiscordClient, Events, Message as DiscordMessage, MessageReaction, TextChannel,User } from 'discord.js';
+import { Attachment, ButtonInteraction, Client as DiscordClient, Events, Message as DiscordMessage, MessageReaction, TextChannel,User } from 'discord.js';
 import { Message as OllamaMessage } from 'ollama';
 
 import { BotInteraction } from '../../../../enums/BotInteraction.js';
@@ -21,7 +21,7 @@ export class GenerativeChatClient extends BaseDiscordClient {
     #contextMessageFactory: IContextMessageFactory<DiscordMessage, OllamaMessage>;
     #contextService: IContextService<DiscordMessage, OllamaMessage>;
     #typingService: ITypingService;
-    #replyService: IReplyService;
+    #replyService: IReplyService<DiscordMessage, MessageReaction, Attachment, DiscordMessage | ButtonInteraction>;
     #taskQueue: ITaskQueue;
 
     #channelTopicsCached: string[] = [];
@@ -36,7 +36,7 @@ export class GenerativeChatClient extends BaseDiscordClient {
         this.#contextService = services.getContextService<DiscordMessage, OllamaMessage>();
         this.#discordClient = services.discordClient;
         this.#typingService = services.typingService;
-        this.#replyService = services.replyService;
+        this.#replyService = services.getReplyService();
         this.#taskQueue = services.taskQueue;
 
         const systemPrompt = this.#environmentSettings.ollamaSystemPrompt;

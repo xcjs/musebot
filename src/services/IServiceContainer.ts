@@ -37,7 +37,6 @@ import { BaseTask } from './tasks/models/BaseTask.js';
 
 export interface IServiceContainer {
     // Singletons -------------------------------------------------------------/
-
     environmentSettings: IEnvironmentSettings;
     featureService: IFeatureService;
     taskQueue: ITaskQueue;
@@ -49,9 +48,7 @@ export interface IServiceContainer {
     parallelizationStrategy: IParallelizationStrategy;
 
     // Transients -------------------------------------------------------------/
-
     contentTypeService: IContentTypeService;
-    replyService: IReplyService;
     comfyUiClient: ComfyUiClient;
     comfyUiReplyService: ComfyUiReplyService;
     ollamaClient: OllamaClient;
@@ -77,4 +74,6 @@ export interface IServiceContainer {
     getWorkflowMutator(interactionType: BotInteraction, workflow: IWorkflow): IWorkflowMutator;
 
     getTaskChannelPostProcessor(resourceType: ResourceType): ITaskChannelPostProcessor;
+
+    getReplyService<MessageType, ReactionType, AttachmentType, InteractionType>(): IReplyService<MessageType, ReactionType, AttachmentType, InteractionType>;
 }

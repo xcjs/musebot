@@ -23,8 +23,8 @@ import { GenerativeMediaChatClient } from './clients/chat/discord/GenerativeMedi
 import { DiscordOllamaContextMessageFactory } from './clients/chat/discord/ollama/DiscordOllamaContextMessageFactory.js';
 import { OllamaReplyService } from './clients/chat/discord/ollama/OllamaReplyService.js';
 import { OllamaStreamingReplyService } from './clients/chat/discord/ollama/OllamaStreamingReplyService.js';
-import { ReplyService } from './clients/chat/discord/replies/ReplyService.js';
-import { TypingService } from './clients/chat/discord/services/TypingService.js';
+import { DiscordReplyService } from './clients/chat/discord/services/DiscordReplyService.js';
+import { DiscordTypingService } from './clients/chat/discord/services/DiscordTypingService.js';
 import { IGenerativeChatClient } from './clients/chat/IGenerativeChatClient.js';
 import { IReplyService } from './clients/chat/IReplyService.js';
 import { ITypingService } from './clients/chat/ITypingService.js';
@@ -136,8 +136,8 @@ export class ServiceContainer implements IServiceContainer {
         return new ContentTypeService();
     }
 
-    get replyService(): IReplyService {
-        return new ReplyService(this);
+    getReplyService<MessageType, ReactionType, AttachmentType, InteractionType>(): IReplyService<MessageType, ReactionType, AttachmentType, InteractionType> {
+        return new DiscordReplyService(this) as unknown as IReplyService<MessageType, ReactionType, AttachmentType, InteractionType>;
     }
 
     get comfyUiClient(): ComfyUiClient {
@@ -308,7 +308,7 @@ export class ServiceContainer implements IServiceContainer {
         this.#workflowService = new WorkflowService(this);
         this.#featureService = new FeatureService(this);
         this.#taskQueue = new TaskQueue(this);
-        this.#typingService = new TypingService(this);
+        this.#typingService = new DiscordTypingService(this);
 
         this.#discordClient = new DiscordClient({
             intents: [

@@ -59,7 +59,7 @@ export default defineUserConfig({
           const script = document.createElement('script');
           script.defer = true;
           script.src = 'https://analytics.xcjs.com/script.js';
-          script.setAttribute('data-website-id', 'f4568a0e-2305-4fcf-8efe-43bca77cbb2c');
+          script.setAttribute('data-website-id', 'a4a304d1-472e-4aa6-9a45-220c8c736fb5');
           document.head.appendChild(script);
         })();
       `,

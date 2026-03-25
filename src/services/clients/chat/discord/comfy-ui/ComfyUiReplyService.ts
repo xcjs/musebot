@@ -1,4 +1,4 @@
-import { ActionRowBuilder, Attachment, AttachmentBuilder, BaseMessageOptions, ButtonBuilder, ButtonInteraction, Message } from 'discord.js';
+import { ActionRowBuilder, Attachment, AttachmentBuilder, BaseMessageOptions, ButtonBuilder, ButtonInteraction, Message, MessageReaction } from 'discord.js';
 
 import { MAX_FILE_NAME_LENGTH } from '../../../../../constants/FileConstants.js';
 import { ContentType } from '../../../../../enums/ContentType.js';
@@ -28,7 +28,7 @@ export class ComfyUiReplyService {
     #comfyUiClient: ComfyUiClient;
     #contentTypeService: IContentTypeService;
     #featureService: IFeatureService;
-    #replyService: IReplyService;
+    #replyService: IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
 
     #logger: ILogger;
 
@@ -43,7 +43,7 @@ export class ComfyUiReplyService {
         this.#comfyUiClient = services.comfyUiClient;
         this.#contentTypeService = services.contentTypeService;
         this.#featureService = services.featureService;
-        this.#replyService = services.replyService;
+        this.#replyService = services.getReplyService();
 
         this.#logger = services.getLogger('ComfyUiReplyService');
     }

@@ -1,4 +1,4 @@
-import { AttachmentBuilder, Message, MessageType } from 'discord.js';
+import { Attachment, AttachmentBuilder, ButtonInteraction, Message, MessageReaction, MessageType } from 'discord.js';
 
 import { BotInteraction } from '../../../../../../enums/BotInteraction.js';
 import { SupportedFeature } from '../../../../../features/enum/SupportedFeature.js';
@@ -29,12 +29,12 @@ export class MessageToMediaMutator implements IWorkflowMutator {
         return [];
     }
 
-    #replyService: IReplyService;
+    #replyService: IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
 
     #contentMessage = '';
 
     constructor(services: IServiceContainer) {
-        this.#replyService = services.replyService;
+        this.#replyService = services.getReplyService();
     }
 
     async mutate(renderRequest: SerializableRenderRequest, interaction: Message, workflow: IWorkflow): Promise<SerializableRenderRequest> {

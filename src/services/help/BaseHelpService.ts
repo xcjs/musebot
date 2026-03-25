@@ -1,16 +1,18 @@
-import { Client } from 'discord.js';
+import { Attachment, ButtonInteraction, Client, Message, MessageReaction } from 'discord.js';
 
 import { IActionRows } from '../clients/chat/discord/components/buttonRows/IActionRows.js';
 import { IReplyService } from '../clients/chat/IReplyService.js';
 import { IServiceContainer } from '../IServiceContainer.js';
 
+type DiscordReplyService = IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
+
 export abstract class BaseHelpService {
     protected discordClient: Client;
-    protected replyService: IReplyService;
+    protected replyService: DiscordReplyService;
 
     constructor(services: IServiceContainer) {
         this.discordClient = services.discordClient;
-        this.replyService = services.replyService;
+        this.replyService = services.getReplyService();
     }
 
     protected async buildHelpArticleFromActionRows(actionRows: IActionRows): Promise<string> {

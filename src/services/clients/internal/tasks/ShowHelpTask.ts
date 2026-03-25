@@ -1,9 +1,11 @@
-import { ButtonInteraction } from 'discord.js';
+import { Attachment, ButtonInteraction, Message, MessageReaction } from 'discord.js';
 
 import { IHelpService } from '../../../help/IHelpService.js';
 import { IServiceContainer } from '../../../IServiceContainer.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { IReplyService } from '../../chat/IReplyService.js';
+
+type DiscordReplyService = IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
 
 export class ShowHelpTask extends BaseTask<void> {
     get taskChannel(): string {
@@ -11,7 +13,7 @@ export class ShowHelpTask extends BaseTask<void> {
     }
 
     #helpService: IHelpService;
-    #replyService: IReplyService;
+    #replyService: DiscordReplyService;
 
     #interaction: ButtonInteraction;
 
@@ -19,7 +21,7 @@ export class ShowHelpTask extends BaseTask<void> {
         super(services);
 
         this.#helpService = services.helpService;
-        this.#replyService = services.replyService;
+        this.#replyService = services.getReplyService();
 
         this.#interaction = interaction;
     }
