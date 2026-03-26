@@ -1,3 +1,4 @@
+import * as fs from 'node:fs';
 import process, { loadEnvFile } from 'node:process';
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -134,7 +135,8 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         // If this loads environment variables during a test, it can pollute
         // the results.
         /* c8 ignore start */
-        if(process.env.NODE_ENV !== NodeEnvironment.Test.toString()) {
+        if(process.env.NODE_ENV !== NodeEnvironment.Test.toString()
+            && fs.existsSync('./.env')) {
             loadEnvFile();
         }
         /* c8 ignore stop */
