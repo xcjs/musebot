@@ -43,7 +43,7 @@
     "cross-env": "^10.1.0",
     "discord.js": "14.23.2",
     "handlebars": "^4.7.8",
-    "ollama": "^0.6.0",
+    "ollama": "^0.6.3",
     "parcel": "^2.15.4",
     "sharp": "^0.34.2",
     "typescript": "^5.8.3"
