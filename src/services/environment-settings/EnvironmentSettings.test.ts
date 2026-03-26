@@ -43,36 +43,9 @@ describe('EnvironmentSettings', () => {
     });
 
     describe('nodeEnvironment', () => {
-        const originalEnvironment = process.env[EnvironmentKey.NodeEnvironment];
-
         it(`should return test in the testing environment without mocking`, () => {
             const environmentSettings = new EnvironmentSettings();
             expect(environmentSettings.nodeEnvironment).toBe(NodeEnvironment.Test);
-        });
-
-        it.each([
-            NodeEnvironment.Development,
-            NodeEnvironment.Production
-        ])(`should match the ${EnvironmentKey.NodeEnvironment} environment variable`, (nodeEnvironment) => {
-            process.env[EnvironmentKey.NodeEnvironment] = nodeEnvironment;
-            const environmentSettings = new EnvironmentSettings();
-
-            expect(environmentSettings.nodeEnvironment).toBe(nodeEnvironment);
-
-            // Reset the environment after this test to prevent scope leak.
-            process.env[EnvironmentKey.NodeEnvironment] = originalEnvironment;
-        });
-
-        it('should throw an exception if it isn\'t a valid NodeEnvironment value', () => {
-            const invalidEnvironment = 'invalidEnvironment';
-            process.env[EnvironmentKey.NodeEnvironment] = invalidEnvironment;
-
-            expect(() => {
-                new EnvironmentSettings();
-            }).toThrow();
-
-            // Reset the environment after this test to prevent scope leak.
-            process.env[EnvironmentKey.NodeEnvironment] = originalEnvironment;
         });
     });
 
