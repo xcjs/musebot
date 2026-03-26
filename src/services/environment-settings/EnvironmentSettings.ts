@@ -1,6 +1,4 @@
-import process from 'node:process';
-
-import dotenv from 'dotenv';
+import process, { loadEnvFile } from 'node:process';
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -137,7 +135,7 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         // the results.
         /* c8 ignore start */
         if(process.env.NODE_ENV !== NodeEnvironment.Test.toString()) {
-            dotenv.config();
+            loadEnvFile();
         }
         /* c8 ignore stop */
 

@@ -11,14 +11,15 @@ export function toTitleCase(text: string): string {
 }
 
 export function splitText(text: string, lineLength: number): string[] {
+    let mutableBuffer = `${text}`;
     const splitText: string[] = [];
 
-    while(text.length > 0) {
-        if(text.length > lineLength) {
-            let splitPosition = text.substring(0, lineLength).lastIndexOf('\n');
+    while (mutableBuffer.length > 0) {
+        if (mutableBuffer.length > lineLength) {
+            let splitPosition = mutableBuffer.substring(0, lineLength).lastIndexOf('\n');
 
             if(splitPosition === -1) {
-                splitPosition = text.substring(0, lineLength).lastIndexOf(' ');
+                splitPosition = mutableBuffer.substring(0, lineLength).lastIndexOf(' ');
             }
 
             if(splitPosition === -1) {
@@ -26,11 +27,11 @@ export function splitText(text: string, lineLength: number): string[] {
                 splitPosition = lineLength;
             }
 
-            splitText.push(text.substring(0, splitPosition));
-            text = text.substring(splitPosition);
+            splitText.push(mutableBuffer.substring(0, splitPosition));
+            mutableBuffer = mutableBuffer.substring(splitPosition);
         } else {
-            splitText.push(text);
-            text = '';
+            splitText.push(mutableBuffer);
+            mutableBuffer = '';
         }
     }
 
@@ -51,7 +52,7 @@ export function wrapText(text: string, lineLength: number): string {
             wrappedText += text.substring(0, lineBreakPosition) + '\n';
             text = text.substring(lineBreakPosition);
         } else {
-            wrappedText += text + '\n';
+            wrappedText += `${text}\n`;
             text = '';
         }
     }

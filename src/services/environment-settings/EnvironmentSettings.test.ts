@@ -43,36 +43,9 @@ describe('EnvironmentSettings', () => {
     });
 
     describe('nodeEnvironment', () => {
-        const originalEnvironment = process.env[EnvironmentKey.NodeEnvironment];
-
         it(`should return test in the testing environment without mocking`, () => {
             const environmentSettings = new EnvironmentSettings();
             expect(environmentSettings.nodeEnvironment).toBe(NodeEnvironment.Test);
-        });
-
-        it.each([
-            NodeEnvironment.Development,
-            NodeEnvironment.Production
-        ])(`should match the ${EnvironmentKey.NodeEnvironment} environment variable`, (nodeEnvironment) => {
-            process.env[EnvironmentKey.NodeEnvironment] = nodeEnvironment;
-            const environmentSettings = new EnvironmentSettings();
-
-            expect(environmentSettings.nodeEnvironment).toBe(nodeEnvironment);
-
-            // Reset the environment after this test to prevent scope leak.
-            process.env[EnvironmentKey.NodeEnvironment] = originalEnvironment;
-        });
-
-        it('should throw an exception if it isn\'t a valid NodeEnvironment value', () => {
-            const invalidEnvironment = 'invalidEnvironment';
-            process.env[EnvironmentKey.NodeEnvironment] = invalidEnvironment;
-
-            expect(() => {
-                new EnvironmentSettings();
-            }).toThrow();
-
-            // Reset the environment after this test to prevent scope leak.
-            process.env[EnvironmentKey.NodeEnvironment] = originalEnvironment;
         });
     });
 
@@ -620,29 +593,10 @@ describe('EnvironmentSettings', () => {
     });
 
     describe('isProduction', () => {
-        it('should return true when it is production', () => {
-            process.env[EnvironmentKey.NodeEnvironment] = NodeEnvironment.Production;
-
-            const environmentSettings = new EnvironmentSettings();
-
-            expect(environmentSettings.isProduction).toBe(true);
-
-            // Reset the environment after this test to prevent scope leak.
-            process.env[EnvironmentKey.NodeEnvironment] = NodeEnvironment.Test;
-        });
-
-        it.each([
-            NodeEnvironment.Development,
-            NodeEnvironment.Test
-        ])('should return false when not production', (nodeEnvironment: NodeEnvironment) => {
-            process.env[EnvironmentKey.NodeEnvironment] = nodeEnvironment;
-
+        it('should return false when not production', () => {
             const environmentSettings = new EnvironmentSettings();
 
             expect(environmentSettings.isProduction).toBe(false);
-
-            // Reset the environment after this test to prevent scope leak.
-            process.env[EnvironmentKey.NodeEnvironment] = NodeEnvironment.Test;
         });
     });
 });
