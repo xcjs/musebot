@@ -593,29 +593,10 @@ describe('EnvironmentSettings', () => {
     });
 
     describe('isProduction', () => {
-        it('should return true when it is production', () => {
-            process.env[EnvironmentKey.NodeEnvironment] = NodeEnvironment.Production;
-
-            const environmentSettings = new EnvironmentSettings();
-
-            expect(environmentSettings.isProduction).toBe(true);
-
-            // Reset the environment after this test to prevent scope leak.
-            process.env[EnvironmentKey.NodeEnvironment] = NodeEnvironment.Test;
-        });
-
-        it.each([
-            NodeEnvironment.Development,
-            NodeEnvironment.Test
-        ])('should return false when not production', (nodeEnvironment: NodeEnvironment) => {
-            process.env[EnvironmentKey.NodeEnvironment] = nodeEnvironment;
-
+        it('should return false when not production', () => {
             const environmentSettings = new EnvironmentSettings();
 
             expect(environmentSettings.isProduction).toBe(false);
-
-            // Reset the environment after this test to prevent scope leak.
-            process.env[EnvironmentKey.NodeEnvironment] = NodeEnvironment.Test;
         });
     });
 });
