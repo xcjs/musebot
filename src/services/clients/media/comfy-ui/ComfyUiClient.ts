@@ -28,7 +28,13 @@ export class ComfyUiClient {
 
         this.#logger = services.getLogger('ComfyUiClient');
 
-        this.#host = getRandomArrayEntry(this.#environmentSettings.stableDiffusionHosts);
+        const host = getRandomArrayEntry(this.#environmentSettings.stableDiffusionHosts);
+
+        if (!host) {
+            throw new Error('No ComfyUI hosts configured in environment settings.');
+        }
+
+        this.#host = host;
 
         let comfyHost = `${this.#host.host}${this.#host.pathname}`;
 

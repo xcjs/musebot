@@ -27,6 +27,11 @@ export class OllamaClient {
         this.#logger = services.getLogger('OllamaClient');
 
         const host = getRandomArrayEntry(this.#environmentSettings.ollamaHosts);
+
+        if (!host) {
+            throw new Error('No Ollama hosts configured in environment settings.');
+        }
+
         this.#host = host;
         this.#logger.info(`Selected host: ${host}`);
 
