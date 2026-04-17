@@ -60,9 +60,7 @@ export class OllamaClient {
             };
         } catch (error) {
             this.#logger.error('Failed to send Ollama a message:', error);
-
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            throw new Error(error);
+            throw new Error(error as string);
         }
     }
 
@@ -88,9 +86,7 @@ export class OllamaClient {
             };
         } catch (error) {
             this.#logger.error('Failed to send Ollama a message:', error);
-
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            throw new Error(error);
+            throw new Error(error as string);
         }
     }
 
@@ -122,9 +118,7 @@ export class OllamaClient {
             };
         } catch(error) {
             this.#logger.error('Failed to send Ollama a message:', error);
-
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            throw new Error(error);
+            throw new Error(error as string);
         }
     }
 
@@ -155,9 +149,7 @@ export class OllamaClient {
             };
         } catch(error) {
             this.#logger.error('An error occurred while sending Ollama a message and retrieving a stream:', error);
-
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            throw new Error(error);
+            throw new Error(error as string);
         }
     }
 
@@ -165,11 +157,7 @@ export class OllamaClient {
         return response.eval_count / response.eval_duration * (10 ** 9);
     }
 
-    #selectModel(models: Array<string>): string | null {
-        if(models.length === 0) {
-            return null;
-        }
-
+    #selectModel(models: Array<string>): string {
         const model = models[getRandomInt(0, models.length - 1)];
 
         this.#logger.info(`Selected model: ${model}`);
