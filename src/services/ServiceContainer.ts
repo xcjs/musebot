@@ -36,6 +36,7 @@ import { OllamaEmojiReactionTask } from './clients/llm/ollama/tasks/OllamaEmojiR
 import { OllamaGenerateStructuredTask } from './clients/llm/ollama/tasks/OllamaGenerateStructuredTask.js';
 import { OllamaGenerateTask } from './clients/llm/ollama/tasks/OllamaGenerateTask.js';
 import { OllamaMessageTask } from './clients/llm/ollama/tasks/OllamaMessageTask.js';
+import { OllamaTaskChannelPostProcessor } from './clients/llm/ollama/tasks/OllamaTaskChannelPostProcessor.js';
 import { ContextService } from './clients/llm/services/ContextService.js';
 import { IContextMessageFactory } from './clients/llm/services/IContextMessageFactory.js';
 import { IContextService } from './clients/llm/services/IContextService.js';
@@ -294,6 +295,8 @@ export class ServiceContainer implements IServiceContainer {
 
     getTaskChannelPostProcessor(resourceType: ResourceType): ITaskChannelPostProcessor {
         switch (resourceType) {
+            case ResourceType.Chat:
+                return new OllamaTaskChannelPostProcessor(this);
             case ResourceType.Media:
             case ResourceType.GenerativeAI:
                 return new ComfyUiTaskChannelPostProcessor(this);
