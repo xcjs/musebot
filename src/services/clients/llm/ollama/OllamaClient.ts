@@ -10,12 +10,12 @@ import { OllamaRole } from './enums/OllamaRole.js';
 import { IStructuredRequestData } from './models/IStructuredRequestData.js';
 
 export class OllamaClient {
-    #environmentSettings: IEnvironmentSettings;
-    #logger: ILogger;
+    readonly #environmentSettings: IEnvironmentSettings;
+    readonly #logger: ILogger;
 
-    #host: URL;
-    #client: Ollama;
-    #model: string;
+    readonly #host: URL;
+    readonly #client: Ollama;
+    readonly #model: string;
 
     get host(): URL {
         return this.#host;
@@ -69,7 +69,24 @@ export class OllamaClient {
         }
     }
 
-    async generateStructured<TOutput>(prompt: string, requestData: IStructuredRequestData): Promise<IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, TOutput>> {
+    async free(): Promise<void> {
+        try {
+            await this.#client.generate({
+                // @ts-expect-error We need to pass an undefined prompt in order to unload the model.
+                prompt: null,
+                model: this.#model,
+                stream: false,
+                keep_alive: -1
+            });
+        } catch (error) {
+            this.#logger.error('Failed to free Ollama resources:', error);
+        }
+    }
+
+    async generateStructured<TOutput>(prompt: string, requestData: IStructuredRequestData):
+        Promise<IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, TOutput>>
+    {
+
         const request: GenerateRequest = {
             system: requestData.systemPrompt,
             prompt,
@@ -95,7 +112,9 @@ export class OllamaClient {
         }
     }
 
-    async sendMessage(prompt: string, context: Message[]): Promise<IHttpExchangeWithAttachedData<ChatRequest, ChatResponse, Message[]>> {
+    async sendMessage(prompt: string, context: Message[]):
+        Promise<IHttpExchangeWithAttachedData<ChatRequest, ChatResponse, Message[]>>
+    {
         const request: ChatRequest = {
             messages: [...context, {
                 content: prompt,
@@ -127,7 +146,9 @@ export class OllamaClient {
         }
     }
 
-    async sendMessageAndGetStream(prompt: string, context: Message[]): Promise<IHttpExchangeWithAttachedData<ChatRequest, AsyncIterable<ChatResponse>, Message[]> | null> {
+    async sendMessageAndGetStream(prompt: string, context: Message[]):
+        Promise<IHttpExchangeWithAttachedData<ChatRequest, AsyncIterable<ChatResponse>, Message[]> | null>
+    {
         const request: ChatRequest = {
             messages: [...context, {
                 content: prompt,
