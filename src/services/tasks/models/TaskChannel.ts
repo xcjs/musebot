@@ -57,7 +57,7 @@ export class TaskChannel {
         // eslint-disable-next-line @typescript-eslint/unbound-method
         this.#queue = incompleteTasks.sort(this.#compareByDate);
 
-        if(!this.hasTasks) {
+        if(!this.hasTasks && this.#postProcessor !== null) {
             void this.#postProcessor.postProcess();
         }
     }
