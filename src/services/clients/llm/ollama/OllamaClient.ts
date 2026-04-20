@@ -72,7 +72,6 @@ export class OllamaClient {
     async free(): Promise<void> {
         try {
             await this.#client.generate({
-                // @ts-expect-error We need to pass an undefined prompt in order to unload the model.
                 prompt: null,
                 model: this.#model,
                 stream: false,
