@@ -4,9 +4,9 @@ import { ITaskChannelPostProcessor } from '../../../../parallelization/ITaskChan
 import { ComfyUiClient } from '../ComfyUiClient.js';
 
 export class ComfyUiTaskChannelPostProcessor implements ITaskChannelPostProcessor {
-  #comfyUiClient: ComfyUiClient;
+  readonly #comfyUiClient: ComfyUiClient;
 
-  #logger: ILogger;
+  readonly #logger: ILogger;
 
   constructor(services: IServiceContainer) {
     this.#comfyUiClient = services.comfyUiClient;
