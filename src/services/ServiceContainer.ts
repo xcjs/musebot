@@ -193,21 +193,21 @@ export class ServiceContainer implements IServiceContainer {
             throw this.#taskNotConfiguredError;
         }
 
-        return new OllamaGenerateTask(this, prompt, temperature);
+        return new OllamaGenerateTask(this, prompt, temperature) as BaseTask<IHttpExchange<GenerateRequest, GenerateResponse>>;
     }
 
-    getLlmGenerateStructuredTask<T>(prompt: string, structuredRequestData: IStructuredRequestData | undefined): BaseTask<IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, T>> {
+    getLlmGenerateStructuredTask<T>(prompt: string, structuredRequestData: IStructuredRequestData): BaseTask<IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, T>> {
         if (!this.featureService.hasFeature(SupportedFeature.Txt2Txt)) {
             throw this.#taskNotConfiguredError;
         }
 
-        return new OllamaGenerateStructuredTask<T>(this, prompt, structuredRequestData);
+        return new OllamaGenerateStructuredTask<T>(this, prompt, structuredRequestData) as BaseTask<IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, T>>;
     }
 
     getEmojiReactionTask(reaction: MessageReaction, user: User): BaseTask<unknown> {
         switch (this.environmentSettings.botFunction) {
             case BotFunction.Chat:
-                return new OllamaEmojiReactionTask(this, reaction, user);
+                return new OllamaEmojiReactionTask(this, reaction, user) as BaseTask<unknown>;
             default:
                 throw this.#taskNotConfiguredError;
         }
@@ -216,9 +216,9 @@ export class ServiceContainer implements IServiceContainer {
     getMessageTask(message: DiscordMessage): BaseTask<unknown> {
         switch(this.#environmentSettings.botFunction) {
             case BotFunction.Chat:
-                return new OllamaMessageTask(this, message);
+                return new OllamaMessageTask(this, message) as BaseTask<unknown>;
             case BotFunction.Media:
-                return new ComfyUiMessageTask(this, message);
+                return new ComfyUiMessageTask(this, message) as BaseTask<unknown>;
             default:
                 throw this.#taskNotConfiguredError;
         }
@@ -229,7 +229,7 @@ export class ServiceContainer implements IServiceContainer {
             case BotFunction.Chat:
                 switch (interaction.customId as BotInteraction) {
                     case BotInteraction.Help:
-                        return new ShowHelpTask(this, interaction);
+                        return new ShowHelpTask(this, interaction) as BaseTask<unknown>;
                     default:
                         throw this.#taskNotConfiguredError;
                 }
@@ -240,11 +240,11 @@ export class ServiceContainer implements IServiceContainer {
                     case BotInteraction.GuidanceScalePlus:
                     case BotInteraction.ExpandPrompt:
                     case BotInteraction.Randomize:
-                        return new ComfyUiInteractionTask(this, interaction);
+                        return new ComfyUiInteractionTask(this, interaction) as BaseTask<unknown>;
                     case BotInteraction.ShowSource:
-                        return new ShowDescriptionTask(this, interaction);
+                        return new ShowDescriptionTask(this, interaction) as BaseTask<unknown>;
                     case BotInteraction.Help:
-                        return new ShowHelpTask(this, interaction);
+                        return new ShowHelpTask(this, interaction) as BaseTask<unknown>;
                     default:
                         throw this.#taskNotConfiguredError;
                 }
@@ -256,13 +256,13 @@ export class ServiceContainer implements IServiceContainer {
     getAttachmentTask(
         message: DiscordMessage,
         prompt: string): BaseTask<unknown> {
-        return new ComfyUiAttachmentTask(this, message, prompt);
+        return new ComfyUiAttachmentTask(this, message, prompt) as BaseTask<unknown>;
     }
 
     getCustomInteractionTask(interaction: ButtonInteraction, workflow: IWorkflow): BaseTask<unknown> {
         switch (workflow.type) {
             case SupportedFeature.Img2Img:
-                return new ComfyUiImg2ImgInteractionTask(this, interaction, workflow);
+                return new ComfyUiImg2ImgInteractionTask(this, interaction, workflow) as BaseTask<unknown>;
             default:
                 throw this.#taskNotConfiguredError;
         }
@@ -287,7 +287,13 @@ export class ServiceContainer implements IServiceContainer {
         if(supportedMutators.length === 1) {
             return supportedMutators[0];
         } else if(supportedMutators.length > 1) {
-            return getRandomArrayEntry(supportedMutators);
+            const mutator = getRandomArrayEntry(supportedMutators);
+
+            if(mutator === null) {
+                throw new Error('A supported mutator could not be found.');
+            }
+
+            return mutator;
         } else {
             throw this.#taskNotConfiguredError;
         }
@@ -340,6 +346,8 @@ export class ServiceContainer implements IServiceContainer {
                 this.#helpService = new MediaHelpService(this);
                 this.#generativeChatClient = new GenerativeMediaChatClient(this);
                 break;
+            default:
+                throw new Error('An invalid BotFunction was selected.');
         }
 
         switch(this.#environmentSettings.taskQueueStrategy) {

@@ -11,13 +11,13 @@ import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.j
 import { OllamaBaseTask } from './OllamaBaseTask.js';
 
 export class OllamaEmojiReactionTask extends OllamaBaseTask<void> {
-    #services: IServiceContainer;
+    readonly #services: IServiceContainer;
 
-    #featureService: IFeatureService;
-    #taskQueue: ITaskQueue;
+    readonly #featureService: IFeatureService;
+    readonly #taskQueue: ITaskQueue;
 
-    #reaction: MessageReaction;
-    #user: User;
+    readonly #reaction: MessageReaction;
+    readonly #user: User;
 
     constructor(
         services: IServiceContainer,

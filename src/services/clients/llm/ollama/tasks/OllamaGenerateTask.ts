@@ -11,10 +11,10 @@ export class OllamaGenerateTask extends OllamaBaseTask<IHttpExchange<GenerateReq
         this.#onSuccess = callback;
     }
 
-    #prompt: string;
-    #temperature: number | undefined = undefined;
+    readonly #prompt: string;
+    readonly #temperature: number | undefined = undefined;
 
-    #ollamaExchange: IHttpExchange<GenerateRequest, GenerateResponse>;
+    #ollamaExchange: IHttpExchange<GenerateRequest, GenerateResponse> | null = null;
 
     #onSuccess: (payload: IHttpExchange<GenerateRequest, GenerateResponse>) => void = () => { };
 
@@ -40,7 +40,11 @@ export class OllamaGenerateTask extends OllamaBaseTask<IHttpExchange<GenerateReq
         switch (this.taskStatus) {
             case TaskStatus.Successful:
                 this.logger.success('Task successful - passing Ollama exchange to callback:', this.#ollamaExchange);
-                this.#onSuccess(this.#ollamaExchange);
+
+                if(this.#ollamaExchange !== null) {
+                    this.#onSuccess(this.#ollamaExchange);
+                }
+
                 break;
         }
     }
