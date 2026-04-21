@@ -5,11 +5,11 @@ import { TaskStatus } from '../enums/TaskStatus.js';
 import { BaseTask } from './BaseTask.js';
 
 export class TaskChannel {
-    #services: IServiceContainer;
+    readonly #services: IServiceContainer;
 
-    #logger: ILogger;
+    readonly #logger: ILogger;
 
-    #name: string;
+    readonly #name: string;
     #queue: BaseTask<unknown>[] = [];
     #postProcessor: ITaskChannelPostProcessor | null = null;
 
