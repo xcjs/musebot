@@ -1,11 +1,15 @@
 import { Attachment, ButtonInteraction, Message, MessageReaction } from 'discord.js';
 
+import { TaskQueueStrategy } from '../../../../../enums/TaskQueueStrategy.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
+import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
+import { IFeatureService } from '../../../../features/IFeatureService.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { ResourceType } from '../../../../parallelization/ResourceType.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
+import { OllamaClient } from '../../../llm/ollama/OllamaClient.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
 
@@ -18,11 +22,13 @@ export abstract class ComfyUiBaseTask extends BaseTask<void> {
         return ResourceType.Media;
     }
 
-    environmentSettings: IEnvironmentSettings;
-    comfyUiClient: ComfyUiClient;
-    workflowService: IWorkflowService;
-    comfyUiReplyService: ComfyUiReplyService;
-    replyService: IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
+    readonly environmentSettings: IEnvironmentSettings;
+    readonly comfyUiClient: ComfyUiClient;
+    readonly workflowService: IWorkflowService;
+    readonly comfyUiReplyService: ComfyUiReplyService;
+    readonly replyService: IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
+    readonly #featureService: IFeatureService;
+    readonly #ollamaClient: OllamaClient;
 
     constructor(services: IServiceContainer) {
         super(services);
@@ -32,6 +38,8 @@ export abstract class ComfyUiBaseTask extends BaseTask<void> {
         this.workflowService = services.workflowService;
         this.comfyUiReplyService = services.comfyUiReplyService;
         this.replyService = services.getReplyService();
+        this.#featureService = services.featureService;
+        this.#ollamaClient = services.ollamaClient;
     }
 
     override async process(): Promise<void> {
@@ -42,6 +50,11 @@ export abstract class ComfyUiBaseTask extends BaseTask<void> {
     }
 
     override async postProcess(): Promise<void> {
+        if(this.environmentSettings.taskQueueStrategy === TaskQueueStrategy.Serial
+            && this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
+            await this.#ollamaClient.free();
+        }
+
         await super.postProcess();
     }
 }
