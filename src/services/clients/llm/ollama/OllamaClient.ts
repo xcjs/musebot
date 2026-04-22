@@ -1,4 +1,3 @@
-import nodeFetch from 'node-fetch';
 import { ChatRequest, ChatResponse, GenerateRequest, GenerateResponse, Message, Ollama } from 'ollama';
 
 import { IHttpExchange } from '../../../../models/IHttpExchange.js';
@@ -37,11 +36,7 @@ export class OllamaClient {
         this.#logger.info(`Selected host: ${host}`);
 
         this.#client = new Ollama({
-            host: host.toString(),
-            fetch: (input: URL | RequestInfo, init?: RequestInit): Promise<Response> => {
-                // @ts-expect-error Force internal RequestInfo type to match node-fetch RequestInfo type.
-                return nodeFetch(input, init);
-            }
+            host: host.toString()
         });
 
         this.#model = this.#selectModel(this.#environmentSettings.ollamaModels);
