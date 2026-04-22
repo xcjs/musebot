@@ -1,5 +1,4 @@
-import { Attachment, ButtonInteraction, Message, MessageReaction } from 'discord.js';
-import { Message as DiscordMessage } from 'discord.js';
+import { Attachment, Message as DiscordMessage, MessageReaction } from 'discord.js';
 import { Message as OllamaMessage } from 'ollama';
 
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
@@ -28,7 +27,7 @@ export abstract class OllamaBaseTask<T> extends BaseTask<T> {
     contextService: IContextService<DiscordMessage, OllamaMessage>;
     ollamaReplyService: OllamaReplyService;
     ollamaStreamingReplyService: OllamaStreamingReplyService;
-    replyService: IReplyService<DiscordMessage, MessageReaction, Attachment, Message | ButtonInteraction>;
+    replyService: IReplyService<DiscordMessage, MessageReaction, Attachment, DiscordMessage>;
 
     constructor(services: IServiceContainer) {
         super(services);
