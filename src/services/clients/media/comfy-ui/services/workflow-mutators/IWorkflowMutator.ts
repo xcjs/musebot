@@ -12,5 +12,5 @@ export interface IWorkflowMutator {
     additionalAttachments: AttachmentBuilder[];
     mutate(renderRequest: SerializableRenderRequest,
         interaction: Message | ButtonInteraction | MessageReaction,
-        workflow: IWorkflow): Promise<SerializableRenderRequest | null>;
+        workflow: IWorkflow): Promise<SerializableRenderRequest>;
 }

@@ -12,19 +12,16 @@ export class OllamaGenerateStructuredTask<T> extends OllamaBaseTask<IHttpExchang
         this.#onSuccess = callback;
     }
 
-    #prompt: string;
-    #structuredRequestData: IStructuredRequestData | undefined = undefined;
+    readonly #prompt: string;
+    readonly #structuredRequestData: IStructuredRequestData;
 
-    #ollamaExchange: IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, T>;
+    #ollamaExchange: IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, T> | null = null;
 
     #onSuccess: (payload: IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, T>) => void = () => { };
 
-    constructor(services: IServiceContainer, prompt: string, structuredRequestData: IStructuredRequestData | undefined = undefined) {
+    constructor(services: IServiceContainer, prompt: string, structuredRequestData: IStructuredRequestData) {
         super(services);
         this.logger = services.getLogger('OllamaGenerateStructuredTask');
-
-        this.environmentSettings = services.environmentSettings;
-        this.ollamaClient = services.ollamaClient;
 
         this.#prompt = prompt;
         this.#structuredRequestData = structuredRequestData;
@@ -41,7 +38,11 @@ export class OllamaGenerateStructuredTask<T> extends OllamaBaseTask<IHttpExchang
         switch (this.taskStatus) {
             case TaskStatus.Successful:
                 this.logger.success('Task successful - passing Ollama exchange to callback:', this.#ollamaExchange);
-                this.#onSuccess(this.#ollamaExchange);
+
+                if(this.#ollamaExchange !== null) {
+                    this.#onSuccess(this.#ollamaExchange);
+                }
+
                 break;
         }
     }

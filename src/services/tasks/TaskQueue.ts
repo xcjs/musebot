@@ -8,16 +8,16 @@ import { BaseTask } from './models/BaseTask.js';
 import { TaskChannel } from './models/TaskChannel.js';
 
 export class TaskQueue implements ITaskQueue {
-    #services: IServiceContainer;
+    readonly #services: IServiceContainer;
 
-    #environmentSettings: IEnvironmentSettings;
+    readonly #environmentSettings: IEnvironmentSettings;
 
-    #logger: ILogger;
+    readonly #logger: ILogger;
 
-    #channels: Array<TaskChannel> = [];
+    readonly #channels: Array<TaskChannel> = [];
 
     get isActive(): boolean {
-        return this.#channels.filter(channel => channel.hasTasks).length > 0;
+        return this.#channels.some(channel => channel.hasTasks);
     }
 
     constructor(services: IServiceContainer) {
@@ -36,10 +36,16 @@ export class TaskQueue implements ITaskQueue {
             taskChannel = new TaskChannel(this.#services, task.taskChannel);
             this.#channels.push(taskChannel);
         } else {
-            taskChannel = this.#channels.find(x => x.name === task.taskChannel);
+            const potentialTaskChannel = this.#channels.find(x => x.name === task.taskChannel);
+
+            if(potentialTaskChannel === undefined) {
+                taskChannel = new TaskChannel(this.#services, task.taskChannel);
+            } else {
+                taskChannel = potentialTaskChannel;
+            }
         }
 
-        if (taskChannel.queue.find(x => x.id === task.id) === undefined) {
+        if (!taskChannel.queue.some(x => x.id === task.id)) {
             taskChannel.queue.push(task);
         }
 

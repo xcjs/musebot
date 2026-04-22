@@ -144,9 +144,9 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         this.#packageName = nodePackage.name;
         this.#version = nodePackage.version;
 
-        this.#nodeEnvironment = this.#readEnum<NodeEnvironment>(EnvironmentKey.NodeEnvironment, Object.values(NodeEnvironment));
+        this.#nodeEnvironment = this.#readEnum<NodeEnvironment>(EnvironmentKey.NodeEnvironment, Object.values(NodeEnvironment), NodeEnvironment.Production);
         this.#botFunction = this.#mapLegacyFunctionsToCurrent(
-            this.#readEnum<BotFunction>(EnvironmentKey.BotFunction, Object.values(BotFunction)));
+            this.#readEnum<BotFunction>(EnvironmentKey.BotFunction, Object.values(BotFunction), BotFunction.Chat));
 
         this.#maxTaskAttempts = this.#readDefaultableNumber(EnvironmentKey.TaskQueueMaxAttempts, this.maxTaskAttempts);
         this.#taskRetryDelayMilliseconds = this.#readDefaultableNumber(EnvironmentKey.TaskQueueRetryDelayMs, this.taskRetryDelayMilliseconds);
@@ -247,7 +247,7 @@ export class EnvironmentSettings implements IEnvironmentSettings {
     * @returns {T} - The validated value from the environment variable.
     * @throws {Error} - Throws an error if the environment variable is not one of the allowed values.
     */
-    #readEnum<T>(key: EnvironmentKey, enumValues: T[], defaultValue: T | null = null): T {
+    #readEnum<T>(key: EnvironmentKey, enumValues: T[], defaultValue: T): T {
         const valueString = process.env[key]?.trim() as T || defaultValue;
 
         if(!((Object.values(enumValues) as string[]).includes(valueString as string))) {
@@ -265,7 +265,7 @@ export class EnvironmentSettings implements IEnvironmentSettings {
     * @returns {number} - The parsed number from the environment variable, or the default value if parsing fails.
     */
     #readDefaultableNumber(key: EnvironmentKey, defaultValue: number): number {
-        const value = Number.parseInt(process.env[key]?.trim());
+        const value = Number.parseInt((process.env[key] || defaultValue.toString()).trim());
 
         return Number.isNaN(value)
             ? defaultValue
@@ -336,7 +336,7 @@ export class EnvironmentSettings implements IEnvironmentSettings {
     * @returns {number} - The parsed integer from the environment variable, or the default value if parsing fails.
     */
     #readDefaultableInteger(key: EnvironmentKey, defaultValue: number): number {
-        const value = Number.parseInt(process.env[key]);
+        const value = Number.parseInt(process.env[key] || defaultValue.toString());
 
         if(Number.isNaN(value)) {
             return defaultValue;

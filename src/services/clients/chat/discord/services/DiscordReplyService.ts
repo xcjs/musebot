@@ -83,7 +83,7 @@ export class DiscordReplyService implements IReplyService<Message, MessageReacti
     }
 
     #getBotRoleMention(message: Message): string | null {
-        const botRole = message.guild?.members.resolve(message.client.user).roles.botRole || null;
+        const botRole = message.guild?.members.resolve(message.client.user)?.roles.botRole || null;
         return message.mentions.roles.find(x => x.id === botRole?.id)?.toString() ?? null;
     }
 }

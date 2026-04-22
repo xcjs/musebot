@@ -7,10 +7,9 @@ export function getRandomInt(minValue: number, maxValue: number): number {
 }
 
 export function getRandomArrayEntry<T>(items: Array<T>): T | null {
-    if(items.length === 0) {
+    if (items.length === 0) {
         return null;
     }
-
     const model = items[getRandomInt(0, items.length - 1)];
 
     return model;

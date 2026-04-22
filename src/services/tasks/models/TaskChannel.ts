@@ -5,11 +5,11 @@ import { TaskStatus } from '../enums/TaskStatus.js';
 import { BaseTask } from './BaseTask.js';
 
 export class TaskChannel {
-    #services: IServiceContainer;
+    readonly #services: IServiceContainer;
 
-    #logger: ILogger;
+    readonly #logger: ILogger;
 
-    #name: string;
+    readonly #name: string;
     #queue: BaseTask<unknown>[] = [];
     #postProcessor: ITaskChannelPostProcessor | null = null;
 
@@ -57,7 +57,7 @@ export class TaskChannel {
         // eslint-disable-next-line @typescript-eslint/unbound-method
         this.#queue = incompleteTasks.sort(this.#compareByDate);
 
-        if(!this.hasTasks) {
+        if(!this.hasTasks && this.#postProcessor !== null) {
             void this.#postProcessor.postProcess();
         }
     }

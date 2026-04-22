@@ -11,6 +11,7 @@ import { IEnvironmentSettings } from '../../../../../environment-settings/IEnvir
 import { SupportedFeature } from '../../../../../features/enum/SupportedFeature.js';
 import { IServiceContainer } from '../../../../../IServiceContainer.js';
 import { ITaskQueue } from '../../../../../tasks/ITaskQueue.js';
+import { BaseTask } from '../../../../../tasks/models/BaseTask.js';
 import { OLLAMA_TEMPERATURE_MAX } from '../../../../llm/ollama/constants/OllamaConstants.js';
 import { IWorkflow } from '../../models/IWorkflow.js';
 import { SerializableRenderRequest } from '../../models/SerializableRenderRequest.js';
@@ -72,7 +73,7 @@ export class RandomPromptMutator implements IWorkflowMutator {
 
     async #getRandomPrompt(): Promise<string> {
         return new Promise((resolve) => {
-            const prompt = getRandomArrayEntry(this.#environmentSettings.stableDiffusionOllamaPrompts);
+            const prompt = getRandomArrayEntry(this.#environmentSettings.stableDiffusionOllamaPrompts) || '';
             const task = this.#services.getLlmGenerateTask(prompt, OLLAMA_TEMPERATURE_MAX);
 
             const callback = (payload: IHttpExchange<GenerateRequest, GenerateResponse>): void => {
@@ -83,7 +84,7 @@ export class RandomPromptMutator implements IWorkflowMutator {
             };
 
             task.onSuccess = callback;
-            this.#taskQueue.add(task);
+            this.#taskQueue.add(task as BaseTask<unknown>);
         });
     }
 

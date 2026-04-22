@@ -24,9 +24,11 @@ export class OllamaStreamingReplyService {
         message: Message,
         responseBatch: string,
         done: boolean): Promise<Message[]> {
-        const components = done ? new ChatActionRow(this.#services).build() : null;
+        const components = done ? new ChatActionRow(this.#services).build() : [];
 
-        if (this.#currentReply() === null
+        const currentReply = this.#currentReply();
+
+        if (currentReply === null
             && responseBatch.length <= DiscordConstants.ContentMaxLength) {
 
             this.#repliesContent.push(responseBatch);
@@ -40,8 +42,8 @@ export class OllamaStreamingReplyService {
             }));
 
             await this.#rebalanceReplies(message, components);
-        } else if (this.#currentReply() !== null
-            && this.#currentReply().content.length + responseBatch.length <= DiscordConstants.ContentMaxLength) {
+        } else if (currentReply !== null
+            && currentReply.content.length + responseBatch.length <= DiscordConstants.ContentMaxLength) {
 
             const numReplies = this.#replies.length;
             const currentMessage = numReplies - 1;
@@ -51,7 +53,7 @@ export class OllamaStreamingReplyService {
 
             this.#logger.info(`Appending "${responseBatch}"`);
 
-            await this.#currentReply().edit({
+            await currentReply.edit({
                 content: currentReplyContent,
                 components
             });
@@ -101,7 +103,7 @@ export class OllamaStreamingReplyService {
         return this.#replies[this.#replies.length - 1];
     }
 
-    async #rebalanceReplies(message: Message, components: ActionRowBuilder<ButtonBuilder>[] | null): Promise<void> {
+    async #rebalanceReplies(message: Message, components: ActionRowBuilder<ButtonBuilder>[] = []): Promise<void> {
         this.#repliesContent = splitText(this.#repliesContent.join(''), DiscordConstants.ContentMaxLength);
 
         let i = 0;

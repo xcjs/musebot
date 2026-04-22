@@ -4,7 +4,6 @@ import sharp from 'sharp';
 
 import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
-import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
@@ -20,20 +19,18 @@ import { IWorkflowService } from '../services/IWorkflowService.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 
 export class ComfyUiImg2ImgInteractionTask extends ComfyUiBaseTask {
-    #environmentSettings: IEnvironmentSettings;
-    #workflowService: IWorkflowService;
-    #comfyUiClient: ComfyUiClient;
-    #comfyUiReplyService: ComfyUiReplyService;
-    #replyService: DiscordReplyService;
+    readonly #workflowService: IWorkflowService;
+    readonly #comfyUiClient: ComfyUiClient;
+    readonly #comfyUiReplyService: ComfyUiReplyService;
+    readonly #replyService: DiscordReplyService;
 
-    #interaction: ButtonInteraction;
-    #workflow: IWorkflow;
+    readonly #interaction: ButtonInteraction;
+    readonly #workflow: IWorkflow;
 
     constructor(services: IServiceContainer, interaction: ButtonInteraction, workflow: IWorkflow) {
         super(services);
         this.logger = services.getLogger('ComfyUiImg2ImgInteractionTask');
 
-        this.#environmentSettings = services.environmentSettings;
         this.#workflowService = services.workflowService;
         this.#comfyUiClient = services.comfyUiClient;
         this.#comfyUiReplyService = services.comfyUiReplyService;
@@ -59,7 +56,7 @@ export class ComfyUiImg2ImgInteractionTask extends ComfyUiBaseTask {
         // eslint-disable-next-line @typescript-eslint/no-base-to-string
         const content = `${this.#interaction.member?.user.toString() || 'You'} ran a custom workflow: \`${renderRequest.label}\``;
 
-        const renderRequests: Array<SerializableRenderRequest | null> = [];
+        const renderRequests: Array<SerializableRenderRequest> = [];
 
         for (const imageAsBase64 of imagesAsBase64) {
             const defaults = this.#workflowService.getWorkflowDefaults(this.#workflow);

@@ -14,16 +14,17 @@ import { ComfyUiClient } from '../ComfyUiClient.js';
 import { MediaCollectionResponse } from '../extensions/MediaResponse.js';
 import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
+import { WorkflowNotFoundError } from '../WorkflowNotFoundError.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 
 export class ComfyUiAttachmentTask extends ComfyUiBaseTask {
-    #workflowService: IWorkflowService;
-    #comfyUiClient: ComfyUiClient;
-    #comfyUiReplyService: ComfyUiReplyService;
-    #replyService: DiscordReplyService;
+    readonly #workflowService: IWorkflowService;
+    readonly #comfyUiClient: ComfyUiClient;
+    readonly #comfyUiReplyService: ComfyUiReplyService;
+    readonly #replyService: DiscordReplyService;
 
-    #message: Message;
-    #prompt: string;
+    readonly #message: Message;
+    readonly #prompt: string;
 
     constructor(
         services: IServiceContainer,
@@ -49,6 +50,10 @@ export class ComfyUiAttachmentTask extends ComfyUiBaseTask {
             && x.type != SupportedFeature.Txt2Txt);
 
         const workflow = getRandomArrayEntry(workflows);
+
+        if(workflow === null) {
+            throw WorkflowNotFoundError;
+        }
 
         this.logger.info(`Using ${workflow.name} as the selected workflow.`);
 

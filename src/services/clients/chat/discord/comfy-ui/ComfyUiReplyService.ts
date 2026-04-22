@@ -22,15 +22,15 @@ import { StatelessImageGenerationActionRow } from '../components/buttonRows/Stat
 import { DiscordConstants } from '../enums/DiscordConstants.js';
 
 export class ComfyUiReplyService {
-    #services: IServiceContainer;
+    readonly #services: IServiceContainer;
 
-    #environmentSettings: IEnvironmentSettings;
-    #comfyUiClient: ComfyUiClient;
-    #contentTypeService: IContentTypeService;
-    #featureService: IFeatureService;
-    #replyService: IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
+    readonly #environmentSettings: IEnvironmentSettings;
+    readonly #comfyUiClient: ComfyUiClient;
+    readonly #contentTypeService: IContentTypeService;
+    readonly #featureService: IFeatureService;
+    readonly #replyService: IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
 
-    #logger: ILogger;
+    readonly #logger: ILogger;
 
     get host(): URL {
         return this.#comfyUiClient.host;
@@ -50,16 +50,11 @@ export class ComfyUiReplyService {
 
     async reply(interaction: Message | ButtonInteraction,
         reply: BaseMessageOptions,
-        isEdit: boolean = false,
-        renderExchange: IHttpExchange<Array<SerializableRenderRequest | null>, MediaCollectionResponse>): Promise<void> {
+        isEdit: boolean,
+        renderExchange: IHttpExchange<SerializableRenderRequest[], MediaCollectionResponse>): Promise<void> {
 
-        if(reply.content === undefined || reply.content === null) {
-            reply.content = '';
-        }
-
-        if(reply.files === undefined || reply.files === null) {
-            reply.files = [];
-        }
+        reply.content ??= '';
+        reply.files ??= [];
 
         if (Object.values(renderExchange.response).length === 0) {
             this.#logger.error('A reply was created with no attachments.');
@@ -89,15 +84,15 @@ export class ComfyUiReplyService {
                     extension = mediaContainer.media.filename.substring(
                         mediaContainer.media.filename.lastIndexOf('.'),
                         mediaContainer.media.filename.length);
-                } else if (mediaContainer.blob.type !== undefined) {
+                } else if (mediaContainer.blob.type === undefined) {
+                    extension = '.octet';
+                } else {
                     const contentType = mediaContainer.blob.type;
                     extension = `.${contentType.substring(contentType.lastIndexOf('/') + 1, contentType.length)}`;
-                } else {
-                    extension = '.octet';
                 }
 
                 // Allow the action bar to be set from the first piece of media content.
-                if(components.length === 0) {
+                if(components.length === 0 && renderExchange.request !== null) {
                     components = await this.#buildActionRows(mediaContainer, renderExchange.request);
                 }
 
@@ -142,7 +137,7 @@ export class ComfyUiReplyService {
 
     getFileNameFromPrompt(renderRequest: SerializableRenderRequest | null): string {
         if(renderRequest === null) {
-            return `${this.#environmentSettings.applicationName}_${new Date().getTime()}_stateless`;
+            return `${this.#environmentSettings.applicationName}_${Date.now()}_stateless`;
         }
 
         return `${this.#environmentSettings.applicationName}_${renderRequest.seed}_${renderRequest.prompt}`.substring(0, MAX_FILE_NAME_LENGTH);
@@ -157,11 +152,11 @@ export class ComfyUiReplyService {
         const contentTypeCategory = this.#contentTypeService.getContentTypeCategoryFromContentType(contentType);
 
         const isStatefulResponse = requests.filter((request) => {
-            if (request !== null) {
+            if (request === null) {
+                return false;
+            } else {
                 const description = JSON.stringify(request);
                 return description.length <= DiscordConstants.MaxAttachmentDescriptionLength;
-            } else {
-                return false;
             }
         }).length === requests.length;
 
