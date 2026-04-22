@@ -7,8 +7,8 @@ import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { DiscordConstants } from '../enums/DiscordConstants.js';
 
 export class DiscordReplySender {
-    #environmentSettings: IEnvironmentSettings;
-    #logger: ILogger;
+    readonly #environmentSettings: IEnvironmentSettings;
+    readonly #logger: ILogger;
 
     constructor(services: IServiceContainer) {
         this.#environmentSettings = services.environmentSettings;
@@ -43,7 +43,7 @@ export class DiscordReplySender {
                     files: reply.files,
                     components: interaction.components
                 });
-            } else if (interaction instanceof ButtonInteraction && i === 0) {
+            } else if (interaction instanceof ButtonInteraction && i >= 0) {
                 const replyFragment: BaseMessageOptions = {
                     content: contentFragment.trim(),
                     files: replyAttachments,
@@ -52,14 +52,6 @@ export class DiscordReplySender {
 
                 await interaction.message.reply(replyFragment);
 
-            } else if (interaction instanceof ButtonInteraction && i > 0) {
-                const replyFragment: BaseMessageOptions = {
-                    content: contentFragment.trim(),
-                    files: replyAttachments,
-                    components: reply.components
-                };
-
-                await interaction.message.reply(replyFragment);
             } else {
                 this.#logger.warn(
                     `An interaction occurred that did not fit the reply criteria of either being an edited reply to a`
