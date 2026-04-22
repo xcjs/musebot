@@ -14,6 +14,7 @@ type DiscordReplyService = IReplyService<Message, MessageReaction, Attachment, M
 
 import { MediaCollectionResponse } from '../extensions/MediaResponse.js';
 import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
+import { WorkflowNotFoundError } from '../WorkflowNotFoundError.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 
 export class ComfyUiInteractionTask extends ComfyUiBaseTask {
@@ -38,10 +39,10 @@ export class ComfyUiInteractionTask extends ComfyUiBaseTask {
         await super.process();
 
         const attachmentsWithRenderRequests = this.#replyService.getAttachments(this.#interaction)
-            .filter(attachment => attachment.description?.length > 0);
+            .filter(attachment => attachment.description?.length || 0 > 0);
 
         const inputRenderRequests = attachmentsWithRenderRequests
-            .map(attachment => SerializableRenderRequest.fromJson(attachment.description));
+            .map(attachment => SerializableRenderRequest.fromJson(attachment.description || ''));
         const outputRenderRequests: SerializableRenderRequest[] = [];
 
         const workflows = inputRenderRequests.map(renderRequest => this.workflowService.workflows
@@ -55,6 +56,10 @@ export class ComfyUiInteractionTask extends ComfyUiBaseTask {
             const newMediaWorkflow = getRandomArrayEntry(this.workflowService.workflows.filter(x =>
                 x.type.startsWith('txt2')
                 && x.type !== SupportedFeature.Txt2Txt));
+
+            if(newMediaWorkflow === null) {
+                throw WorkflowNotFoundError;
+            }
 
             const newMediaRenderRequest = this.workflowService.getWorkflowDefaults(newMediaWorkflow);
 
@@ -79,7 +84,13 @@ export class ComfyUiInteractionTask extends ComfyUiBaseTask {
 
             // Some mutators can select a new workflow. TODO: This should probably be handled within the mutator.
             if (renderRequest.workflow !== workflow.name) {
-                mutatedWorkflow = this.workflowService.workflows.find(x => x.name === renderRequest.workflow);
+                const potentialWorkflow = this.workflowService.workflows.find(x => x.name === renderRequest.workflow);
+
+                if (potentialWorkflow === undefined) {
+                    throw WorkflowNotFoundError;
+                }
+
+                mutatedWorkflow = potentialWorkflow;
             }
 
             const prompt = this.workflowService.renderWorkflow(mutatedWorkflow, renderRequest);
