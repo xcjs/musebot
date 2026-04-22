@@ -22,9 +22,6 @@ export class OllamaGenerateTask extends OllamaBaseTask<IHttpExchange<GenerateReq
         super(services);
         this.logger = services.getLogger('OllamaGenerateTask');
 
-        this.environmentSettings = services.environmentSettings;
-        this.ollamaClient = services.ollamaClient;
-
         this.#prompt = prompt;
         this.#temperature = temperature;
     }

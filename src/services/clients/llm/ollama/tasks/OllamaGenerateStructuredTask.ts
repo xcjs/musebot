@@ -23,9 +23,6 @@ export class OllamaGenerateStructuredTask<T> extends OllamaBaseTask<IHttpExchang
         super(services);
         this.logger = services.getLogger('OllamaGenerateStructuredTask');
 
-        this.environmentSettings = services.environmentSettings;
-        this.ollamaClient = services.ollamaClient;
-
         this.#prompt = prompt;
         this.#structuredRequestData = structuredRequestData;
     }
