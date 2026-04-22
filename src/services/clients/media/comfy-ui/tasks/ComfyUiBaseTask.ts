@@ -14,7 +14,7 @@ export abstract class ComfyUiBaseTask extends BaseTask<void> {
         return this.parallelizationStrategy.getTaskChannel(this.resourceType, this.comfyUiClient.host);
     }
 
-    override get resourceType(): ResourceType | null {
+    override get resourceType(): ResourceType {
         return ResourceType.Media;
     }
 
