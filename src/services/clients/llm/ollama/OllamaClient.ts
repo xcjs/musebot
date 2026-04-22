@@ -1,5 +1,4 @@
 import { ChatRequest, ChatResponse, GenerateRequest, GenerateResponse, Message, Ollama } from 'ollama';
-import { Agent, fetch as undiciFetch, RequestInfo as UndiciRequestInfo, Response as UndiciResponse } from 'undici';
 
 import { IHttpExchange } from '../../../../models/IHttpExchange.js';
 import { IHttpExchangeWithAttachedData } from '../../../../models/IHttpExchangeWithAttachedData.js';
@@ -38,7 +37,13 @@ export class OllamaClient {
 
         this.#client = new Ollama({
             host: host.toString(),
-            fetch: void this.#extendedFetch
+            fetch: (input: URL | RequestInfo, init ?: RequestInit): Promise<Response> => {
+                const defaultableInit = init || {}
+                return fetch(input, {
+                    ...defaultableInit,
+                    signal: AbortSignal.timeout(1000 * 60 * 60),
+                })
+            }
         });
 
         this.#model = this.#selectModel(this.#environmentSettings.ollamaModels);
@@ -182,14 +187,6 @@ export class OllamaClient {
 
     static calculateTokensPerSecond(response: ChatResponse): number {
         return response.eval_count / response.eval_duration * (10 ** 9);
-    }
-
-    #extendedFetch(url: UndiciRequestInfo, init?: RequestInit): Promise<UndiciResponse> {
-        const initSpread = init || {};
-
-        return undiciFetch(url, {
-            dispatcher: new Agent({ ...initSpread, connectTimeout: 3600000 })
-        });
     }
 
     #selectModel(models: Array<string>): string {
