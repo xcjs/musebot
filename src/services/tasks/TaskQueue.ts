@@ -17,7 +17,7 @@ export class TaskQueue implements ITaskQueue {
     readonly #channels: Array<TaskChannel> = [];
 
     get isActive(): boolean {
-        return this.#channels.filter(channel => channel.hasTasks).length > 0;
+        return this.#channels.some(channel => channel.hasTasks);
     }
 
     constructor(services: IServiceContainer) {
@@ -45,7 +45,7 @@ export class TaskQueue implements ITaskQueue {
             }
         }
 
-        if (taskChannel.queue.find(x => x.id === task.id) === undefined) {
+        if (!taskChannel.queue.some(x => x.id === task.id)) {
             taskChannel.queue.push(task);
         }
 
