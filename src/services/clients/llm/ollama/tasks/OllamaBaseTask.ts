@@ -18,7 +18,7 @@ export abstract class OllamaBaseTask<T> extends BaseTask<T> {
         return this.parallelizationStrategy.getTaskChannel(this.resourceType, this.ollamaClient.host);
     }
 
-    override get resourceType(): ResourceType | null {
+    override get resourceType(): ResourceType {
         return ResourceType.LargeLanguageModel;
     }
 
