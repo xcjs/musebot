@@ -26,7 +26,7 @@ describe('SerialStrategy', () => {
             expect(result).toBe('Chat');
         });
 
-        it('should include hostname in channel name when URL is provided and taskQueueForceSerialAcrossHosts is true', () => {
+        it('should NOT include hostname in channel name when URL is provided and taskQueueForceSerialAcrossHosts is true', () => {
             const environmentSettings = {
                 maxTaskAttempts: 3,
                 taskRetryDelayMilliseconds: 100,
@@ -36,10 +36,10 @@ describe('SerialStrategy', () => {
             const testStrategy = new SerialStrategy(testServices);
             const url = new URL('http://localhost:11434');
             const result = testStrategy.getTaskChannel(ResourceType.Chat, url);
-            expect(result).toBe('Chat_localhost');
+            expect(result).toBe('Chat');
         });
 
-        it('should include hostname in channel name when URL is provided and taskQueueForceSerialAcrossHosts is true', () => {
+        it('should NOT include hostname in channel name when URL is provided and taskQueueForceSerialAcrossHosts is true', () => {
             const environmentSettings = {
                 maxTaskAttempts: 3,
                 taskRetryDelayMilliseconds: 100,
@@ -49,10 +49,10 @@ describe('SerialStrategy', () => {
             const testStrategy = new SerialStrategy(testServices);
             const url = new URL('http://localhost:11434');
             const result = testStrategy.getTaskChannel(ResourceType.LargeLanguageModel, url);
-            expect(result).toBe('GenerativeAI_localhost');
+            expect(result).toBe('GenerativeAI');
         });
 
-        it('should include hostname in channel name when URL is provided and taskQueueForceSerialAcrossHosts is true', () => {
+        it('should NOT include hostname in channel name when URL is provided and taskQueueForceSerialAcrossHosts is true', () => {
             const environmentSettings = {
                 maxTaskAttempts: 3,
                 taskRetryDelayMilliseconds: 100,
@@ -62,7 +62,7 @@ describe('SerialStrategy', () => {
             const testStrategy = new SerialStrategy(testServices);
             const url = new URL('http://localhost:8188');
             const result = testStrategy.getTaskChannel(ResourceType.Media, url);
-            expect(result).toBe('GenerativeAI_localhost');
+            expect(result).toBe('GenerativeAI');
         });
 
         it('should convert LargeLanguageModel to GenerativeAI', () => {
@@ -85,7 +85,7 @@ describe('SerialStrategy', () => {
             expect(result).toBe('none');
         });
 
-        it('should convert LargeLanguageModel with URL to GenerativeAI', () => {
+        it('should convert LargeLanguageModel with URL to GenerativeAI (no hostname included)', () => {
             const environmentSettings = {
                 maxTaskAttempts: 3,
                 taskRetryDelayMilliseconds: 100,
@@ -95,10 +95,10 @@ describe('SerialStrategy', () => {
             const testStrategy = new SerialStrategy(testServices);
             const url = new URL('http://localhost:11434');
             const result = testStrategy.getTaskChannel(ResourceType.LargeLanguageModel, url);
-            expect(result).toBe('GenerativeAI_localhost');
+            expect(result).toBe('GenerativeAI');
         });
 
-        it('should convert Media with URL to GenerativeAI', () => {
+        it('should convert Media with URL to GenerativeAI (no hostname included)', () => {
             const environmentSettings = {
                 maxTaskAttempts: 3,
                 taskRetryDelayMilliseconds: 100,
@@ -108,7 +108,7 @@ describe('SerialStrategy', () => {
             const testStrategy = new SerialStrategy(testServices);
             const url = new URL('http://localhost:8188');
             const result = testStrategy.getTaskChannel(ResourceType.Media, url);
-            expect(result).toBe('GenerativeAI_localhost');
+            expect(result).toBe('GenerativeAI');
         });
 
         it('should merge LLM and Media into same channel when no URL', () => {
@@ -119,7 +119,7 @@ describe('SerialStrategy', () => {
             expect(llmResult).toBe('GenerativeAI');
         });
 
-        it('should create different channels for different URLs even with converted type', () => {
+        it('should create SAME channel for different URLs when taskQueueForceSerialAcrossHosts is true', () => {
             const environmentSettings = {
                 maxTaskAttempts: 3,
                 taskRetryDelayMilliseconds: 100,
@@ -132,7 +132,7 @@ describe('SerialStrategy', () => {
             const result1 = testStrategy.getTaskChannel(ResourceType.LargeLanguageModel, url1);
             const result2 = testStrategy.getTaskChannel(ResourceType.LargeLanguageModel, url2);
 
-            expect(result1).not.toBe(result2);
+            expect(result1).toBe(result2);
         });
 
         it('should handle GenerativeAI resource type without conversion', () => {
@@ -140,7 +140,7 @@ describe('SerialStrategy', () => {
             expect(result).toBe('GenerativeAI');
         });
 
-        it('should include URL for GenerativeAI when provided', () => {
+        it('should NOT include URL for GenerativeAI when provided', () => {
             const environmentSettings = {
                 maxTaskAttempts: 3,
                 taskRetryDelayMilliseconds: 100,
@@ -150,7 +150,7 @@ describe('SerialStrategy', () => {
             const testStrategy = new SerialStrategy(testServices);
             const url = new URL('http://localhost:3000');
             const result = testStrategy.getTaskChannel(ResourceType.GenerativeAI, url);
-            expect(result).toBe('GenerativeAI_localhost');
+            expect(result).toBe('GenerativeAI');
         });
     });
 });

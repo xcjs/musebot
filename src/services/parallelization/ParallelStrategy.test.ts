@@ -18,7 +18,7 @@ describe('ParallelStrategy', () => {
             taskQueueForceSerialAcrossHosts: false,
         } as IEnvironmentSettings;
         services = createMockServiceContainer({ environmentSettings });
-        strategy = new ParallelStrategy(services);
+        strategy = new ParallelStrategy();
     });
 
     describe('getTaskChannel()', () => {
@@ -34,10 +34,10 @@ describe('ParallelStrategy', () => {
                 taskQueueForceSerialAcrossHosts: false,
             } as IEnvironmentSettings;
             const testServices = createMockServiceContainer({ environmentSettings });
-            const testStrategy = new ParallelStrategy(testServices);
+            const testStrategy = new ParallelStrategy();
             const url = new URL('http://localhost:11434');
             const result = testStrategy.getTaskChannel(ResourceType.Chat, url);
-            expect(result).toBe('Chat');
+            expect(result).toBe('Chat_localhost');
         });
 
         it('should not modify LargeLanguageModel resource type', () => {
@@ -62,7 +62,7 @@ describe('ParallelStrategy', () => {
                 taskQueueForceSerialAcrossHosts: true,
             } as IEnvironmentSettings;
             const testServices = createMockServiceContainer({ environmentSettings });
-            const testStrategy = new ParallelStrategy(testServices);
+            const testStrategy = new ParallelStrategy();
             const url1 = new URL('http://localhost:11434');
             const url2 = new URL('http://otherhost:11435');
             const result1 = testStrategy.getTaskChannel(ResourceType.LargeLanguageModel, url1);
@@ -100,13 +100,13 @@ describe('ParallelStrategy', () => {
                 taskQueueForceSerialAcrossHosts: false,
             } as IEnvironmentSettings;
             const testServices = createMockServiceContainer({ environmentSettings });
-            const testStrategy = new ParallelStrategy(testServices);
+            const testStrategy = new ParallelStrategy();
             const url1 = new URL('http://localhost:11434');
             const url2 = new URL('http://otherhost:11435');
             const result1 = testStrategy.getTaskChannel(ResourceType.LargeLanguageModel, url1);
             const result2 = testStrategy.getTaskChannel(ResourceType.LargeLanguageModel, url2);
 
-            expect(result1).toBe(result2);
+            expect(result1).not.toBe(result2);
         });
 
         it('should merge LLM and Media into same channel in SerialStrategy', () => {
@@ -124,14 +124,14 @@ describe('ParallelStrategy', () => {
         });
 
         it('should handle Chat the same way in both strategies', () => {
-            const parallel = new ParallelStrategy(services);
+            const parallel = new ParallelStrategy();
             const environmentSettings = {
                 maxTaskAttempts: 3,
                 taskRetryDelayMilliseconds: 100,
                 taskQueueForceSerialAcrossHosts: false,
             } as IEnvironmentSettings;
             const testServices = createMockServiceContainer({ environmentSettings });
-            const serial = new ParallelStrategy(testServices);
+            const serial = new ParallelStrategy();
 
             const parallelResult = parallel.getTaskChannel(ResourceType.Chat, null);
             const serialResult = serial.getTaskChannel(ResourceType.Chat, null);
@@ -140,14 +140,14 @@ describe('ParallelStrategy', () => {
         });
 
         it('should handle None the same way in both strategies', () => {
-            const parallel = new ParallelStrategy(services);
+            const parallel = new ParallelStrategy();
             const environmentSettings = {
                 maxTaskAttempts: 3,
                 taskRetryDelayMilliseconds: 100,
                 taskQueueForceSerialAcrossHosts: false,
             } as IEnvironmentSettings;
             const testServices = createMockServiceContainer({ environmentSettings });
-            const serial = new ParallelStrategy(testServices);
+            const serial = new ParallelStrategy();
 
             const parallelResult = parallel.getTaskChannel(ResourceType.None, null);
             const serialResult = serial.getTaskChannel(ResourceType.None, null);
