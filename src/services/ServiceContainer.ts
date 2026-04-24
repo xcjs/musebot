@@ -352,7 +352,7 @@ export class ServiceContainer implements IServiceContainer {
 
         switch(this.#environmentSettings.taskQueueStrategy) {
             case TaskQueueStrategy.Parallel:
-                this.#parallelizationStrategy = new ParallelStrategy(this);
+                this.#parallelizationStrategy = new ParallelStrategy();
                 break;
             default:
                 this.#parallelizationStrategy = new SerialStrategy(this);

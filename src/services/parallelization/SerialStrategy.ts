@@ -6,7 +6,7 @@ export class SerialStrategy implements IParallelizationStrategy {
     readonly #includeHostname: boolean;
 
     constructor(services: IServiceContainer) {
-        this.#includeHostname = services.environmentSettings.taskQueueForceSerialAcrossHosts;
+        this.#includeHostname = !services.environmentSettings.taskQueueForceSerialAcrossHosts;
     }
 
     getTaskChannel(resourceType: ResourceType, resourceUrl: URL | null = null): string {
