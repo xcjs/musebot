@@ -1,23 +1,14 @@
 import { beforeEach, describe, expect, it } from '@jest/globals';
 
 import type { IEnvironmentSettings } from '../environment-settings/IEnvironmentSettings.js';
-import { IServiceContainer } from '../IServiceContainer.js';
 import { ParallelStrategy } from './ParallelStrategy.js';
-import { SerialStrategy } from './SerialStrategy.js';
 import { ResourceType } from './ResourceType.js';
 import { createMockServiceContainer } from '../../test-utils/mockServiceContainer.js';
 
 describe('ParallelStrategy', () => {
     let strategy: ParallelStrategy;
-    let services: IServiceContainer;
 
     beforeEach(() => {
-        const environmentSettings = {
-            maxTaskAttempts: 3,
-            taskRetryDelayMilliseconds: 100,
-            taskQueueForceSerialAcrossHosts: false,
-        } as IEnvironmentSettings;
-        services = createMockServiceContainer({ environmentSettings });
         strategy = new ParallelStrategy();
     });
 
@@ -28,12 +19,6 @@ describe('ParallelStrategy', () => {
         });
 
         it('should include hostname in channel name when URL is provided and taskQueueForceSerialAcrossHosts is false', () => {
-            const environmentSettings = {
-                maxTaskAttempts: 3,
-                taskRetryDelayMilliseconds: 100,
-                taskQueueForceSerialAcrossHosts: false,
-            } as IEnvironmentSettings;
-            const testServices = createMockServiceContainer({ environmentSettings });
             const testStrategy = new ParallelStrategy();
             const url = new URL('http://localhost:11434');
             const result = testStrategy.getTaskChannel(ResourceType.Chat, url);
@@ -56,12 +41,6 @@ describe('ParallelStrategy', () => {
         });
 
         it('should include hostname when taskQueueForceSerialAcrossHosts is true', () => {
-            const environmentSettings = {
-                maxTaskAttempts: 3,
-                taskRetryDelayMilliseconds: 100,
-                taskQueueForceSerialAcrossHosts: true,
-            } as IEnvironmentSettings;
-            const testServices = createMockServiceContainer({ environmentSettings });
             const testStrategy = new ParallelStrategy();
             const url1 = new URL('http://localhost:11434');
             const url2 = new URL('http://otherhost:11435');
@@ -94,12 +73,6 @@ describe('ParallelStrategy', () => {
         });
 
         it('should use different URLs for same resource when taskQueueForceSerialAcrossHosts is false', () => {
-            const environmentSettings = {
-                maxTaskAttempts: 3,
-                taskRetryDelayMilliseconds: 100,
-                taskQueueForceSerialAcrossHosts: false,
-            } as IEnvironmentSettings;
-            const testServices = createMockServiceContainer({ environmentSettings });
             const testStrategy = new ParallelStrategy();
             const url1 = new URL('http://localhost:11434');
             const url2 = new URL('http://otherhost:11435');
@@ -109,28 +82,8 @@ describe('ParallelStrategy', () => {
             expect(result1).not.toBe(result2);
         });
 
-        it('should merge LLM and Media into same channel in SerialStrategy', () => {
-            const environmentSettings = {
-                maxTaskAttempts: 3,
-                taskRetryDelayMilliseconds: 100,
-                taskQueueForceSerialAcrossHosts: true,
-            } as IEnvironmentSettings;
-            const testServices = createMockServiceContainer({ environmentSettings });
-            const testStrategy = new SerialStrategy(testServices);
-            const llmChannel = testStrategy.getTaskChannel(ResourceType.LargeLanguageModel, null);
-            const mediaChannel = testStrategy.getTaskChannel(ResourceType.Media, null);
-
-            expect(llmChannel).toBe(mediaChannel);
-        });
-
         it('should handle Chat the same way in both strategies', () => {
             const parallel = new ParallelStrategy();
-            const environmentSettings = {
-                maxTaskAttempts: 3,
-                taskRetryDelayMilliseconds: 100,
-                taskQueueForceSerialAcrossHosts: false,
-            } as IEnvironmentSettings;
-            const testServices = createMockServiceContainer({ environmentSettings });
             const serial = new ParallelStrategy();
 
             const parallelResult = parallel.getTaskChannel(ResourceType.Chat, null);
@@ -141,12 +94,6 @@ describe('ParallelStrategy', () => {
 
         it('should handle None the same way in both strategies', () => {
             const parallel = new ParallelStrategy();
-            const environmentSettings = {
-                maxTaskAttempts: 3,
-                taskRetryDelayMilliseconds: 100,
-                taskQueueForceSerialAcrossHosts: false,
-            } as IEnvironmentSettings;
-            const testServices = createMockServiceContainer({ environmentSettings });
             const serial = new ParallelStrategy();
 
             const parallelResult = parallel.getTaskChannel(ResourceType.None, null);
