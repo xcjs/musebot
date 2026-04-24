@@ -39,7 +39,7 @@ export abstract class BaseTask<T> {
         return this.#createdTime;
     }
 
-    get startedTime(): Date {
+    get startedTime(): Date | null {
         return this.#startedTime;
     }
 
@@ -57,7 +57,7 @@ export abstract class BaseTask<T> {
     #numAttempts = 0;
     #maxAttempts = 0;
     #createdTime: Date;
-    #startedTime: Date;
+    #startedTime: Date | null = null;
 
     constructor(services: IServiceContainer) {
         this.parallelizationStrategy = services.parallelizationStrategy;
