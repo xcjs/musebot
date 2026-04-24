@@ -355,7 +355,7 @@ export class ServiceContainer implements IServiceContainer {
                 this.#parallelizationStrategy = new ParallelStrategy();
                 break;
             default:
-                this.#parallelizationStrategy = new SerialStrategy();
+                this.#parallelizationStrategy = new SerialStrategy(this);
                 break;
         }
     }

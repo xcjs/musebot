@@ -17,5 +17,6 @@ export enum EnvironmentKey {
     StableDiffusionOllamaPrompts = 'MUSEBOT_STABLE_DIFFUSION_OLLAMA_PROMPTS',
     TaskQueueMaxAttempts = 'MUSEBOT_TASK_QUEUE_MAX_ATTEMPTS',
     TaskQueueRetryDelayMs = 'MUSEBOT_TASK_QUEUE_RETRY_DELAY_MS',
-    TaskQueueStrategy = 'MUSEBOT_TASK_QUEUE_STRATEGY'
+    TaskQueueStrategy = 'MUSEBOT_TASK_QUEUE_STRATEGY',
+    TaskQueueForceSerialAcrossHosts = 'MUSEBOT_TASK_QUEUE_FORCE_SERIAL_ACROSS_HOSTS'
 }

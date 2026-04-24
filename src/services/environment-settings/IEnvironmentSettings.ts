@@ -13,6 +13,7 @@ export interface IEnvironmentSettings {
     maxTaskAttempts: number;
     taskRetryDelayMilliseconds: number;
     taskQueueStrategy: TaskQueueStrategy;
+    taskQueueForceSerialAcrossHosts: boolean;
 
     discordToken: string;
     discordChannels: Array<string>;
