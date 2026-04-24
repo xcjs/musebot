@@ -13,7 +13,7 @@ export class SerialStrategy implements IParallelizationStrategy {
         parts.push(resourceType);
 
         if (resourceUrl !== null) {
-            parts.push(resourceUrl.toString());
+            parts.push(resourceUrl.hostname);
         }
 
         return parts.join('_');
