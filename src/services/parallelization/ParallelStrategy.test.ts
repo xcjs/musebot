@@ -1,9 +1,7 @@
 import { beforeEach, describe, expect, it } from '@jest/globals';
 
-import type { IEnvironmentSettings } from '../environment-settings/IEnvironmentSettings.js';
 import { ParallelStrategy } from './ParallelStrategy.js';
 import { ResourceType } from './ResourceType.js';
-import { createMockServiceContainer } from '../../test-utils/mockServiceContainer.js';
 
 describe('ParallelStrategy', () => {
     let strategy: ParallelStrategy;
