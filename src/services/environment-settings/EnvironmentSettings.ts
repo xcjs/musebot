@@ -49,6 +49,11 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         return this.#taskQueueStrategy;
     }
 
+    readonly #taskQueueForceSerialAcrossHosts: boolean = false;
+    get taskQueueForceSerialAcrossHosts(): boolean {
+        return this.#taskQueueForceSerialAcrossHosts;
+    }
+
     readonly #discordToken: string;
     get discordToken(): string {
         return this.#discordToken;
@@ -151,6 +156,7 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         this.#maxTaskAttempts = this.#readDefaultableNumber(EnvironmentKey.TaskQueueMaxAttempts, this.maxTaskAttempts);
         this.#taskRetryDelayMilliseconds = this.#readDefaultableNumber(EnvironmentKey.TaskQueueRetryDelayMs, this.taskRetryDelayMilliseconds);
         this.#taskQueueStrategy = this.#readEnum(EnvironmentKey.TaskQueueStrategy, Object.values(TaskQueueStrategy), TaskQueueStrategy.Serial);
+        this.#taskQueueForceSerialAcrossHosts = this.#readBoolean(EnvironmentKey.TaskQueueForceSerialAcrossHosts);
 
         this.#discordToken = this.#readRequiredString(EnvironmentKey.AuthenticationToken);
         this.#discordChannels = this.#readDelimitedList(EnvironmentKey.ChatChannels, ',');
