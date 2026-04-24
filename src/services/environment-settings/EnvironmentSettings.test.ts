@@ -82,14 +82,12 @@ describe('EnvironmentSettings', () => {
 
         it.each([
             { generativeAiHosts: '', botFunction: BotFunction.Images, environmentKey: EnvironmentKey.StableDiffusionHosts },
-            { generativeAiHosts: null, botFunction: BotFunction.Images, environmentKey: EnvironmentKey.StableDiffusionHosts },
             { generativeAiHosts: undefined, botFunction: BotFunction.Images, environmentKey: EnvironmentKey.StableDiffusionHosts },
             { generativeAiHosts: '', botFunction: BotFunction.Text, environmentKey: EnvironmentKey.OllamaHosts },
-            { generativeAiHosts: null, botFunction: BotFunction.Text, environmentKey: EnvironmentKey.OllamaHosts },
             { generativeAiHosts: undefined, botFunction: BotFunction.Text, environmentKey: EnvironmentKey.OllamaHosts },
         ])('should require the corresponding generative AI hosts to be provided when the bot function is set',
             ({ generativeAiHosts, botFunction, environmentKey }:
-                { generativeAiHosts: string | null | undefined, botFunction: BotFunction, environmentKey: EnvironmentKey }) => {
+                { generativeAiHosts: string | undefined, botFunction: BotFunction, environmentKey: EnvironmentKey }) => {
                 process.env[EnvironmentKey.BotFunction] = botFunction;
                 process.env[environmentKey] = generativeAiHosts;
 
@@ -108,13 +106,6 @@ describe('EnvironmentSettings', () => {
             },
             {
                 associatedGenerativeAiHosts: mockUrl,
-                unassociatedGenerativeAiHosts: null,
-                botFunction: BotFunction.Images,
-                associatedEnvironmentKey: EnvironmentKey.StableDiffusionHosts,
-                unassociatedEnvironmentKey: EnvironmentKey.OllamaHosts
-            },
-            {
-                associatedGenerativeAiHosts: mockUrl,
                 unassociatedGenerativeAiHosts: undefined,
                 botFunction: BotFunction.Images,
                 associatedEnvironmentKey: EnvironmentKey.StableDiffusionHosts,
@@ -123,13 +114,6 @@ describe('EnvironmentSettings', () => {
             {
                 associatedGenerativeAiHosts: mockUrl,
                 unassociatedGenerativeAiHosts: '',
-                botFunction: BotFunction.Text,
-                associatedEnvironmentKey: EnvironmentKey.OllamaHosts,
-                unassociatedEnvironmentKey: EnvironmentKey.StableDiffusionHosts
-            },
-            {
-                associatedGenerativeAiHosts: mockUrl,
-                unassociatedGenerativeAiHosts: null,
                 botFunction: BotFunction.Text,
                 associatedEnvironmentKey: EnvironmentKey.OllamaHosts,
                 unassociatedEnvironmentKey: EnvironmentKey.StableDiffusionHosts
@@ -150,7 +134,7 @@ describe('EnvironmentSettings', () => {
                 unassociatedEnvironmentKey
              }: {
                 associatedGenerativeAiHosts: string,
-                unassociatedGenerativeAiHosts: string | null | undefined,
+                unassociatedGenerativeAiHosts: string | undefined,
                 botFunction: BotFunction,
                 associatedEnvironmentKey: EnvironmentKey,
                 unassociatedEnvironmentKey: EnvironmentKey
@@ -230,6 +214,35 @@ describe('EnvironmentSettings', () => {
             const environmentSettings = new EnvironmentSettings();
 
             expect(environmentSettings.taskQueueStrategy).toBe(TaskQueueStrategy.Parallel);
+        });
+    });
+
+    describe('taskQueueForceSerialAcrossHosts', () => {
+        it('should default to false', () => {
+            const environmentSettings = new EnvironmentSettings();
+            expect(environmentSettings.taskQueueForceSerialAcrossHosts).toBe(false);
+        });
+
+        it.each([
+            'true',
+            'TRUE',
+            'tRuE'
+        ])('should accept any valid version of "true"', (stringValue: string) => {
+            process.env[EnvironmentKey.TaskQueueForceSerialAcrossHosts] = stringValue;
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.taskQueueForceSerialAcrossHosts).toBe(true);
+        });
+
+        it.each([
+            'false',
+            'invalid',
+            undefined
+        ])('should convert any other provided value to false', (stringValue: string | undefined) => {
+            process.env[EnvironmentKey.TaskQueueForceSerialAcrossHosts] = stringValue;
+            const environmentSettings = new EnvironmentSettings();
+
+            expect(environmentSettings.taskQueueForceSerialAcrossHosts).toBe(false);
         });
     });
 
@@ -315,10 +328,9 @@ describe('EnvironmentSettings', () => {
             'FALSE',
             'tru',
             'invalidValue',
-            undefined,
-            null
+            undefined
         ]
-        )('should convert any other provided value to false', (botRequiresMention: string | null | undefined) => {
+        )('should convert any other provided value to false', (botRequiresMention: string | undefined) => {
             process.env[EnvironmentKey.BotRequiresMention] = botRequiresMention;
             const environmentSettings = new EnvironmentSettings();
 
