@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it } from '@jest/globals';
 
-import type { IEnvironmentSettings } from '../environment-settings/IEnvironmentSettings.js';
-import { SerialStrategy } from './SerialStrategy.js';
 import { createMockServiceContainer } from '../../test-utils/mockServiceContainer.js';
-import { ResourceType } from './ResourceType.js';
+import type { IEnvironmentSettings } from '../environment-settings/IEnvironmentSettings.js';
 import { IServiceContainer } from '../IServiceContainer.js';
+import { ResourceType } from './ResourceType.js';
+import { SerialStrategy } from './SerialStrategy.js';
 
 describe('SerialStrategy', () => {
     let strategy: SerialStrategy;
