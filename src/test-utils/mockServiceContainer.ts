@@ -56,6 +56,7 @@ export function createMockServiceContainer(config?: MockServiceContainerConfig):
     const environmentSettings = config?.environmentSettings ?? {
         maxTaskAttempts: 3,
         taskRetryDelayMilliseconds: 100,
+        taskQueueForceSerialAcrossHosts: false,
     } as IEnvironmentSettings;
     const parallelizationStrategy = {
         getTaskChannel: () => 'test_channel',

@@ -1,7 +1,14 @@
+import { IServiceContainer } from '../IServiceContainer.js';
 import { IParallelizationStrategy } from './IParallelizationStrategy.js';
 import { ResourceType } from './ResourceType.js';
 
 export class SerialStrategy implements IParallelizationStrategy {
+    readonly #includeHostname: boolean;
+
+    constructor(services: IServiceContainer) {
+        this.#includeHostname = services.environmentSettings.taskQueueForceSerialAcrossHosts;
+    }
+
     getTaskChannel(resourceType: ResourceType, resourceUrl: URL | null = null): string {
         const parts: string[] = [];
 
@@ -12,7 +19,7 @@ export class SerialStrategy implements IParallelizationStrategy {
 
         parts.push(resourceType);
 
-        if (resourceUrl !== null) {
+        if (this.#includeHostname && resourceUrl !== null) {
             parts.push(resourceUrl.hostname);
         }
 
