@@ -8,6 +8,7 @@ import { SupportedFeature } from '../../../../../features/enum/SupportedFeature.
 import { IFeatureService } from '../../../../../features/IFeatureService.js';
 import { IServiceContainer } from '../../../../../IServiceContainer.js';
 import { ITaskQueue } from '../../../../../tasks/ITaskQueue.js';
+import { BaseTask } from '../../../../../tasks/models/BaseTask.js';
 import { IReplyService } from '../../../../chat/IReplyService.js';
 import { IWorkflow } from '../../models/IWorkflow.js';
 import { BpmConstants } from '../../models/music/BpmConstants.js';
@@ -102,7 +103,7 @@ export class MessageToMusicMutator implements IWorkflowMutator {
                 };
 
                 task.onSuccess = callback;
-                this.#taskQueue.add(task);
+                this.#taskQueue.add(task as BaseTask<unknown>);
             });
         } else {
             const promptHasLyrics = lyrics.length > 0;
@@ -136,13 +137,13 @@ export class MessageToMusicMutator implements IWorkflowMutator {
                 };
 
                 task.onSuccess = callback;
-                this.#taskQueue.add(task);
+                this.#taskQueue.add(task as BaseTask<unknown>);
             });
         } else {
             return {
                 timeSignature: getRandomArrayEntry(Object.values(TimeSignature)) as TimeSignature,
                 bpm: getRandomInt(BpmConstants.min, BpmConstants.max),
-                keyScale: getRandomArrayEntry(Object.values(KeyScale)),
+                keyScale: getRandomArrayEntry(Object.values(KeyScale)) || KeyScale.EMajor,
                 tags: songPromptRequestType.tags,
                 lyrics: songPromptRequestType.lyrics
             };
