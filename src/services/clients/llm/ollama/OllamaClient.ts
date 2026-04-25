@@ -75,7 +75,7 @@ export class OllamaClient {
                 prompt: null,
                 model: this.#model,
                 stream: false,
-                keep_alive: -1
+                keep_alive: 0
             });
         } catch (error) {
             this.#logger.error('Failed to free Ollama resources:', error);
