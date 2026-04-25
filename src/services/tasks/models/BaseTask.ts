@@ -17,10 +17,12 @@ export abstract class BaseTask<T> {
 
     set taskStatus(taskStatus: TaskStatus) {
         if (taskStatus === TaskStatus.Failed) {
-            this.#numAttempts++;
+            if (this.taskStatus !== TaskStatus.Failed) {
+                this.#numAttempts++;
 
-            if (this.#numAttempts >= this.#maxAttempts) {
-                this.#taskStatus = TaskStatus.Dead;
+                if (this.#numAttempts >= this.#maxAttempts) {
+                    this.#taskStatus = TaskStatus.Dead;
+                }
             }
         } else {
             this.#taskStatus = taskStatus;
@@ -67,6 +69,11 @@ export abstract class BaseTask<T> {
         this.#id = randomUUID();
         this.#createdTime = new Date();
         this.#maxAttempts = services.environmentSettings.maxTaskAttempts;
+    }
+
+    async preProcess(): Promise<void> {
+        this.logger.info(`Pre-processing task ${this.#id}.`);
+        await Promise.resolve();
     }
 
     async process(): Promise<void> {
