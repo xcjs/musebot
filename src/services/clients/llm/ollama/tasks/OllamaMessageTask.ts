@@ -12,12 +12,12 @@ import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.j
 import { OllamaBaseTask } from './OllamaBaseTask.js';
 
 export class OllamaMessageTask extends OllamaBaseTask<void> {
-    #services: IServiceContainer;
+    readonly #services: IServiceContainer;
 
-    #featureService: IFeatureService;
-    #taskQueue: ITaskQueue;
+    readonly #featureService: IFeatureService;
+    readonly #taskQueue: ITaskQueue;
 
-    #message: DiscordMessage;
+    readonly #message: DiscordMessage;
 
     constructor(
         services: IServiceContainer,
@@ -79,6 +79,10 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
 
         let fullResponse = '';
         let responseBatch = '';
+
+        if(!exchange?.exchange?.response) {
+            return;
+        }
 
         for await (const response of exchange.exchange.response) {
             const startTime = performance.now();
@@ -166,6 +170,6 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
         const lastReply = replies[replies.length - 1];
         const attachTask = this.#services.getAttachmentTask(lastReply, imagePrompt) as BaseTask<void>;
 
-        this.#taskQueue.add(attachTask);
+        this.#taskQueue.add(attachTask as BaseTask<unknown>);
     }
 }
