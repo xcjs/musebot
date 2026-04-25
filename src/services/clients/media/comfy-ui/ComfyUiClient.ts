@@ -14,13 +14,13 @@ export class ComfyUiClient {
         return this.#host;
     }
 
-    #environmentSettings: IEnvironmentSettings;
-    #chatClient: IGenerativeChatClient;
+    readonly #environmentSettings: IEnvironmentSettings;
+    readonly #chatClient: IGenerativeChatClient;
 
-    #logger: ILogger;
+    readonly #logger: ILogger;
 
-    #host: URL;
-    #client: ExtendedComfyUIClient;
+    readonly #host: URL;
+    readonly #client: ExtendedComfyUIClient;
 
     constructor(services: IServiceContainer) {
         this.#environmentSettings = services.environmentSettings;
@@ -75,7 +75,7 @@ export class ComfyUiClient {
         const multiMediaResponse = this.#flattenMultipleMediaResponses(mediaCollectionResponses);
 
         if (Object.keys(multiMediaResponse).length === 0) {
-            return Promise.reject(new Error('The render failed but was not reported as a failure by the Comfy UI client.'));
+            throw new Error('The render failed but was not reported as a failure by the Comfy UI client.');
         }
 
         return multiMediaResponse;
@@ -104,10 +104,7 @@ export class ComfyUiClient {
 
         for (const multiMediaResponse of multiMediaResponses) {
             for (const [key, value] of Object.entries(multiMediaResponse)) {
-                if (responseDictionary[key] === undefined) {
-                    responseDictionary[key] = [];
-                }
-
+                responseDictionary[key] ??= [];
                 responseDictionary[key] = responseDictionary[key].concat(value);
             }
         }
