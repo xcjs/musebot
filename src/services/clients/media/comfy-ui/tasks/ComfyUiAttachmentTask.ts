@@ -59,6 +59,7 @@ export class ComfyUiAttachmentTask extends ComfyUiBaseTask {
 
         const renderRequest = this.#workflowService.getWorkflowDefaults(workflow);
         renderRequest.prompt = this.#prompt.trim();
+        renderRequest.workflow = workflow.name;
         renderRequest.refreshSeed();
         renderRequest.refreshDuration();
 
