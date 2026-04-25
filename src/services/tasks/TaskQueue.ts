@@ -65,10 +65,14 @@ export class TaskQueue implements ITaskQueue {
             this.#logger.info(`Processing the task queue with ${numChannels} channel(s) and ${numTasks} task(s).`);
 
             try {
-                await this.#preProcessTasks(tasks);
+                const preProcessPromises = tasks
+                    .map((x) => {
+                        return x.preProcess();
+                    });
+
+                await Promise.allSettled(preProcessPromises);
 
                 const processPromises = tasks
-                    .filter(x => x.taskStatus !== TaskStatus.Failed)
                     .map((x) => {
                         x.taskStatus = TaskStatus.Busy;
                         return x.process();
@@ -109,33 +113,6 @@ export class TaskQueue implements ITaskQueue {
 
             tasks = this.#getNextTasks();
         }
-    }
-
-    async #preProcessTasks(tasks: BaseTask<unknown>[]): Promise<void> {
-        const preProcessingPromises = tasks.map((task) => {
-            task.taskStatus = TaskStatus.Busy;
-
-            return task.preProcess()
-                .then(() => task)
-                .catch((error) => {
-                    task.taskStatus = TaskStatus.Failed;
-                    this.#logger.error(`Pre-processing task ${task.id} failed:`, error);
-                    return task;
-                });
-        });
-
-        const results = await Promise.allSettled(preProcessingPromises);
-
-        results.forEach((result, i) => {
-            if (result.status === PromisedSettledResultStatus.Rejected.toString()) {
-                const task = tasks[i];
-
-                setTimeout(() => {
-                    task.taskStatus = TaskStatus.Idle;
-                    this.add(task);
-                }, this.#environmentSettings.taskRetryDelayMilliseconds);
-            }
-        });
     }
 
     #getNextTasks(): BaseTask<unknown>[] {
