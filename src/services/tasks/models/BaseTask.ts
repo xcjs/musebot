@@ -54,11 +54,11 @@ export abstract class BaseTask<T> {
     parallelizationStrategy: IParallelizationStrategy;
     logger: ILogger;
 
-    #id: UUID;
+    readonly #id: UUID;
     #taskStatus: TaskStatus = TaskStatus.Idle;
-    #numAttempts = 0;
-    #maxAttempts = 0;
-    #createdTime: Date;
+    #numAttempts: number = 0;
+    readonly #maxAttempts: number = 0;
+    readonly #createdTime: Date;
     #startedTime: Date | null = null;
 
     constructor(services: IServiceContainer) {
