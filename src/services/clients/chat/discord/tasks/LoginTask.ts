@@ -13,12 +13,12 @@ export class LoginTask extends BaseTask<void> {
         return this.#parallelizationStrategy.getTaskChannel(ResourceType.Chat, null);
     }
 
-    #services: IServiceContainer;
+    readonly #services: IServiceContainer;
 
-    #environmentSettings: IEnvironmentSettings;
-    #discordClient: DiscordClient;
-    #parallelizationStrategy: IParallelizationStrategy;
-    #taskQueue: ITaskQueue;
+    readonly #environmentSettings: IEnvironmentSettings;
+    readonly #discordClient: DiscordClient;
+    readonly #parallelizationStrategy: IParallelizationStrategy;
+    readonly #taskQueue: ITaskQueue;
 
     constructor(services: IServiceContainer) {
         super(services);
@@ -40,7 +40,7 @@ export class LoginTask extends BaseTask<void> {
     override async postProcess(): Promise<void> {
         if(this.taskStatus === TaskStatus.Dead) {
             this.logger.warn('Exhausted the maximum attempts for the login task. Adding a new login task to the queue as the application cannot continue otherwise.');
-            this.#taskQueue.add(new LoginTask(this.#services));
+            this.#taskQueue.add(new LoginTask(this.#services) as BaseTask<unknown>);
         }
 
         await Promise.resolve();

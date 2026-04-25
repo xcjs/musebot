@@ -300,16 +300,15 @@ export class ServiceContainer implements IServiceContainer {
         }
     }
 
-    getTaskChannelPostProcessor(resourceType: ResourceType): ITaskChannelPostProcessor {
-        switch (resourceType) {
-            case ResourceType.Chat:
-                return new OllamaTaskChannelPostProcessor(this);
-            case ResourceType.Media:
-                return new ComfyUiTaskChannelPostProcessor(this);
-            case ResourceType.GenerativeAI:
-                return new GenerativeAiChannelPostProcessor(this);
-            default:
-                return new NoOpTaskChannelPostProcessor();
+    getTaskChannelPostProcessor(channelName: string): ITaskChannelPostProcessor {
+        if(channelName.startsWith(ResourceType.LargeLanguageModel)) {
+            return new OllamaTaskChannelPostProcessor(this);
+        } else if(channelName.startsWith(ResourceType.Media)) {
+            return new ComfyUiTaskChannelPostProcessor(this);
+        } else if(channelName.startsWith(ResourceType.GenerativeAI)) {
+            return new GenerativeAiChannelPostProcessor(this);
+        } else {
+            return new NoOpTaskChannelPostProcessor();
         }
     }
 

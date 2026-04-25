@@ -10,7 +10,7 @@ import { MediaCollectionResponse, MediaContainer, OutputMedia } from './MediaRes
 import { SupportedNode } from './SupportedNode.js';
 
 export class ExtendedComfyUIClient extends ComfyUIClient {
-    #baseUrl = `http://${this.serverAddress}/`;
+    readonly #baseUrl = `http://${this.serverAddress}/`;
 
     async getMultiMedia(prompt: Prompt): Promise<MediaCollectionResponse> {
         if (!this.ws) {
