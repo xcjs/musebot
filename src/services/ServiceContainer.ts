@@ -71,6 +71,7 @@ import { IHelpService } from './help/IHelpService.js';
 import { ILogger } from './ILogger.js';
 import { IServiceContainer } from './IServiceContainer.js';
 import { Logger } from './Logger.js';
+import { GenerativeAiChannelPostProcessor } from './parallelization/GenerativeAiChannelPostProcessor.js';
 import { IParallelizationStrategy } from './parallelization/IParallelizationStrategy.js';
 import { ITaskChannelPostProcessor } from './parallelization/ITaskChannelPostProcessor.js';
 import { NoOpTaskChannelPostProcessor } from './parallelization/NoOpTaskChannelPostProcessor.js';
@@ -304,8 +305,9 @@ export class ServiceContainer implements IServiceContainer {
             case ResourceType.Chat:
                 return new OllamaTaskChannelPostProcessor(this);
             case ResourceType.Media:
-            case ResourceType.GenerativeAI:
                 return new ComfyUiTaskChannelPostProcessor(this);
+            case ResourceType.GenerativeAI:
+                return new GenerativeAiChannelPostProcessor(this);
             default:
                 return new NoOpTaskChannelPostProcessor();
         }

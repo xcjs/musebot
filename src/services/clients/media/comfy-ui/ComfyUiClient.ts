@@ -82,7 +82,11 @@ export class ComfyUiClient {
     }
 
     async free(): Promise<void> {
-        await this.#client.free();
+        try {
+            await this.#client.free();
+        } catch (error) {
+            this.#logger.error('An error occurred while instructing ComfyUI to free memory:', error);
+        }
     }
 
     async disconnect(): Promise<void> {
