@@ -85,7 +85,7 @@ export class ComfyUiClient {
         try {
             await this.#client.free();
         } catch (error) {
-            this.#logger.error('An error occurred while instructing ComfyUI to free memory:', error);
+            this.#logger.error('Failed to free ComfyUI resources:', error);
         }
     }
 
