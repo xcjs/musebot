@@ -204,6 +204,7 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         this.#logger.info(`${EnvironmentKey.TaskQueueMaxAttempts}: ${this.maxTaskAttempts}`);
         this.#logger.info(`${EnvironmentKey.TaskQueueRetryDelayMs}: ${this.taskRetryDelayMilliseconds}`);
         this.#logger.info(`${EnvironmentKey.TaskQueueStrategy}: ${this.taskQueueStrategy}`);
+        this.#logger.info(`${EnvironmentKey.TaskQueueForceSerialAcrossHosts}: ${this.taskQueueForceSerialAcrossHosts}`);
 
         this.#logger.info(`${EnvironmentKey.BotFunction}: ${this.botFunction}`);
 

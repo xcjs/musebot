@@ -17,10 +17,12 @@ export abstract class BaseTask<T> {
 
     set taskStatus(taskStatus: TaskStatus) {
         if (taskStatus === TaskStatus.Failed) {
-            this.#numAttempts++;
+            if (this.taskStatus !== TaskStatus.Failed) {
+                this.#numAttempts++;
 
-            if (this.#numAttempts >= this.#maxAttempts) {
-                this.#taskStatus = TaskStatus.Dead;
+                if (this.#numAttempts >= this.#maxAttempts) {
+                    this.#taskStatus = TaskStatus.Dead;
+                }
             }
         } else {
             this.#taskStatus = taskStatus;
@@ -39,7 +41,7 @@ export abstract class BaseTask<T> {
         return this.#createdTime;
     }
 
-    get startedTime(): Date {
+    get startedTime(): Date | null {
         return this.#startedTime;
     }
 
@@ -52,12 +54,12 @@ export abstract class BaseTask<T> {
     parallelizationStrategy: IParallelizationStrategy;
     logger: ILogger;
 
-    #id: UUID;
+    readonly #id: UUID;
     #taskStatus: TaskStatus = TaskStatus.Idle;
-    #numAttempts = 0;
-    #maxAttempts = 0;
-    #createdTime: Date;
-    #startedTime: Date;
+    #numAttempts: number = 0;
+    readonly #maxAttempts: number = 0;
+    readonly #createdTime: Date;
+    #startedTime: Date | null = null;
 
     constructor(services: IServiceContainer) {
         this.parallelizationStrategy = services.parallelizationStrategy;
@@ -67,6 +69,11 @@ export abstract class BaseTask<T> {
         this.#id = randomUUID();
         this.#createdTime = new Date();
         this.#maxAttempts = services.environmentSettings.maxTaskAttempts;
+    }
+
+    async preProcess(): Promise<void> {
+        this.logger.info(`Pre-processing task ${this.#id}.`);
+        await Promise.resolve();
     }
 
     async process(): Promise<void> {

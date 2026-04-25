@@ -87,6 +87,10 @@ export class OllamaEmojiReactionTask extends OllamaBaseTask<void> {
         let fullResponse = '';
         let responseBatch = '';
 
+        if(!exchange?.exchange?.response) {
+            return;
+        }
+
         for await (const response of exchange.exchange.response) {
             this.logger.info(`Appending "${response.message.content}"`);
 
@@ -134,6 +138,6 @@ export class OllamaEmojiReactionTask extends OllamaBaseTask<void> {
         const lastReply = replies[replies.length - 1];
         const attachTask = this.#services.getAttachmentTask(lastReply, prompt) as BaseTask<void>;
 
-        this.#taskQueue.add(attachTask);
+        this.#taskQueue.add(attachTask as BaseTask<unknown>);
     }
 }

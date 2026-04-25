@@ -65,7 +65,15 @@ export class TaskQueue implements ITaskQueue {
             this.#logger.info(`Processing the task queue with ${numChannels} channel(s) and ${numTasks} task(s).`);
 
             try {
-                const processPromises = tasks.map((x) => {
+                const preProcessPromises = tasks
+                    .map((x) => {
+                        return x.preProcess();
+                    });
+
+                await Promise.allSettled(preProcessPromises);
+
+                const processPromises = tasks
+                    .map((x) => {
                         x.taskStatus = TaskStatus.Busy;
                         return x.process();
                     });

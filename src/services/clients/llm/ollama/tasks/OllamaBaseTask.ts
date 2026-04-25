@@ -49,12 +49,10 @@ export abstract class OllamaBaseTask<T> extends BaseTask<T> {
         this.#comfyUiClient = services.comfyUiClient;
     }
 
-    override async process(): Promise<void> {
-        await super.process();
-    }
+    override async preProcess(): Promise<void> {
+        await super.preProcess();
 
-    override async postProcess(): Promise<void> {
-        if(this.environmentSettings.taskQueueStrategy === TaskQueueStrategy.Serial
+        if (this.environmentSettings.taskQueueStrategy === TaskQueueStrategy.Serial
             && (this.#featureService.hasFeature(SupportedFeature.ContextualImg2Img)
                 || this.#featureService.hasFeature(SupportedFeature.Img2Img)
                 || this.#featureService.hasFeature(SupportedFeature.Img2Vid)
@@ -65,7 +63,13 @@ export abstract class OllamaBaseTask<T> extends BaseTask<T> {
         ) {
             await this.#comfyUiClient.free();
         }
+    }
 
+    override async process(): Promise<void> {
+        await super.process();
+    }
+
+    override async postProcess(): Promise<void> {
         await super.postProcess();
     }
 }

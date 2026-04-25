@@ -42,6 +42,15 @@ export abstract class ComfyUiBaseTask extends BaseTask<void> {
         this.#ollamaClient = services.ollamaClient;
     }
 
+    override async preProcess(): Promise<void> {
+        await super.preProcess();
+
+        if (this.environmentSettings.taskQueueStrategy === TaskQueueStrategy.Serial
+            && this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
+            await this.#ollamaClient.free();
+        }
+    }
+
     override async process(): Promise<void> {
         await super.process();
 
@@ -50,11 +59,6 @@ export abstract class ComfyUiBaseTask extends BaseTask<void> {
     }
 
     override async postProcess(): Promise<void> {
-        if(this.environmentSettings.taskQueueStrategy === TaskQueueStrategy.Serial
-            && this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
-            await this.#ollamaClient.free();
-        }
-
         await super.postProcess();
     }
 }
