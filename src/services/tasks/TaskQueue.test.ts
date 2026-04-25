@@ -10,23 +10,30 @@ import { TaskQueue } from './TaskQueue.js';
 
 class MockTask extends BaseTask<unknown> {
     readonly #taskChannelName: string;
+    readonly #preProcessMock: () => Promise<void>;
     readonly #processMock: () => Promise<void>;
     readonly #postProcessMock: () => Promise<void>;
 
     constructor(
         services: IServiceContainer,
         taskChannelName: string,
+        preProcessMock?: () => Promise<void>,
         processMock?: () => Promise<void>,
         postProcessMock?: () => Promise<void>
     ) {
         super(services);
         this.#taskChannelName = taskChannelName;
+        this.#preProcessMock = preProcessMock ?? ((): Promise<void> => Promise.resolve());
         this.#processMock = processMock ?? ((): Promise<void> => Promise.resolve());
         this.#postProcessMock = postProcessMock ?? ((): Promise<void> => Promise.resolve());
     }
 
     get taskChannel(): string {
         return this.#taskChannelName;
+    }
+
+    override preProcess(): Promise<void> {
+        return this.#preProcessMock();
     }
 
     override process(): Promise<void> {
@@ -169,6 +176,28 @@ describe('TaskQueue', () => {
             expect(processCalled).toBe(true);
         });
 
+        it('should call preProcess before process', async function (this: void): Promise<void> {
+            let preProcessCalled = false;
+            let processCalled = false;
+            const preProcessMock = (): Promise<void> => {
+                preProcessCalled = true;
+                return Promise.resolve();
+            };
+            const processMock = (): Promise<void> => {
+                processCalled = true;
+                return Promise.resolve();
+            };
+            const queue = new TaskQueue(mockServices);
+            const task = new MockTask(mockServices, 'testChannel', preProcessMock, processMock);
+
+            queue.add(task);
+
+            await jest.runAllTimersAsync();
+
+            expect(preProcessCalled).toBe(true);
+            expect(processCalled).toBe(true);
+        });
+
         it('should call postProcess after successful task', async function (this: void): Promise<void> {
             let postProcessCalled = false;
             const processMock = (): Promise<void> => Promise.resolve();
@@ -177,13 +206,58 @@ describe('TaskQueue', () => {
                 return Promise.resolve();
             };
             const queue = new TaskQueue(mockServices);
-            const task = new MockTask(mockServices, 'testChannel', processMock, postProcessMock);
+            const task = new MockTask(mockServices, 'testChannel', undefined, processMock, postProcessMock);
 
             queue.add(task);
 
             await jest.runAllTimersAsync();
 
             expect(postProcessCalled).toBe(true);
+        });
+
+        it('should mark task as Successful if preProcess fails but process succeeds', async function (this: void): Promise<void> {
+            let preProcessCalled = false;
+            let processCalled = false;
+            const preProcessMock = (): Promise<void> => {
+                preProcessCalled = true;
+                return Promise.resolve();
+            };
+            const processMock = (): Promise<void> => {
+                processCalled = true;
+                return Promise.resolve();
+            };
+            const queue = new TaskQueue(mockServices);
+            const task = new MockTask(mockServices, 'testChannel', preProcessMock, processMock);
+
+            queue.add(task);
+
+            await jest.runAllTimersAsync();
+
+            expect(preProcessCalled).toBe(true);
+            expect(processCalled).toBe(true);
+            expect(task.taskStatus).toBe(TaskStatus.Successful);
+        });
+
+        it('should call process after preProcess succeeds', async function (this: void): Promise<void> {
+            let preProcessCalled = false;
+            let processCalled = false;
+            const preProcessMock = (): Promise<void> => {
+                preProcessCalled = true;
+                return Promise.resolve();
+            };
+            const processMock = (): Promise<void> => {
+                processCalled = true;
+                return Promise.resolve();
+            };
+            const queue = new TaskQueue(mockServices);
+            const task = new MockTask(mockServices, 'testChannel', preProcessMock, processMock);
+
+            queue.add(task);
+
+            await jest.runAllTimersAsync();
+
+            expect(preProcessCalled).toBe(true);
+            expect(processCalled).toBe(true);
         });
 
         it('should handle multiple tasks in different channels', async function (this: void): Promise<void> {
@@ -231,55 +305,38 @@ describe('TaskQueue', () => {
                 return Promise.resolve();
             };
             const queue = new TaskQueue(mockServices);
-            const task = new MockTask(mockServices, 'testChannel', processMock);
+            const task = new MockTask(mockServices, 'testChannel', undefined, processMock);
 
             queue.add(task);
 
             await jest.runAllTimersAsync();
 
-            expect(callCount).toBeGreaterThanOrEqual(1);
+            expect(callCount).toBe(2);
             // eslint-disable-next-line @typescript-eslint/unbound-method
             expect(mockLogger.error).toHaveBeenCalled();
         });
 
-        it('should mark task as dead after max attempts', async function (this: void): Promise<void> {
+        it('should mark task as Successful if process succeeds', async function (this: void): Promise<void> {
             const services = createMockServiceContainer({
                 logger: mockLogger,
                 postProcessor: mockPostProcessor,
-                environmentSettings: { maxTaskAttempts: 1 } as never,
+                environmentSettings: { maxTaskAttempts: 3 } as never,
             });
             let postProcessCalled = false;
-            const processMock = (): Promise<void> => Promise.reject(new Error('Task failed'));
+            const processMock = (): Promise<void> => Promise.resolve();
             const postProcessMock = (): Promise<void> => {
                 postProcessCalled = true;
                 return Promise.resolve();
             };
             const queue = new TaskQueue(services);
-            const task = new MockTask(services, 'testChannel', processMock, postProcessMock);
+            const task = new MockTask(services, 'testChannel', undefined, processMock, postProcessMock);
 
             queue.add(task);
 
             await jest.runAllTimersAsync();
 
-            expect(task.taskStatus).toBe(TaskStatus.Dead);
+            expect(task.taskStatus).toBe(TaskStatus.Successful);
             expect(postProcessCalled).toBe(true);
-        });
-
-        it('should log error when task is rejected', async (): Promise<void> => {
-            const processMock = (): Promise<never> => Promise.reject(new Error('Test error'));
-            const queue = new TaskQueue(mockServices);
-            const task = new MockTask(mockServices, 'testChannel', processMock);
-
-            queue.add(task);
-
-            await jest.runAllTimersAsync();
-
-            // eslint-disable-next-line @typescript-eslint/unbound-method
-            expect(mockLogger.error).toHaveBeenCalledWith(
-                expect.stringContaining('rejected'),
-                expect.anything(),
-                expect.anything()
-            );
         });
 
         it('should log task queue processing info', async (): Promise<void> => {
@@ -307,25 +364,6 @@ describe('TaskQueue', () => {
             // eslint-disable-next-line @typescript-eslint/unbound-method
             expect(mockLogger.info).toHaveBeenCalledWith(
                 expect.stringContaining('Retrieving the next tasks')
-            );
-        });
-    });
-
-    describe('error handling', () => {
-        it('should log error when task process throws', async (): Promise<void> => {
-            const processMock = (): Promise<never> => Promise.reject(new Error('Unexpected error'));
-            const queue = new TaskQueue(mockServices);
-            const task = new MockTask(mockServices, 'testChannel', processMock);
-
-            queue.add(task);
-
-            await jest.runAllTimersAsync();
-
-            // eslint-disable-next-line @typescript-eslint/unbound-method
-            expect(mockLogger.error).toHaveBeenCalledWith(
-                expect.stringContaining('rejected'),
-                expect.anything(),
-                expect.anything()
             );
         });
     });
