@@ -31,7 +31,6 @@ import { IHelpService } from './help/IHelpService.js';
 import { ILogger } from './ILogger.js';
 import { IParallelizationStrategy } from './parallelization/IParallelizationStrategy.js';
 import { ITaskChannelPostProcessor } from './parallelization/ITaskChannelPostProcessor.js';
-import { ResourceType } from './parallelization/ResourceType.js';
 import { ITaskQueue } from './tasks/ITaskQueue.js';
 import { BaseTask } from './tasks/models/BaseTask.js';
 
@@ -73,7 +72,7 @@ export interface IServiceContainer {
 
     getWorkflowMutator(interactionType: BotInteraction, workflow: IWorkflow): IWorkflowMutator;
 
-    getTaskChannelPostProcessor(resourceType: ResourceType): ITaskChannelPostProcessor;
+    getTaskChannelPostProcessor(channelName: string): ITaskChannelPostProcessor;
 
     getReplyService<MessageType, ReactionType, AttachmentType, InteractionType>(): IReplyService<MessageType, ReactionType, AttachmentType, InteractionType>;
 }
