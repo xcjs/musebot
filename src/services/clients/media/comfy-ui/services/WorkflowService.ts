@@ -22,7 +22,7 @@ export class WorkflowService implements IWorkflowService {
         return this.#workflows;
     }
 
-    #logger: ILogger;
+    readonly #logger: ILogger;
 
     #workflows: IWorkflow[] = [];
 
@@ -58,7 +58,7 @@ export class WorkflowService implements IWorkflowService {
                 const directoryContents = await fs.readdir(workflowDir, { withFileTypes: true });
 
                 for(const fsItem of directoryContents) {
-                    if(fsItem.isFile && fsItem.name.endsWith('.json')) {
+                    if(fsItem.isFile() && fsItem.name.endsWith('.json')) {
                         const templatePath = path.join(workflowDir, fsItem.name);
 
                         this.#logger.info(`Reading the contents of ${templatePath} as a workflow template...`);
@@ -81,7 +81,7 @@ export class WorkflowService implements IWorkflowService {
     }
 
     hasWorkflowType(workflowType: SupportedFeature): boolean {
-        return this.#workflows.find(workflow => workflow.type === workflowType) !== undefined;
+        return this.#workflows.some(workflow => workflow.type === workflowType);
     }
 
     getWorkflowDefaults(workflow: IWorkflow): SerializableRenderRequest {
@@ -110,19 +110,19 @@ export class WorkflowService implements IWorkflowService {
         const destructiveRenderRequest = SerializableRenderRequest.fromSerializableRenderRequest(renderRequest);
 
         // Filter characters that will break the JSON encoding.
-        if(destructiveRenderRequest.prompt?.length > 0) {
+        if(destructiveRenderRequest.prompt?.length || 0 > 0) {
             destructiveRenderRequest.prompt = JSON.stringify(destructiveRenderRequest.prompt);
             destructiveRenderRequest.prompt = destructiveRenderRequest.prompt
                 .substring(1, destructiveRenderRequest.prompt.length - 1);
         }
 
-        if (destructiveRenderRequest.prompt2?.length > 0) {
+        if (destructiveRenderRequest.prompt2?.length || 0 > 0) {
             destructiveRenderRequest.prompt2 = JSON.stringify(destructiveRenderRequest.prompt2);
             destructiveRenderRequest.prompt2 = destructiveRenderRequest.prompt2
                 .substring(1, destructiveRenderRequest.prompt2.length - 1);
         }
 
-        if(destructiveRenderRequest.promptNegative?.length > 0) {
+        if(destructiveRenderRequest.promptNegative?.length || 0 > 0) {
             destructiveRenderRequest.promptNegative = JSON.stringify(destructiveRenderRequest.promptNegative);
             destructiveRenderRequest.promptNegative = destructiveRenderRequest.promptNegative
                 .substring(1, destructiveRenderRequest.promptNegative.length - 1);
