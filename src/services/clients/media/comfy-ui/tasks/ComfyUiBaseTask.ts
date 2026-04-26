@@ -15,7 +15,7 @@ import { IWorkflowService } from '../services/IWorkflowService.js';
 
 export abstract class ComfyUiBaseTask extends BaseTask<void> {
     override get taskChannel(): string {
-        return this.parallelizationStrategy.getTaskChannel(this.resourceType, this.comfyUiClient.host);
+        return this.parallelizationStrategy.getTaskChannel(this.resourceType, this.isChild, this.comfyUiClient.host);
     }
 
     override get resourceType(): ResourceType {

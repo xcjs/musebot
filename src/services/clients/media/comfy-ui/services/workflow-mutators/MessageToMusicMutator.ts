@@ -93,6 +93,7 @@ export class MessageToMusicMutator implements IWorkflowMutator {
         if(this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
             return new Promise((resolve) => {
                 const task = this.#services.getLlmGenerateStructuredTask<SongPromptRequestType>(prompt, songPromptTypeRequestTypeData);
+                task.isChild = true;
 
                 const callback = (payload: IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, SongPromptRequestType>): void => {
                     resolve({
@@ -122,6 +123,7 @@ export class MessageToMusicMutator implements IWorkflowMutator {
         if(this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
             return new Promise((resolve) => {
                 const task = this.#services.getLlmGenerateStructuredTask<SongPromptMetadata>(prompt, songPromptMetadataRequestData);
+                task.isChild = true;
 
                 const callback = (payload: IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, SongPromptMetadata>): void => {
                     // If user-provided lyrics are present, prioritize those over what
