@@ -1,5 +1,5 @@
 import { ResourceType } from './ResourceType.js';
 
 export interface IParallelizationStrategy {
-    getTaskChannel(resourceType: ResourceType, resourceUrl: URL | null): string;
+    getTaskChannel(resourceType: ResourceType, isChild: boolean, resourceUrl: URL | null): string;
 }

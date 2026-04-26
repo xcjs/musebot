@@ -3,9 +3,13 @@ import { ResourceType } from './ResourceType.js';
 
 export class ParallelStrategy implements IParallelizationStrategy {
 
-    getTaskChannel(resourceType: ResourceType, resourceUrl: URL | null): string {
+    getTaskChannel(resourceType: ResourceType, isChild: boolean, resourceUrl: URL | null): string {
         const parts: string[] = [];
         parts.push(resourceType);
+
+        if(isChild) {
+            parts.push('Child');
+        }
 
         if (resourceUrl !== null) {
             parts.push(resourceUrl.hostname);

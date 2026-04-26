@@ -13,13 +13,13 @@ type DiscordReplyService = IReplyService<Message, MessageReaction, Attachment, M
 import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
 
 export class ShowDescriptionTask extends BaseTask<void> {
-    #comfyUiReplyService: ComfyUiReplyService;
-    #replyService: DiscordReplyService;
+    readonly #comfyUiReplyService: ComfyUiReplyService;
+    readonly #replyService: DiscordReplyService;
 
-    #interaction: ButtonInteraction;
+    readonly #interaction: ButtonInteraction;
 
     override get taskChannel(): string {
-        return this.parallelizationStrategy.getTaskChannel(ResourceType.Chat, null);
+        return this.parallelizationStrategy.getTaskChannel(ResourceType.Chat, this.isChild, null);
     }
 
     constructor(services: IServiceContainer, interaction: ButtonInteraction) {
@@ -36,11 +36,16 @@ export class ShowDescriptionTask extends BaseTask<void> {
         await super.process();
 
         const imageAttachments = this.#replyService.getImageAttachments(this.#interaction);
-        let messageContent: string;
+        let messageContent: string = '';
         const jsonAttachments: AttachmentBuilder[] = [];
 
         for(const imageAttachment of imageAttachments) {
             const jsonRequest = imageAttachment.description;
+
+            if(jsonRequest === null) {
+                throw new Error('JSON request could not be read from attachment description.');
+            }
+
             const renderRequest = SerializableRenderRequest.fromJson(jsonRequest);
 
             const jsonBuffer = Buffer.from(jsonRequest, BufferEncoding.UTF8);

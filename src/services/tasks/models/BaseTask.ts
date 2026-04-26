@@ -49,6 +49,15 @@ export abstract class BaseTask<T> {
         return ResourceType.None;
     }
 
+    #isChild = false;
+    get isChild(): boolean {
+        return this.#isChild;
+    }
+
+    set isChild(isChild: boolean) {
+        this.#isChild = isChild;
+    }
+
     set onSuccess(callback: (payload: T) => void) { }
 
     parallelizationStrategy: IParallelizationStrategy;

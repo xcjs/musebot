@@ -18,7 +18,7 @@ import { OllamaClient } from '../OllamaClient.js';
 
 export abstract class OllamaBaseTask<T> extends BaseTask<T> {
     override get taskChannel(): string {
-        return this.parallelizationStrategy.getTaskChannel(this.resourceType, this.ollamaClient.host);
+        return this.parallelizationStrategy.getTaskChannel(this.resourceType, this.isChild, this.ollamaClient.host);
     }
 
     override get resourceType(): ResourceType {

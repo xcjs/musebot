@@ -29,7 +29,7 @@ export class MessageToMediaMutator implements IWorkflowMutator {
         return [];
     }
 
-    #replyService: IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
+    readonly #replyService: IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
 
     #contentMessage = '';
 

@@ -9,7 +9,7 @@ export class SerialStrategy implements IParallelizationStrategy {
         this.#includeHostname = !services.environmentSettings.taskQueueForceSerialAcrossHosts;
     }
 
-    getTaskChannel(resourceType: ResourceType, resourceUrl: URL | null = null): string {
+    getTaskChannel(resourceType: ResourceType, isChild: boolean, resourceUrl: URL | null = null): string {
         const parts: string[] = [];
 
         if (resourceType === ResourceType.LargeLanguageModel
@@ -18,6 +18,10 @@ export class SerialStrategy implements IParallelizationStrategy {
         }
 
         parts.push(resourceType);
+
+        if(isChild) {
+            parts.push('Child');
+        }
 
         if (this.#includeHostname && resourceUrl !== null) {
             parts.push(resourceUrl.hostname);

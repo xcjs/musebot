@@ -10,7 +10,7 @@ import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 
 export class LoginTask extends BaseTask<void> {
     get taskChannel(): string {
-        return this.#parallelizationStrategy.getTaskChannel(ResourceType.Chat, null);
+        return this.#parallelizationStrategy.getTaskChannel(ResourceType.Chat, this.isChild, null);
     }
 
     readonly #services: IServiceContainer;

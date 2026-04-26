@@ -6,6 +6,7 @@ import { IHttpExchange } from '../../../../../../models/IHttpExchange.js';
 import { SupportedFeature } from '../../../../../features/enum/SupportedFeature.js';
 import { IServiceContainer } from '../../../../../IServiceContainer.js';
 import { ITaskQueue } from '../../../../../tasks/ITaskQueue.js';
+import { BaseTask } from '../../../../../tasks/models/BaseTask.js';
 import { OLLAMA_TEMPERATURE_DEFAULT } from '../../../../llm/ollama/constants/OllamaConstants.js';
 import { IWorkflow } from '../../models/IWorkflow.js';
 import { SerializableRenderRequest } from '../../models/SerializableRenderRequest.js';
@@ -49,6 +50,10 @@ export class ExpandPromptMutator implements IWorkflowMutator {
         workflow: IWorkflow): Promise<SerializableRenderRequest> {
         const mutatedRequest = SerializableRenderRequest.fromSerializableRenderRequest(renderRequest);
 
+        if(mutatedRequest.prompt === null) {
+            throw new Error('The prompt could be expanded because no original prompt was found.');
+        }
+
         mutatedRequest.prompt = await this.#getExpandedPrompt(mutatedRequest.prompt, workflow.type);
 
         // eslint-disable-next-line @typescript-eslint/no-base-to-string
@@ -63,13 +68,14 @@ export class ExpandPromptMutator implements IWorkflowMutator {
                 ` - expand it with meticulous detail to generate better results: ${prompt}`;
 
             const task = this.#services.getLlmGenerateTask(prompt, OLLAMA_TEMPERATURE_DEFAULT);
+            task.isChild = true;
 
             const callback = (payload: IHttpExchange<GenerateRequest, GenerateResponse>): void => {
                 resolve(payload.response.response);
             };
 
             task.onSuccess = callback;
-            this.#taskQueue.add(task);
+            this.#taskQueue.add(task as BaseTask<unknown>);
         });
     }
 }
