@@ -86,7 +86,8 @@ export function createMockServiceContainer(config?: MockServiceContainerConfig):
 
         // Factories
         getLogger: jest.fn(() => logger),
-        getTaskChannelPostProcessor: jest.fn(() => postProcessor),
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        getTaskChannelPostProcessor: jest.fn((channelName: string, isChild: boolean) => postProcessor),
         getContextMessageFactory: () => null as never,
         getContextService: () => null as never,
         getLlmGenerateTask: () => null as never,

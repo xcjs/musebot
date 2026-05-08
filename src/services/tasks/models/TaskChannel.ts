@@ -44,7 +44,8 @@ export class TaskChannel {
         this.#logger.info(`Removing completed or dead entries from the ${this.#name} channel...`);
 
         if(this.hasTasks && this.#postProcessor === null) {
-            this.#postProcessor = this.#services.getTaskChannelPostProcessor(this.#queue[0].taskChannel);
+            this.#postProcessor = this.#services.getTaskChannelPostProcessor(
+                this.#queue[0].taskChannel, this.#queue.some(x => x.isChild));
         }
 
         const incompleteTasks = this.#queue.filter(task => {
