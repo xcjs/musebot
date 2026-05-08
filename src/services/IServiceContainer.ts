@@ -72,7 +72,7 @@ export interface IServiceContainer {
 
     getWorkflowMutator(interactionType: BotInteraction, workflow: IWorkflow): IWorkflowMutator;
 
-    getTaskChannelPostProcessor(channelName: string): ITaskChannelPostProcessor;
+    getTaskChannelPostProcessor(channelName: string, isChild: boolean): ITaskChannelPostProcessor;
 
     getReplyService<MessageType, ReactionType, AttachmentType, InteractionType>(): IReplyService<MessageType, ReactionType, AttachmentType, InteractionType>;
 }
