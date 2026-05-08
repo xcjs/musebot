@@ -300,7 +300,11 @@ export class ServiceContainer implements IServiceContainer {
         }
     }
 
-    getTaskChannelPostProcessor(channelName: string): ITaskChannelPostProcessor {
+    getTaskChannelPostProcessor(channelName: string, isChild: boolean): ITaskChannelPostProcessor {
+        if(isChild) {
+            return new NoOpTaskChannelPostProcessor();
+        }
+
         if(channelName.startsWith(ResourceType.LargeLanguageModel)) {
             return new OllamaTaskChannelPostProcessor(this);
         } else if(channelName.startsWith(ResourceType.Media)) {
