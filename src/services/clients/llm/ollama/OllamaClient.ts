@@ -90,6 +90,7 @@ export class OllamaClient {
             system: requestData.systemPrompt,
             prompt,
             model: this.#model,
+            stream: false,
             format: requestData.schema
         };
 
@@ -103,7 +104,7 @@ export class OllamaClient {
                     request,
                     response,
                 },
-                data: JSON.parse(response.response) as TOutput
+                data: JSON.parse(response.thinking ?? response.response) as TOutput
             };
         } catch (error) {
             this.#logger.error('Failed to send Ollama a message:', error);
