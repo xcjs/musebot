@@ -131,6 +131,36 @@ export class WorkflowService implements IWorkflowService {
         const template = Handlebars.compile(workflow.workflowString);
         const templateString = template(destructiveRenderRequest);
 
-        return JSON.parse(templateString) as Prompt;
+        const parsedWorkflow = JSON.parse(templateString) as object;
+
+        return this.#convertNumericStrings(parsedWorkflow);
+    }
+
+    #convertNumericStrings(objectifiedPrompt: object): Prompt {
+        return this.#convertNumericStringsRecursive(objectifiedPrompt) as Prompt;
+    }
+
+    #convertNumericStringsRecursive(value: unknown, key?: string): unknown {
+        if (typeof value === 'string' && !Number.isNaN(Number(value)) && key !== 'prompt') {
+            return Number(value);
+        }
+
+        if (typeof value === 'object' && value !== null) {
+            const result = Array.isArray(value)
+                ? (value as unknown[]).map(item => this.#convertNumericStringsRecursive(item))
+                : { ...value };
+
+            for (const k in result) {
+                const processedValue = this.#convertNumericStringsRecursive((result as Record<string, unknown>)[k], k);
+
+                if (typeof processedValue === 'string' && !Number.isNaN(Number(processedValue)) && k !== 'prompt') {
+                    (result as Record<string, unknown>)[k] = Number(processedValue);
+                }
+            }
+
+            return result;
+        }
+
+        return value;
     }
 }
