@@ -55,16 +55,23 @@ export class ComfyUiMessageTask extends ComfyUiBaseTask {
             imagesAsBase64 = await this.#replyService.getAttachedImagesAsBase64(this.#message);
         }
 
+        if(this.#message === null) {
+            return;
+        }
+
         if(this.#message.type === MessageType.Reply) {
             if (this.#featureService.hasFeature(SupportedFeature.ContextualImg2Img)) {
                 const previousMessage = await this.#replyService.getPreviousMessage(this.#message);
-                imageAttachments = this.#replyService.getImageAttachments(previousMessage);
 
-                if(imageAttachments.length > 0) {
-                    interactionType = BotInteraction.ContextualReply;
-                    imagesAsBase64 = await this.#replyService.getAttachedImagesAsBase64(previousMessage);
-                } else {
-                    interactionType = BotInteraction.Reply;
+                if(previousMessage !== null) {
+                    imageAttachments = this.#replyService.getImageAttachments(previousMessage);
+
+                    if(imageAttachments.length > 0) {
+                        interactionType = BotInteraction.ContextualReply;
+                        imagesAsBase64 = await this.#replyService.getAttachedImagesAsBase64(previousMessage);
+                    } else {
+                        interactionType = BotInteraction.Reply;
+                    }
                 }
             }
             else {
@@ -82,7 +89,7 @@ export class ComfyUiMessageTask extends ComfyUiBaseTask {
 
         this.logger.info('Setting the interaction type as:', interactionType);
 
-        let workflow: IWorkflow;
+        let workflow: IWorkflow | null;
         let defaultRenderRequest: SerializableRenderRequest;
 
         switch(interactionType) {
@@ -93,19 +100,33 @@ export class ComfyUiMessageTask extends ComfyUiBaseTask {
             case BotInteraction.ImageMessageWithPrompt:
                 workflow = getRandomArrayEntry(this.workflowService.workflows.filter(
                     x => x.type === SupportedFeature.ContextualImg2Img));
+
+                if(workflow === null) {
+                    return;
+                }
+
                 defaultRenderRequest = this.workflowService.getWorkflowDefaults(workflow);
                 defaultRenderRequest.num = imageAttachments.length;
                 break;
             case BotInteraction.JsonMessage:
                 defaultRenderRequest = SerializableRenderRequest.fromJson(textPrompt);
-                workflow = this.workflowService.workflows.find(x => x.name === defaultRenderRequest.workflow);
+                workflow = this.workflowService.workflows.find(x => x.name === defaultRenderRequest.workflow) || null;
                 break;
             default:
                 workflow = getRandomArrayEntry(this.workflowService.workflows.filter(x =>
                     x.type.startsWith('txt2')
                     && x.type !== SupportedFeature.Txt2Txt));
+
+                if (workflow === null) {
+                    return;
+                }
+
                 defaultRenderRequest = this.workflowService.getWorkflowDefaults(workflow);
                 break;
+        }
+
+        if (workflow === null) {
+            return;
         }
 
         this.logger.info(`Selected ${workflow.name} as the workflow.`);
@@ -117,12 +138,17 @@ export class ComfyUiMessageTask extends ComfyUiBaseTask {
 
         for (let i = 0; i < defaultRenderRequest.num; i++) {
             defaultRenderRequest.image = imagesAsBase64[i];
+
+            if (workflow === null) {
+                continue;
+            }
+
             const renderRequest = await mutator.mutate(defaultRenderRequest, this.#message, workflow);
 
             // Some mutators can select a different workflow.
-            workflow = this.workflowService.workflows.find(x => x.name === renderRequest.workflow);
+            workflow = this.workflowService.workflows.find(x => x.name === renderRequest.workflow) || null;
 
-            if(renderRequest === null) {
+            if(renderRequest === null || workflow == null) {
                 continue;
             }
 
