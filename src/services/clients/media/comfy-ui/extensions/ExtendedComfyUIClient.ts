@@ -47,7 +47,7 @@ export class ExtendedComfyUIClient extends ComfyUIClient {
                                     const mediaContainer = history.outputs[nodeId] as MediaContainer;
 
                                     for(const supportedNode of Object.values(SupportedNode)) {
-                                        const outputMedia = mediaContainer[supportedNode.toString()] as OutputMedia[];
+                                        const outputMedia = (mediaContainer as unknown as Record<string, unknown>)[supportedNode.toString()] as OutputMedia[];
 
                                         if (outputMedia !== undefined) {
                                             const mediaContainers: MediaContainer[] = [];
