@@ -141,26 +141,23 @@ export class WorkflowService implements IWorkflowService {
     }
 
     #convertNumericStringsRecursive(value: unknown, key?: string): unknown {
-        if (typeof value === 'string' && !Number.isNaN(Number(value)) && key !== 'prompt') {
+        if (typeof value === 'string' && value.length > 0 && !Number.isNaN(Number(value)) && key !== 'text') {
             return Number(value);
         }
 
         if (typeof value === 'object' && value !== null) {
             const result = Array.isArray(value)
-                ? (value as unknown[]).map(item => this.#convertNumericStringsRecursive(item))
+                ? (value as unknown[]).map(item =>
+                    this.#convertNumericStringsRecursive(item)
+                )
                 : { ...value };
-
-            for (const k in result) {
-                const processedValue = this.#convertNumericStringsRecursive((result as Record<string, unknown>)[k], k);
-
-                if (typeof processedValue === 'string' && !Number.isNaN(Number(processedValue)) && k !== 'prompt') {
-                    (result as Record<string, unknown>)[k] = Number(processedValue);
+            if (!Array.isArray(value)) {
+                for (const k in result) {
+                    (result as Record<string, unknown>)[k] = this.#convertNumericStringsRecursive((result as Record<string, unknown>)[k], k);
                 }
             }
-
             return result;
         }
-
         return value;
     }
 }
