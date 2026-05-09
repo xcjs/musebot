@@ -141,16 +141,22 @@ export class WorkflowService implements IWorkflowService {
     }
 
     #convertNumericStringsRecursive(value: unknown, key?: string): unknown {
-        if (typeof value === 'string' && value.length > 0 && !Number.isNaN(Number(value)) && key !== 'text') {
+        const blacklistKeys = new Set([
+            'text'
+        ]);
+
+        if (typeof value === 'string'
+            && value.length > 0
+            && !Number.isNaN(Number(value))
+            && !blacklistKeys.has(key || '')) {
             return Number(value);
         }
 
         if (typeof value === 'object' && value !== null) {
             const result = Array.isArray(value)
-                ? (value as unknown[]).map(item =>
-                    this.#convertNumericStringsRecursive(item)
-                )
+                ? value // ComfyUI arrays oftentimes refer to nodes by index as string, and should not be converted.
                 : { ...value };
+
             if (!Array.isArray(value)) {
                 for (const k in result) {
                     (result as Record<string, unknown>)[k] = this.#convertNumericStringsRecursive((result as Record<string, unknown>)[k], k);
