@@ -131,6 +131,39 @@ export class WorkflowService implements IWorkflowService {
         const template = Handlebars.compile(workflow.workflowString);
         const templateString = template(destructiveRenderRequest);
 
-        return JSON.parse(templateString) as Prompt;
+        const parsedWorkflow = JSON.parse(templateString) as object;
+
+        return this.#convertNumericStrings(parsedWorkflow);
+    }
+
+    #convertNumericStrings(objectifiedPrompt: object): Prompt {
+        return this.#convertNumericStringsRecursive(objectifiedPrompt) as Prompt;
+    }
+
+    #convertNumericStringsRecursive(value: unknown, key?: string): unknown {
+        const blacklistKeys = new Set([
+            'text'
+        ]);
+
+        if (typeof value === 'string'
+            && value.length > 0
+            && !Number.isNaN(Number(value))
+            && !blacklistKeys.has(key || '')) {
+            return Number(value);
+        }
+
+        if (typeof value === 'object' && value !== null) {
+            const result = Array.isArray(value)
+                ? value // ComfyUI arrays oftentimes refer to nodes by index as string, and should not be converted.
+                : { ...value };
+
+            if (!Array.isArray(value)) {
+                for (const k in result) {
+                    (result as Record<string, unknown>)[k] = this.#convertNumericStringsRecursive((result as Record<string, unknown>)[k], k);
+                }
+            }
+            return result;
+        }
+        return value;
     }
 }

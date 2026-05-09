@@ -67,7 +67,7 @@ export class ComfyUiClient {
                 if (result.status === PromisedSettledResultStatus.Fulfilled.toString()) {
                     mediaCollectionResponses.push((result as PromiseFulfilledResult<MediaCollectionResponse>).value);
                 } else {
-                    this.#logger.error('Error rendering prompt:', prompt, result);
+                    this.#logger.error('Error rendering prompt:', prompts, result);
                 }
             });
         });
