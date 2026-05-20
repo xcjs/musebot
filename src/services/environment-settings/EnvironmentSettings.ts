@@ -10,8 +10,9 @@ import { TaskQueueStrategy } from '../../enums/TaskQueueStrategy.js';
 import { toTitleCase } from '../../utilities/string-utilities.js';
 import { ILogger } from '../ILogger.js';
 import { Logger } from '../Logger.js';
-import { EnvironmentKey } from './constants/EnvironmentKey.js';
+import { IBotConfig } from './IBotConfig.js';
 import { IEnvironmentSettings } from './IEnvironmentSettings.js';
+import { EnvironmentKey } from './constants/EnvironmentKey.js';
 
 export class EnvironmentSettings implements IEnvironmentSettings {
     readonly #packageName: string;
@@ -134,7 +135,7 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         return this.nodeEnvironment === NodeEnvironment.Production;
     }
 
-    constructor() {
+    constructor(config?: IBotConfig) {
         this.#logger = new Logger('EnvironmentSettings');
 
         // If this loads environment variables during a test, it can pollute
@@ -149,35 +150,63 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         this.#packageName = nodePackage.name;
         this.#version = nodePackage.version;
 
-        this.#nodeEnvironment = this.#readEnum<NodeEnvironment>(EnvironmentKey.NodeEnvironment, Object.values(NodeEnvironment), NodeEnvironment.Production);
+        this.#nodeEnvironment = config?.nodeEnvironment
+            ? (config.nodeEnvironment as NodeEnvironment)
+            : this.#readEnum<NodeEnvironment>(EnvironmentKey.NodeEnvironment, Object.values(NodeEnvironment), NodeEnvironment.Production);
         this.#botFunction = this.#mapLegacyFunctionsToCurrent(
-            this.#readEnum<BotFunction>(EnvironmentKey.BotFunction, Object.values(BotFunction), BotFunction.Chat));
+            config?.botFunction
+                ? (config.botFunction as BotFunction)
+                : this.#readEnum<BotFunction>(EnvironmentKey.BotFunction, Object.values(BotFunction), BotFunction.Chat));
 
-        this.#maxTaskAttempts = this.#readDefaultableNumber(EnvironmentKey.TaskQueueMaxAttempts, this.maxTaskAttempts);
-        this.#taskRetryDelayMilliseconds = this.#readDefaultableNumber(EnvironmentKey.TaskQueueRetryDelayMs, this.taskRetryDelayMilliseconds);
-        this.#taskQueueStrategy = this.#readEnum(EnvironmentKey.TaskQueueStrategy, Object.values(TaskQueueStrategy), TaskQueueStrategy.Serial);
-        this.#taskQueueForceSerialAcrossHosts = this.#readBoolean(EnvironmentKey.TaskQueueForceSerialAcrossHosts);
+        this.#maxTaskAttempts = config?.maxTaskAttempts
+            ?? this.#readDefaultableNumber(EnvironmentKey.TaskQueueMaxAttempts, this.maxTaskAttempts);
+        this.#taskRetryDelayMilliseconds = config?.taskRetryDelayMilliseconds
+            ?? this.#readDefaultableNumber(EnvironmentKey.TaskQueueRetryDelayMs, this.taskRetryDelayMilliseconds);
+        this.#taskQueueStrategy = config?.taskQueueStrategy
+            ? (config.taskQueueStrategy as TaskQueueStrategy)
+            : this.#readEnum(EnvironmentKey.TaskQueueStrategy, Object.values(TaskQueueStrategy), TaskQueueStrategy.Serial);
+        this.#taskQueueForceSerialAcrossHosts = config?.taskQueueForceSerialAcrossHosts
+            ?? this.#readBoolean(EnvironmentKey.TaskQueueForceSerialAcrossHosts);
 
-        this.#discordToken = this.#readRequiredString(EnvironmentKey.AuthenticationToken);
-        this.#discordChannels = this.#readDelimitedList(EnvironmentKey.ChatChannels, ',');
-        this.#discordChannelsDisallowed = this.#readDelimitedList(EnvironmentKey.ChatChannelsDisallowed, ',');
+        this.#discordToken = config?.discordToken
+            ?? this.#readRequiredString(EnvironmentKey.AuthenticationToken);
+        this.#discordChannels = config?.discordChannels
+            ? this.#parseDelimitedList(config.discordChannels, ',')
+            : this.#readDelimitedList(EnvironmentKey.ChatChannels, ',');
+        this.#discordChannelsDisallowed = config?.discordChannelsDisallowed
+            ? this.#parseDelimitedList(config.discordChannelsDisallowed, ',')
+            : this.#readDelimitedList(EnvironmentKey.ChatChannelsDisallowed, ',');
 
-        this.#botRequiresMention = this.#readBoolean(EnvironmentKey.BotRequiresMention);
-        this.#botResponseRate = this.#readDefaultableRangedInteger(EnvironmentKey.BotResponseRate, 1, 100, 100);
-        this.#botPrivateMessageUsers = this.#readDelimitedList(EnvironmentKey.BotPrivateMessageUsers, ',');
-        this.#errorMessage = this.#readDefaultableString(EnvironmentKey.BotErrorMessage, this.errorMessage);
+        this.#botRequiresMention = config?.botRequiresMention
+            ?? this.#readBoolean(EnvironmentKey.BotRequiresMention);
+        this.#botResponseRate = config?.botResponseRate
+            ?? this.#readDefaultableRangedInteger(EnvironmentKey.BotResponseRate, 1, 100, 100);
+        this.#botPrivateMessageUsers = config?.botPrivateMessageUsers
+            ? this.#parseDelimitedList(config.botPrivateMessageUsers, ',')
+            : this.#readDelimitedList(EnvironmentKey.BotPrivateMessageUsers, ',');
+        this.#errorMessage = config?.errorMessage
+            ?? this.#readDefaultableString(EnvironmentKey.BotErrorMessage, this.errorMessage);
 
-        this.#stableDiffusionHosts = this.#readDelimitedList(EnvironmentKey.StableDiffusionHosts, ',')
-            .map(x => new URL(x));
+        this.#stableDiffusionHosts = config?.stableDiffusionHosts
+            ? this.#parseDelimitedList(config.stableDiffusionHosts, ',').map(x => new URL(x))
+            : this.#readDelimitedList(EnvironmentKey.StableDiffusionHosts, ',').map(x => new URL(x));
+        this.#stableDiffusionGuidanceScaleInterval = config?.stableDiffusionGuidanceScaleInterval
+            ?? this.stableDiffusionGuidanceScaleInterval;
 
-        this.#ollamaHosts = this.#readDelimitedList(EnvironmentKey.OllamaHosts, ',')
-            .map(x => new URL(x));
+        this.#ollamaHosts = config?.ollamaHosts
+            ? this.#parseDelimitedList(config.ollamaHosts, ',').map(x => new URL(x))
+            : this.#readDelimitedList(EnvironmentKey.OllamaHosts, ',').map(x => new URL(x));
+        this.#ollamaModels = config?.ollamaModels
+            ? this.#parseDelimitedList(config.ollamaModels, ',')
+            : this.#readDelimitedList(EnvironmentKey.OllamaModels, ',');
+        this.#ollamaSystemPrompt = config?.ollamaSystemPrompt
+            ?? this.#readDefaultableString(EnvironmentKey.OllamaSystemPrompt, '');
+        this.#ollamaStreamsResponse = config?.ollamaStreamsResponse
+            ?? this.#readBoolean(EnvironmentKey.OllamaStreamsResponse);
 
-        this.#ollamaModels = this.#readDelimitedList(EnvironmentKey.OllamaModels, ',');
-        this.#ollamaSystemPrompt = this.#readDefaultableString(EnvironmentKey.OllamaSystemPrompt, '');
-        this.#ollamaStreamsResponse = this.#readBoolean(EnvironmentKey.OllamaStreamsResponse);
-
-        this.#stableDiffusionOllamaPrompts = this.#readDelimitedList(EnvironmentKey.StableDiffusionOllamaPrompts, '|');
+        this.#stableDiffusionOllamaPrompts = config?.stableDiffusionOllamaPrompts
+            ? this.#parseDelimitedList(config.stableDiffusionOllamaPrompts, '|')
+            : this.#readDelimitedList(EnvironmentKey.StableDiffusionOllamaPrompts, '|');
 
         this.#validate();
 
@@ -305,6 +334,23 @@ export class EnvironmentSettings implements IEnvironmentSettings {
     */
     #readDefaultableString(key: EnvironmentKey, defaultValue: string): string {
         return process.env[key]?.trim() || defaultValue;
+    }
+
+    /**
+    * Parses a delimited string into an array of trimmed values.
+    *
+    * @param {string} stringValue - The delimited string to parse.
+    * @param {string} separator - The character used to separate items in the list.
+    * @returns {string[]} An array of strings, each representing an item in the list.
+    */
+    #parseDelimitedList(stringValue: string, separator: string): string[] {
+        const trimmed = stringValue.trim();
+
+        if(trimmed.length === 0) {
+            return [];
+        }
+
+        return trimmed.split(separator).map(x => x.trim());
     }
 
     /**

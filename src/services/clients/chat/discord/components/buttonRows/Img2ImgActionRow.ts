@@ -1,9 +1,9 @@
-import { ActionRowBuilder, ButtonBuilder } from 'discord.js';
+﻿import { ActionRowBuilder, ButtonBuilder } from 'discord.js';
 
 import { SupportedFeature } from '../../../../../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../../../../../features/IFeatureService.js';
 import { ILogger } from '../../../../../ILogger.js';
-import { IServiceContainer } from '../../../../../IServiceContainer.js';
+import { IBotServiceContainer } from "../../../../../IServiceContainer.js"
 import { IWorkflowService } from '../../../../media/comfy-ui/services/IWorkflowService.js';
 import { BaseComponent } from '../BaseComponent.js';
 import { DynamicButton } from '../buttons/DynamicButton.js';
@@ -20,7 +20,7 @@ export class Img2ImgActionRow extends BaseComponent<ActionRowBuilder<ButtonBuild
         return true;
     }
 
-    #services: IServiceContainer;
+    #services: IBotServiceContainer;
 
     #featureService: IFeatureService;
     #workflowService: IWorkflowService;
@@ -28,7 +28,7 @@ export class Img2ImgActionRow extends BaseComponent<ActionRowBuilder<ButtonBuild
 
     #logger: ILogger;
 
-    constructor(services: IServiceContainer) {
+    constructor(services: IBotServiceContainer) {
         super(services);
 
         this.#services = services;

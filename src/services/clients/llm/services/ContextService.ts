@@ -1,5 +1,5 @@
-import { ILogger } from '../../../ILogger.js';
-import { IServiceContainer } from '../../../IServiceContainer.js';
+﻿import { ILogger } from '../../../ILogger.js';
+import { IBotServiceContainer } from "../../../IServiceContainer.js"
 import { ContextMessage } from '../ollama/models/ContextMessage.js';
 import { IContextService } from './IContextService.js';
 
@@ -8,7 +8,7 @@ export class ContextService<ChatMessageType, LlmMessageType> implements IContext
 
     #context: ContextMessage<ChatMessageType, LlmMessageType>[] = [];
 
-    constructor(services: IServiceContainer) {
+    constructor(services: IBotServiceContainer) {
         this.#logger = services.getLogger('ContextService');
     }
 

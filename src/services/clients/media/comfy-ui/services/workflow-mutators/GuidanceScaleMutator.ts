@@ -1,9 +1,9 @@
-import { AttachmentBuilder, ButtonInteraction } from 'discord.js';
+﻿import { AttachmentBuilder, ButtonInteraction } from 'discord.js';
 
 import { BotInteraction } from '../../../../../../enums/BotInteraction.js';
 import { IEnvironmentSettings } from '../../../../../environment-settings/IEnvironmentSettings.js';
 import { SupportedFeature } from '../../../../../features/enum/SupportedFeature.js';
-import { IServiceContainer } from '../../../../../IServiceContainer.js';
+import { IBotServiceContainer } from "../../../../../IServiceContainer.js"
 import { guidanceScaleMax, guidanceScaleMin } from '../../../stable-diffusion/constants/constants.js';
 import { IWorkflow } from '../../models/IWorkflow.js';
 import { SerializableRenderRequest } from '../../models/SerializableRenderRequest.js';
@@ -38,7 +38,7 @@ export class GuidanceScaleMutator implements IWorkflowMutator {
 
     #contentMessage = '';
 
-    constructor(services: IServiceContainer) {
+    constructor(services: IBotServiceContainer) {
         this.#environmentSettings = services.environmentSettings;
     }
 

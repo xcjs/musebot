@@ -1,8 +1,8 @@
-import { Attachment, AttachmentBuilder, ButtonInteraction, Message, MessageReaction } from 'discord.js';
+﻿import { Attachment, AttachmentBuilder, ButtonInteraction, Message, MessageReaction } from 'discord.js';
 
 import { BotInteraction } from '../../../../../../enums/BotInteraction.js';
 import { SupportedFeature } from '../../../../../features/enum/SupportedFeature.js';
-import { IServiceContainer } from '../../../../../IServiceContainer.js';
+import { IBotServiceContainer } from "../../../../../IServiceContainer.js"
 import { DiscordConstants } from '../../../../chat/discord/enums/DiscordConstants.js';
 import { IReplyService } from '../../../../chat/IReplyService.js';
 import { IWorkflow } from '../../models/IWorkflow.js';
@@ -33,7 +33,7 @@ export class JsonMutator implements IWorkflowMutator {
 
     #replyService: IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
 
-    constructor(services: IServiceContainer) {
+    constructor(services: IBotServiceContainer) {
         this.#replyService = services.getReplyService();
     }
 

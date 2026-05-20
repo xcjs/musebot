@@ -1,7 +1,7 @@
-import { Client as DiscordClient } from 'discord.js';
+﻿import { Client as DiscordClient } from 'discord.js';
 
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
-import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { IBotServiceContainer } from "../../../../IServiceContainer.js"
 import { IParallelizationStrategy } from '../../../../parallelization/IParallelizationStrategy.js';
 import { ResourceType } from '../../../../parallelization/ResourceType.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
@@ -13,14 +13,14 @@ export class LoginTask extends BaseTask<void> {
         return this.#parallelizationStrategy.getTaskChannel(ResourceType.Chat, this.isChild, null);
     }
 
-    readonly #services: IServiceContainer;
+    readonly #services: IBotServiceContainer;
 
     readonly #environmentSettings: IEnvironmentSettings;
     readonly #discordClient: DiscordClient;
     readonly #parallelizationStrategy: IParallelizationStrategy;
     readonly #taskQueue: ITaskQueue;
 
-    constructor(services: IServiceContainer) {
+    constructor(services: IBotServiceContainer) {
         super(services);
         this.logger = services.getLogger('LoginTask');
 

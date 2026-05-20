@@ -1,23 +1,22 @@
 import { beforeEach, describe, expect, it } from '@jest/globals';
 
-import { createMockServiceContainer } from '../../test-utils/mockServiceContainer.js';
-import type { IEnvironmentSettings } from '../environment-settings/IEnvironmentSettings.js';
-import { IServiceContainer } from '../IServiceContainer.js';
+import type { IGlobalSettings } from '../../services/environment-settings/IGlobalSettings.js';
+import { createMockServiceContainer, MockContainer } from '../../test-utils/mockServiceContainer.js';
 import { ResourceType } from './ResourceType.js';
 import { SerialStrategy } from './SerialStrategy.js';
 
 describe('SerialStrategy', () => {
     let strategy: SerialStrategy;
-    let services: IServiceContainer;
+    let globalServices: MockContainer;
 
     beforeEach(() => {
-        const environmentSettings = {
+        const globalSettings = {
             maxTaskAttempts: 3,
             taskRetryDelayMilliseconds: 100,
             taskQueueForceSerialAcrossHosts: true,
-        } as IEnvironmentSettings;
-        services = createMockServiceContainer({ environmentSettings });
-        strategy = new SerialStrategy(services);
+        } as IGlobalSettings;
+        globalServices = createMockServiceContainer({ globalSettings });
+        strategy = new SerialStrategy(false);
     });
 
     describe('getTaskChannel()', () => {
@@ -27,39 +26,39 @@ describe('SerialStrategy', () => {
         });
 
         it('should NOT include hostname in channel name when URL is provided and taskQueueForceSerialAcrossHosts is true', () => {
-            const environmentSettings = {
+            const globalSettings = {
                 maxTaskAttempts: 3,
                 taskRetryDelayMilliseconds: 100,
                 taskQueueForceSerialAcrossHosts: true,
-            } as IEnvironmentSettings;
-            const testServices = createMockServiceContainer({ environmentSettings });
-            const testStrategy = new SerialStrategy(testServices);
+            } as IGlobalSettings;
+            const testGlobalServices = createMockServiceContainer({ globalSettings });
+            const testStrategy = new SerialStrategy(false);
             const url = new URL('http://localhost:11434');
             const result = testStrategy.getTaskChannel(ResourceType.Chat, false, url);
             expect(result).toBe('Chat');
         });
 
         it('should NOT include hostname in channel name when URL is provided and taskQueueForceSerialAcrossHosts is true', () => {
-            const environmentSettings = {
+            const globalSettings = {
                 maxTaskAttempts: 3,
                 taskRetryDelayMilliseconds: 100,
                 taskQueueForceSerialAcrossHosts: true,
-            } as IEnvironmentSettings;
-            const testServices = createMockServiceContainer({ environmentSettings });
-            const testStrategy = new SerialStrategy(testServices);
+            } as IGlobalSettings;
+            const testGlobalServices = createMockServiceContainer({ globalSettings });
+            const testStrategy = new SerialStrategy(false);
             const url = new URL('http://localhost:11434');
             const result = testStrategy.getTaskChannel(ResourceType.LargeLanguageModel, false, url);
             expect(result).toBe('GenerativeAI');
         });
 
         it('should NOT include hostname in channel name when URL is provided and taskQueueForceSerialAcrossHosts is true', () => {
-            const environmentSettings = {
+            const globalSettings = {
                 maxTaskAttempts: 3,
                 taskRetryDelayMilliseconds: 100,
                 taskQueueForceSerialAcrossHosts: true,
-            } as IEnvironmentSettings;
-            const testServices = createMockServiceContainer({ environmentSettings });
-            const testStrategy = new SerialStrategy(testServices);
+            } as IGlobalSettings;
+            const testGlobalServices = createMockServiceContainer({ globalSettings });
+            const testStrategy = new SerialStrategy(false);
             const url = new URL('http://localhost:8188');
             const result = testStrategy.getTaskChannel(ResourceType.Media, false, url);
             expect(result).toBe('GenerativeAI');
@@ -86,26 +85,26 @@ describe('SerialStrategy', () => {
         });
 
         it('should convert LargeLanguageModel with URL to GenerativeAI (no hostname included)', () => {
-            const environmentSettings = {
+            const globalSettings = {
                 maxTaskAttempts: 3,
                 taskRetryDelayMilliseconds: 100,
                 taskQueueForceSerialAcrossHosts: true,
-            } as IEnvironmentSettings;
-            const testServices = createMockServiceContainer({ environmentSettings });
-            const testStrategy = new SerialStrategy(testServices);
+            } as IGlobalSettings;
+            const testGlobalServices = createMockServiceContainer({ globalSettings });
+            const testStrategy = new SerialStrategy(false);
             const url = new URL('http://localhost:11434');
             const result = testStrategy.getTaskChannel(ResourceType.LargeLanguageModel, false, url);
             expect(result).toBe('GenerativeAI');
         });
 
         it('should convert Media with URL to GenerativeAI (no hostname included)', () => {
-            const environmentSettings = {
+            const globalSettings = {
                 maxTaskAttempts: 3,
                 taskRetryDelayMilliseconds: 100,
                 taskQueueForceSerialAcrossHosts: true,
-            } as IEnvironmentSettings;
-            const testServices = createMockServiceContainer({ environmentSettings });
-            const testStrategy = new SerialStrategy(testServices);
+            } as IGlobalSettings;
+            const testGlobalServices = createMockServiceContainer({ globalSettings });
+            const testStrategy = new SerialStrategy(false);
             const url = new URL('http://localhost:8188');
             const result = testStrategy.getTaskChannel(ResourceType.Media, false, url);
             expect(result).toBe('GenerativeAI');
@@ -120,13 +119,13 @@ describe('SerialStrategy', () => {
         });
 
         it('should create SAME channel for different URLs when taskQueueForceSerialAcrossHosts is true', () => {
-            const environmentSettings = {
+            const globalSettings = {
                 maxTaskAttempts: 3,
                 taskRetryDelayMilliseconds: 100,
                 taskQueueForceSerialAcrossHosts: true,
-            } as IEnvironmentSettings;
-            const testServices = createMockServiceContainer({ environmentSettings });
-            const testStrategy = new SerialStrategy(testServices);
+            } as IGlobalSettings;
+            const testGlobalServices = createMockServiceContainer({ globalSettings });
+            const testStrategy = new SerialStrategy(false);
             const url1 = new URL('http://localhost:11434');
             const url2 = new URL('http://otherhost:11435');
             const result1 = testStrategy.getTaskChannel(ResourceType.LargeLanguageModel, false, url1);
@@ -141,13 +140,13 @@ describe('SerialStrategy', () => {
         });
 
         it('should NOT include URL for GenerativeAI when provided', () => {
-            const environmentSettings = {
+            const globalSettings = {
                 maxTaskAttempts: 3,
                 taskRetryDelayMilliseconds: 100,
                 taskQueueForceSerialAcrossHosts: true,
-            } as IEnvironmentSettings;
-            const testServices = createMockServiceContainer({ environmentSettings });
-            const testStrategy = new SerialStrategy(testServices);
+            } as IGlobalSettings;
+            const testGlobalServices = createMockServiceContainer({ globalSettings });
+            const testStrategy = new SerialStrategy(false);
             const url = new URL('http://localhost:3000');
             const result = testStrategy.getTaskChannel(ResourceType.GenerativeAI, false, url);
             expect(result).toBe('GenerativeAI');

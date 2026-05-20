@@ -1,6 +1,6 @@
-import { ActionRowBuilder, ButtonBuilder } from 'discord.js';
+﻿import { ActionRowBuilder, ButtonBuilder } from 'discord.js';
 
-import { IServiceContainer } from '../../../../../IServiceContainer.js';
+import { IBotServiceContainer } from "../../../../../IServiceContainer.js"
 import { SerializableRenderRequest } from '../../../../media/comfy-ui/models/SerializableRenderRequest.js';
 import { BaseComponent } from '../BaseComponent.js';
 import { HelpButton } from '../buttons/HelpButton.js';
@@ -20,13 +20,13 @@ export class StatefulAudioGenerationActionRow extends BaseComponent<ActionRowBui
         return false;
     }
 
-    #services: IServiceContainer;
+    #services: IBotServiceContainer;
 
     #actionRowBuilderFactory: IActionRowBuilderFactory;
 
     #renderRequest: SerializableRenderRequest | null;
 
-    constructor(services: IServiceContainer,
+    constructor(services: IBotServiceContainer,
         renderRequest: SerializableRenderRequest | null) {
         super(services);
         this.#services = services;

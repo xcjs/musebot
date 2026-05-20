@@ -1,8 +1,8 @@
-import { Attachment, ButtonInteraction, Client as DiscordClient, Events, Message as DiscordMessage, MessageReaction } from 'discord.js';
+﻿import { Attachment, ButtonInteraction, Client as DiscordClient, Events, Message as DiscordMessage, MessageReaction } from 'discord.js';
 
 import { BotInteraction } from '../../../../enums/BotInteraction.js';
 import { IEnvironmentSettings } from '../../../environment-settings/IEnvironmentSettings.js';
-import { IServiceContainer } from '../../../IServiceContainer.js';
+import { IBotServiceContainer } from "../../../IServiceContainer.js"
 import { ITaskQueue } from '../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { IWorkflow } from '../../media/comfy-ui/models/IWorkflow.js';
@@ -13,7 +13,7 @@ import { ITypingService } from '../ITypingService.js';
 import { BaseDiscordClient } from './BaseDiscordClient.js';
 
 export class GenerativeMediaChatClient extends BaseDiscordClient {
-    #services: IServiceContainer;
+    #services: IBotServiceContainer;
 
     #environmentSettings: IEnvironmentSettings;
     #discordClient: DiscordClient;
@@ -22,7 +22,7 @@ export class GenerativeMediaChatClient extends BaseDiscordClient {
     #workflowService: IWorkflowService;
     #taskQueue: ITaskQueue;
 
-    constructor(services: IServiceContainer) {
+    constructor(services: IBotServiceContainer) {
         super(services);
         this.logger = services.getLogger('GenerativeMediaChatClient');
 

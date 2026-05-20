@@ -1,13 +1,13 @@
-import { ButtonBuilder, ButtonStyle } from 'discord.js';
+﻿import { ButtonBuilder, ButtonStyle } from 'discord.js';
 
 import { BotInteraction } from '../../../../../../../enums/BotInteraction.js';
 import { SupportedFeature } from '../../../../../../features/enum/SupportedFeature.js';
-import { IServiceContainer } from '../../../../../../IServiceContainer.js';
+import { IBotServiceContainer } from "../../../../../../IServiceContainer.js"
 import { BaseComponent } from '../../BaseComponent.js';
 
 export class ExpandPromptButton extends BaseComponent<ButtonBuilder> {
     override get label(): string {
-        return '📃';
+        return 'ðŸ“ƒ';
     }
 
     override get isSupported(): boolean {
@@ -25,7 +25,7 @@ export class ExpandPromptButton extends BaseComponent<ButtonBuilder> {
             + ' This is then used to render an image with results that may better match your expectations.';
     }
 
-    constructor(services: IServiceContainer) {
+    constructor(services: IBotServiceContainer) {
         super(services);
     }
 

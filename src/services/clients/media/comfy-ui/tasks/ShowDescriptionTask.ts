@@ -1,7 +1,7 @@
-import { Attachment, AttachmentBuilder, ButtonInteraction, Message, MessageReaction } from 'discord.js';
+﻿import { Attachment, AttachmentBuilder, ButtonInteraction, Message, MessageReaction } from 'discord.js';
 
 import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
-import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { IBotServiceContainer } from "../../../../IServiceContainer.js"
 import { ResourceType } from '../../../../parallelization/ResourceType.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
@@ -22,7 +22,7 @@ export class ShowDescriptionTask extends BaseTask<void> {
         return this.parallelizationStrategy.getTaskChannel(ResourceType.Chat, this.isChild, null);
     }
 
-    constructor(services: IServiceContainer, interaction: ButtonInteraction) {
+    constructor(services: IBotServiceContainer, interaction: ButtonInteraction) {
         super(services);
         this.logger = services.getLogger('ShowDescriptionTask');
 

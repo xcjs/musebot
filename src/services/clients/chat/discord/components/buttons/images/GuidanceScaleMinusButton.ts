@@ -1,16 +1,16 @@
-import { ButtonBuilder, ButtonStyle } from 'discord.js';
+﻿import { ButtonBuilder, ButtonStyle } from 'discord.js';
 
 import { BotInteraction } from '../../../../../../../enums/BotInteraction.js';
 import { IEnvironmentSettings } from '../../../../../../environment-settings/IEnvironmentSettings.js';
 import { SupportedFeature } from '../../../../../../features/enum/SupportedFeature.js';
-import { IServiceContainer } from '../../../../../../IServiceContainer.js';
+import { IBotServiceContainer } from "../../../../../../IServiceContainer.js"
 import { SerializableRenderRequest } from '../../../../../media/comfy-ui/models/SerializableRenderRequest.js';
 import { guidanceScaleMin } from '../../../../../media/stable-diffusion/constants/constants.js';
 import { BaseComponent } from '../../BaseComponent.js';
 
 export class GuidanceScaleMinusButton extends BaseComponent<ButtonBuilder> {
     override get label(): string {
-        return '➖';
+        return 'âž–';
     }
 
     override get isSupported(): boolean {
@@ -44,7 +44,7 @@ export class GuidanceScaleMinusButton extends BaseComponent<ButtonBuilder> {
     #environmentSettings: IEnvironmentSettings;
     #renderRequest: SerializableRenderRequest | null;
 
-    constructor(services: IServiceContainer, renderRequest: SerializableRenderRequest | null) {
+    constructor(services: IBotServiceContainer, renderRequest: SerializableRenderRequest | null) {
         super(services);
         this.#environmentSettings = services.environmentSettings;
         this.#renderRequest = renderRequest;

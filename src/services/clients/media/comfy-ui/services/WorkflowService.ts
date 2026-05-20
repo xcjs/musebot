@@ -7,7 +7,6 @@ import Handlebars from 'handlebars';
 import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { ILogger } from '../../../../ILogger.js';
-import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { IWorkflow } from '../models/IWorkflow.js';
 import { IWorkflowDefaults } from '../models/IWorkflowDefaults.js';
 import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
@@ -26,8 +25,8 @@ export class WorkflowService implements IWorkflowService {
 
     #workflows: IWorkflow[] = [];
 
-    public constructor(services: IServiceContainer) {
-        this.#logger = services.getLogger('WorkflowService');
+    public constructor(logger: ILogger) {
+        this.#logger = logger;
     }
 
     async loadWorkflows(): Promise<void> {

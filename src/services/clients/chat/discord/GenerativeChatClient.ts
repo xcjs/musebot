@@ -1,9 +1,9 @@
-import { Attachment, ButtonInteraction, Client as DiscordClient, Events, Message as DiscordMessage, MessageReaction, TextChannel,User } from 'discord.js';
+﻿import { Attachment, ButtonInteraction, Client as DiscordClient, Events, Message as DiscordMessage, MessageReaction, TextChannel,User } from 'discord.js';
 import { Message as OllamaMessage } from 'ollama';
 
 import { BotInteraction } from '../../../../enums/BotInteraction.js';
 import { IEnvironmentSettings } from '../../../environment-settings/IEnvironmentSettings.js';
-import { IServiceContainer } from '../../../IServiceContainer.js';
+import { IBotServiceContainer } from "../../../IServiceContainer.js"
 import { ITaskQueue } from '../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { IContextMessageFactory } from '../../llm/services/IContextMessageFactory.js';
@@ -14,7 +14,7 @@ import { BaseDiscordClient } from './BaseDiscordClient.js';
 import { ChatConfirmClearActionRow } from './components/buttonRows/ChatConfirmClearActionRow.js';
 
 export class GenerativeChatClient extends BaseDiscordClient {
-    #services: IServiceContainer;
+    #services: IBotServiceContainer;
 
     #environmentSettings: IEnvironmentSettings;
     #discordClient: DiscordClient;
@@ -26,7 +26,7 @@ export class GenerativeChatClient extends BaseDiscordClient {
 
     #channelTopicsCached: string[] = [];
 
-    constructor(services: IServiceContainer) {
+    constructor(services: IBotServiceContainer) {
         super(services);
         this.logger = services.getLogger('GenerativeChatClient');
 

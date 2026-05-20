@@ -1,7 +1,7 @@
-import { ButtonBuilder, ButtonStyle } from 'discord.js';
+﻿import { ButtonBuilder, ButtonStyle } from 'discord.js';
 
 import { IEnvironmentSettings } from '../../../../../environment-settings/IEnvironmentSettings.js';
-import { IServiceContainer } from '../../../../../IServiceContainer.js';
+import { IBotServiceContainer } from "../../../../../IServiceContainer.js"
 import { BaseComponent } from '../BaseComponent.js';
 
 export class DynamicButton extends BaseComponent<ButtonBuilder> {
@@ -27,7 +27,7 @@ export class DynamicButton extends BaseComponent<ButtonBuilder> {
 
     #environmentSettings: IEnvironmentSettings;
 
-    constructor(services: IServiceContainer,
+    constructor(services: IBotServiceContainer,
         label: string,
         title: string | undefined,
         helpText: string | undefined) {

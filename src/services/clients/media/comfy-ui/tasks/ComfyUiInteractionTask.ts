@@ -1,11 +1,11 @@
-import { Prompt } from 'comfy-ui-client';
+﻿import { Prompt } from 'comfy-ui-client';
 import { Attachment, AttachmentBuilder, ButtonInteraction, Message, MessageReaction } from 'discord.js';
 
 import { BotInteraction } from '../../../../../enums/BotInteraction.js';
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
-import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { IBotServiceContainer } from "../../../../IServiceContainer.js"
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
@@ -18,13 +18,13 @@ import { WorkflowNotFoundError } from '../WorkflowNotFoundError.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 
 export class ComfyUiInteractionTask extends ComfyUiBaseTask {
-    readonly #services: IServiceContainer;
+    readonly #services: IBotServiceContainer;
 
     readonly #replyService: DiscordReplyService;
 
     readonly #interaction: ButtonInteraction;
 
-    constructor(services: IServiceContainer, interaction: ButtonInteraction) {
+    constructor(services: IBotServiceContainer, interaction: ButtonInteraction) {
         super(services);
         this.logger = services.getLogger('ComfyUiInteractionTask');
 

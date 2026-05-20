@@ -1,7 +1,7 @@
-import { IWorkflowService } from '../clients/media/comfy-ui/services/IWorkflowService.js';
+﻿import { IWorkflowService } from '../clients/media/comfy-ui/services/IWorkflowService.js';
 import { IEnvironmentSettings } from '../environment-settings/IEnvironmentSettings.js';
 import { ILogger } from '../ILogger.js';
-import { IServiceContainer } from '../IServiceContainer.js';
+import { IBotServiceContainer } from "../IServiceContainer.js"
 import { SupportedFeature } from './enum/SupportedFeature.js';
 import { IFeatureService } from './IFeatureService.js';
 
@@ -17,7 +17,7 @@ export class FeatureService implements IFeatureService {
         return this.#supportedFeatures;
     }
 
-    constructor(services: IServiceContainer) {
+    constructor(services: IBotServiceContainer) {
         this.#environmentSettings = services.environmentSettings;
         this.#workflowService = services.workflowService;
 

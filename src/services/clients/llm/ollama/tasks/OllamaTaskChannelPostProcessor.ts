@@ -1,5 +1,5 @@
 import { ILogger } from '../../../../ILogger.js';
-import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { IBotServiceContainer } from '../../../../IServiceContainer.js';
 import { ITaskChannelPostProcessor } from '../../../../parallelization/ITaskChannelPostProcessor.js';
 import { OllamaClient } from '../../ollama/OllamaClient.js';
 
@@ -8,7 +8,7 @@ export class OllamaTaskChannelPostProcessor implements ITaskChannelPostProcessor
 
   readonly #logger: ILogger;
 
-  constructor(services: IServiceContainer) {
+  constructor(services: IBotServiceContainer) {
     this.#ollamaClient = services.ollamaClient;
 
     this.#logger = services.getLogger('OllamaTaskChannelPostProcessor');

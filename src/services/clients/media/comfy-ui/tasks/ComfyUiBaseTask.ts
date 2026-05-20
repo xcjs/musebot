@@ -1,10 +1,10 @@
-import { Attachment, ButtonInteraction, Message, MessageReaction } from 'discord.js';
+﻿import { Attachment, ButtonInteraction, Message, MessageReaction } from 'discord.js';
 
 import { TaskQueueStrategy } from '../../../../../enums/TaskQueueStrategy.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../../../../features/IFeatureService.js';
-import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { IBotServiceContainer } from "../../../../IServiceContainer.js"
 import { ResourceType } from '../../../../parallelization/ResourceType.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
@@ -30,7 +30,7 @@ export abstract class ComfyUiBaseTask extends BaseTask<void> {
     readonly #featureService: IFeatureService;
     readonly #ollamaClient: OllamaClient;
 
-    constructor(services: IServiceContainer) {
+    constructor(services: IBotServiceContainer) {
         super(services);
 
         this.environmentSettings = services.environmentSettings;

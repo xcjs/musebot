@@ -1,4 +1,4 @@
-import { ActionRowBuilder, Attachment, AttachmentBuilder, BaseMessageOptions, ButtonBuilder, ButtonInteraction, Message, MessageReaction } from 'discord.js';
+﻿import { ActionRowBuilder, Attachment, AttachmentBuilder, BaseMessageOptions, ButtonBuilder, ButtonInteraction, Message, MessageReaction } from 'discord.js';
 
 import { MAX_FILE_NAME_LENGTH } from '../../../../../constants/FileConstants.js';
 import { ContentType } from '../../../../../enums/ContentType.js';
@@ -9,7 +9,7 @@ import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js'
 import { IContentTypeService } from '../../../../features/IContentTypeService.js';
 import { IFeatureService } from '../../../../features/IFeatureService.js';
 import { ILogger } from '../../../../ILogger.js';
-import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { IBotServiceContainer } from "../../../../IServiceContainer.js"
 import { ComfyUiClient } from '../../../media/comfy-ui/ComfyUiClient.js';
 import { MediaCollectionResponse, MediaContainer } from '../../../media/comfy-ui/extensions/MediaResponse.js';
 import { SerializableRenderRequest } from '../../../media/comfy-ui/models/SerializableRenderRequest.js';
@@ -22,7 +22,7 @@ import { StatelessImageGenerationActionRow } from '../components/buttonRows/Stat
 import { DiscordConstants } from '../enums/DiscordConstants.js';
 
 export class ComfyUiReplyService {
-    readonly #services: IServiceContainer;
+    readonly #services: IBotServiceContainer;
 
     readonly #environmentSettings: IEnvironmentSettings;
     readonly #comfyUiClient: ComfyUiClient;
@@ -36,7 +36,7 @@ export class ComfyUiReplyService {
         return this.#comfyUiClient.host;
     }
 
-    constructor(services: IServiceContainer) {
+    constructor(services: IBotServiceContainer) {
         this.#services = services;
 
         this.#environmentSettings = services.environmentSettings;

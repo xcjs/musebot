@@ -1,16 +1,16 @@
-import { BaseMessageOptions, ButtonInteraction, Message } from 'discord.js';
+﻿import { BaseMessageOptions, ButtonInteraction, Message } from 'discord.js';
 
 import { splitText } from '../../../../../utilities/string-utilities.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { ILogger } from '../../../../ILogger.js';
-import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { IBotServiceContainer } from "../../../../IServiceContainer.js"
 import { DiscordConstants } from '../enums/DiscordConstants.js';
 
 export class DiscordReplySender {
     readonly #environmentSettings: IEnvironmentSettings;
     readonly #logger: ILogger;
 
-    constructor(services: IServiceContainer) {
+    constructor(services: IBotServiceContainer) {
         this.#environmentSettings = services.environmentSettings;
         this.#logger = services.getLogger('DiscordReplySender');
     }

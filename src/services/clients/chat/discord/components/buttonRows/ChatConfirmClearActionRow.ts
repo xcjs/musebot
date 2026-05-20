@@ -1,6 +1,6 @@
-import { ActionRowBuilder, ButtonBuilder } from 'discord.js';
+﻿import { ActionRowBuilder, ButtonBuilder } from 'discord.js';
 
-import { IServiceContainer } from '../../../../../IServiceContainer.js';
+import { IBotServiceContainer } from "../../../../../IServiceContainer.js"
 import { BaseComponent } from '../BaseComponent.js';
 import { ClearContextCancelButton } from '../buttons/text/ClearContextCancelButton.js';
 import { ClearContextConfirmButton } from '../buttons/text/ClearContextConfirmButton.js';
@@ -17,11 +17,11 @@ export class ChatConfirmClearActionRow extends BaseComponent<ActionRowBuilder<Bu
         return false;
     }
 
-    #services: IServiceContainer;
+    #services: IBotServiceContainer;
 
     #actionRowBuilderFactory: IActionRowBuilderFactory;
 
-    constructor(services: IServiceContainer) {
+    constructor(services: IBotServiceContainer) {
         super(services);
 
         this.#services = services;

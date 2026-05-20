@@ -1,10 +1,10 @@
-import { Message as DiscordMessage } from 'discord.js';
+﻿import { Message as DiscordMessage } from 'discord.js';
 import { Message as OllamaMessage } from 'ollama';
 
 import { endsWithWhitespace, hasOnly, isOnlyWhitespace } from '../../../../../utilities/string-utilities.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../../../../features/IFeatureService.js';
-import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { IBotServiceContainer } from "../../../../IServiceContainer.js"
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
@@ -12,7 +12,7 @@ import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.j
 import { OllamaBaseTask } from './OllamaBaseTask.js';
 
 export class OllamaMessageTask extends OllamaBaseTask<void> {
-    readonly #services: IServiceContainer;
+    readonly #services: IBotServiceContainer;
 
     readonly #featureService: IFeatureService;
     readonly #taskQueue: ITaskQueue;
@@ -20,7 +20,7 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
     readonly #message: DiscordMessage;
 
     constructor(
-        services: IServiceContainer,
+        services: IBotServiceContainer,
         message: DiscordMessage) {
         super(services);
         this.logger = services.getLogger('OllamaMessageTask');

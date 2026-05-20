@@ -1,13 +1,13 @@
-import { ButtonBuilder, ButtonStyle } from 'discord.js';
+﻿import { ButtonBuilder, ButtonStyle } from 'discord.js';
 
 import { BotInteraction } from '../../../../../../../enums/BotInteraction.js';
 import { SupportedFeature } from '../../../../../../features/enum/SupportedFeature.js';
-import { IServiceContainer } from '../../../../../../IServiceContainer.js';
+import { IBotServiceContainer } from "../../../../../../IServiceContainer.js"
 import { BaseComponent } from '../../BaseComponent.js';
 
 export class RandomizeButton extends BaseComponent<ButtonBuilder> {
     override get label(): string {
-        return '🎲';
+        return 'ðŸŽ²';
     }
 
     override get isSupported(): boolean {
@@ -25,7 +25,7 @@ export class RandomizeButton extends BaseComponent<ButtonBuilder> {
             + ' The result will not be related to the context of the previous image.';
     }
 
-    constructor(services: IServiceContainer) {
+    constructor(services: IBotServiceContainer) {
         super(services);
     }
 

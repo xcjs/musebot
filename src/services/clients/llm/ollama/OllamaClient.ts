@@ -1,11 +1,11 @@
-import { ChatRequest, ChatResponse, GenerateRequest, GenerateResponse, Message, Ollama } from 'ollama';
+﻿import { ChatRequest, ChatResponse, GenerateRequest, GenerateResponse, Message, Ollama } from 'ollama';
 
 import { IHttpExchange } from '../../../../models/IHttpExchange.js';
 import { IHttpExchangeWithAttachedData } from '../../../../models/IHttpExchangeWithAttachedData.js';
 import { getRandomArrayEntry, getRandomInt } from '../../../../utilities/random-utilities.js';
 import { IEnvironmentSettings } from '../../../environment-settings/IEnvironmentSettings.js';
 import { ILogger } from '../../../ILogger.js';
-import { IServiceContainer } from '../../../IServiceContainer.js';
+import { IBotServiceContainer } from "../../../IServiceContainer.js"
 import { OllamaRole } from './enums/OllamaRole.js';
 import { IStructuredRequestData } from './models/IStructuredRequestData.js';
 
@@ -21,7 +21,7 @@ export class OllamaClient {
         return this.#host;
     }
 
-    constructor(services: IServiceContainer) {
+    constructor(services: IBotServiceContainer) {
         this.#environmentSettings = services.environmentSettings;
 
         this.#logger = services.getLogger('OllamaClient');

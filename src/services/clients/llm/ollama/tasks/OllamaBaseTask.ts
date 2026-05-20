@@ -1,11 +1,11 @@
-import { Attachment, Message as DiscordMessage, MessageReaction } from 'discord.js';
+﻿import { Attachment, Message as DiscordMessage, MessageReaction } from 'discord.js';
 import { Message as OllamaMessage } from 'ollama';
 
 import { TaskQueueStrategy } from '../../../../../enums/TaskQueueStrategy.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../../../../features/IFeatureService.js';
-import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { IBotServiceContainer } from "../../../../IServiceContainer.js"
 import { ResourceType } from '../../../../parallelization/ResourceType.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { OllamaReplyService } from '../../../chat/discord/ollama/OllamaReplyService.js';
@@ -35,7 +35,7 @@ export abstract class OllamaBaseTask<T> extends BaseTask<T> {
     readonly #featureService: IFeatureService;
     readonly #comfyUiClient: ComfyUiClient;
 
-    constructor(services: IServiceContainer) {
+    constructor(services: IBotServiceContainer) {
         super(services);
 
         this.environmentSettings = services.environmentSettings;

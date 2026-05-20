@@ -1,13 +1,13 @@
-import { ButtonBuilder, ButtonStyle } from 'discord.js';
+﻿import { ButtonBuilder, ButtonStyle } from 'discord.js';
 
 import { BotInteraction } from '../../../../../../../enums/BotInteraction.js';
 import { SupportedFeature } from '../../../../../../features/enum/SupportedFeature.js';
-import { IServiceContainer } from '../../../../../../IServiceContainer.js';
+import { IBotServiceContainer } from "../../../../../../IServiceContainer.js"
 import { BaseComponent } from '../../BaseComponent.js';
 
 export class ClearContextButton extends BaseComponent<ButtonBuilder> {
     override get label(): string {
-        return '🆑';
+        return 'ðŸ†‘';
     }
 
     override get isSupported(): boolean {
@@ -22,7 +22,7 @@ export class ClearContextButton extends BaseComponent<ButtonBuilder> {
         return 'Asks for confirmation to clear the conversational context.';
     }
 
-    constructor(services: IServiceContainer) {
+    constructor(services: IBotServiceContainer) {
         super(services);
     }
 

@@ -1,11 +1,11 @@
-import { Client as DiscordClient, Message, MessageReaction, MessageType } from 'discord.js';
+﻿import { Client as DiscordClient, Message, MessageReaction, MessageType } from 'discord.js';
 
 import { getRandomInt } from '../../../../../utilities/random-utilities.js';
 import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../../../../features/IFeatureService.js';
 import { ILogger } from '../../../../ILogger.js';
-import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { IBotServiceContainer } from "../../../../IServiceContainer.js"
 
 export class DiscordReplyFilter {
     #environmentSettings: IEnvironmentSettings;
@@ -13,7 +13,7 @@ export class DiscordReplyFilter {
     #featureService: IFeatureService;
     #logger: ILogger;
 
-    constructor(services: IServiceContainer) {
+    constructor(services: IBotServiceContainer) {
         this.#environmentSettings = services.environmentSettings;
         this.#discordClient = services.discordClient;
         this.#featureService = services.featureService;

@@ -1,5 +1,5 @@
 import { ILogger } from '../../../../ILogger.js';
-import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { IBotServiceContainer } from '../../../../IServiceContainer.js';
 import { ITaskChannelPostProcessor } from '../../../../parallelization/ITaskChannelPostProcessor.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
 
@@ -8,7 +8,7 @@ export class ComfyUiTaskChannelPostProcessor implements ITaskChannelPostProcesso
 
   readonly #logger: ILogger;
 
-  constructor(services: IServiceContainer) {
+  constructor(services: IBotServiceContainer) {
     this.#comfyUiClient = services.comfyUiClient;
 
     this.#logger = services.getLogger('ComfyUiTaskChannelPostProcessor');

@@ -1,20 +1,20 @@
-import { ActionRowBuilder, ButtonBuilder, Message } from 'discord.js';
+﻿import { ActionRowBuilder, ButtonBuilder, Message } from 'discord.js';
 
 import { splitText } from '../../../../../utilities/string-utilities.js';
 import { ILogger } from '../../../../ILogger.js';
-import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { IBotServiceContainer } from "../../../../IServiceContainer.js"
 import { ChatActionRow } from '../components/buttonRows/ChatActionRow.js';
 import { DiscordConstants } from '../enums/DiscordConstants.js';
 
 export class OllamaStreamingReplyService {
-    #services: IServiceContainer;
+    #services: IBotServiceContainer;
 
     #logger: ILogger;
 
     #replies: Array<Message> = [];
     #repliesContent: string[] = [];
 
-    constructor(services: IServiceContainer) {
+    constructor(services: IBotServiceContainer) {
         this.#services = services;
 
         this.#logger = services.getLogger('OllamaStreamingReplyService');

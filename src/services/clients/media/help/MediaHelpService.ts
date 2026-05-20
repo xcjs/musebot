@@ -1,4 +1,4 @@
-import { Attachment, ButtonInteraction, Interaction, Message, MessageReaction } from 'discord.js';
+﻿import { Attachment, ButtonInteraction, Interaction, Message, MessageReaction } from 'discord.js';
 
 import nodePackage from '../../../../../package.json' with { type: 'json' };
 import { DEVELOPER } from '../../../../constants/Globals.js';
@@ -7,7 +7,7 @@ import { SupportedFeature } from '../../../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../../../features/IFeatureService.js';
 import { BaseHelpService } from '../../../help/BaseHelpService.js';
 import { IHelpService } from '../../../help/IHelpService.js';
-import { IServiceContainer } from '../../../IServiceContainer.js';
+import { IBotServiceContainer } from "../../../IServiceContainer.js"
 import { Img2ImgActionRow } from '../../chat/discord/components/buttonRows/Img2ImgActionRow.js';
 import { StatefulAudioGenerationActionRow } from '../../chat/discord/components/buttonRows/StatefulAudioGenerationActionRow.js';
 import { StatefulImageGenerationActionRows } from '../../chat/discord/components/buttonRows/StatefulImageGenerationActionRows.js';
@@ -17,13 +17,13 @@ import { IReplyService } from '../../chat/IReplyService.js';
 type DiscordReplyService = IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
 
 export class MediaHelpService extends BaseHelpService implements IHelpService {
-    #services: IServiceContainer;
+    #services: IBotServiceContainer;
 
     #environmentSettings: IEnvironmentSettings;
     #featureService: IFeatureService;
     #replyService: DiscordReplyService;
 
-    constructor(services: IServiceContainer) {
+    constructor(services: IBotServiceContainer) {
         super(services);
 
         this.#services = services;

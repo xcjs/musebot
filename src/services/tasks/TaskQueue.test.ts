@@ -1,8 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 
-import { createMockLogger, createMockPostProcessor, createMockServiceContainer } from '../../test-utils/mockServiceContainer.js';
+import { createMockLogger, createMockPostProcessor, createMockServiceContainer, MockContainer } from '../../test-utils/mockServiceContainer.js';
 import type { ILogger } from '../ILogger.js';
-import type { IServiceContainer } from '../IServiceContainer.js';
 import type { ITaskChannelPostProcessor } from '../parallelization/ITaskChannelPostProcessor.js';
 import { TaskStatus } from './enums/TaskStatus.js';
 import { BaseTask } from './models/BaseTask.js';
@@ -15,7 +14,7 @@ class MockTask extends BaseTask<unknown> {
     readonly #postProcessMock: () => Promise<void>;
 
     constructor(
-        services: IServiceContainer,
+        services: MockContainer,
         taskChannelName: string,
         preProcessMock?: () => Promise<void>,
         processMock?: () => Promise<void>,
@@ -46,7 +45,7 @@ class MockTask extends BaseTask<unknown> {
 }
 
 describe('TaskQueue', () => {
-    let mockServices: IServiceContainer;
+    let mockServices: MockContainer;
     let mockLogger: jest.Mocked<ILogger>;
     let mockPostProcessor: jest.Mocked<ITaskChannelPostProcessor>;
 

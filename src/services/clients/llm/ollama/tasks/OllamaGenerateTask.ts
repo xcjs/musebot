@@ -1,7 +1,7 @@
-import { GenerateRequest, GenerateResponse } from 'ollama';
+﻿import { GenerateRequest, GenerateResponse } from 'ollama';
 
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
-import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { IBotServiceContainer } from "../../../../IServiceContainer.js"
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { OllamaBaseTask } from './OllamaBaseTask.js';
 
@@ -18,7 +18,7 @@ export class OllamaGenerateTask extends OllamaBaseTask<IHttpExchange<GenerateReq
 
     #onSuccess: (payload: IHttpExchange<GenerateRequest, GenerateResponse>) => void = () => { };
 
-    constructor(services: IServiceContainer, prompt: string, temperature: number | undefined = undefined) {
+    constructor(services: IBotServiceContainer, prompt: string, temperature: number | undefined = undefined) {
         super(services);
         this.logger = services.getLogger('OllamaGenerateTask');
 

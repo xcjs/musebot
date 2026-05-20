@@ -1,8 +1,9 @@
 import { jest } from '@jest/globals';
 
 import type { IEnvironmentSettings } from '../services/environment-settings/IEnvironmentSettings.js';
+import type { IGlobalSettings } from '../services/environment-settings/IGlobalSettings.js';
 import type { ILogger } from '../services/ILogger.js';
-import type { IServiceContainer } from '../services/IServiceContainer.js';
+import type { IServiceContainer, IBotServiceContainer } from '../services/IServiceContainer.js';
 import type { IParallelizationStrategy } from '../services/parallelization/IParallelizationStrategy.js';
 import type { ITaskChannelPostProcessor } from '../services/parallelization/ITaskChannelPostProcessor.js';
 
@@ -32,7 +33,8 @@ export function createMockPostProcessor(): jest.Mocked<ITaskChannelPostProcessor
 /**
  * A typed container for testing that exposes the mocks
  */
-export interface MockContainer extends IServiceContainer {
+export interface MockContainer extends IBotServiceContainer {
+    globalSettings: IGlobalSettings;
     _logger: jest.Mocked<ILogger>;
     _postProcessor: jest.Mocked<ITaskChannelPostProcessor>;
 }
@@ -44,6 +46,7 @@ export interface MockServiceContainerConfig {
     logger?: jest.Mocked<ILogger>;
     postProcessor?: jest.Mocked<ITaskChannelPostProcessor>;
     environmentSettings?: IEnvironmentSettings;
+    globalSettings?: IGlobalSettings;
 }
 
 /**
@@ -58,12 +61,20 @@ export function createMockServiceContainer(config?: MockServiceContainerConfig):
         taskRetryDelayMilliseconds: 100,
         taskQueueForceSerialAcrossHosts: false,
     } as IEnvironmentSettings;
+    const globalSettings = config?.globalSettings ?? {
+        maxTaskAttempts: 3,
+        taskRetryDelayMilliseconds: 100,
+        taskQueueForceSerialAcrossHosts: false,
+        taskQueueStrategy: 'serial',
+    } as IGlobalSettings;
     const parallelizationStrategy = {
         getTaskChannel: () => 'test_channel',
     } as IParallelizationStrategy;
 
     // Return a properly typed mock container
     return {
+        // Global settings
+        globalSettings: globalSettings,
         // Singletons
         environmentSettings: environmentSettings,
         featureService: null as never,
@@ -87,7 +98,7 @@ export function createMockServiceContainer(config?: MockServiceContainerConfig):
         // Factories
         getLogger: jest.fn(() => logger),
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        getTaskChannelPostProcessor: jest.fn((channelName: string, isChild: boolean) => postProcessor),
+        getTaskChannelPostProcessor: jest.fn((_services?: IBotServiceContainer, _channelName?: string, _isChild?: boolean) => postProcessor),
         getContextMessageFactory: () => null as never,
         getContextService: () => null as never,
         getLlmGenerateTask: () => null as never,

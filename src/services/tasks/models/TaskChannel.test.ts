@@ -1,8 +1,7 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 
-import { createMockLogger, createMockPostProcessor, createMockServiceContainer } from '../../../test-utils/mockServiceContainer.js';
+import { createMockLogger, createMockPostProcessor, createMockServiceContainer, MockContainer } from '../../../test-utils/mockServiceContainer.js';
 import type { ILogger } from '../../ILogger.js';
-import type { IServiceContainer } from '../../IServiceContainer.js';
 import type { ITaskChannelPostProcessor } from '../../parallelization/ITaskChannelPostProcessor.js';
 import { TaskStatus } from '../enums/TaskStatus.js';
 import { BaseTask } from './BaseTask.js';
@@ -15,7 +14,7 @@ class MockTask extends BaseTask<unknown> {
     readonly #postProcessMock: () => Promise<void>;
 
     constructor(
-        services: IServiceContainer,
+        services: MockContainer,
         taskChannelName: string,
         processMock?: () => Promise<void>,
         postProcessMock?: () => Promise<void>
@@ -40,7 +39,7 @@ class MockTask extends BaseTask<unknown> {
 }
 
 describe('TaskChannel', () => {
-    let mockServices: IServiceContainer;
+    let mockServices: MockContainer;
     let mockLogger: jest.Mocked<ILogger>;
     let mockPostProcessor: jest.Mocked<ITaskChannelPostProcessor>;
 
@@ -79,7 +78,7 @@ describe('TaskChannel', () => {
 
     describe('name property', () => {
         it('should return the channel name', () => {
-            const channel = new TaskChannel(mockServices, 'myChannel');
+            const channel = new TaskChannel(mockServices, mockServices, 'myChannel');
 
             expect(channel.name).toBe('myChannel');
         });
@@ -177,7 +176,7 @@ describe('TaskChannel', () => {
                 postProcessor: mockPostProcessor,
                 environmentSettings: { maxTaskAttempts: 0 } as never,
             });
-            const channel = new TaskChannel(services, 'testChannel');
+            const channel = new TaskChannel(services, services, 'testChannel');
             const task1 = new MockTask(services, 'testChannel');
             const task2 = new MockTask(services, 'testChannel');
 
@@ -196,7 +195,7 @@ describe('TaskChannel', () => {
                 postProcessor: mockPostProcessor,
                 environmentSettings: { maxTaskAttempts: 1 } as never,
             });
-            const channel = new TaskChannel(services, 'testChannel');
+            const channel = new TaskChannel(services, services, 'testChannel');
             const task1 = new MockTask(services, 'testChannel');
             const task2 = new MockTask(services, 'testChannel');
 

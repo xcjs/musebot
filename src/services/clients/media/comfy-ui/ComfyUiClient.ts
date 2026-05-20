@@ -1,10 +1,10 @@
-import { Prompt } from 'comfy-ui-client';
+﻿import { Prompt } from 'comfy-ui-client';
 
 import { PromisedSettledResultStatus } from '../../../../enums/PromisedSettledResultStatus.js';
 import { getRandomArrayEntry } from '../../../../utilities/random-utilities.js';
 import { IEnvironmentSettings } from '../../../environment-settings/IEnvironmentSettings.js';
 import { ILogger } from '../../../ILogger.js';
-import { IServiceContainer } from '../../../IServiceContainer.js';
+import { IBotServiceContainer } from "../../../IServiceContainer.js"
 import { IGenerativeChatClient } from '../../chat/IGenerativeChatClient.js';
 import { ExtendedComfyUIClient } from './extensions/ExtendedComfyUIClient.js';
 import { MediaCollectionResponse } from './extensions/MediaResponse.js';
@@ -22,7 +22,7 @@ export class ComfyUiClient {
     readonly #host: URL;
     readonly #client: ExtendedComfyUIClient;
 
-    constructor(services: IServiceContainer) {
+    constructor(services: IBotServiceContainer) {
         this.#environmentSettings = services.environmentSettings;
         this.#chatClient = services.generativeChatClient;
 
