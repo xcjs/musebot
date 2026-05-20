@@ -9,9 +9,9 @@ In Progress
 ### Import Fix (Corrupted Import Statements)
 
 **Problem:** 60+ files had corrupted import statements using curly braces and
-single quotes (e.g., `import { IBotServiceContainer } from
-{'../IServiceContainer.js'}`), causing `TS1005` parse errors across the entire
-codebase.
+single quotes (e.g.,
+`import { IBotServiceContainer } from {'../IServiceContainer.js'}`), causing
+`TS1005` parse errors across the entire codebase.
 
 **Fix:** Replaced all curly-brace + single-quote imports with standard
 double-quoted strings. Also corrected import paths from
