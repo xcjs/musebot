@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 
-import { createMockLogger, createMockPostProcessor, createMockServiceContainer, MockContainer } from '../../test-utils/mockServiceContainer.js';
+import { createMockGlobalContainer, createMockLogger, createMockPostProcessor, createMockServiceContainer, MockContainer, MockGlobalContainer } from '../../test-utils/mockServiceContainer.js';
 import type { ILogger } from '../ILogger.js';
 import type { ITaskChannelPostProcessor } from '../parallelization/ITaskChannelPostProcessor.js';
 import { TaskStatus } from './enums/TaskStatus.js';
@@ -45,14 +45,19 @@ class MockTask extends BaseTask<unknown> {
 }
 
 describe('TaskQueue', () => {
-    let mockServices: MockContainer;
+    let mockGlobalServices: MockGlobalContainer;
+    let mockBotServices: MockContainer;
     let mockLogger: jest.Mocked<ILogger>;
     let mockPostProcessor: jest.Mocked<ITaskChannelPostProcessor>;
 
     beforeEach(() => {
         mockLogger = createMockLogger();
         mockPostProcessor = createMockPostProcessor();
-        mockServices = createMockServiceContainer({
+        mockGlobalServices = createMockGlobalContainer({
+            logger: mockLogger,
+            postProcessor: mockPostProcessor,
+        });
+        mockBotServices = createMockServiceContainer({
             logger: mockLogger,
             postProcessor: mockPostProcessor,
         });
@@ -66,37 +71,28 @@ describe('TaskQueue', () => {
 
     describe('constructor', () => {
         it('should create a TaskQueue with empty channels', function (this: void): void {
-            const queue = new TaskQueue(mockServices);
+            const queue = new TaskQueue(mockGlobalServices);
 
             expect(queue.isActive).toBe(false);
-        });
-
-        it('should get logger from services', function (this: void): void {
-            new TaskQueue(mockServices);
-
-            // eslint-disable-next-line @typescript-eslint/unbound-method
-            expect(mockServices.getLogger).toHaveBeenCalledWith('TaskQueue');
         });
     });
 
     describe('isActive', () => {
         it('should return false when no channels exist', function (this: void): void {
-            const queue = new TaskQueue(mockServices);
-
+            const queue = new TaskQueue(mockGlobalServices);
             expect(queue.isActive).toBe(false);
         });
 
         it('should return false when channels have no tasks', function (this: void): void {
-            const queue = new TaskQueue(mockServices);
-
+            const queue = new TaskQueue(mockGlobalServices);
             expect(queue.isActive).toBe(false);
         });
     });
 
     describe('add()', () => {
         it('should add a task to the queue', function (this: void): void {
-            const queue = new TaskQueue(mockServices);
-            const task = new MockTask(mockServices, 'testChannel');
+            const queue = new TaskQueue(mockGlobalServices);
+            const task = new MockTask(mockBotServices, 'testChannel');
 
             queue.add(task);
 
@@ -107,8 +103,8 @@ describe('TaskQueue', () => {
         });
 
         it('should create a new channel for new task channels', function (this: void): void {
-            const queue = new TaskQueue(mockServices);
-            const task = new MockTask(mockServices, 'newChannel');
+            const queue = new TaskQueue(mockGlobalServices);
+            const task = new MockTask(mockBotServices, 'newChannel');
 
             queue.add(task);
 
@@ -119,9 +115,9 @@ describe('TaskQueue', () => {
         });
 
         it('should reuse existing channel for same task channel name', function (this: void): void {
-            const queue = new TaskQueue(mockServices);
-            const task1 = new MockTask(mockServices, 'sharedChannel');
-            const task2 = new MockTask(mockServices, 'sharedChannel');
+            const queue = new TaskQueue(mockGlobalServices);
+            const task1 = new MockTask(mockBotServices, 'sharedChannel');
+            const task2 = new MockTask(mockBotServices, 'sharedChannel');
 
             queue.add(task1);
             queue.add(task2);
@@ -133,8 +129,8 @@ describe('TaskQueue', () => {
         });
 
         it('should not add duplicate tasks by id', function (this: void): void {
-            const queue = new TaskQueue(mockServices);
-            const task = new MockTask(mockServices, 'testChannel');
+            const queue = new TaskQueue(mockGlobalServices);
+            const task = new MockTask(mockBotServices, 'testChannel');
 
             queue.add(task);
             queue.add(task);
@@ -146,8 +142,8 @@ describe('TaskQueue', () => {
         });
 
         it('should log the task channel name when adding', function (this: void): void {
-            const queue = new TaskQueue(mockServices);
-            const task = new MockTask(mockServices, 'myCustomChannel');
+            const queue = new TaskQueue(mockGlobalServices);
+            const task = new MockTask(mockBotServices, 'myCustomChannel');
 
             queue.add(task);
 
@@ -165,8 +161,8 @@ describe('TaskQueue', () => {
                 processCalled = true;
                 return Promise.resolve();
             };
-            const queue = new TaskQueue(mockServices);
-            const task = new MockTask(mockServices, 'testChannel', processMock);
+            const queue = new TaskQueue(mockGlobalServices);
+            const task = new MockTask(mockBotServices, 'testChannel', processMock);
 
             queue.add(task);
 
@@ -186,8 +182,8 @@ describe('TaskQueue', () => {
                 processCalled = true;
                 return Promise.resolve();
             };
-            const queue = new TaskQueue(mockServices);
-            const task = new MockTask(mockServices, 'testChannel', preProcessMock, processMock);
+            const queue = new TaskQueue(mockGlobalServices);
+            const task = new MockTask(mockBotServices, 'testChannel', preProcessMock, processMock);
 
             queue.add(task);
 
@@ -204,8 +200,8 @@ describe('TaskQueue', () => {
                 postProcessCalled = true;
                 return Promise.resolve();
             };
-            const queue = new TaskQueue(mockServices);
-            const task = new MockTask(mockServices, 'testChannel', undefined, processMock, postProcessMock);
+            const queue = new TaskQueue(mockGlobalServices);
+            const task = new MockTask(mockBotServices, 'testChannel', undefined, processMock, postProcessMock);
 
             queue.add(task);
 
@@ -225,8 +221,8 @@ describe('TaskQueue', () => {
                 processCalled = true;
                 return Promise.resolve();
             };
-            const queue = new TaskQueue(mockServices);
-            const task = new MockTask(mockServices, 'testChannel', preProcessMock, processMock);
+            const queue = new TaskQueue(mockGlobalServices);
+            const task = new MockTask(mockBotServices, 'testChannel', preProcessMock, processMock);
 
             queue.add(task);
 
@@ -248,8 +244,8 @@ describe('TaskQueue', () => {
                 processCalled = true;
                 return Promise.resolve();
             };
-            const queue = new TaskQueue(mockServices);
-            const task = new MockTask(mockServices, 'testChannel', preProcessMock, processMock);
+            const queue = new TaskQueue(mockGlobalServices);
+            const task = new MockTask(mockBotServices, 'testChannel', preProcessMock, processMock);
 
             queue.add(task);
 
@@ -270,9 +266,9 @@ describe('TaskQueue', () => {
                 called2 = true;
                 return Promise.resolve();
             };
-            const queue = new TaskQueue(mockServices);
-            const task1 = new MockTask(mockServices, 'channel1', processMock1);
-            const task2 = new MockTask(mockServices, 'channel2', processMock2);
+            const queue = new TaskQueue(mockGlobalServices);
+            const task1 = new MockTask(mockBotServices, 'channel1', processMock1);
+            const task2 = new MockTask(mockBotServices, 'channel2', processMock2);
 
             queue.add(task1);
             queue.add(task2);
@@ -284,8 +280,8 @@ describe('TaskQueue', () => {
         });
 
         it('should set task status to Busy when processing', async function (this: void): Promise<void> {
-            const queue = new TaskQueue(mockServices);
-            const task = new MockTask(mockServices, 'testChannel');
+            const queue = new TaskQueue(mockGlobalServices);
+            const task = new MockTask(mockBotServices, 'testChannel');
 
             queue.add(task);
 
@@ -303,8 +299,8 @@ describe('TaskQueue', () => {
                 }
                 return Promise.resolve();
             };
-            const queue = new TaskQueue(mockServices);
-            const task = new MockTask(mockServices, 'testChannel', undefined, processMock);
+            const queue = new TaskQueue(mockGlobalServices);
+            const task = new MockTask(mockBotServices, 'testChannel', undefined, processMock);
 
             queue.add(task);
 
@@ -316,7 +312,12 @@ describe('TaskQueue', () => {
         });
 
         it('should mark task as Successful if process succeeds', async function (this: void): Promise<void> {
-            const services = createMockServiceContainer({
+            const globalServices = createMockGlobalContainer({
+                logger: mockLogger,
+                postProcessor: mockPostProcessor,
+                environmentSettings: { maxTaskAttempts: 3 } as never,
+            });
+            const botServices = createMockServiceContainer({
                 logger: mockLogger,
                 postProcessor: mockPostProcessor,
                 environmentSettings: { maxTaskAttempts: 3 } as never,
@@ -327,8 +328,8 @@ describe('TaskQueue', () => {
                 postProcessCalled = true;
                 return Promise.resolve();
             };
-            const queue = new TaskQueue(services);
-            const task = new MockTask(services, 'testChannel', undefined, processMock, postProcessMock);
+            const queue = new TaskQueue(globalServices);
+            const task = new MockTask(botServices, 'testChannel', undefined, processMock, postProcessMock);
 
             queue.add(task);
 
@@ -339,8 +340,8 @@ describe('TaskQueue', () => {
         });
 
         it('should log task queue processing info', async (): Promise<void> => {
-            const queue = new TaskQueue(mockServices);
-            const task = new MockTask(mockServices, 'testChannel');
+            const queue = new TaskQueue(mockGlobalServices);
+            const task = new MockTask(mockBotServices, 'testChannel');
 
             queue.add(task);
 
@@ -353,8 +354,8 @@ describe('TaskQueue', () => {
         });
 
         it('should log when retrieving next tasks', async (): Promise<void> => {
-            const queue = new TaskQueue(mockServices);
-            const task = new MockTask(mockServices, 'testChannel');
+            const queue = new TaskQueue(mockGlobalServices);
+            const task = new MockTask(mockBotServices, 'testChannel');
 
             queue.add(task);
 

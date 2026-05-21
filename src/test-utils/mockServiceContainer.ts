@@ -2,8 +2,8 @@ import { jest } from '@jest/globals';
 
 import type { IEnvironmentSettings } from '../services/environment-settings/IEnvironmentSettings.js';
 import type { IGlobalSettings } from '../services/environment-settings/IGlobalSettings.js';
+import type { IBotServiceContainer, IServiceContainer } from '../services/IServiceContainer.js';
 import type { ILogger } from '../services/ILogger.js';
-import type { IServiceContainer, IBotServiceContainer } from '../services/IServiceContainer.js';
 import type { IParallelizationStrategy } from '../services/parallelization/IParallelizationStrategy.js';
 import type { ITaskChannelPostProcessor } from '../services/parallelization/ITaskChannelPostProcessor.js';
 
@@ -47,6 +47,54 @@ export interface MockServiceContainerConfig {
     postProcessor?: jest.Mocked<ITaskChannelPostProcessor>;
     environmentSettings?: IEnvironmentSettings;
     globalSettings?: IGlobalSettings;
+}
+
+/**
+ * A typed container for testing global services (IServiceContainer)
+ */
+export interface MockGlobalContainer extends IServiceContainer {
+    _logger: jest.Mocked<ILogger>;
+    _postProcessor: jest.Mocked<ITaskChannelPostProcessor>;
+}
+
+/**
+ * Creates a minimal mock global service container for testing TaskQueue and other IServiceContainer consumers.
+ */
+export function createMockGlobalContainer(config?: MockServiceContainerConfig): MockGlobalContainer {
+    const logger = config?.logger ?? createMockLogger();
+    const postProcessor = config?.postProcessor ?? createMockPostProcessor();
+    const globalSettings = config?.globalSettings ?? {
+        maxTaskAttempts: 3,
+        taskRetryDelayMilliseconds: 100,
+        taskQueueForceSerialAcrossHosts: false,
+        taskQueueStrategy: 'serial',
+    } as IGlobalSettings;
+    const environmentSettings = config?.environmentSettings ?? {
+        maxTaskAttempts: 3,
+        taskRetryDelayMilliseconds: 100,
+        taskQueueForceSerialAcrossHosts: false,
+    } as IEnvironmentSettings;
+
+    return {
+        globalSettings: globalSettings,
+        environmentSettings: environmentSettings,
+        taskQueue: null as never,
+        workflowService: null as never,
+        parallelizationStrategy: {
+            getTaskChannel: () => 'test_channel',
+        } as IParallelizationStrategy,
+
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        getLogger: jest.fn(() => logger),
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        getTaskChannelPostProcessor: jest.fn((_services, _channelName, _isChild) => postProcessor),
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        getWorkflowMutator: jest.fn((_services, _interactionType, _workflow) => null as never),
+
+        // Expose mocks for test access
+        _logger: logger,
+        _postProcessor: postProcessor,
+    };
 }
 
 /**
@@ -98,7 +146,7 @@ export function createMockServiceContainer(config?: MockServiceContainerConfig):
         // Factories
         getLogger: jest.fn(() => logger),
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        getTaskChannelPostProcessor: jest.fn((_services?: IBotServiceContainer, _channelName?: string, _isChild?: boolean) => postProcessor),
+        getTaskChannelPostProcessor: jest.fn((_channelName?: string, _isChild?: boolean) => postProcessor),
         getContextMessageFactory: () => null as never,
         getContextService: () => null as never,
         getLlmGenerateTask: () => null as never,

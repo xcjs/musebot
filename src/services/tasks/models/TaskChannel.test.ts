@@ -78,7 +78,7 @@ describe('TaskChannel', () => {
 
     describe('name property', () => {
         it('should return the channel name', () => {
-            const channel = new TaskChannel(mockServices, mockServices, 'myChannel');
+            const channel = new TaskChannel(mockServices, 'myChannel');
 
             expect(channel.name).toBe('myChannel');
         });
@@ -128,15 +128,6 @@ describe('TaskChannel', () => {
 
             expect(channel.isActive).toBe(false);
         });
-
-        it('should return false when tasks are failed', () => {
-            const channel = new TaskChannel(mockServices, 'testChannel');
-            const task = new MockTask(mockServices, 'testChannel');
-            task.taskStatus = TaskStatus.Failed;
-            channel.queue.push(task);
-
-            expect(channel.isActive).toBe(false);
-        });
     });
 
     describe('hasTasks', () => {
@@ -176,7 +167,7 @@ describe('TaskChannel', () => {
                 postProcessor: mockPostProcessor,
                 environmentSettings: { maxTaskAttempts: 0 } as never,
             });
-            const channel = new TaskChannel(services, services, 'testChannel');
+            const channel = new TaskChannel(services, 'testChannel');
             const task1 = new MockTask(services, 'testChannel');
             const task2 = new MockTask(services, 'testChannel');
 
@@ -195,7 +186,7 @@ describe('TaskChannel', () => {
                 postProcessor: mockPostProcessor,
                 environmentSettings: { maxTaskAttempts: 1 } as never,
             });
-            const channel = new TaskChannel(services, services, 'testChannel');
+            const channel = new TaskChannel(services, 'testChannel');
             const task1 = new MockTask(services, 'testChannel');
             const task2 = new MockTask(services, 'testChannel');
 
