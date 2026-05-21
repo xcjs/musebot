@@ -1,11 +1,10 @@
-import { jest } from '@jest/globals';
-
 import type { IEnvironmentSettings } from '../services/environment-settings/IEnvironmentSettings.js';
 import type { IGlobalSettings } from '../services/environment-settings/IGlobalSettings.js';
 import type { IBotServiceContainer, IServiceContainer } from '../services/IServiceContainer.js';
 import type { ILogger } from '../services/ILogger.js';
 import type { IParallelizationStrategy } from '../services/parallelization/IParallelizationStrategy.js';
 import type { ITaskChannelPostProcessor } from '../services/parallelization/ITaskChannelPostProcessor.js';
+import { jest } from '@jest/globals';
 
 /**
  * Creates a mock logger for testing
@@ -53,6 +52,7 @@ export interface MockServiceContainerConfig {
  * A typed container for testing global services (IServiceContainer)
  */
 export interface MockGlobalContainer extends IServiceContainer {
+    globalSettings: IGlobalSettings;
     _logger: jest.Mocked<ILogger>;
     _postProcessor: jest.Mocked<ITaskChannelPostProcessor>;
 }

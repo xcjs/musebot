@@ -261,7 +261,7 @@ export class BotServiceContainer implements IBotServiceContainer {
         return this.#globalServiceContainer.getTaskChannelPostProcessor(this, channelName, isChild);
     }
 
-    constructor(globalContainer: GlobalServiceContainer, botConfig: IBotConfig) {
+    constructor(globalContainer: GlobalServiceContainer) {
         this.#globalServiceContainer = globalContainer;
         this.#featureService = new FeatureService(this);
         this.#typingService = new DiscordTypingService(this);
