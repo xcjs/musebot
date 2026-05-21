@@ -1,8 +1,8 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import * as fs from 'node:fs';
 import process, { loadEnvFile } from 'node:process';
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import nodePackage from '../../../package.json' with { type: 'json' };
 import { BotFunction } from '../../enums/BotFunction.js';
 import { NodeEnvironment } from '../../enums/NodeEnvironment.js';
@@ -10,9 +10,9 @@ import { TaskQueueStrategy } from '../../enums/TaskQueueStrategy.js';
 import { toTitleCase } from '../../utilities/string-utilities.js';
 import { ILogger } from '../ILogger.js';
 import { Logger } from '../Logger.js';
+import { EnvironmentKey } from './constants/EnvironmentKey.js';
 import { IBotConfig } from './IBotConfig.js';
 import { IEnvironmentSettings } from './IEnvironmentSettings.js';
-import { EnvironmentKey } from './constants/EnvironmentKey.js';
 
 export class EnvironmentSettings implements IEnvironmentSettings {
     readonly #packageName: string;

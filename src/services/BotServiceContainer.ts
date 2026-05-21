@@ -47,6 +47,7 @@ import { ComfyUiInteractionTask } from './clients/media/comfy-ui/tasks/ComfyUiIn
 import { ComfyUiMessageTask } from './clients/media/comfy-ui/tasks/ComfyUiMessageTask.js';
 import { ShowDescriptionTask } from './clients/media/comfy-ui/tasks/ShowDescriptionTask.js';
 import { MediaHelpService } from './clients/media/help/MediaHelpService.js';
+import { EnvironmentSettings } from './environment-settings/EnvironmentSettings.js';
 import { IBotConfig } from './environment-settings/IBotConfig.js';
 import { IEnvironmentSettings } from './environment-settings/IEnvironmentSettings.js';
 import { ContentTypeService } from './features/ContentTypeService.js';
@@ -73,8 +74,9 @@ export class BotServiceContainer implements IBotServiceContainer {
         return this.#globalServiceContainer;
     }
 
+    readonly #environmentSettings: IEnvironmentSettings;
     get environmentSettings(): IEnvironmentSettings {
-        return this.#globalServiceContainer.environmentSettings;
+        return this.#environmentSettings;
     }
 
     get taskQueue(): ITaskQueue {
@@ -261,8 +263,9 @@ export class BotServiceContainer implements IBotServiceContainer {
         return this.#globalServiceContainer.getTaskChannelPostProcessor(this, channelName, isChild);
     }
 
-    constructor(globalContainer: GlobalServiceContainer) {
+    constructor(globalContainer: GlobalServiceContainer, botConfig: IBotConfig) {
         this.#globalServiceContainer = globalContainer;
+        this.#environmentSettings = new EnvironmentSettings(botConfig);
         this.#featureService = new FeatureService(this);
         this.#typingService = new DiscordTypingService(this);
 

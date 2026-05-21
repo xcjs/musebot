@@ -15,7 +15,6 @@ import { MessageToMusicMutator } from './clients/media/comfy-ui/services/workflo
 import { RandomPromptMutator } from './clients/media/comfy-ui/services/workflow-mutators/RandomPromptMutator.js';
 import { RetryMutator } from './clients/media/comfy-ui/services/workflow-mutators/RetryMutator.js';
 import { WorkflowService } from './clients/media/comfy-ui/services/WorkflowService.js';
-import { IEnvironmentSettings } from './environment-settings/IEnvironmentSettings.js';
 import { IGlobalSettings } from './environment-settings/IGlobalSettings.js';
 import { ILogger } from './ILogger.js';
 import { IBotServiceContainer, IServiceContainer } from './IServiceContainer.js';
@@ -44,11 +43,6 @@ export class GlobalServiceContainer implements IServiceContainer {
     readonly #parallelizationStrategy: IParallelizationStrategy;
     get parallelizationStrategy(): IParallelizationStrategy {
         return this.#parallelizationStrategy;
-    }
-
-    readonly #environmentSettings: IEnvironmentSettings;
-    get environmentSettings(): IEnvironmentSettings {
-        return this.#environmentSettings;
     }
 
     readonly #globalSettings: IGlobalSettings;
@@ -107,9 +101,8 @@ export class GlobalServiceContainer implements IServiceContainer {
         }
     }
 
-    constructor(globalSettings: IGlobalSettings, environmentSettings: IEnvironmentSettings) {
+    constructor(globalSettings: IGlobalSettings) {
         this.#globalSettings = globalSettings;
-        this.#environmentSettings = environmentSettings;
         this.#workflowService = new WorkflowService(this.getLogger('WorkflowService'));
 
         switch(this.#globalSettings.taskQueueStrategy) {

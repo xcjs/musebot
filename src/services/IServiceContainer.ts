@@ -40,7 +40,6 @@ import { BaseTask } from './tasks/models/BaseTask.js';
  */
 export interface IServiceContainer {
     globalSettings: IGlobalSettings;
-    environmentSettings: IEnvironmentSettings;
     taskQueue: ITaskQueue;
     workflowService: IWorkflowService;
     parallelizationStrategy: IParallelizationStrategy;

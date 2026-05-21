@@ -1,10 +1,11 @@
+import { jest } from '@jest/globals';
+
 import type { IEnvironmentSettings } from '../services/environment-settings/IEnvironmentSettings.js';
 import type { IGlobalSettings } from '../services/environment-settings/IGlobalSettings.js';
-import type { IBotServiceContainer, IServiceContainer } from '../services/IServiceContainer.js';
 import type { ILogger } from '../services/ILogger.js';
+import type { IBotServiceContainer, IServiceContainer } from '../services/IServiceContainer.js';
 import type { IParallelizationStrategy } from '../services/parallelization/IParallelizationStrategy.js';
 import type { ITaskChannelPostProcessor } from '../services/parallelization/ITaskChannelPostProcessor.js';
-import { jest } from '@jest/globals';
 
 /**
  * Creates a mock logger for testing
@@ -69,22 +70,16 @@ export function createMockGlobalContainer(config?: MockServiceContainerConfig): 
         taskQueueForceSerialAcrossHosts: false,
         taskQueueStrategy: 'serial',
     } as IGlobalSettings;
-    const environmentSettings = config?.environmentSettings ?? {
-        maxTaskAttempts: 3,
-        taskRetryDelayMilliseconds: 100,
-        taskQueueForceSerialAcrossHosts: false,
-    } as IEnvironmentSettings;
 
     return {
         globalSettings: globalSettings,
-        environmentSettings: environmentSettings,
         taskQueue: null as never,
         workflowService: null as never,
         parallelizationStrategy: {
             getTaskChannel: () => 'test_channel',
         } as IParallelizationStrategy,
 
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+         
         getLogger: jest.fn(() => logger),
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         getTaskChannelPostProcessor: jest.fn((_services, _channelName, _isChild) => postProcessor),
