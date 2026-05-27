@@ -29,7 +29,7 @@ import { SerialStrategy } from './parallelization/SerialStrategy.js';
 import { ITaskQueue } from './tasks/ITaskQueue.js';
 import { TaskQueue } from './tasks/TaskQueue.js';
 
-export class GlobalServiceContainer implements IServiceContainer {
+export class ServiceContainer implements IServiceContainer {
     readonly #taskQueue: ITaskQueue;
     get taskQueue(): ITaskQueue {
         return this.#taskQueue;

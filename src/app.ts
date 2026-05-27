@@ -2,13 +2,13 @@ import './polyfills.js';
 
 import { BotServiceContainer } from './services/BotServiceContainer.js';
 import { ConfigLoader } from './services/environment-settings/ConfigLoader.js';
-import { GlobalServiceContainer } from './services/GlobalServiceContainer.js';
+import { ServiceContainer } from './services/ServiceContainer.js';
 
 const config = ConfigLoader.load();
 const globalSettings = config?.global;
 const botConfigs = config?.bots ?? [];
 
-const globalContainer = new GlobalServiceContainer(globalSettings);
+const globalContainer = new ServiceContainer(globalSettings);
 
 botConfigs.forEach(botConfig => {
     const botServices = new BotServiceContainer(globalContainer, botConfig);

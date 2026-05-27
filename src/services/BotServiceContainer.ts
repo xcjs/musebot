@@ -55,20 +55,20 @@ import { SupportedFeature } from './features/enum/SupportedFeature.js';
 import { FeatureService } from './features/FeatureService.js';
 import { IContentTypeService } from './features/IContentTypeService.js';
 import { IFeatureService } from './features/IFeatureService.js';
-import { GlobalServiceContainer } from './GlobalServiceContainer.js';
 import { IHelpService } from './help/IHelpService.js';
 import { ILogger } from './ILogger.js';
 import { IBotServiceContainer, IServiceContainer } from './IServiceContainer.js';
 import { Logger } from './Logger.js';
 import { IParallelizationStrategy } from './parallelization/IParallelizationStrategy.js';
 import { ITaskChannelPostProcessor } from './parallelization/ITaskChannelPostProcessor.js';
+import { ServiceContainer } from './ServiceContainer.js';
 import { ITaskQueue } from './tasks/ITaskQueue.js';
 import { BaseTask } from './tasks/models/BaseTask.js';
 
 export class BotServiceContainer implements IBotServiceContainer {
     readonly #taskNotConfiguredError = new Error('The task you are attempting to instantiate is not supported by your current configuration.');
 
-    readonly #globalServiceContainer: GlobalServiceContainer;
+    readonly #globalServiceContainer: ServiceContainer;
 
     get globalContainer(): IServiceContainer  {
         return this.#globalServiceContainer;
@@ -263,7 +263,7 @@ export class BotServiceContainer implements IBotServiceContainer {
         return this.#globalServiceContainer.getTaskChannelPostProcessor(this, channelName, isChild);
     }
 
-    constructor(globalContainer: GlobalServiceContainer, botConfig: IBotConfig) {
+    constructor(globalContainer: ServiceContainer, botConfig: IBotConfig) {
         this.#globalServiceContainer = globalContainer;
         this.#environmentSettings = new EnvironmentSettings(botConfig);
         this.#featureService = new FeatureService(this);
