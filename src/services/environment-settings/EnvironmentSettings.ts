@@ -1,7 +1,7 @@
 import * as fs from 'node:fs';
 import process, { loadEnvFile } from 'node:process';
 
-import nodePackage from '../../../package.json' with { type: "json" };
+import nodePackage from '../../../package.json' with { type: 'json' };
 import { BotFunction } from '../../enums/BotFunction.js';
 import { NodeEnvironment } from '../../enums/NodeEnvironment.js';
 import { TaskQueueStrategy } from '../../enums/TaskQueueStrategy.js';
