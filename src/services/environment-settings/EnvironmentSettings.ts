@@ -1,6 +1,10 @@
 import * as fs from 'node:fs';
 import process, { loadEnvFile } from 'node:process';
 
+// Below is required to prevent ts-jest from throwing an error regarding
+// hybrid module resolution, which we are not using. It's all NodeNext.
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import nodePackage from '../../../package.json' with { type: 'json' };
 import { BotFunction } from '../../enums/BotFunction.js';
 import { NodeEnvironment } from '../../enums/NodeEnvironment.js';
