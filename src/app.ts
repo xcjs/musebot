@@ -5,8 +5,8 @@ import { ConfigLoader } from './services/environment-settings/ConfigLoader.js';
 import { ServiceContainer } from './services/ServiceContainer.js';
 
 const config = ConfigLoader.load();
-const globalSettings = config?.global;
-const botConfigs = config?.bots ?? [];
+const globalSettings = config.global;
+const botConfigs = config.bots ?? [];
 
 const globalContainer = new ServiceContainer(globalSettings);
 

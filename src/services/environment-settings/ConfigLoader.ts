@@ -9,20 +9,22 @@ export interface IAppConfig {
 }
 
 export class ConfigLoader {
-    static load(): IAppConfig | null {
+    static load(): IAppConfig {
         const configPath = './config.json';
 
         if(!fs.existsSync(configPath)) {
-            return null;
+            const errorMessage = 'config.json could not be found or accessed.';
+            console.error(errorMessage);
+            throw new Error(errorMessage);
         }
 
         try {
             const content = fs.readFileSync(configPath, 'utf8');
             return JSON.parse(content) as IAppConfig;
         } catch (error) {
-            console.error('Error parsing config.json:', error);
+            const errorMessage = 'config.json could not be parsed. Does it contain syntax errors?';
+            console.error(errorMessage);
+            throw (error);
         }
-
-        return null;
     }
 }
