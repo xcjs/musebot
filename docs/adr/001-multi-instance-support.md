@@ -56,7 +56,7 @@ are bot-specific entities.
 read `globalSettings.taskQueueForceSerialAcrossHosts`.
 
 **Fix:** Changed the constructor to accept a boolean `includeHostname` directly.
-Updated `GlobalServiceContainer` to pass
+Updated `ServiceContainer` to pass
 `!this.#globalSettings.taskQueueForceSerialAcrossHosts`.
 
 **Justification:** Reduces coupling between `SerialStrategy` and the container
@@ -95,7 +95,7 @@ signatures.
 
 ### Phase 2: Container Restructuring
 
-- [x] Create `GlobalServiceContainer`.
+- [x] Create `ServiceContainer`.
 - [x] Create `BotServiceContainer`.
 - [x] Move shared services to `GlobalServiceContainer`.
 - [x] Move bot-specific services to `BotServiceContainer`.
