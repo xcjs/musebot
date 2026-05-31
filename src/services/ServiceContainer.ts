@@ -47,7 +47,7 @@ export class ServiceContainer implements IServiceContainer {
         return new Logger(prefix);
     }
 
-    getTaskChannelPostProcessor(services: IBotServiceContainer, channelName: string, isChild: boolean): ITaskChannelPostProcessor {
+    getTaskChannelPostProcessor(services: IBotServiceContainer, channelName: string): ITaskChannelPostProcessor {
         if(channelName.startsWith(ResourceType.LargeLanguageModel)) {
             return new OllamaTaskChannelPostProcessor(services);
         } else if(channelName.startsWith(ResourceType.Media)) {

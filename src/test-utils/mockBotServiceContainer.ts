@@ -2,7 +2,6 @@ import { jest } from '@jest/globals';
 
 import type { IEnvironmentSettings } from '../services/environment-settings/IEnvironmentSettings.js';
 import type { IGlobalSettings } from '../services/environment-settings/IGlobalSettings.js';
-import type { IWorkflowService } from '../services/clients/media/comfy-ui/services/IWorkflowService.js';
 import type { ILogger } from '../services/ILogger.js';
 import type { IBotServiceContainer, IServiceContainer } from '../services/IServiceContainer.js';
 import type { IParallelizationStrategy } from '../services/parallelization/IParallelizationStrategy.js';
@@ -64,15 +63,14 @@ export interface MockGlobalContainer extends IServiceContainer {
 export function createMockGlobalContainer(config?: MockServiceContainerConfig): MockGlobalContainer {
     const logger = config?.logger ?? createMockLogger();
     const postProcessor = config?.postProcessor ?? createMockPostProcessor();
-    const globalSettings = config?.globalSettings ?? {
-        maxTaskAttempts: 3,
-        taskRetryDelayMilliseconds: 100,
-        taskQueueForceSerialAcrossHosts: false,
-        taskQueueStrategy: 'serial',
-    } as IGlobalSettings;
 
     return {
-        globalSettings: globalSettings,
+        globalSettings: {
+            maxTaskAttempts: 3,
+            taskRetryDelayMilliseconds: 100,
+            taskQueueForceSerialAcrossHosts: false,
+            taskQueueStrategy: 'serial',
+        } as IGlobalSettings,
         taskQueue: null as never,
         parallelizationStrategy: {
             getTaskChannel: () => 'test_channel',
@@ -100,12 +98,6 @@ export function createMockServiceContainer(config?: MockServiceContainerConfig):
         taskRetryDelayMilliseconds: 100,
         taskQueueForceSerialAcrossHosts: false,
     } as IEnvironmentSettings;
-    const globalSettings = config?.globalSettings ?? {
-        maxTaskAttempts: 3,
-        taskRetryDelayMilliseconds: 100,
-        taskQueueForceSerialAcrossHosts: false,
-        taskQueueStrategy: 'serial',
-    } as IGlobalSettings;
     const parallelizationStrategy = {
         getTaskChannel: () => 'test_channel',
     } as IParallelizationStrategy;

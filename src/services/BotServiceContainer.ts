@@ -5,13 +5,15 @@ import {
     Message as DiscordMessage,
     MessageReaction,
     Partials,
-    User} from 'discord.js';
+    User
+} from 'discord.js';
 import { GenerateRequest, GenerateResponse } from 'ollama';
 
 import { BotFunction } from '../enums/BotFunction.js';
 import { BotInteraction } from '../enums/BotInteraction.js';
 import { IHttpExchange } from '../models/IHttpExchange.js';
 import { IHttpExchangeWithAttachedData } from '../models/IHttpExchangeWithAttachedData.js';
+import { getRandomArrayEntry } from '../utilities/random-utilities.js';
 import { ComfyUiReplyService } from './clients/chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { ActionRowBuilderFactory } from './clients/chat/discord/components/ActionRowBuilderFactory.js';
 import { IActionRowBuilderFactory } from './clients/chat/discord/components/IActionRowBuilderFactory.js';
@@ -28,16 +30,6 @@ import { IReplyService } from './clients/chat/IReplyService.js';
 import { ITypingService } from './clients/chat/ITypingService.js';
 import { ShowHelpTask } from './clients/internal/tasks/ShowHelpTask.js';
 import { ChatHelpService } from './clients/llm/help/ChatHelpService.js';
-import { getRandomArrayEntry } from '../utilities/random-utilities.js';
-import { ContextualMediaMutator } from './clients/media/comfy-ui/services/workflow-mutators/ContextualMediaMutator.js';
-import { ExpandPromptMutator } from './clients/media/comfy-ui/services/workflow-mutators/ExpandPromptMutator.js';
-import { GuidanceScaleMutator } from './clients/media/comfy-ui/services/workflow-mutators/GuidanceScaleMutator.js';
-import { JsonMutator } from './clients/media/comfy-ui/services/workflow-mutators/JsonMutator.js';
-import { MessageToMediaMutator } from './clients/media/comfy-ui/services/workflow-mutators/MessageToMediaMutator.js';
-import { MessageToMusicMutator } from './clients/media/comfy-ui/services/workflow-mutators/MessageToMusicMutator.js';
-import { RandomPromptMutator } from './clients/media/comfy-ui/services/workflow-mutators/RandomPromptMutator.js';
-import { RetryMutator } from './clients/media/comfy-ui/services/workflow-mutators/RetryMutator.js';
-import { WorkflowService } from './clients/media/comfy-ui/services/WorkflowService.js';
 import { IStructuredRequestData } from './clients/llm/ollama/models/IStructuredRequestData.js';
 import { OllamaClient } from './clients/llm/ollama/OllamaClient.js';
 import { OllamaEmojiReactionTask } from './clients/llm/ollama/tasks/OllamaEmojiReactionTask.js';
@@ -50,7 +42,16 @@ import { IContextService } from './clients/llm/services/IContextService.js';
 import { ComfyUiClient } from './clients/media/comfy-ui/ComfyUiClient.js';
 import { IWorkflow } from './clients/media/comfy-ui/models/IWorkflow.js';
 import { IWorkflowService } from './clients/media/comfy-ui/services/IWorkflowService.js';
+import { ContextualMediaMutator } from './clients/media/comfy-ui/services/workflow-mutators/ContextualMediaMutator.js';
+import { ExpandPromptMutator } from './clients/media/comfy-ui/services/workflow-mutators/ExpandPromptMutator.js';
+import { GuidanceScaleMutator } from './clients/media/comfy-ui/services/workflow-mutators/GuidanceScaleMutator.js';
 import { IWorkflowMutator } from './clients/media/comfy-ui/services/workflow-mutators/IWorkflowMutator.js';
+import { JsonMutator } from './clients/media/comfy-ui/services/workflow-mutators/JsonMutator.js';
+import { MessageToMediaMutator } from './clients/media/comfy-ui/services/workflow-mutators/MessageToMediaMutator.js';
+import { MessageToMusicMutator } from './clients/media/comfy-ui/services/workflow-mutators/MessageToMusicMutator.js';
+import { RandomPromptMutator } from './clients/media/comfy-ui/services/workflow-mutators/RandomPromptMutator.js';
+import { RetryMutator } from './clients/media/comfy-ui/services/workflow-mutators/RetryMutator.js';
+import { WorkflowService } from './clients/media/comfy-ui/services/WorkflowService.js';
 import { ComfyUiAttachmentTask } from './clients/media/comfy-ui/tasks/ComfyUiAttachmentTask.js';
 import { ComfyUiImg2ImgInteractionTask } from './clients/media/comfy-ui/tasks/ComfyUiImg2ImgInteractionTask.js';
 import { ComfyUiInteractionTask } from './clients/media/comfy-ui/tasks/ComfyUiInteractionTask.js';
@@ -297,8 +298,8 @@ export class BotServiceContainer implements IBotServiceContainer {
         }
     }
 
-    getTaskChannelPostProcessor(channelName: string, isChild: boolean): ITaskChannelPostProcessor {
-        return this.#globalServiceContainer.getTaskChannelPostProcessor(this, channelName, isChild);
+    getTaskChannelPostProcessor(channelName: string): ITaskChannelPostProcessor {
+        return this.#globalServiceContainer.getTaskChannelPostProcessor(this, channelName);
     }
 
     constructor(globalContainer: ServiceContainer, botConfig: IBotConfig) {
