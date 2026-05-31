@@ -37,6 +37,11 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         return this.#botFunction;
     }
 
+    readonly #botId: string | null = null;
+    get botId(): string | null {
+        return this.#botId;
+    }
+
     readonly #maxTaskAttempts: number = 10;
     get maxTaskAttempts(): number {
         return this.#maxTaskAttempts;
@@ -151,6 +156,8 @@ export class EnvironmentSettings implements IEnvironmentSettings {
 
         this.#packageName = nodePackage.name;
         this.#version = nodePackage.version;
+
+        this.#botId = config?.botId || null;
 
         this.#nodeEnvironment = config?.nodeEnvironment
             ? (config.nodeEnvironment as NodeEnvironment)

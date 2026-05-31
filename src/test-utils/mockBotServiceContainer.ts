@@ -2,6 +2,7 @@ import { jest } from '@jest/globals';
 
 import type { IEnvironmentSettings } from '../services/environment-settings/IEnvironmentSettings.js';
 import type { IGlobalSettings } from '../services/environment-settings/IGlobalSettings.js';
+import type { IWorkflowService } from '../services/clients/media/comfy-ui/services/IWorkflowService.js';
 import type { ILogger } from '../services/ILogger.js';
 import type { IBotServiceContainer, IServiceContainer } from '../services/IServiceContainer.js';
 import type { IParallelizationStrategy } from '../services/parallelization/IParallelizationStrategy.js';
@@ -34,7 +35,6 @@ export function createMockPostProcessor(): jest.Mocked<ITaskChannelPostProcessor
  * A typed container for testing that exposes the mocks
  */
 export interface MockContainer extends IBotServiceContainer {
-    globalSettings: IGlobalSettings;
     _logger: jest.Mocked<ILogger>;
     _postProcessor: jest.Mocked<ITaskChannelPostProcessor>;
 }
@@ -74,17 +74,13 @@ export function createMockGlobalContainer(config?: MockServiceContainerConfig): 
     return {
         globalSettings: globalSettings,
         taskQueue: null as never,
-        workflowService: null as never,
         parallelizationStrategy: {
             getTaskChannel: () => 'test_channel',
         } as IParallelizationStrategy,
 
-         
         getLogger: jest.fn(() => logger),
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         getTaskChannelPostProcessor: jest.fn((_services, _channelName, _isChild) => postProcessor),
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        getWorkflowMutator: jest.fn((_services, _interactionType, _workflow) => null as never),
 
         // Expose mocks for test access
         _logger: logger,
@@ -117,16 +113,14 @@ export function createMockServiceContainer(config?: MockServiceContainerConfig):
     // Return a properly typed mock container
     return {
         // Global settings
-        globalSettings: globalSettings,
-        // Singletons
         environmentSettings: environmentSettings,
+        // Singletons
         featureService: null as never,
         taskQueue: null as never,
         typingService: null as never,
         discordClient: null as never,
         generativeChatClient: null as never,
         helpService: null as never,
-        workflowService: null as never,
         parallelizationStrategy: parallelizationStrategy,
 
         // Transients
@@ -155,6 +149,7 @@ export function createMockServiceContainer(config?: MockServiceContainerConfig):
         getReplyService: () => null as never,
 
         // Expose mocks for test access
+        workflowService: null as never,
         _logger: logger,
         _postProcessor: postProcessor,
     };

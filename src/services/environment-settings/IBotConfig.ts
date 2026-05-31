@@ -1,4 +1,5 @@
 export interface IBotConfig {
+    botId: string;
     nodeEnvironment?: string;
     botFunction?: string;
     maxTaskAttempts?: number;

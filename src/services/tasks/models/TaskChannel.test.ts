@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 
-import { createMockLogger, createMockPostProcessor, createMockServiceContainer, MockContainer } from '../../../test-utils/mockServiceContainer.js';
+import { createMockLogger, createMockPostProcessor, createMockServiceContainer, MockContainer } from '../../../test-utils/mockBotServiceContainer.js';
 import type { ILogger } from '../../ILogger.js';
 import type { ITaskChannelPostProcessor } from '../../parallelization/ITaskChannelPostProcessor.js';
 import { TaskStatus } from '../enums/TaskStatus.js';

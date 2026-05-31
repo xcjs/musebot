@@ -41,12 +41,10 @@ import { BaseTask } from './tasks/models/BaseTask.js';
 export interface IServiceContainer {
     globalSettings: IGlobalSettings;
     taskQueue: ITaskQueue;
-    workflowService: IWorkflowService;
     parallelizationStrategy: IParallelizationStrategy;
 
     getLogger(prefix: string): ILogger;
     getTaskChannelPostProcessor(services: IBotServiceContainer, channelName: string, isChild: boolean): ITaskChannelPostProcessor;
-    getWorkflowMutator(services: IBotServiceContainer, interactionType: BotInteraction, workflow: IWorkflow): IWorkflowMutator;
 }
 
 /**
@@ -63,6 +61,8 @@ export interface IBotServiceContainer {
     helpService: IHelpService;
     workflowService: IWorkflowService;
     parallelizationStrategy: IParallelizationStrategy;
+
+    getWorkflowMutator(interactionType: BotInteraction, workflow: IWorkflow): IWorkflowMutator;
 
     // Transients -------------------------------------------------------------/
     contentTypeService: IContentTypeService;
@@ -87,8 +87,6 @@ export interface IBotServiceContainer {
     getInteractionTask(interaction: ButtonInteraction): BaseTask<unknown>;
     getAttachmentTask(message: DiscordMessage, prompt: string): BaseTask<unknown>;
     getCustomInteractionTask(interaction: ButtonInteraction, workflow: IWorkflow): BaseTask<unknown>;
-
-    getWorkflowMutator(interactionType: BotInteraction, workflow: IWorkflow): IWorkflowMutator;
 
     getTaskChannelPostProcessor(channelName: string, isChild: boolean): ITaskChannelPostProcessor;
 

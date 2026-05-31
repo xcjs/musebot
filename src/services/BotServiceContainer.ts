@@ -28,6 +28,16 @@ import { IReplyService } from './clients/chat/IReplyService.js';
 import { ITypingService } from './clients/chat/ITypingService.js';
 import { ShowHelpTask } from './clients/internal/tasks/ShowHelpTask.js';
 import { ChatHelpService } from './clients/llm/help/ChatHelpService.js';
+import { getRandomArrayEntry } from '../utilities/random-utilities.js';
+import { ContextualMediaMutator } from './clients/media/comfy-ui/services/workflow-mutators/ContextualMediaMutator.js';
+import { ExpandPromptMutator } from './clients/media/comfy-ui/services/workflow-mutators/ExpandPromptMutator.js';
+import { GuidanceScaleMutator } from './clients/media/comfy-ui/services/workflow-mutators/GuidanceScaleMutator.js';
+import { JsonMutator } from './clients/media/comfy-ui/services/workflow-mutators/JsonMutator.js';
+import { MessageToMediaMutator } from './clients/media/comfy-ui/services/workflow-mutators/MessageToMediaMutator.js';
+import { MessageToMusicMutator } from './clients/media/comfy-ui/services/workflow-mutators/MessageToMusicMutator.js';
+import { RandomPromptMutator } from './clients/media/comfy-ui/services/workflow-mutators/RandomPromptMutator.js';
+import { RetryMutator } from './clients/media/comfy-ui/services/workflow-mutators/RetryMutator.js';
+import { WorkflowService } from './clients/media/comfy-ui/services/WorkflowService.js';
 import { IStructuredRequestData } from './clients/llm/ollama/models/IStructuredRequestData.js';
 import { OllamaClient } from './clients/llm/ollama/OllamaClient.js';
 import { OllamaEmojiReactionTask } from './clients/llm/ollama/tasks/OllamaEmojiReactionTask.js';
@@ -83,10 +93,6 @@ export class BotServiceContainer implements IBotServiceContainer {
         return this.#globalServiceContainer.taskQueue;
     }
 
-    get workflowService(): IWorkflowService {
-        return this.#globalServiceContainer.workflowService;
-    }
-
     get parallelizationStrategy(): IParallelizationStrategy {
         return this.#globalServiceContainer.parallelizationStrategy;
     }
@@ -118,6 +124,11 @@ export class BotServiceContainer implements IBotServiceContainer {
         return this.#helpService;
     }
 
+    readonly #workflowService: IWorkflowService;
+    get workflowService(): IWorkflowService {
+        return this.#workflowService;
+    }
+
     // Transients -------------------------------------------------------------/
 
     get contentTypeService(): IContentTypeService {
@@ -126,6 +137,37 @@ export class BotServiceContainer implements IBotServiceContainer {
 
     getReplyService<MessageType, ReactionType, AttachmentType, InteractionType>(): IReplyService<MessageType, ReactionType, AttachmentType, InteractionType> {
         return new DiscordReplyService(this) as unknown as IReplyService<MessageType, ReactionType, AttachmentType, InteractionType>;
+    }
+
+    getWorkflowMutator(interactionType: BotInteraction, workflow: IWorkflow): IWorkflowMutator {
+        const mutators: IWorkflowMutator[] = [
+            new ContextualMediaMutator(this),
+            new GuidanceScaleMutator(this),
+            new JsonMutator(this),
+            new MessageToMediaMutator(this),
+            new MessageToMusicMutator(this),
+            new ExpandPromptMutator(this),
+            new RandomPromptMutator(this),
+            new RetryMutator(this)
+        ];
+
+        const supportedMutators = mutators.filter(
+            mutator => mutator.interactions.includes(interactionType)
+                && mutator.types.includes(workflow.type));
+
+        if(supportedMutators.length === 1) {
+            return supportedMutators[0];
+        } else if(supportedMutators.length > 1) {
+            const mutator = getRandomArrayEntry(supportedMutators);
+
+            if(mutator === null) {
+                throw new Error('A supported mutator could not be found.');
+            }
+
+            return mutator;
+        } else {
+            throw new Error('The task you are attempting to instantiate is not supported by your current configuration.');
+        }
     }
 
     get comfyUiClient(): ComfyUiClient {
@@ -255,10 +297,6 @@ export class BotServiceContainer implements IBotServiceContainer {
         }
     }
 
-    getWorkflowMutator(interactionType: BotInteraction, workflow: IWorkflow): IWorkflowMutator {
-        return this.#globalServiceContainer.getWorkflowMutator(this, interactionType, workflow);
-    }
-
     getTaskChannelPostProcessor(channelName: string, isChild: boolean): ITaskChannelPostProcessor {
         return this.#globalServiceContainer.getTaskChannelPostProcessor(this, channelName, isChild);
     }
@@ -266,6 +304,7 @@ export class BotServiceContainer implements IBotServiceContainer {
     constructor(globalContainer: ServiceContainer, botConfig: IBotConfig) {
         this.#globalServiceContainer = globalContainer;
         this.#environmentSettings = new EnvironmentSettings(botConfig);
+        this.#workflowService = new WorkflowService(this.getLogger('WorkflowService'), botConfig.botId);
         this.#featureService = new FeatureService(this);
         this.#typingService = new DiscordTypingService(this);
 

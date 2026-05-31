@@ -71,6 +71,38 @@ container.
 `SerialStrategy.test.ts`, and `mockServiceContainer.ts` to match the new
 signatures.
 
+### Bot Workflow Directory Support
+
+**Problem:** Multiple bot instances need to read workflow templates from isolated directories to support different workflows per bot, while allowing sharing when bots have the same identifier.
+
+**Requirements:**
+- Each bot must have a unique `botId` identifier
+- Workflow directory path: `./workflows/{botId}/`
+- Directory creation: Create bot directory if it doesn't exist
+- Validation: Throw `Error('No workflows found in bot workflow directory.')` if directory exists but contains no workflows
+- Conditional validation: Only apply workflow validation when `stableDiffusionHosts.length > 0`
+- Sharing: Multiple bots with the same `botId` share the same workflow directory
+- Backward compatibility: .env-based configuration (no botId) falls back to `./workflows/` without bot prefix
+
+**Implementation:**
+1. Add `botId: string` field to `IBotConfig` interface
+2. Add `botId: string | null` to `IGlobalSettings` interface
+3. Add `botId: string | null` property to `IEnvironmentSettings`
+4. Update `EnvironmentSettings` constructor to accept `botId` parameter
+5. Update `IBotServiceContainer` interface
+6. Update `BotServiceContainer` to pass `botId` from config to `EnvironmentSettings`
+7. Update `WorkflowService` constructor to accept `botId` parameter
+8. Update `WorkflowService.loadWorkflows()` to:
+   - Use `./workflows/` as base path
+   - Append `/{botId}/` if botId provided
+   - Create directory recursively if missing
+   - Validate workflow count (throw if 0 and ComfyUI hosts configured)
+9. Update `ServiceContainer` to expose `getBotId()` method
+10. Update `app.ts` to pass `botId` from config to `BotServiceContainer`
+11. Add `botId` field to `config.json` entries
+
+**Justification:** Provides isolated workflow environments for multiple bots while allowing shared workflows when needed. Clear error messages prevent silent failures. Backward compatibility ensures existing deployments continue to work.
+
 ## Consequences
 
 - **Positive:**
@@ -112,6 +144,7 @@ signatures.
   back to `process.env` when config is absent.
 - [ ] Verify multi-instance support (`config.json`) — `app.ts` currently loads
   only `bots[0]`, not multiple instances.
+- [x] Add workflow directory support for multiple bots
 - [ ] Verify that the build still works (`npm run build`) — `MockContainer` in
   test files has signature mismatches.
 - [ ] Run `npm run lint` — `SerialStrategy.test.ts` has unused variables;
