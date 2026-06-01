@@ -72,7 +72,7 @@ export class OllamaClient {
     async free(): Promise<void> {
         try {
             await this.#client.generate({
-                prompt: null,
+                prompt: null!,
                 model: this.#model,
                 stream: false,
                 keep_alive: 0
