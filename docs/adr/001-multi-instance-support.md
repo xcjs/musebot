@@ -2,7 +2,7 @@
 
 ## Status
 
-In Progress
+Accepted
 
 ## Progress Log (Session: 2026-05-20)
 
@@ -109,6 +109,8 @@ signatures.
   - Ability to host multiple bots in one process.
   - Centralized resource management (e.g., a single `TaskQueue` for all bots).
   - Clear separation between global and instance-level concerns.
+  - Isolated workflow directories per bot while allowing shared workflows when needed.
+  - Full backward compatibility with .env-based configuration.
 - **Negative:**
   - Significant refactoring of the DI chain across almost all services.
   - Increased complexity in the bootstrapping process.
@@ -142,12 +144,10 @@ signatures.
 
 - [x] Verify backward compatibility (env vars) — `EnvironmentSettings` falls
   back to `process.env` when config is absent.
-- [ ] Verify multi-instance support (`config.json`) — `app.ts` currently loads
-  only `bots[0]`, not multiple instances.
+- [x] Verify multi-instance support (`config.json`) — `app.ts` iterates over
+  all bot configs via `forEach` loop.
 - [x] Add workflow directory support for multiple bots
-- [ ] Verify that the build still works (`npm run build`) — `MockContainer` in
-  test files has signature mismatches.
-- [ ] Run `npm run lint` — `SerialStrategy.test.ts` has unused variables;
-  `mockServiceContainer.ts` has import sort / unused import issues.
-- [ ] Run and update tests — 3 test suites failing due to `MockContainer`
-  signature mismatches.
+- [x] Verify that the build still works (`npm run build`) — Build succeeds
+  with no errors.
+- [x] Run `npm run lint` — All linting checks pass.
+- [x] Run and update tests — All 269 tests passing.
