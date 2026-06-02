@@ -180,10 +180,10 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         this.#discordToken = config?.discordToken
             ?? this.#readRequiredString(EnvironmentKey.AuthenticationToken);
         this.#discordChannels = config?.discordChannels
-            ? this.#parseDelimitedList(config.discordChannels, ',')
+            ? this.#normalizeConfigValue(config.discordChannels, ',')
             : this.#readDelimitedList(EnvironmentKey.ChatChannels, ',');
         this.#discordChannelsDisallowed = config?.discordChannelsDisallowed
-            ? this.#parseDelimitedList(config.discordChannelsDisallowed, ',')
+            ? this.#normalizeConfigValue(config.discordChannelsDisallowed, ',')
             : this.#readDelimitedList(EnvironmentKey.ChatChannelsDisallowed, ',');
 
         this.#botRequiresMention = config?.botRequiresMention
@@ -191,22 +191,22 @@ export class EnvironmentSettings implements IEnvironmentSettings {
         this.#botResponseRate = config?.botResponseRate
             ?? this.#readDefaultableRangedInteger(EnvironmentKey.BotResponseRate, 1, 100, 100);
         this.#botPrivateMessageUsers = config?.botPrivateMessageUsers
-            ? this.#parseDelimitedList(config.botPrivateMessageUsers, ',')
+            ? this.#normalizeConfigValue(config.botPrivateMessageUsers, ',')
             : this.#readDelimitedList(EnvironmentKey.BotPrivateMessageUsers, ',');
         this.#errorMessage = config?.errorMessage
             ?? this.#readDefaultableString(EnvironmentKey.BotErrorMessage, this.errorMessage);
 
         this.#stableDiffusionHosts = config?.stableDiffusionHosts
-            ? this.#parseDelimitedList(config.stableDiffusionHosts, ',').map(x => new URL(x))
+            ? this.#normalizeConfigValue(config.stableDiffusionHosts, ',').map(x => new URL(x))
             : this.#readDelimitedList(EnvironmentKey.StableDiffusionHosts, ',').map(x => new URL(x));
         this.#stableDiffusionGuidanceScaleInterval = config?.stableDiffusionGuidanceScaleInterval
             ?? this.stableDiffusionGuidanceScaleInterval;
 
         this.#ollamaHosts = config?.ollamaHosts
-            ? this.#parseDelimitedList(config.ollamaHosts, ',').map(x => new URL(x))
+            ? this.#normalizeConfigValue(config.ollamaHosts, ',').map(x => new URL(x))
             : this.#readDelimitedList(EnvironmentKey.OllamaHosts, ',').map(x => new URL(x));
         this.#ollamaModels = config?.ollamaModels
-            ? this.#parseDelimitedList(config.ollamaModels, ',')
+            ? this.#normalizeConfigValue(config.ollamaModels, ',')
             : this.#readDelimitedList(EnvironmentKey.OllamaModels, ',');
         this.#ollamaSystemPrompt = config?.ollamaSystemPrompt
             ?? this.#readDefaultableString(EnvironmentKey.OllamaSystemPrompt, '');
@@ -214,7 +214,7 @@ export class EnvironmentSettings implements IEnvironmentSettings {
             ?? this.#readBoolean(EnvironmentKey.OllamaStreamsResponse);
 
         this.#stableDiffusionOllamaPrompts = config?.stableDiffusionOllamaPrompts
-            ? this.#parseDelimitedList(config.stableDiffusionOllamaPrompts, '|')
+            ? this.#normalizeConfigValue(config.stableDiffusionOllamaPrompts, '|')
             : this.#readDelimitedList(EnvironmentKey.StableDiffusionOllamaPrompts, '|');
 
         this.#validate();
@@ -346,12 +346,14 @@ export class EnvironmentSettings implements IEnvironmentSettings {
     }
 
     /**
-    * Parses a delimited string into an array of trimmed values.
-    *
-    * @param {string} stringValue - The delimited string to parse.
-    * @param {string} separator - The character used to separate items in the list.
-    * @returns {string[]} An array of strings, each representing an item in the list.
-    */
+     * Parses a delimited string into an array of trimmed values.
+     *
+     * Used for normalizing .env file format configuration values.
+     *
+     * @param {string} stringValue - The delimited string to parse.
+     * @param {string} separator - The character used to separate items in the list.
+     * @returns {string[]} An array of strings, each representing an item in the list.
+     */
     #parseDelimitedList(stringValue: string, separator: string): string[] {
         const trimmed = stringValue.trim();
 
@@ -363,7 +365,7 @@ export class EnvironmentSettings implements IEnvironmentSettings {
     }
 
     /**
-    * Reads a delimited list from the environment variables.
+     * Reads a delimited list from the environment variables.
     *
     * @param {EnvironmentKey} key - The key of the environment variable to read.
     * @param {string} separator - The character used to separate items in the list.
@@ -380,7 +382,30 @@ export class EnvironmentSettings implements IEnvironmentSettings {
     }
 
     /**
-    * Reads a boolean value from the environment variables.
+      * Normalizes a configuration value to an array.
+      *
+      * Handles both .env file format (comma-separated strings) and config.json
+      * format (native JSON arrays) by converting them to a consistent array format.
+      * This allows maximum flexibility for configuration while ensuring internal
+      * consistency in the application.
+      *
+      * @template T - Type parameter for string values
+      * @param {T | T[]} value - The value to normalize, can be a string or array
+      * @param {string} separator - The separator character used if the value is a string (default: ',')
+      * @returns {string[]} A normalized array of strings
+      */
+    #normalizeConfigValue<T extends string>(
+        value: T | T[],
+        separator: string = ','
+    ): string[] {
+        if (Array.isArray(value)) {
+            return value;
+        }
+        return this.#parseDelimitedList(value, separator);
+    }
+
+    /**
+     * Reads a boolean value from the environment variables.
     *
     * @param {EnvironmentKey} key - The key of the environment variable to read.
     * @returns {boolean} - The boolean value parsed from the environment variable, or `false` if not found or invalid.

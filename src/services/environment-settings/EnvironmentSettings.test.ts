@@ -7,6 +7,7 @@ import { NodeEnvironment } from '../../enums/NodeEnvironment.js';
 import { TaskQueueStrategy } from '../../enums/TaskQueueStrategy.js';
 import { EnvironmentKey } from './constants/EnvironmentKey.js';
 import { EnvironmentSettings } from './EnvironmentSettings.js';
+import { IBotConfig } from './IBotConfig.js';
 
 // Note: packageName and version properties are not tested due to JSON import syntax
 // limitations in Jest/ts-jest with isolatedModules. Can be tested manually or via
@@ -14,6 +15,7 @@ import { EnvironmentSettings } from './EnvironmentSettings.js';
 
 const mockToken = 'mockToken';
 const mockUrl = 'http://localhost/';
+const mockBotId = 'testBotId';
 
 beforeEach(() => {
     // Clear any configuration values ahead of time in case a configuration file
@@ -27,6 +29,11 @@ beforeEach(() => {
         [EnvironmentKey.StableDiffusionHosts]: mockUrl
     };
 });
+
+const mockBotConfig: IBotConfig = {
+    botId: mockBotId,
+    discordToken: mockToken
+};
 
 describe('EnvironmentSettings', () => {
     describe('nodeEnvironment', () => {
