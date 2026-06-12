@@ -1,5 +1,5 @@
+﻿import { IBotServiceContainer } from '../../../../IBotServiceContainer.js';
 import { ILogger } from '../../../../ILogger.js';
-import { IBotServiceContainer } from '../../../../IServiceContainer.js';
 import { ITaskChannelPostProcessor } from '../../../../parallelization/ITaskChannelPostProcessor.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
 

@@ -1,4 +1,4 @@
-import {
+﻿import {
     ButtonInteraction,
     Client as DiscordClient,
     GatewayIntentBits,
@@ -9,8 +9,8 @@ import {
 } from 'discord.js';
 import { GenerateRequest, GenerateResponse } from 'ollama';
 
-import { BotFunction } from '../enums/BotFunction.js';
 import { BotInteraction } from '../enums/BotInteraction.js';
+import { BotMode } from '../enums/BotMode.js';
 import { IHttpExchange } from '../models/IHttpExchange.js';
 import { IHttpExchangeWithAttachedData } from '../models/IHttpExchangeWithAttachedData.js';
 import { getRandomArrayEntry } from '../utilities/random-utilities.js';
@@ -58,36 +58,37 @@ import { ComfyUiInteractionTask } from './clients/media/comfy-ui/tasks/ComfyUiIn
 import { ComfyUiMessageTask } from './clients/media/comfy-ui/tasks/ComfyUiMessageTask.js';
 import { ShowDescriptionTask } from './clients/media/comfy-ui/tasks/ShowDescriptionTask.js';
 import { MediaHelpService } from './clients/media/help/MediaHelpService.js';
-import { EnvironmentSettings } from './environment-settings/EnvironmentSettings.js';
+import { ConfigurationService } from './environment-settings/ConfigurationService.js';
 import { IBotConfig } from './environment-settings/IBotConfig.js';
-import { IEnvironmentSettings } from './environment-settings/IEnvironmentSettings.js';
+import { IConfigurationService } from './environment-settings/IConfigurationService.js';
 import { ContentTypeService } from './features/ContentTypeService.js';
 import { SupportedFeature } from './features/enum/SupportedFeature.js';
 import { FeatureService } from './features/FeatureService.js';
 import { IContentTypeService } from './features/IContentTypeService.js';
 import { IFeatureService } from './features/IFeatureService.js';
+import { GlobalServiceContainer } from './GlobalServiceContainer.js';
 import { IHelpService } from './help/IHelpService.js';
+import { IBotServiceContainer } from './IBotServiceContainer.js';
+import { IGlobalServiceContainer } from './IGlobalServiceContainer.js';
 import { ILogger } from './ILogger.js';
-import { IBotServiceContainer, IServiceContainer } from './IServiceContainer.js';
 import { Logger } from './Logger.js';
 import { IParallelizationStrategy } from './parallelization/IParallelizationStrategy.js';
 import { ITaskChannelPostProcessor } from './parallelization/ITaskChannelPostProcessor.js';
-import { ServiceContainer } from './ServiceContainer.js';
 import { ITaskQueue } from './tasks/ITaskQueue.js';
 import { BaseTask } from './tasks/models/BaseTask.js';
 
 export class BotServiceContainer implements IBotServiceContainer {
     readonly #taskNotConfiguredError = new Error('The task you are attempting to instantiate is not supported by your current configuration.');
 
-    readonly #globalServiceContainer: ServiceContainer;
+    readonly #globalServiceContainer: GlobalServiceContainer;
 
-    get globalContainer(): IServiceContainer  {
+    get globalContainer(): IGlobalServiceContainer  {
         return this.#globalServiceContainer;
     }
 
-    readonly #environmentSettings: IEnvironmentSettings;
-    get environmentSettings(): IEnvironmentSettings {
-        return this.#environmentSettings;
+    readonly #configurationService: IConfigurationService;
+    get configurationService(): IConfigurationService {
+        return this.#configurationService;
     }
 
     get taskQueue(): ITaskQueue {
@@ -235,8 +236,8 @@ export class BotServiceContainer implements IBotServiceContainer {
     }
 
     getEmojiReactionTask(reaction: MessageReaction, user: User): BaseTask<unknown> {
-        switch (this.environmentSettings.botFunction) {
-            case BotFunction.Chat:
+        switch (this.configurationService.botFunction) {
+            case BotMode.Chat:
                 return new OllamaEmojiReactionTask(this, reaction, user) as BaseTask<unknown>;
             default:
                 throw this.#taskNotConfiguredError;
@@ -244,10 +245,10 @@ export class BotServiceContainer implements IBotServiceContainer {
     }
 
     getMessageTask(message: DiscordMessage): BaseTask<unknown> {
-        switch(this.environmentSettings.botFunction) {
-            case BotFunction.Chat:
+        switch(this.configurationService.botFunction) {
+            case BotMode.Chat:
                 return new OllamaMessageTask(this, message) as BaseTask<unknown>;
-            case BotFunction.Media:
+            case BotMode.Media:
                 return new ComfyUiMessageTask(this, message) as BaseTask<unknown>;
             default:
                 throw this.#taskNotConfiguredError;
@@ -255,15 +256,15 @@ export class BotServiceContainer implements IBotServiceContainer {
     }
 
     getInteractionTask(interaction: ButtonInteraction): BaseTask<unknown> {
-        switch(this.environmentSettings.botFunction) {
-            case BotFunction.Chat:
+        switch(this.configurationService.botFunction) {
+            case BotMode.Chat:
                 switch (interaction.customId as BotInteraction) {
                     case BotInteraction.Help:
                         return new ShowHelpTask(this, interaction) as BaseTask<unknown>;
                     default:
                         throw this.#taskNotConfiguredError;
                 }
-            case BotFunction.Media:
+            case BotMode.Media:
                 switch(interaction.customId as BotInteraction) {
                     case BotInteraction.Retry:
                     case BotInteraction.GuidanceScaleMinus:
@@ -302,9 +303,9 @@ export class BotServiceContainer implements IBotServiceContainer {
         return this.#globalServiceContainer.getTaskChannelPostProcessor(this, channelName);
     }
 
-    constructor(globalContainer: ServiceContainer, botConfig: IBotConfig) {
+    constructor(globalContainer: GlobalServiceContainer, botConfig: IBotConfig) {
         this.#globalServiceContainer = globalContainer;
-        this.#environmentSettings = new EnvironmentSettings(botConfig);
+        this.#configurationService = new ConfigurationService(botConfig);
         this.#workflowService = new WorkflowService(this.getLogger('WorkflowService'), botConfig.botId);
         this.#featureService = new FeatureService(this);
         this.#typingService = new DiscordTypingService(this);
@@ -327,17 +328,17 @@ export class BotServiceContainer implements IBotServiceContainer {
             shards: DiscordConstants.ShardCountAuto
         });
 
-        switch (this.environmentSettings.botFunction) {
-            case BotFunction.Chat:
+        switch (this.configurationService.botFunction) {
+            case BotMode.Chat:
                 this.#helpService = new ChatHelpService(this);
                 this.#generativeChatClient = new GenerativeChatClient(this);
                 break;
-            case BotFunction.Media:
+            case BotMode.Media:
                 this.#helpService = new MediaHelpService(this);
                 this.#generativeChatClient = new GenerativeMediaChatClient(this);
                 break;
             default:
-                throw new Error('An invalid BotFunction was selected.');
+                throw new Error('An invalid BotMode was selected.');
         }
     }
 }

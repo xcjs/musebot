@@ -1,6 +1,6 @@
 ﻿import { ActionRowBuilder, ButtonBuilder } from 'discord.js';
 
-import { IBotServiceContainer } from "../../../../../IServiceContainer.js"
+import { IBotServiceContainer } from "../../../../../IBotServiceContainer.js"
 import { BaseComponent } from '../BaseComponent.js';
 import { HelpButton } from '../buttons/HelpButton.js';
 import { ClearContextButton } from '../buttons/text/ClearContextButton.js';

@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
+﻿import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 
 import { createMockGlobalContainer, createMockLogger, createMockPostProcessor, createMockServiceContainer, MockContainer, MockGlobalContainer } from '../../test-utils/mockBotServiceContainer.js';
 import type { ILogger } from '../ILogger.js';
@@ -315,12 +315,12 @@ describe('TaskQueue', () => {
             const globalServices = createMockGlobalContainer({
                 logger: mockLogger,
                 postProcessor: mockPostProcessor,
-                environmentSettings: { maxTaskAttempts: 3 } as never,
+                configurationService: { maxTaskAttempts: 3 } as never,
             });
             const botServices = createMockServiceContainer({
                 logger: mockLogger,
                 postProcessor: mockPostProcessor,
-                environmentSettings: { maxTaskAttempts: 3 } as never,
+                configurationService: { maxTaskAttempts: 3 } as never,
             });
             let postProcessCalled = false;
             const processMock = (): Promise<void> => Promise.resolve();

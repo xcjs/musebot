@@ -7,8 +7,8 @@ Discord.
 
 ## Development
 
-1. Copy .env.example to .env and fill out the configuration as it pertains to
-   you development needs.
+1. Copy `config.json.example` to `config.json` and fill out the configuration
+   as it pertains to your development needs.
 2. `npm install`
 3. `npm start`
 

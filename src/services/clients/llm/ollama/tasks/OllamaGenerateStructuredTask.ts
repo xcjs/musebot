@@ -1,7 +1,7 @@
 ﻿import { GenerateRequest, GenerateResponse } from 'ollama';
 
 import { IHttpExchangeWithAttachedData } from '../../../../../models/IHttpExchangeWithAttachedData.js';
-import { IBotServiceContainer } from "../../../../IServiceContainer.js"
+import { IBotServiceContainer } from "../../../../IBotServiceContainer.js"
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { IStructuredRequestData } from '../models/IStructuredRequestData.js';
 import { OllamaBaseTask } from './OllamaBaseTask.js';

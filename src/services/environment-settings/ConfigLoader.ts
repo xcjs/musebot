@@ -3,11 +3,11 @@ import * as fs from 'node:fs';
 import { parse } from 'json5';
 
 import { IBotConfig } from './IBotConfig.js';
-import { IGlobalSettings } from './IGlobalSettings.js';
+import { IGlobalConfiguration } from './IGlobalConfiguration.js';
 
 export interface IAppConfig {
-    global: IGlobalSettings;
-    bots: IBotConfig[];
+    global: IGlobalConfiguration;
+    bots: Array<IBotConfig>;
 }
 
 export class ConfigLoader {

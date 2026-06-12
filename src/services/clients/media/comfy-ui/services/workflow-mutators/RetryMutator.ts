@@ -3,7 +3,7 @@
 import { BotInteraction } from '../../../../../../enums/BotInteraction.js';
 import { getRandomArrayEntry } from '../../../../../../utilities/random-utilities.js';
 import { SupportedFeature } from '../../../../../features/enum/SupportedFeature.js';
-import { IBotServiceContainer } from "../../../../../IServiceContainer.js"
+import { IBotServiceContainer } from "../../../../../IBotServiceContainer.js"
 import { IWorkflow } from '../../models/IWorkflow.js';
 import { SerializableRenderRequest } from '../../models/SerializableRenderRequest.js';
 import { IWorkflowService } from '../IWorkflowService.js';

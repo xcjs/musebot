@@ -1,7 +1,7 @@
 ﻿import { BaseGuildTextChannel, ButtonInteraction, DMChannel, Message } from 'discord.js';
 
+import { IBotServiceContainer } from '../../../../IBotServiceContainer.js';
 import { ILogger } from '../../../../ILogger.js';
-import { IBotServiceContainer } from "../../../../IServiceContainer.js"
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
 import { ITypingService } from '../../ITypingService.js';
 import { IChannelTypingIndicator } from '../models/IChannelTypingIndicator.js';

@@ -1,17 +1,17 @@
 ﻿import { BaseMessageOptions, ButtonInteraction, Message } from 'discord.js';
 
 import { splitText } from '../../../../../utilities/string-utilities.js';
-import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
+import { IConfigurationService } from '../../../../environment-settings/IConfigurationService.js';
+import { IBotServiceContainer } from '../../../../IBotServiceContainer.js';
 import { ILogger } from '../../../../ILogger.js';
-import { IBotServiceContainer } from "../../../../IServiceContainer.js"
 import { DiscordConstants } from '../enums/DiscordConstants.js';
 
 export class DiscordReplySender {
-    readonly #environmentSettings: IEnvironmentSettings;
+    readonly #configurationService: IConfigurationService;
     readonly #logger: ILogger;
 
     constructor(services: IBotServiceContainer) {
-        this.#environmentSettings = services.environmentSettings;
+        this.#configurationService = services.configurationService;
         this.#logger = services.getLogger('DiscordReplySender');
     }
 
@@ -63,6 +63,6 @@ export class DiscordReplySender {
     }
 
     async replyWithError(interaction: Message | ButtonInteraction): Promise<void> {
-        await interaction.reply({ content: this.#environmentSettings.errorMessage });
+        await interaction.reply({ content: this.#configurationService.errorMessage });
     }
 }

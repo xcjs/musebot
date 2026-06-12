@@ -5,7 +5,7 @@ import { BotInteraction } from '../../../../../enums/BotInteraction.js';
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
-import { IBotServiceContainer } from "../../../../IServiceContainer.js"
+import { IBotServiceContainer } from "../../../../IBotServiceContainer.js"
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.js';
 import { IReplyService } from '../../../chat/IReplyService.js';

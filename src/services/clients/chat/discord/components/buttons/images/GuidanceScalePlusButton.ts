@@ -1,16 +1,16 @@
 ﻿import { ButtonBuilder, ButtonStyle } from 'discord.js';
 
 import { BotInteraction } from '../../../../../../../enums/BotInteraction.js';
-import { IEnvironmentSettings } from '../../../../../../environment-settings/IEnvironmentSettings.js';
+import { IConfigurationService } from '../../../../../../environment-settings/IConfigurationService.js';
 import { SupportedFeature } from '../../../../../../features/enum/SupportedFeature.js';
-import { IBotServiceContainer } from "../../../../../../IServiceContainer.js"
+import { IBotServiceContainer } from "../../../../../../IBotServiceContainer.js"
 import { SerializableRenderRequest } from '../../../../../media/comfy-ui/models/SerializableRenderRequest.js';
 import { guidanceScaleMax } from '../../../../../media/stable-diffusion/constants/constants.js';
 import { BaseComponent } from '../../BaseComponent.js';
 
 export class GuidanceScalePlusButton extends BaseComponent<ButtonBuilder> {
     override get label(): string {
-        return 'âž•';
+        return '➕';
     }
 
     override get isSupported(): boolean {
@@ -26,7 +26,7 @@ export class GuidanceScalePlusButton extends BaseComponent<ButtonBuilder> {
         }
 
         isSupported = isSupported
-            && this.#renderRequest.cfgScale - this.#environmentSettings.stableDiffusionGuidanceScaleInterval
+            && this.#renderRequest.cfgScale - this.#configurationService.stableDiffusionGuidanceScaleInterval
                 <= guidanceScaleMax;
 
         return isSupported;
@@ -41,12 +41,12 @@ export class GuidanceScalePlusButton extends BaseComponent<ButtonBuilder> {
             + ' A higher guidance scale forces the bot to more strictly follow your prompt.';
     }
 
-    #environmentSettings: IEnvironmentSettings;
+    #configurationService: IConfigurationService;
     #renderRequest: SerializableRenderRequest | null;
 
     constructor(services: IBotServiceContainer, renderRequest: SerializableRenderRequest | null) {
         super(services);
-        this.#environmentSettings = services.environmentSettings;
+        this.#configurationService = services.configurationService;
         this.#renderRequest = renderRequest;
     }
 

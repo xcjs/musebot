@@ -7,9 +7,9 @@ import { BufferEncoding } from '../../../../../../enums/BufferEncoding.js';
 import { IHttpExchange } from '../../../../../../models/IHttpExchange.js';
 import { getRandomArrayEntry } from '../../../../../../utilities/random-utilities.js';
 import { wrapText } from '../../../../../../utilities/string-utilities.js';
-import { IEnvironmentSettings } from '../../../../../environment-settings/IEnvironmentSettings.js';
+import { IConfigurationService } from '../../../../../environment-settings/IConfigurationService.js';
 import { SupportedFeature } from '../../../../../features/enum/SupportedFeature.js';
-import { IBotServiceContainer } from "../../../../../IServiceContainer.js"
+import { IBotServiceContainer } from "../../../../../IBotServiceContainer.js"
 import { ITaskQueue } from '../../../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../../../tasks/models/BaseTask.js';
 import { OLLAMA_TEMPERATURE_MAX } from '../../../../llm/ollama/constants/OllamaConstants.js';
@@ -40,7 +40,7 @@ export class RandomPromptMutator implements IWorkflowMutator {
 
     readonly #services: IBotServiceContainer;
 
-    readonly #environmentSettings: IEnvironmentSettings;
+    readonly #configurationService: IConfigurationService;
     readonly #taskQueue: ITaskQueue;
 
     #contentMessage = '';
@@ -49,7 +49,7 @@ export class RandomPromptMutator implements IWorkflowMutator {
     constructor(services: IBotServiceContainer) {
         this.#services = services;
 
-        this.#environmentSettings = services.environmentSettings;
+        this.#configurationService = services.configurationService;
         this.#taskQueue = services.taskQueue;
     }
 
@@ -73,7 +73,7 @@ export class RandomPromptMutator implements IWorkflowMutator {
 
     async #getRandomPrompt(): Promise<string> {
         return new Promise((resolve) => {
-            const prompt = getRandomArrayEntry(this.#environmentSettings.stableDiffusionOllamaPrompts) || '';
+            const prompt = getRandomArrayEntry(this.#configurationService.stableDiffusionOllamaPrompts) || '';
             const task = this.#services.getLlmGenerateTask(prompt, OLLAMA_TEMPERATURE_MAX);
             task.isChild = true;
 

@@ -1,33 +1,56 @@
-/**
- * Configuration interface for bot settings.
- *
- * Supports two configuration formats for delimited fields:
- * - .env file: comma-separated strings (e.g., "channel1,channel2")
- * - config.json: native JSON arrays (e.g., ["channel1", "channel2"])
- *
- * The EnvironmentSettings class normalizes both formats to arrays internally,
- * ensuring consistent behavior regardless of which format is used.
- */
+import { BotMode } from '../../enums/BotMode.js';
+import { TaskQueueStrategy } from '../../enums/TaskQueueStrategy.js';
+
 export interface IBotConfig {
     botId: string;
-    nodeEnvironment?: string;
-    botFunction?: string;
-    maxTaskAttempts?: number;
-    taskRetryDelayMilliseconds?: number;
-    taskQueueStrategy?: string;
-    taskQueueForceSerialAcrossHosts?: boolean;
-    discordToken: string;
-    discordChannels?: string | string[];
-    discordChannelsDisallowed?: string | string[];
-    botRequiresMention?: boolean;
-    botResponseRate?: number;
-    botPrivateMessageUsers?: string | string[];
+    nodeEnvironment: string;
+    mode: BotMode;
+
+    requiresMention?: boolean;
+    responseRate?: number;
     errorMessage?: string;
-    stableDiffusionHosts?: string | string[];
-    stableDiffusionGuidanceScaleInterval?: number;
-    ollamaHosts?: string | string[];
-    ollamaModels?: string | string[];
-    ollamaSystemPrompt?: string;
-    ollamaStreamsResponse?: boolean;
-    stableDiffusionOllamaPrompts?: string | string[];
+
+    discord: {
+        token: string;
+        channels: string[];
+        privateMessageUsers: string[];
+        channelsDisallowed?: string[];
+    };
+
+    chatApis?: {
+        discord: {
+            token: string;
+            channels: string[];
+            privateMessageUsers: string[];
+        };
+    };
+
+    comfyUi: {
+        hosts: string[];
+    };
+
+    ollama: {
+        hosts: string[];
+        models: string[];
+        systemPrompt: string;
+        streamsResponse: boolean;
+    };
+
+    stableDiffusion?: {
+        hosts: string[];
+        guidanceScaleInterval: number;
+    };
+
+    stableDiffusionOllamaPrompts?: string[];
+
+    multiModal?: {
+        randomPrompts: string[];
+    };
+
+    taskQueue?: {
+        numAttempts?: number;
+        retryDelayMs?: number;
+        strategy?: TaskQueueStrategy;
+        forceSerialAcrossHosts?: boolean;
+    };
 }

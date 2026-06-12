@@ -1,8 +1,8 @@
 ﻿import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { BaseGuildTextChannel, ButtonInteraction, DMChannel, Message } from 'discord.js';
 
+import { IBotServiceContainer } from '../../../../IBotServiceContainer.js';
 import { ILogger } from '../../../../ILogger.js';
-import { IBotServiceContainer } from "../../../../IServiceContainer.js"
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
 import { ITypingService } from '../../ITypingService.js';
 import { DiscordTypingService } from './DiscordTypingService.js';

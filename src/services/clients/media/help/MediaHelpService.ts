@@ -2,12 +2,12 @@
 
 import nodePackage from '../../../../../package.json' with { type: 'json' };
 import { DEVELOPER } from '../../../../constants/Globals.js';
-import { IEnvironmentSettings } from '../../../environment-settings/IEnvironmentSettings.js';
+import { IConfigurationService } from '../../../environment-settings/IConfigurationService.js';
 import { SupportedFeature } from '../../../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../../../features/IFeatureService.js';
 import { BaseHelpService } from '../../../help/BaseHelpService.js';
 import { IHelpService } from '../../../help/IHelpService.js';
-import { IBotServiceContainer } from "../../../IServiceContainer.js"
+import { IBotServiceContainer } from "../../../IBotServiceContainer.js"
 import { Img2ImgActionRow } from '../../chat/discord/components/buttonRows/Img2ImgActionRow.js';
 import { StatefulAudioGenerationActionRow } from '../../chat/discord/components/buttonRows/StatefulAudioGenerationActionRow.js';
 import { StatefulImageGenerationActionRows } from '../../chat/discord/components/buttonRows/StatefulImageGenerationActionRows.js';
@@ -19,7 +19,7 @@ type DiscordReplyService = IReplyService<Message, MessageReaction, Attachment, M
 export class MediaHelpService extends BaseHelpService implements IHelpService {
     #services: IBotServiceContainer;
 
-    #environmentSettings: IEnvironmentSettings;
+    #configurationService: IConfigurationService;
     #featureService: IFeatureService;
     #replyService: DiscordReplyService;
 
@@ -28,13 +28,13 @@ export class MediaHelpService extends BaseHelpService implements IHelpService {
 
         this.#services = services;
 
-        this.#environmentSettings = services.environmentSettings;
+        this.#configurationService = services.configurationService;
         this.#featureService = services.featureService;
         this.#replyService = services.getReplyService();
     }
 
     async buildHelpArticle(interaction: Interaction): Promise<string> {
-        const applicationName = this.#environmentSettings.applicationName;
+        const applicationName = this.#configurationService.applicationName;
 
         const supportedMedia: string[] = [];
 

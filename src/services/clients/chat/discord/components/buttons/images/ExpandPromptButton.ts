@@ -2,7 +2,7 @@
 
 import { BotInteraction } from '../../../../../../../enums/BotInteraction.js';
 import { SupportedFeature } from '../../../../../../features/enum/SupportedFeature.js';
-import { IBotServiceContainer } from "../../../../../../IServiceContainer.js"
+import { IBotServiceContainer } from "../../../../../../IBotServiceContainer.js"
 import { BaseComponent } from '../../BaseComponent.js';
 
 export class ExpandPromptButton extends BaseComponent<ButtonBuilder> {

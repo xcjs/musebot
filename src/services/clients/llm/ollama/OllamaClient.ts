@@ -3,14 +3,14 @@
 import { IHttpExchange } from '../../../../models/IHttpExchange.js';
 import { IHttpExchangeWithAttachedData } from '../../../../models/IHttpExchangeWithAttachedData.js';
 import { getRandomArrayEntry, getRandomInt } from '../../../../utilities/random-utilities.js';
-import { IEnvironmentSettings } from '../../../environment-settings/IEnvironmentSettings.js';
+import { IConfigurationService } from '../../../environment-settings/IConfigurationService.js';
+import { IBotServiceContainer } from '../../../IBotServiceContainer.js';
 import { ILogger } from '../../../ILogger.js';
-import { IBotServiceContainer } from "../../../IServiceContainer.js"
 import { OllamaRole } from './enums/OllamaRole.js';
 import { IStructuredRequestData } from './models/IStructuredRequestData.js';
 
 export class OllamaClient {
-    readonly #environmentSettings: IEnvironmentSettings;
+    readonly #configurationService: IConfigurationService;
     readonly #logger: ILogger;
 
     readonly #host: URL;
@@ -22,11 +22,11 @@ export class OllamaClient {
     }
 
     constructor(services: IBotServiceContainer) {
-        this.#environmentSettings = services.environmentSettings;
+        this.#configurationService = services.configurationService;
 
         this.#logger = services.getLogger('OllamaClient');
 
-        const host = getRandomArrayEntry(this.#environmentSettings.ollamaHosts);
+        const host = getRandomArrayEntry(this.#configurationService.ollamaHosts);
 
         if (!host) {
             throw new Error('No Ollama hosts configured in environment settings.');
@@ -39,7 +39,7 @@ export class OllamaClient {
             host: host.toString()
         });
 
-        this.#model = this.#selectModel(this.#environmentSettings.ollamaModels);
+        this.#model = this.#selectModel(this.#configurationService.ollamaModels);
     }
 
     async generate(prompt: string, temperature: number | undefined = undefined): Promise<IHttpExchange<GenerateRequest, GenerateResponse>> {

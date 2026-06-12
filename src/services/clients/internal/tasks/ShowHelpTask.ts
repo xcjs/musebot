@@ -1,7 +1,7 @@
 ﻿import { Attachment, ButtonInteraction, Message, MessageReaction } from 'discord.js';
 
 import { IHelpService } from '../../../help/IHelpService.js';
-import { IBotServiceContainer } from "../../../IServiceContainer.js"
+import { IBotServiceContainer } from "../../../IBotServiceContainer.js"
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { IReplyService } from '../../chat/IReplyService.js';
 

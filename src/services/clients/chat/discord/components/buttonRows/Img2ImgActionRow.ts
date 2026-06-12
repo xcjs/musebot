@@ -2,8 +2,8 @@
 
 import { SupportedFeature } from '../../../../../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../../../../../features/IFeatureService.js';
+import { IBotServiceContainer } from '../../../../../IBotServiceContainer.js';
 import { ILogger } from '../../../../../ILogger.js';
-import { IBotServiceContainer } from "../../../../../IServiceContainer.js"
 import { IWorkflowService } from '../../../../media/comfy-ui/services/IWorkflowService.js';
 import { BaseComponent } from '../BaseComponent.js';
 import { DynamicButton } from '../buttons/DynamicButton.js';

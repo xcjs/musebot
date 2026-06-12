@@ -2,9 +2,9 @@
 
 import { PromisedSettledResultStatus } from '../../../../enums/PromisedSettledResultStatus.js';
 import { getRandomArrayEntry } from '../../../../utilities/random-utilities.js';
-import { IEnvironmentSettings } from '../../../environment-settings/IEnvironmentSettings.js';
+import { IConfigurationService } from '../../../environment-settings/IConfigurationService.js';
+import { IBotServiceContainer } from '../../../IBotServiceContainer.js';
 import { ILogger } from '../../../ILogger.js';
-import { IBotServiceContainer } from "../../../IServiceContainer.js"
 import { IGenerativeChatClient } from '../../chat/IGenerativeChatClient.js';
 import { ExtendedComfyUIClient } from './extensions/ExtendedComfyUIClient.js';
 import { MediaCollectionResponse } from './extensions/MediaResponse.js';
@@ -14,7 +14,7 @@ export class ComfyUiClient {
         return this.#host;
     }
 
-    readonly #environmentSettings: IEnvironmentSettings;
+    readonly #configurationService: IConfigurationService;
     readonly #chatClient: IGenerativeChatClient;
 
     readonly #logger: ILogger;
@@ -23,12 +23,12 @@ export class ComfyUiClient {
     readonly #client: ExtendedComfyUIClient;
 
     constructor(services: IBotServiceContainer) {
-        this.#environmentSettings = services.environmentSettings;
+        this.#configurationService = services.configurationService;
         this.#chatClient = services.generativeChatClient;
 
         this.#logger = services.getLogger('ComfyUiClient');
 
-        const host = getRandomArrayEntry(this.#environmentSettings.stableDiffusionHosts);
+        const host = getRandomArrayEntry(this.#configurationService.comfyUiHosts);
 
         if (!host) {
             throw new Error('No ComfyUI hosts configured in environment settings.');
@@ -43,7 +43,7 @@ export class ComfyUiClient {
         }
 
         this.#client = new ExtendedComfyUIClient(comfyHost,
-            `${this.#environmentSettings.applicationName}_${this.#chatClient.name}`);
+            `${this.#configurationService.applicationName}_${this.#chatClient.name}`);
 
         this.#logger.info(`Selected host: ${this.#host}`);
     }

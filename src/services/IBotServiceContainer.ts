@@ -24,8 +24,7 @@ import { ComfyUiClient } from './clients/media/comfy-ui/ComfyUiClient.js';
 import { IWorkflow } from './clients/media/comfy-ui/models/IWorkflow.js';
 import { IWorkflowService } from './clients/media/comfy-ui/services/IWorkflowService.js';
 import { IWorkflowMutator } from './clients/media/comfy-ui/services/workflow-mutators/IWorkflowMutator.js';
-import { IEnvironmentSettings } from './environment-settings/IEnvironmentSettings.js';
-import { IGlobalSettings } from './environment-settings/IGlobalSettings.js';
+import { IConfigurationService } from './environment-settings/IConfigurationService.js';
 import { IContentTypeService } from './features/IContentTypeService.js';
 import { IFeatureService } from './features/IFeatureService.js';
 import { IHelpService } from './help/IHelpService.js';
@@ -36,23 +35,11 @@ import { ITaskQueue } from './tasks/ITaskQueue.js';
 import { BaseTask } from './tasks/models/BaseTask.js';
 
 /**
- * Global service container - shared across all bot instances
- */
-export interface IServiceContainer {
-    globalSettings: IGlobalSettings;
-    taskQueue: ITaskQueue;
-    parallelizationStrategy: IParallelizationStrategy;
-
-    getLogger(prefix: string): ILogger;
-    getTaskChannelPostProcessor(services: IBotServiceContainer, channelName: string, isChild: boolean): ITaskChannelPostProcessor;
-}
-
-/**
  * Bot-specific service container - one instance per bot
  */
 export interface IBotServiceContainer {
     // Singletons -------------------------------------------------------------/
-    environmentSettings: IEnvironmentSettings;
+    configurationService: IConfigurationService;
     featureService: IFeatureService;
     taskQueue: ITaskQueue;
     typingService: ITypingService;

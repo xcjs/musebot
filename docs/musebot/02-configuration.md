@@ -1,17 +1,19 @@
 # Configuration
 
-## **Environment Variables Reference**
-
-Musebot is configured entirely through environment variables defined in a `.env`
-file. This file is plain text and uses the `KEY=value` format. A comprehensive
-template, `.env.example`, is provided in the main distribution. Rename this file
-to `.env` and fill in the required values for your setup.
+Musebot is configured through JSON-based configuration files (`config.json` or
+`config.jsonc`). This is the modern, standardized configuration format with
+excellent IDE support (autocomplete, validation, formatting).
 
 **Note on Configuration Loading:**
 
-Musebot loads the `.env` file from its current working directory at startup.
-Changes to this file will **not** take effect while the bot is running. You must
-restart the bot for any changes to be applied.
+Musebot loads the configuration file from its current working directory at
+startup. Changes to this file will **not** take effect while the bot is running.
+You must restart the bot for any changes to be applied.
+
+## **Migration from Environment Variables**
+
+If you were previously using `.env` files with `MUSEBOT_*` environment
+variables, you need to migrate to JSON configuration. See [Migration Guide](./03-migration-from-env-to-jsonc.md) for detailed instructions on how to migrate your configuration.
 
 ### **Core Configuration**
 

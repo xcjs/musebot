@@ -3,7 +3,7 @@ import { Message as OllamaMessage } from 'ollama';
 
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../../../../features/IFeatureService.js';
-import { IBotServiceContainer } from "../../../../IServiceContainer.js"
+import { IBotServiceContainer } from "../../../../IBotServiceContainer.js"
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
@@ -40,7 +40,7 @@ export class OllamaEmojiReactionTask extends OllamaBaseTask<void> {
         const prompt = `${userMention} reacted to your response with ${this.#reaction.emoji.name}. React to them regarding their reaction.`
         const context = this.contextService.getContextByChannelId(this.#reaction.message.channelId);
 
-        if (this.environmentSettings.ollamaStreamsResponse) {
+        if (this.configurationService.ollamaStreamsResponse) {
             await this.#processAsStream(prompt, context);
             return;
         }

@@ -1,7 +1,7 @@
 ﻿import { ButtonBuilder, ButtonStyle } from 'discord.js';
 
-import { IEnvironmentSettings } from '../../../../../environment-settings/IEnvironmentSettings.js';
-import { IBotServiceContainer } from "../../../../../IServiceContainer.js"
+import { IConfigurationService } from '../../../../../environment-settings/IConfigurationService.js';
+import { IBotServiceContainer } from "../../../../../IBotServiceContainer.js"
 import { BaseComponent } from '../BaseComponent.js';
 
 export class DynamicButton extends BaseComponent<ButtonBuilder> {
@@ -25,7 +25,7 @@ export class DynamicButton extends BaseComponent<ButtonBuilder> {
         return this.#helpText;
     }
 
-    #environmentSettings: IEnvironmentSettings;
+    #configurationService: IConfigurationService;
 
     constructor(services: IBotServiceContainer,
         label: string,
@@ -36,11 +36,11 @@ export class DynamicButton extends BaseComponent<ButtonBuilder> {
         this.#label = label;
 
         this.#title = title
-            || `Your ${this.#environmentSettings.applicationName} `
+            || `Your ${this.#configurationService.applicationName} `
                 + `administrator has not provided a title for this workflow. Ask them to add one!`;
 
         this.#helpText = helpText
-            || `Your ${this.#environmentSettings.applicationName} `
+            || `Your ${this.#configurationService.applicationName} `
                 + `administrator has not provided help text explaining this workflow. Ask them to add some!`;
     }
 

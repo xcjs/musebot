@@ -1,7 +1,7 @@
 ﻿import { Attachment, AttachmentBuilder, ButtonInteraction, Message, MessageReaction } from 'discord.js';
 
 import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
-import { IBotServiceContainer } from "../../../../IServiceContainer.js"
+import { IBotServiceContainer } from "../../../../IBotServiceContainer.js"
 import { ResourceType } from '../../../../parallelization/ResourceType.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';

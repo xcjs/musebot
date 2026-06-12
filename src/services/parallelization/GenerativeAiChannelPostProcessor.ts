@@ -2,8 +2,8 @@
 import { ComfyUiClient } from '../clients/media/comfy-ui/ComfyUiClient.js';
 import { SupportedFeature } from '../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../features/IFeatureService.js';
+import { IBotServiceContainer } from '../IBotServiceContainer.js';
 import { ILogger } from '../ILogger.js';
-import { IBotServiceContainer } from "../IServiceContainer.js"
 import { ITaskChannelPostProcessor } from './ITaskChannelPostProcessor.js';
 
 export class GenerativeAiChannelPostProcessor implements ITaskChannelPostProcessor {

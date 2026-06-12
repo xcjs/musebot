@@ -1,4 +1,4 @@
-import { BotInteraction } from '../enums/BotInteraction.js';
+﻿import { BotInteraction } from '../enums/BotInteraction.js';
 import { TaskQueueStrategy } from '../enums/TaskQueueStrategy.js';
 import { getRandomArrayEntry } from '../utilities/random-utilities.js';
 import { OllamaTaskChannelPostProcessor } from './clients/llm/ollama/tasks/OllamaTaskChannelPostProcessor.js';
@@ -13,9 +13,10 @@ import { MessageToMediaMutator } from './clients/media/comfy-ui/services/workflo
 import { MessageToMusicMutator } from './clients/media/comfy-ui/services/workflow-mutators/MessageToMusicMutator.js';
 import { RandomPromptMutator } from './clients/media/comfy-ui/services/workflow-mutators/RandomPromptMutator.js';
 import { RetryMutator } from './clients/media/comfy-ui/services/workflow-mutators/RetryMutator.js';
-import { IGlobalSettings } from './environment-settings/IGlobalSettings.js';
+import { IGlobalConfiguration } from './environment-settings/IGlobalConfiguration.js';
+import { IBotServiceContainer } from './IBotServiceContainer.js';
+import { IGlobalServiceContainer } from './IGlobalServiceContainer.js';
 import { ILogger } from './ILogger.js';
-import { IBotServiceContainer, IServiceContainer } from './IServiceContainer.js';
 import { Logger } from './Logger.js';
 import { GenerativeAiChannelPostProcessor } from './parallelization/GenerativeAiChannelPostProcessor.js';
 import { IParallelizationStrategy } from './parallelization/IParallelizationStrategy.js';
@@ -27,7 +28,7 @@ import { SerialStrategy } from './parallelization/SerialStrategy.js';
 import { ITaskQueue } from './tasks/ITaskQueue.js';
 import { TaskQueue } from './tasks/TaskQueue.js';
 
-export class ServiceContainer implements IServiceContainer {
+export class GlobalServiceContainer implements IGlobalServiceContainer {
     readonly #taskQueue: ITaskQueue;
     get taskQueue(): ITaskQueue {
         return this.#taskQueue;
@@ -38,9 +39,9 @@ export class ServiceContainer implements IServiceContainer {
         return this.#parallelizationStrategy;
     }
 
-    readonly #globalSettings: IGlobalSettings;
-    get globalSettings(): IGlobalSettings {
-        return this.#globalSettings;
+    readonly #globalConfiguration: IGlobalConfiguration;
+    get globalConfiguration(): IGlobalConfiguration {
+        return this.#globalConfiguration;
     }
 
     getLogger(prefix: string): ILogger {
@@ -90,15 +91,15 @@ export class ServiceContainer implements IServiceContainer {
         }
     }
 
-    constructor(globalSettings: IGlobalSettings) {
-        this.#globalSettings = globalSettings;
+    constructor(globalConfiguration: IGlobalConfiguration) {
+        this.#globalConfiguration = globalConfiguration;
 
-        switch(this.#globalSettings.taskQueueStrategy) {
+        switch(this.#globalConfiguration.taskQueue.strategy) {
             case TaskQueueStrategy.Parallel:
                 this.#parallelizationStrategy = new ParallelStrategy();
                 break;
             default:
-                this.#parallelizationStrategy = new SerialStrategy(!this.#globalSettings.taskQueueForceSerialAcrossHosts);
+                this.#parallelizationStrategy = new SerialStrategy(!this.#globalConfiguration.taskQueue.forceSerialAcrossHosts);
                 break;
         }
 

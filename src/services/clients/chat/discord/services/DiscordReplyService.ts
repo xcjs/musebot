@@ -1,7 +1,7 @@
 ﻿import { Attachment, BaseMessageOptions, ButtonInteraction, Message, MessageReaction, User } from 'discord.js';
 
 import { ContentType } from '../../../../../enums/ContentType.js';
-import { IBotServiceContainer } from "../../../../IServiceContainer.js"
+import { IBotServiceContainer } from "../../../../IBotServiceContainer.js"
 import { IReplyService } from '../../IReplyService.js';
 import { DiscordAttachmentService } from '../services/DiscordAttachmentService.js';
 import { DiscordMentionService } from '../services/DiscordMentionService.js';

@@ -1,8 +1,8 @@
 ﻿import { Client as DiscordClient } from 'discord.js';
 
-import { IEnvironmentSettings } from '../../../environment-settings/IEnvironmentSettings.js';
+import { IConfigurationService } from '../../../environment-settings/IConfigurationService.js';
+import { IBotServiceContainer } from '../../../IBotServiceContainer.js';
 import { ILogger } from '../../../ILogger.js';
-import { IBotServiceContainer } from "../../../IServiceContainer.js"
 import { ITaskQueue } from '../../../tasks/ITaskQueue.js';
 import { IGenerativeChatClient } from '../IGenerativeChatClient.js';
 import { DiscordPresenceStatus } from './enums/DiscordPresenceStatus.js';
@@ -19,7 +19,7 @@ export class BaseDiscordClient implements IGenerativeChatClient {
 
     #services: IBotServiceContainer;
 
-    #environmentSettings: IEnvironmentSettings;
+    #configurationService: IConfigurationService;
     #taskQueue: ITaskQueue;
 
     #id: string | null;
@@ -30,7 +30,7 @@ export class BaseDiscordClient implements IGenerativeChatClient {
     constructor(services: IBotServiceContainer) {
         this.#services = services;
 
-        this.#environmentSettings = services.environmentSettings;
+        this.#configurationService = services.configurationService;
         this.#taskQueue = services.taskQueue;
         this.logger = services.getLogger('BaseDiscordClient');
     }
@@ -48,7 +48,7 @@ export class BaseDiscordClient implements IGenerativeChatClient {
         this.#id = discordClient.user.id;
         this.#name = discordClient.user.displayName;
 
-        this.logger.info(`${this.#environmentSettings.applicationName} is ready.`);
+        this.logger.info(`${this.#configurationService.applicationName} is ready.`);
         discordClient.user.setPresence({ activities: [], status: DiscordPresenceStatus.Online });
     }
 }

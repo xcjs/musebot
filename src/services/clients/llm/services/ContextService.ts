@@ -1,5 +1,5 @@
-﻿import { ILogger } from '../../../ILogger.js';
-import { IBotServiceContainer } from "../../../IServiceContainer.js"
+﻿import { IBotServiceContainer } from '../../../IBotServiceContainer.js';
+import { ILogger } from '../../../ILogger.js';
 import { ContextMessage } from '../ollama/models/ContextMessage.js';
 import { IContextService } from './IContextService.js';
 

@@ -2,8 +2,8 @@
 import { Message as OllamaMessage } from 'ollama';
 
 import { BotInteraction } from '../../../../enums/BotInteraction.js';
-import { IEnvironmentSettings } from '../../../environment-settings/IEnvironmentSettings.js';
-import { IBotServiceContainer } from "../../../IServiceContainer.js"
+import { IConfigurationService } from '../../../environment-settings/IConfigurationService.js';
+import { IBotServiceContainer } from "../../../IBotServiceContainer.js"
 import { ITaskQueue } from '../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { IContextMessageFactory } from '../../llm/services/IContextMessageFactory.js';
@@ -16,7 +16,7 @@ import { ChatConfirmClearActionRow } from './components/buttonRows/ChatConfirmCl
 export class GenerativeChatClient extends BaseDiscordClient {
     #services: IBotServiceContainer;
 
-    #environmentSettings: IEnvironmentSettings;
+    #configurationService: IConfigurationService;
     #discordClient: DiscordClient;
     #contextMessageFactory: IContextMessageFactory<DiscordMessage, OllamaMessage>;
     #contextService: IContextService<DiscordMessage, OllamaMessage>;
@@ -31,7 +31,7 @@ export class GenerativeChatClient extends BaseDiscordClient {
         this.logger = services.getLogger('GenerativeChatClient');
 
         this.#services = services;
-        this.#environmentSettings = services.environmentSettings;
+        this.#configurationService = services.configurationService;
         this.#contextMessageFactory = services.getContextMessageFactory<DiscordMessage, OllamaMessage>();
         this.#contextService = services.getContextService<DiscordMessage, OllamaMessage>();
         this.#discordClient = services.discordClient;
@@ -39,7 +39,7 @@ export class GenerativeChatClient extends BaseDiscordClient {
         this.#replyService = services.getReplyService();
         this.#taskQueue = services.taskQueue;
 
-        const systemPrompt = this.#environmentSettings.ollamaSystemPrompt;
+        const systemPrompt = this.#configurationService.ollamaSystemPrompt;
         this.#contextService.addContext([this.#contextMessageFactory.fromSystemPrompt(systemPrompt, null, true)]);
 
         this.#registerEvents();

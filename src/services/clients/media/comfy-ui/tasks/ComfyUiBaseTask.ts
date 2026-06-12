@@ -1,10 +1,10 @@
 ﻿import { Attachment, ButtonInteraction, Message, MessageReaction } from 'discord.js';
 
 import { TaskQueueStrategy } from '../../../../../enums/TaskQueueStrategy.js';
-import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
+import { IConfigurationService } from '../../../../environment-settings/IConfigurationService.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../../../../features/IFeatureService.js';
-import { IBotServiceContainer } from "../../../../IServiceContainer.js"
+import { IBotServiceContainer } from "../../../../IBotServiceContainer.js"
 import { ResourceType } from '../../../../parallelization/ResourceType.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
@@ -22,7 +22,7 @@ export abstract class ComfyUiBaseTask extends BaseTask<void> {
         return ResourceType.Media;
     }
 
-    readonly environmentSettings: IEnvironmentSettings;
+    readonly configurationService: IConfigurationService;
     readonly comfyUiClient: ComfyUiClient;
     readonly workflowService: IWorkflowService;
     readonly comfyUiReplyService: ComfyUiReplyService;
@@ -33,7 +33,7 @@ export abstract class ComfyUiBaseTask extends BaseTask<void> {
     constructor(services: IBotServiceContainer) {
         super(services);
 
-        this.environmentSettings = services.environmentSettings;
+        this.configurationService = services.configurationService;
         this.comfyUiClient = services.comfyUiClient;
         this.workflowService = services.workflowService;
         this.comfyUiReplyService = services.comfyUiReplyService;
@@ -45,7 +45,7 @@ export abstract class ComfyUiBaseTask extends BaseTask<void> {
     override async preProcess(): Promise<void> {
         await super.preProcess();
 
-        if (this.environmentSettings.taskQueueStrategy === TaskQueueStrategy.Serial
+        if (this.configurationService.taskQueueStrategy === TaskQueueStrategy.Serial
             && this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
             await this.#ollamaClient.free();
         }

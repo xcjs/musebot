@@ -1,15 +1,16 @@
-import { PromisedSettledResultStatus } from '../../enums/PromisedSettledResultStatus.js';
-import { IBotServiceContainer, IServiceContainer } from '../IServiceContainer.js';
+﻿import { PromisedSettledResultStatus } from '../../enums/PromisedSettledResultStatus.js';
+import { IBotServiceContainer } from '../IBotServiceContainer.js';
+import { IGlobalServiceContainer } from '../IGlobalServiceContainer.js';
 import { TaskStatus } from './enums/TaskStatus.js';
 import { ITaskQueue } from './ITaskQueue.js';
 import { BaseTask } from './models/BaseTask.js';
 import { TaskChannel } from './models/TaskChannel.js';
 
 export class TaskQueue implements ITaskQueue {
-    readonly #globalServices: IServiceContainer;
+    readonly #globalServices: IGlobalServiceContainer;
     readonly #channels: TaskChannel[] = [];
 
-    constructor(globalServices: IServiceContainer) {
+    constructor(globalServices: IGlobalServiceContainer) {
         this.#globalServices = globalServices;
     }
 
@@ -89,7 +90,7 @@ export class TaskQueue implements ITaskQueue {
                         this.#globalServices.getLogger('TaskQueue').error(`Task ${task.id} was rejected ${task.numAttempts} time(s):`, task,
                             (promise as PromiseRejectedResult).reason);
 
-                        if (task.numAttempts >= this.#globalServices.globalSettings.maxTaskAttempts) {
+                        if (task.numAttempts >= this.#globalServices.globalConfiguration.taskQueue.numAttempts) {
                             return task.postProcess();
                         } else {
                             this.#globalServices.getLogger('TaskQueue').info('Scheduling a failed task to be resumed:', task.id);
@@ -97,7 +98,7 @@ export class TaskQueue implements ITaskQueue {
                             setTimeout(() => {
                                 task.taskStatus = TaskStatus.Idle;
                                 this.add(task);
-                            }, this.#globalServices.globalSettings.taskRetryDelayMilliseconds);
+                            }, this.#globalServices.globalConfiguration.taskQueue.retryDelayMs);
                         }
                     }
                 });

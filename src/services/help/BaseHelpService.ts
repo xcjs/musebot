@@ -2,7 +2,7 @@
 
 import { IActionRows } from '../clients/chat/discord/components/buttonRows/IActionRows.js';
 import { IReplyService } from '../clients/chat/IReplyService.js';
-import { IBotServiceContainer } from "../IServiceContainer.js"
+import { IBotServiceContainer } from '../IBotServiceContainer.js';
 
 type DiscordReplyService = IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
 

@@ -4,7 +4,7 @@ import { GenerateRequest, GenerateResponse } from 'ollama';
 import { BotInteraction } from '../../../../../../enums/BotInteraction.js';
 import { IHttpExchange } from '../../../../../../models/IHttpExchange.js';
 import { SupportedFeature } from '../../../../../features/enum/SupportedFeature.js';
-import { IBotServiceContainer } from "../../../../../IServiceContainer.js"
+import { IBotServiceContainer } from "../../../../../IBotServiceContainer.js"
 import { ITaskQueue } from '../../../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../../../tasks/models/BaseTask.js';
 import { OLLAMA_TEMPERATURE_DEFAULT } from '../../../../llm/ollama/constants/OllamaConstants.js';

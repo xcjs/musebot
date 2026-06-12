@@ -1,26 +1,37 @@
-import './polyfills.js';
+﻿import './polyfills.js';
 
 import { BotServiceContainer } from './services/BotServiceContainer.js';
 import { ConfigLoader } from './services/environment-settings/ConfigLoader.js';
-import { ServiceContainer } from './services/ServiceContainer.js';
+import { GlobalServiceContainer } from './services/GlobalServiceContainer.js';
+import { Logger } from './services/Logger.js';
 
 const config = ConfigLoader.load();
-const globalSettings = config.global;
-const botConfigs = config.bots ?? [];
 
-const globalContainer = new ServiceContainer(globalSettings);
+config.bots.forEach(botConfig => {
+    try {
+        const logger = new Logger('App');
 
-botConfigs.forEach(botConfig => {
-    const botServices = new BotServiceContainer(globalContainer, botConfig);
-    const featureService = botServices.featureService;
-    const client = botServices.generativeChatClient;
-    const settings = botServices.environmentSettings;
+        const globalServices = new GlobalServiceContainer(config.global);
+        const botServices = new BotServiceContainer(globalServices, botConfig);
 
-    // Top-level awaits are not compatible with Parcel/Pkg. Do not replace with an await.
-    featureService.loadFeatures().then(() => {
-        client.login();
-    }).catch((error) => {
-        console.error(`Failed to load supported features.`
-            + ` Check your workflows/workflow permissions and restart ${settings.applicationName}:`, error);
-    });
+        const featureService = botServices.featureService;
+        const client = botServices.generativeChatClient;
+        const settings = botServices.configurationService;
+
+        logger.info(`Starting bot ${botConfig.botId} in ${botConfig.mode} mode...`);
+
+        // Top-level awaits are not compatible with Parcel/Pkg. Do not replace with an await.
+        featureService.loadFeatures().then(() => {
+            client.login();
+        }).catch((error) => {
+            logger.error(`Failed to load supported features for bot ${botConfig.botId}.`
+                + ` Check your workflows/workflow permissions and restart ${settings.applicationName}:`, error);
+        });
+    } catch (error) {
+        if (error instanceof Error && error.message.includes('botId is required')) {
+            console.error(`Failed to initialize bot: ${error.message}. Please check your config.jsonc file.`);
+        } else {
+            throw error;
+        }
+    }
 });

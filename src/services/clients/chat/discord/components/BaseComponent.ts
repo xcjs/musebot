@@ -1,5 +1,5 @@
 ﻿import { IFeatureService } from '../../../../features/IFeatureService.js';
-import { IBotServiceContainer } from "../../../../IServiceContainer.js"
+import { IBotServiceContainer } from "../../../../IBotServiceContainer.js"
 
 export abstract class BaseComponent<ComponentType> {
     protected featureService: IFeatureService;

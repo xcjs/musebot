@@ -1,9 +1,11 @@
-import { jest } from '@jest/globals';
+﻿import { jest } from '@jest/globals';
 
-import type { IEnvironmentSettings } from '../services/environment-settings/IEnvironmentSettings.js';
-import type { IGlobalSettings } from '../services/environment-settings/IGlobalSettings.js';
+import { BotMode } from '../enums/BotMode.js';
+import type { IConfigurationService } from '../services/environment-settings/IConfigurationService.js';
+import type { IGlobalConfiguration } from '../services/environment-settings/IGlobalConfiguration.js';
+import type { IBotServiceContainer } from '../services/IBotServiceContainer.js';
+import type { IGlobalServiceContainer } from '../services/IGlobalServiceContainer.js';
 import type { ILogger } from '../services/ILogger.js';
-import type { IBotServiceContainer, IServiceContainer } from '../services/IServiceContainer.js';
 import type { IParallelizationStrategy } from '../services/parallelization/IParallelizationStrategy.js';
 import type { ITaskChannelPostProcessor } from '../services/parallelization/ITaskChannelPostProcessor.js';
 
@@ -44,33 +46,64 @@ export interface MockContainer extends IBotServiceContainer {
 export interface MockServiceContainerConfig {
     logger?: jest.Mocked<ILogger>;
     postProcessor?: jest.Mocked<ITaskChannelPostProcessor>;
-    environmentSettings?: IEnvironmentSettings;
-    globalSettings?: IGlobalSettings;
+    configurationService?: IConfigurationService;
+    globalConfiguration?: IGlobalConfiguration;
 }
 
 /**
- * A typed container for testing global services (IServiceContainer)
+ * A typed container for testing global services (IGlobalServiceContainer)
  */
-export interface MockGlobalContainer extends IServiceContainer {
-    globalSettings: IGlobalSettings;
+export interface MockGlobalContainer extends IGlobalServiceContainer {
+    globalConfiguration: IGlobalConfiguration;
+    configurationService: IConfigurationService;
     _logger: jest.Mocked<ILogger>;
     _postProcessor: jest.Mocked<ITaskChannelPostProcessor>;
 }
 
 /**
- * Creates a minimal mock global service container for testing TaskQueue and other IServiceContainer consumers.
+ * Creates a minimal mock global service container for testing TaskQueue and other IGlobalServiceContainer consumers.
  */
 export function createMockGlobalContainer(config?: MockServiceContainerConfig): MockGlobalContainer {
     const logger = config?.logger ?? createMockLogger();
     const postProcessor = config?.postProcessor ?? createMockPostProcessor();
 
     return {
-        globalSettings: {
+        globalConfiguration: {
+            taskQueue: {
+                numAttempts: 3,
+                retryDelayMs: 100,
+                strategy: 'serial' as any,
+                forceSerialAcrossHosts: false
+            }
+        } as IGlobalConfiguration,
+        configurationService: {
+            packageName: 'musebot',
+            version: '8.7.1',
+            nodeEnvironment: 'test' as any,
+            botId: 'bot-1',
+            botFunction: BotMode.Chat as any,
             maxTaskAttempts: 3,
             taskRetryDelayMilliseconds: 100,
+            taskQueueStrategy: 'serial' as any,
             taskQueueForceSerialAcrossHosts: false,
-            taskQueueStrategy: 'serial',
-        } as IGlobalSettings,
+            discordToken: 'test-token',
+            discordChannels: [],
+            discordChannelsDisallowed: [],
+            botRequiresMention: true,
+            botResponseRate: 100,
+            botPrivateMessageUsers: [],
+            errorMessage: 'An error occurred',
+            comfyUiHosts: [],
+            stableDiffusionHosts: [],
+            stableDiffusionGuidanceScaleInterval: 0.5,
+            stableDiffusionOllamaPrompts: [],
+            ollamaHosts: [],
+            ollamaModels: [],
+            ollamaSystemPrompt: '',
+            ollamaStreamsResponse: false,
+            applicationName: 'Musebot',
+            isProduction: false
+        } as IConfigurationService,
         taskQueue: null as never,
         parallelizationStrategy: {
             getTaskChannel: () => 'test_channel',
@@ -93,11 +126,34 @@ export function createMockGlobalContainer(config?: MockServiceContainerConfig): 
 export function createMockServiceContainer(config?: MockServiceContainerConfig): MockContainer {
     const logger = config?.logger ?? createMockLogger();
     const postProcessor = config?.postProcessor ?? createMockPostProcessor();
-    const environmentSettings = config?.environmentSettings ?? {
+    const configurationService = config?.configurationService ?? {
+        packageName: 'musebot',
+        version: '8.7.1',
+        nodeEnvironment: 'test' as any,
+        botId: 'bot-1',
+        botFunction: BotMode.Chat as any,
         maxTaskAttempts: 3,
         taskRetryDelayMilliseconds: 100,
+        taskQueueStrategy: 'serial' as any,
         taskQueueForceSerialAcrossHosts: false,
-    } as IEnvironmentSettings;
+        discordToken: 'test-token',
+        discordChannels: [],
+        discordChannelsDisallowed: [],
+        botRequiresMention: true,
+        botResponseRate: 100,
+        botPrivateMessageUsers: [],
+        errorMessage: 'An error occurred',
+        comfyUiHosts: [],
+        stableDiffusionHosts: [],
+        stableDiffusionGuidanceScaleInterval: 0.5,
+        stableDiffusionOllamaPrompts: [],
+        ollamaHosts: [],
+        ollamaModels: [],
+        ollamaSystemPrompt: '',
+        ollamaStreamsResponse: false,
+        applicationName: 'Musebot',
+        isProduction: false
+    } as IConfigurationService;
     const parallelizationStrategy = {
         getTaskChannel: () => 'test_channel',
     } as IParallelizationStrategy;
@@ -105,7 +161,7 @@ export function createMockServiceContainer(config?: MockServiceContainerConfig):
     // Return a properly typed mock container
     return {
         // Global settings
-        environmentSettings: environmentSettings,
+        configurationService: configurationService,
         // Singletons
         featureService: null as never,
         taskQueue: null as never,

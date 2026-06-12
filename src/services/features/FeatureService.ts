@@ -1,12 +1,12 @@
 ﻿import { IWorkflowService } from '../clients/media/comfy-ui/services/IWorkflowService.js';
-import { IEnvironmentSettings } from '../environment-settings/IEnvironmentSettings.js';
+import { IConfigurationService } from '../environment-settings/IConfigurationService.js';
+import { IBotServiceContainer } from '../IBotServiceContainer.js';
 import { ILogger } from '../ILogger.js';
-import { IBotServiceContainer } from "../IServiceContainer.js"
 import { SupportedFeature } from './enum/SupportedFeature.js';
 import { IFeatureService } from './IFeatureService.js';
 
 export class FeatureService implements IFeatureService {
-    readonly #environmentSettings: IEnvironmentSettings;
+    readonly #configurationService: IConfigurationService;
     readonly #workflowService: IWorkflowService;
 
     readonly #logger: ILogger;
@@ -18,7 +18,7 @@ export class FeatureService implements IFeatureService {
     }
 
     constructor(services: IBotServiceContainer) {
-        this.#environmentSettings = services.environmentSettings;
+        this.#configurationService = services.configurationService;
         this.#workflowService = services.workflowService;
 
         this.#logger = services.getLogger('FeatureService');
@@ -31,8 +31,8 @@ export class FeatureService implements IFeatureService {
     async loadFeatures(): Promise<void> {
         await this.#workflowService.loadWorkflows();
 
-        if (this.#environmentSettings.ollamaHosts.length > 0
-            && this.#environmentSettings.ollamaModels.length > 0) {
+        if (this.#configurationService.ollamaHosts.length > 0
+            && this.#configurationService.ollamaModels.length > 0) {
                 this.#logger.info(`${SupportedFeature.Txt2Txt} supported.`);
                 this.#supportedFeatures.push(SupportedFeature.Txt2Txt);
         }
@@ -41,7 +41,7 @@ export class FeatureService implements IFeatureService {
             return;
         }
 
-        if (this.#environmentSettings.stableDiffusionHosts.length > 0) {
+        if (this.#configurationService.comfyUiHosts.length > 0) {
             for(const feature of Object.values(SupportedFeature)) {
                 if(this.#workflowService.hasWorkflowType(feature)) {
                     this.#logger.info(`${feature} supported.`);

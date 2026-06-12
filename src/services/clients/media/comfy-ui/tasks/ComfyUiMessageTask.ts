@@ -6,7 +6,7 @@ import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../../../../features/IFeatureService.js';
-import { IBotServiceContainer } from "../../../../IServiceContainer.js"
+import { IBotServiceContainer } from "../../../../IBotServiceContainer.js"
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 

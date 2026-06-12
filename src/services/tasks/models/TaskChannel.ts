@@ -1,5 +1,5 @@
+﻿import { IBotServiceContainer } from '../../IBotServiceContainer.js';
 import { ILogger } from '../../ILogger.js';
-import { IBotServiceContainer } from '../../IServiceContainer.js';
 import { ITaskChannelPostProcessor } from '../../parallelization/ITaskChannelPostProcessor.js';
 import { TaskStatus } from '../enums/TaskStatus.js';
 import { BaseTask } from './BaseTask.js';

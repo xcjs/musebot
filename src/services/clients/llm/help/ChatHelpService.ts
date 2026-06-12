@@ -1,10 +1,10 @@
 ﻿import { Attachment, ButtonInteraction, Interaction, Message, MessageReaction } from 'discord.js';
 
 import nodePackage from '../../../../../package.json' with { type: 'json' };
-import { IEnvironmentSettings } from '../../../environment-settings/IEnvironmentSettings.js';
+import { IConfigurationService } from '../../../environment-settings/IConfigurationService.js';
 import { BaseHelpService } from '../../../help/BaseHelpService.js';
 import { IHelpService } from '../../../help/IHelpService.js';
-import { IBotServiceContainer } from "../../../IServiceContainer.js"
+import { IBotServiceContainer } from "../../../IBotServiceContainer.js"
 import { ChatActionRow } from '../../chat/discord/components/buttonRows/ChatActionRow.js';
 import { ChatConfirmClearActionRow } from '../../chat/discord/components/buttonRows/ChatConfirmClearActionRow.js';
 import { DiscordConstants } from '../../chat/discord/enums/DiscordConstants.js';
@@ -15,7 +15,7 @@ type DiscordReplyService = IReplyService<Message, MessageReaction, Attachment, M
 export class ChatHelpService extends BaseHelpService implements IHelpService {
     #services: IBotServiceContainer;
 
-    #environmentSettings: IEnvironmentSettings;
+    #configurationService: IConfigurationService;
     #replyService: DiscordReplyService;
 
     constructor(services: IBotServiceContainer) {
@@ -23,12 +23,12 @@ export class ChatHelpService extends BaseHelpService implements IHelpService {
 
         this.#services = services;
 
-        this.#environmentSettings = services.environmentSettings;
+        this.#configurationService = services.configurationService;
         this.#replyService = services.getReplyService();
     }
 
     async buildHelpArticle(interaction: Interaction): Promise<string> {
-        const applicationName = this.#environmentSettings.applicationName;
+        const applicationName = this.#configurationService.applicationName;
 
         let helpArticle = `# ${applicationName} Help`
             + '\n\n'

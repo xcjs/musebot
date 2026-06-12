@@ -4,12 +4,12 @@ import { MAX_FILE_NAME_LENGTH } from '../../../../../constants/FileConstants.js'
 import { ContentType } from '../../../../../enums/ContentType.js';
 import { ContentTypeCategory } from '../../../../../enums/ContentTypeCategory.js';
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
-import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
+import { IConfigurationService } from '../../../../environment-settings/IConfigurationService.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { IContentTypeService } from '../../../../features/IContentTypeService.js';
 import { IFeatureService } from '../../../../features/IFeatureService.js';
+import { IBotServiceContainer } from '../../../../IBotServiceContainer.js';
 import { ILogger } from '../../../../ILogger.js';
-import { IBotServiceContainer } from "../../../../IServiceContainer.js"
 import { ComfyUiClient } from '../../../media/comfy-ui/ComfyUiClient.js';
 import { MediaCollectionResponse, MediaContainer } from '../../../media/comfy-ui/extensions/MediaResponse.js';
 import { SerializableRenderRequest } from '../../../media/comfy-ui/models/SerializableRenderRequest.js';
@@ -24,7 +24,7 @@ import { DiscordConstants } from '../enums/DiscordConstants.js';
 export class ComfyUiReplyService {
     readonly #services: IBotServiceContainer;
 
-    readonly #environmentSettings: IEnvironmentSettings;
+    readonly #configurationService: IConfigurationService;
     readonly #comfyUiClient: ComfyUiClient;
     readonly #contentTypeService: IContentTypeService;
     readonly #featureService: IFeatureService;
@@ -39,7 +39,7 @@ export class ComfyUiReplyService {
     constructor(services: IBotServiceContainer) {
         this.#services = services;
 
-        this.#environmentSettings = services.environmentSettings;
+        this.#configurationService = services.configurationService;
         this.#comfyUiClient = services.comfyUiClient;
         this.#contentTypeService = services.contentTypeService;
         this.#featureService = services.featureService;
@@ -137,10 +137,10 @@ export class ComfyUiReplyService {
 
     getFileNameFromPrompt(renderRequest: SerializableRenderRequest | null): string {
         if(renderRequest === null) {
-            return `${this.#environmentSettings.applicationName}_${Date.now()}_stateless`;
+            return `${this.#configurationService.applicationName}_${Date.now()}_stateless`;
         }
 
-        return `${this.#environmentSettings.applicationName}_${renderRequest.seed}_${renderRequest.prompt}`.substring(0, MAX_FILE_NAME_LENGTH);
+        return `${this.#configurationService.applicationName}_${renderRequest.seed}_${renderRequest.prompt}`.substring(0, MAX_FILE_NAME_LENGTH);
     }
 
     async #buildActionRows(mediaContainer: MediaContainer, requests: SerializableRenderRequest[]): Promise<ActionRowBuilder<ButtonBuilder>[]> {

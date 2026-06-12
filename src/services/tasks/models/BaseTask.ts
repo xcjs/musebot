@@ -1,7 +1,7 @@
 ﻿import { randomUUID, UUID } from 'node:crypto';
 
+import { IBotServiceContainer } from '../../IBotServiceContainer.js';
 import { ILogger } from '../../ILogger.js';
-import { IBotServiceContainer } from '../../IServiceContainer.js';
 import { IParallelizationStrategy } from '../../parallelization/IParallelizationStrategy.js';
 import { ResourceType } from '../../parallelization/ResourceType.js';
 import { TaskStatus } from '../enums/TaskStatus.js';
@@ -79,7 +79,7 @@ export abstract class BaseTask<T> {
 
         this.#id = randomUUID();
         this.#createdTime = new Date();
-        this.#maxAttempts = services.environmentSettings.maxTaskAttempts;
+        this.#maxAttempts = services.configurationService.maxTaskAttempts;
     }
 
     async preProcess(): Promise<void> {

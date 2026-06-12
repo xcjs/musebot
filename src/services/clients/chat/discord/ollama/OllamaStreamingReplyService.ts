@@ -1,8 +1,8 @@
 ﻿import { ActionRowBuilder, ButtonBuilder, Message } from 'discord.js';
 
 import { splitText } from '../../../../../utilities/string-utilities.js';
+import { IBotServiceContainer } from '../../../../IBotServiceContainer.js';
 import { ILogger } from '../../../../ILogger.js';
-import { IBotServiceContainer } from "../../../../IServiceContainer.js"
 import { ChatActionRow } from '../components/buttonRows/ChatActionRow.js';
 import { DiscordConstants } from '../enums/DiscordConstants.js';
 
