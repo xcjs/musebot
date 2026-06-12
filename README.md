@@ -7,7 +7,7 @@ Discord.
 
 ## Development
 
-1. Copy `config.json.example` to `config.json` and fill out the configuration
+1. Copy `config.example.jsonc` to `config.jsonc` and fill out the configuration
    as it pertains to your development needs.
 2. `npm install`
 3. `npm start`

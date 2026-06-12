@@ -11,7 +11,8 @@ Code Review.md
 
 # Configuration Files
 .env*
-config.json*
+config.json
+config.jsonc
 
 # Package Management
 node_modules/

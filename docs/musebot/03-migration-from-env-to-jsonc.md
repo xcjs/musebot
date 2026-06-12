@@ -282,6 +282,6 @@ Check that all properties defined in your `mode` (chat or media) are present:
 If you encounter issues during migration:
 
 1. Check the error message - it should be very specific about what's wrong
-2. Review the examples in `config.json.example` as a reference
+2. Review the examples in `config.example.jsonc` as a reference
 3. Consult `docs/configuration.md` for detailed configuration documentation
 4. Open an issue on the project repository

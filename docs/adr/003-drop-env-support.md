@@ -283,7 +283,7 @@ Drop `.env` support entirely and standardize on a unified JSON-based configurati
    - Common configuration scenarios
    - Troubleshooting section
 
-2. **`config.json.example`** (new)
+2. **`config.example.jsonc`** (new)
    - Minimal working example with all options documented
    - Comments explaining each setting
 
@@ -377,7 +377,7 @@ MUSEBOT_OLLAMA_SYSTEM_PROMPT=You are a helpful assistant
 **Files to remove:**
 
 1. **`.env` file** — Users will delete manually (document in migration guide)
-2. **`.env.example`** — Replace with `config.json.example`
+2. **`.env.example`** — Replace with `config.example.jsonc`
 3. **`src/services/environment-settings/constants/EnvironmentKey.ts`** — No longer needed
 4. **Remove `.env` example file reference** from documentation
 
@@ -438,7 +438,7 @@ MUSEBOT_OLLAMA_SYSTEM_PROMPT=You are a helpful assistant
 - ✅ All tests pass with new configuration system (expecting ~269 tests)
 - ✅ No breaking changes to internal bot functionality
 - ✅ Migration guide completed and published
-- ✅ `config.json.example` created with complete examples
+- ✅ `config.example.jsonc` created with complete examples
 
 ## Related
 
