@@ -21,9 +21,5 @@ node_modules/
 coverage/
 
 # Testing Workflows
-workflows/img2img/
-workflows/img2vid/
-workflows/txt2audio/
-workflows/txt2img/
-workflows/txt2music/
-workflows/txt2vid/
+# workflows/production should be included.
+workflows/
