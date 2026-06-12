@@ -148,7 +148,7 @@ export class ConfigurationService implements IConfigurationService {
         this.#loggers = new Map();
         this.#botConfig = botConfig;
 
-        this.#log = new Logger('ConfigurationService');
+        this.#log = new Logger('ConfigurationService', botConfig.botId);
 
         this.#config = ConfigLoader.load();
 
@@ -186,7 +186,7 @@ Detected environment variables: ${envVarList}`);
                 throw new Error('Media mode requires at least one ComfyUI host configured in comfyUi.hosts.');
             }
         } else {
-            throw new Error(`Invalid mode: ${mode}. Must be 'chat' or 'media'.`);
+            throw new Error(`Invalid mode: ${mode as string}. Must be 'chat' or 'media'.`);
         }
     }
 
@@ -227,6 +227,6 @@ Detected environment variables: ${envVarList}`);
     }
 
     getConfig(): IAppConfig {
-        return JSON.parse(JSON.stringify(this.#config));
+        return JSON.parse(JSON.stringify(this.#config)) as IAppConfig;
     }
 }

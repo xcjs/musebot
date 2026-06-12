@@ -3,15 +3,24 @@ import { ILogger } from './ILogger.js';
 
 export class Logger implements ILogger {
     static longestPrefix = 0;
+    static longestBotId = 0;
 
     get prefix(): string {
+        let paddedBotId = this.#botId ?? '';
+
+        while (paddedBotId.length < Logger.longestBotId) {
+            paddedBotId += ' ';
+        }
+
         let paddedPrefix = `${this.#prefix}`;
 
         while (paddedPrefix.length < Logger.longestPrefix) {
             paddedPrefix += ' ';
         }
 
-        return `${new Date().toLocaleString('sv').replace(' ', 'T')} | ${paddedPrefix} | `;
+        const botIdPart = Logger.longestBotId > 0 ? `${paddedBotId} | ` : '';
+
+        return `${new Date().toLocaleString('sv').replace(' ', 'T')} | ${botIdPart}${paddedPrefix} | `;
     }
 
     get isDebug(): boolean {
@@ -19,9 +28,18 @@ export class Logger implements ILogger {
     }
 
     #prefix: string = '';
+    #botId: string | null = null;
 
-    constructor(prefix: string) {
+    constructor(prefix: string, botId?: string) {
         this.#prefix = prefix;
+
+        if (botId) {
+            this.#botId = botId;
+
+            if (Logger.longestBotId < botId.length) {
+                Logger.longestBotId = botId.length;
+            }
+        }
 
         if (Logger.longestPrefix < prefix.length) {
             Logger.longestPrefix = prefix.length;

@@ -198,7 +198,7 @@ export class BotServiceContainer implements IBotServiceContainer {
 
     // Factories --------------------------------------------------------------/
     getLogger(prefix: string): ILogger {
-        return new Logger(prefix);
+        return new Logger(prefix, this.#configurationService.botId);
     }
 
     #contextMessageFactory: IContextMessageFactory<unknown, unknown> | null = null;
