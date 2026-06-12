@@ -155,7 +155,7 @@ export class ConfigurationService implements IConfigurationService {
         this.#validateMusebotEnvVars();
         this.#validateMode();
 
-        this.#log.info('Configuration loaded successfully');
+        this.#logConfiguration();
     }
 
     #validateMusebotEnvVars(): void {
@@ -188,6 +188,42 @@ Detected environment variables: ${envVarList}`);
         } else {
             throw new Error(`Invalid mode: ${mode}. Must be 'chat' or 'media'.`);
         }
+    }
+
+    #logConfiguration(): void {
+        if (this.nodeEnvironment === NodeEnvironment.Test) {
+            return;
+        }
+
+        this.#log.info(`Package Name: ${this.packageName}`);
+        this.#log.info(`Package Version: ${this.version}`);
+        this.#log.info(`Bot ID: ${this.botId}`);
+        this.#log.info(`Node Environment: ${this.nodeEnvironment}`);
+        this.#log.info(`Mode: ${this.botFunction}`);
+
+        this.#log.info(`Discord Channels: ${this.discordChannels.join(', ')}`);
+        this.#log.info(`Discord Channels Disallowed: ${this.discordChannelsDisallowed.join(', ')}`);
+        this.#log.info(`Requires Mention: ${this.botRequiresMention}`);
+        this.#log.info(`Response Rate: ${this.botResponseRate}`);
+        this.#log.info(`Private Message Users: ${this.botPrivateMessageUsers.join(', ')}`);
+        this.#log.info(`Error Message: ${this.errorMessage}`);
+
+        this.#log.info(`Task Queue Max Attempts: ${this.maxTaskAttempts}`);
+        this.#log.info(`Task Queue Retry Delay (ms): ${this.taskRetryDelayMilliseconds}`);
+        this.#log.info(`Task Queue Strategy: ${this.taskQueueStrategy}`);
+        this.#log.info(`Task Queue Force Serial Across Hosts: ${this.taskQueueForceSerialAcrossHosts}`);
+
+        this.#log.info(`ComfyUI Hosts: ${this.comfyUiHosts.join(', ')}`);
+        this.#log.info(`Stable Diffusion Hosts: ${this.stableDiffusionHosts.join(', ')}`);
+        this.#log.info(`Stable Diffusion Guidance Scale Interval: ${this.stableDiffusionGuidanceScaleInterval}`);
+        this.#log.info(`Stable Diffusion Ollama Prompts: ${this.stableDiffusionOllamaPrompts.join(' | ')}`);
+
+        this.#log.info(`Ollama Hosts: ${this.ollamaHosts.join(', ')}`);
+        this.#log.info(`Ollama Models: ${this.ollamaModels.join(', ')}`);
+        this.#log.info(`Ollama System Prompt: ${this.ollamaSystemPrompt}`);
+        this.#log.info(`Ollama Streams Response: ${this.ollamaStreamsResponse}`);
+
+        this.#log.info('Configuration loaded successfully');
     }
 
     getConfig(): IAppConfig {
