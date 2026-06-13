@@ -74,52 +74,38 @@
       "errorMessage": "An error occurred while processing your request. Please try again later.",
 
       // Discord configuration. Token and channel settings for the bot's Discord connection.
-      "discord": {
-        // The Discord App Token used to authenticate as the bot created in the
-        // Discord developer portal.
-        // Required: Required
-        // Type:     String
-        "token": "YOUR_DISCORD_BOT_TOKEN_HERE",
-
-        // The Discord channel IDs the bot is allowed to reply in.
-        // If left empty, all channels will be allowed.
-        // Required: Optional
-        // Type:     Array of string (channel IDs)
-        "channels": [
-          "YOUR_CHANNEL_ID_1",
-          "YOUR_CHANNEL_ID_2"
-        ],
-
-        // Which users, if any, are allowed to message the bot privately.
-        // Ensure this is the username, not the display name. Case-sensitive.
-        // Required: Optional
-        // Type:     Array of string (usernames)
-        "privateMessageUsers": [
-          "USER_ID_1",
-          "USER_ID_2"
-        ],
-
-        // The Discord channel IDs the bot is not allowed to reply in.
-        // If the bot is simultaneously allowed and disallowed in a channel,
-        // the disallowed rule takes precedence.
-        // Required: Optional
-        // Type:     Array of string (channel IDs)
-        "channelsDisallowed": []
-      },
-
-      // Chat API overrides. When present, these take priority over the top-level
-      // discord settings for token, channels, and privateMessageUsers.
       "chatApis": {
         "discord": {
+          // The Discord App Token used to authenticate as the bot created in the
+          // Discord developer portal.
+          // Required: Required
+          // Type:     String
           "token": "YOUR_DISCORD_BOT_TOKEN_HERE",
+
+          // The Discord channel IDs the bot is allowed to reply in.
+          // If left empty, all channels will be allowed.
+          // Required: Optional
+          // Type:     Array of string (channel IDs)
           "channels": [
             "YOUR_CHANNEL_ID_1",
             "YOUR_CHANNEL_ID_2"
           ],
+
+          // Which users, if any, are allowed to message the bot privately.
+          // Ensure this is the username, not the display name. Case-sensitive.
+          // Required: Optional
+          // Type:     Array of string (usernames)
           "privateMessageUsers": [
             "USER_ID_1",
             "USER_ID_2"
-          ]
+          ],
+
+          // The Discord channel IDs the bot is not allowed to reply in.
+          // If the bot is simultaneously allowed and disallowed in a channel,
+          // the disallowed rule takes precedence.
+          // Required: Optional
+          // Type:     Array of string (channel IDs)
+          "channelsDisallowed": []
         }
       },
 

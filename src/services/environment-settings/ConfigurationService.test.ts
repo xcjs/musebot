@@ -24,11 +24,6 @@ const validChatBotConfig = {
     requiresMention: true,
     responseRate: 100,
     errorMessage: 'An error occurred',
-    discord: {
-        token: mockToken,
-        channels: ['1234567891234567891'],
-        privateMessageUsers: ['user1']
-    },
     chatApis: {
         discord: {
             token: mockToken,
@@ -54,11 +49,6 @@ const validMediaBotConfig = {
     requiresMention: true,
     responseRate: 100,
     errorMessage: 'An error occurred',
-    discord: {
-        token: mockToken,
-        channels: ['1234567891234567891'],
-        privateMessageUsers: ['user1']
-    },
     chatApis: {
         discord: {
             token: mockToken,
