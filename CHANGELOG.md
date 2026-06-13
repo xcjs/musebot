@@ -58,3 +58,4 @@ All notable changes to Musebot are documented in this file.
 - Button labels restored
 - Documentation syntax corrections
 - ESLint and code quality issues resolved
+- `WorkflowNotFoundError` when clicking Randomize (or other interaction buttons) on a result whose `SerializableRenderRequest.workflow` was `undefined`. The fallback path in `ComfyUiInteractionTask` now sets `workflow` on the new render request, and mutators (`RandomPromptMutator`, `ExpandPromptMutator`, `GuidanceScaleMutator`) now explicitly set `mutatedRequest.workflow` to guard against stale or missing values
