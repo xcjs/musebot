@@ -1,6 +1,8 @@
 ﻿import { jest } from '@jest/globals';
 
 import { BotMode } from '../enums/BotMode.js';
+import { NodeEnvironment } from '../enums/NodeEnvironment.js';
+import { TaskQueueStrategy } from '../enums/TaskQueueStrategy.js';
 import type { IConfigurationService } from '../services/environment-settings/IConfigurationService.js';
 import type { IGlobalConfiguration } from '../services/environment-settings/IGlobalConfiguration.js';
 import type { IBotServiceContainer } from '../services/IBotServiceContainer.js';
@@ -72,19 +74,19 @@ export function createMockGlobalContainer(config?: MockServiceContainerConfig): 
             taskQueue: {
                 numAttempts: 3,
                 retryDelayMs: 100,
-                strategy: 'serial' as any,
+                strategy: TaskQueueStrategy.Serial,
                 forceSerialAcrossHosts: false
             }
         } as IGlobalConfiguration,
         configurationService: {
             packageName: 'musebot',
             version: '8.7.1',
-            nodeEnvironment: 'test' as any,
+            nodeEnvironment: NodeEnvironment.Test,
             botId: 'bot-1',
-            botFunction: BotMode.Chat as any,
+            botFunction: BotMode.Chat,
             maxTaskAttempts: 3,
             taskRetryDelayMilliseconds: 100,
-            taskQueueStrategy: 'serial' as any,
+            taskQueueStrategy: TaskQueueStrategy.Serial,
             taskQueueForceSerialAcrossHosts: false,
             discordToken: 'test-token',
             discordChannels: [],
@@ -128,12 +130,12 @@ export function createMockServiceContainer(config?: MockServiceContainerConfig):
     const configurationService = config?.configurationService ?? {
         packageName: 'musebot',
         version: '8.7.1',
-        nodeEnvironment: 'test' as any,
+        nodeEnvironment: NodeEnvironment.Test,
         botId: 'bot-1',
-        botFunction: BotMode.Chat as any,
+        botFunction: BotMode.Chat,
         maxTaskAttempts: 3,
         taskRetryDelayMilliseconds: 100,
-        taskQueueStrategy: 'serial' as any,
+        taskQueueStrategy: TaskQueueStrategy.Serial,
         taskQueueForceSerialAcrossHosts: false,
         discordToken: 'test-token',
         discordChannels: [],
