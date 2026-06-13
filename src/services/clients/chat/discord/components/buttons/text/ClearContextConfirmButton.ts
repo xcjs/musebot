@@ -7,7 +7,7 @@ import { BaseComponent } from '../../BaseComponent.js';
 
 export class ClearContextConfirmButton extends BaseComponent<ButtonBuilder> {
     override get label(): string {
-        return 'âš ï¸';
+        return '✅';
     }
 
     override get isSupported(): boolean {

@@ -7,7 +7,7 @@ import { BaseComponent } from '../../BaseComponent.js';
 
 export class ExpandPromptButton extends BaseComponent<ButtonBuilder> {
     override get label(): string {
-        return 'ðŸ“ƒ';
+        return '📃';
     }
 
     override get isSupported(): boolean {
