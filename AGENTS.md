@@ -163,6 +163,7 @@ Key settings (from `IBotConfig`):
 | `bots[].ollama.streamsResponse`            | Whether Ollama streams responses                |
 | `bots[].comfyUi.hosts`                     | Array of ComfyUI API URLs                       |
 | `bots[].comfyUiGuidanceScaleInterval`     | Guidance scale adjustment step                  |
+| `bots[].multiModal.randomPrompts`         | Random prompts for the randomize button         |
 | `global.taskQueue.numAttempts`             | Max retry attempts for tasks                    |
 | `global.taskQueue.retryDelayMs`            | Delay between task retries                      |
 | `global.taskQueue.strategy`                | `"parallel"` or `"serial"`                      |

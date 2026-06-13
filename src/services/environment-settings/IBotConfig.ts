@@ -38,8 +38,6 @@ export interface IBotConfig {
 
     comfyUiGuidanceScaleInterval: number;
 
-    comfyUiOllamaPrompts: string[];
-
     multiModal?: {
         randomPrompts: string[];
     };

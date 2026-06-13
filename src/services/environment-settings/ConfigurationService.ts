@@ -104,9 +104,8 @@ export class ConfigurationService implements IConfigurationService {
         return this.#botConfig.comfyUiGuidanceScaleInterval ?? 0.5;
     }
 
-    get comfyUiOllamaPrompts(): string[] {
-        return this.#botConfig.comfyUiOllamaPrompts
-            ?? this.#botConfig.multiModal?.randomPrompts
+    get randomPrompts(): string[] {
+        return this.#botConfig.multiModal?.randomPrompts
             ?? ['Describe something or someone with extraordinary detail.'];
     }
 
@@ -216,7 +215,7 @@ Detected environment variables: ${envVarList}`);
         this.#log.info(`bots[].ollama.systemPrompt: ${this.ollamaSystemPrompt}`);
         this.#log.info(`bots[].ollama.streamsResponse: ${this.ollamaStreamsResponse}`);
 
-        this.#log.info(`bots[].comfyUiOllamaPrompts: ${this.comfyUiOllamaPrompts.join(' | ')}`);
+        this.#log.info(`bots[].multiModal.randomPrompts: ${this.randomPrompts.join(' | ')}`);
 
         this.#log.info('Configuration loaded successfully');
     }

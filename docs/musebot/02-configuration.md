@@ -157,7 +157,7 @@ variables, you need to migrate to JSON configuration. See [Migration Guide](./03
 * **Type:** `Number`
 * **Default:** `0.5`
 
-#### `comfyUiOllamaPrompts`
+#### `multiModal.randomPrompts`
 
 * **Description:** If *both* Ollama and ComfyUI/SwarmUI are configured, this
   provides an array of prompt strings used by the "Randomize" button in the media

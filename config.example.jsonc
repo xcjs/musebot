@@ -169,18 +169,12 @@
       // ComfyUI advanced settings. Optional overrides.
       "comfyUiGuidanceScaleInterval": 0.5,
 
-      // Cross-capable prompts for the randomize button when both ComfyUI
-      // and Ollama APIs are available.
-      // Required: Optional
-      // Type:     Array of string
-      "comfyUiOllamaPrompts": [
-        "Describe something or someone with extraordinary detail."
-      ],
-
       // Multi-modal settings for cross-capable features.
       "multiModal": {
-        // Random prompts used for the randomize button.
+        // Random prompts used for the randomize button when both ComfyUI
+        // and Ollama APIs are available. One will be chosen at random.
         // Required: Optional
+        // Default:  ["Describe something or someone with extraordinary detail."]
         // Type:     Array of string
         "randomPrompts": [
           "Describe something or someone with extraordinary detail."

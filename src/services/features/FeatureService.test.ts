@@ -27,7 +27,7 @@ function createMockConfigurationService(overrides: Partial<IConfigurationService
         taskQueueForceSerialAcrossHosts: false,
         comfyUiHosts: [],
         comfyUiGuidanceScaleInterval: 0.5,
-        comfyUiOllamaPrompts: [],
+        randomPrompts: [],
         ollamaHosts: [],
         ollamaModels: [],
         ollamaSystemPrompt: '',
