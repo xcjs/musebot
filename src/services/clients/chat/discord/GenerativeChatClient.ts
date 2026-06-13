@@ -14,15 +14,15 @@ import { BaseDiscordClient } from './BaseDiscordClient.js';
 import { ChatConfirmClearActionRow } from './components/buttonRows/ChatConfirmClearActionRow.js';
 
 export class GenerativeChatClient extends BaseDiscordClient {
-    #services: IBotServiceContainer;
+    readonly #services: IBotServiceContainer;
 
-    #configurationService: IConfigurationService;
-    #discordClient: DiscordClient;
-    #contextMessageFactory: IContextMessageFactory<DiscordMessage, OllamaMessage>;
-    #contextService: IContextService<DiscordMessage, OllamaMessage>;
-    #typingService: ITypingService;
-    #replyService: IReplyService<DiscordMessage, MessageReaction, Attachment, DiscordMessage | ButtonInteraction>;
-    #taskQueue: ITaskQueue;
+    readonly #configurationService: IConfigurationService;
+    readonly #discordClient: DiscordClient;
+    readonly #contextMessageFactory: IContextMessageFactory<DiscordMessage, OllamaMessage>;
+    readonly #contextService: IContextService<DiscordMessage, OllamaMessage>;
+    readonly #typingService: ITypingService;
+    readonly #replyService: IReplyService<DiscordMessage, MessageReaction, Attachment, DiscordMessage | ButtonInteraction>;
+    readonly #taskQueue: ITaskQueue;
 
     #channelTopicsCached: string[] = [];
 
@@ -70,7 +70,7 @@ export class GenerativeChatClient extends BaseDiscordClient {
 
         this.logger.info('Replying to message...');
         const messageTask = this.#services.getMessageTask(message) as BaseTask<OllamaMessage[]>;
-        this.#taskQueue.add(messageTask);
+        this.#taskQueue.add(messageTask as BaseTask<unknown>);
         await this.#typingService.startTyping(message);
     }
 
@@ -160,7 +160,7 @@ export class GenerativeChatClient extends BaseDiscordClient {
         }
 
         const emojiReactionTask = this.#services.getEmojiReactionTask(reaction, user);
-        this.#taskQueue.add(emojiReactionTask as BaseTask<OllamaMessage[]>);
+        this.#taskQueue.add(emojiReactionTask);
         await this.#typingService.startTyping(reaction.message as DiscordMessage);
     }
 }
