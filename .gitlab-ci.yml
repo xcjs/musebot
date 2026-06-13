@@ -97,23 +97,69 @@ Build Linux Distributable:
     - npm run build:bin
     - rm build/pkg/musebot-win.exe
     - mv build/pkg/musebot-linux build/pkg/musebot-linux-x86_64
-    - cp -f .env.example build/pkg/.env
+    - cp -f config.jsonc build/pkg/config.jsonc
     - cp -rf docs/ build/pkg/docs/
+    - mkdir -p build/pkg/workflows/animetor/txt2img
+    - mkdir -p build/pkg/workflows/chaoartist/txt2img
+    - mkdir -p build/pkg/workflows/composer/txt2music
+    - mkdir -p build/pkg/workflows/director/txt2vid
+    - mkdir -p build/pkg/workflows/dreamshaper/txt2img
+    - mkdir -p build/pkg/workflows/flux/txt2img
+    - mkdir -p build/pkg/workflows/goliath/txt2img
     - mkdir -p build/pkg/workflows/img2img/contextual
-    - mkdir -p build/pkg/workflows/img2vid/
-    - mkdir -p build/pkg/workflows/txt2audio/
-    - mkdir -p build/pkg/workflows/txt2img/
-    - mkdir -p build/pkg/workflows/txt2music/
-    - mkdir -p build/pkg/workflows/txt2vid/
-    - cp -f workflows/production/composer/txt2music/ace-step-1.5.json build/pkg/workflows/txt2music/ace-step-1.5.json
-    - cp -f workflows/production/director/txt2vid/ltx-2.json build/pkg/workflows/txt2vid/ltx-2.json
-    - cp -f workflows/production/dreamshaper/txt2img/general_dreamshaper-xl-turbo.json build/pkg/workflows/txt2img/general_dreamshaper-xl-turbo.json
-    - cp -f workflows/production/flux/txt2img/flux.json build/pkg/workflows/txt2img/flux.json
+    - mkdir -p build/pkg/workflows/img2vid
+    - mkdir -p build/pkg/workflows/pixelator/txt2img
+    - mkdir -p build/pkg/workflows/tallpaperer/txt2img
+    - mkdir -p build/pkg/workflows/txt2audio
+    - mkdir -p build/pkg/workflows/txt2music
+    - mkdir -p build/pkg/workflows/txt2vid
+    - mkdir -p build/pkg/workflows/wallpaperer/txt2img
+    - cp -f workflows/production/animetor/txt2img/anime_anima-pencil.json build/pkg/workflows/animetor/txt2img/anime_anima-pencil.json
+    - cp -f workflows/production/animetor/txt2img/anime_animagineXL.json build/pkg/workflows/animetor/txt2img/anime_animagineXL.json
+    - cp -f workflows/production/animetor/txt2img/anime_envoken-anime-xl-delta.json build/pkg/workflows/animetor/txt2img/anime_envoken-anime-xl-delta.json
+    - cp -f workflows/production/animetor/txt2img/anime_ghost.json build/pkg/workflows/animetor/txt2img/anime_ghost.json
+    - cp -f workflows/production/animetor/txt2img/anime_sublimemix.json build/pkg/workflows/animetor/txt2img/anime_sublimemix.json
+    - cp -f workflows/production/chaoartist/txt2img/cartoon_cheyenne.json build/pkg/workflows/chaoartist/txt2img/cartoon_cheyenne.json
+    - cp -f workflows/production/chaoartist/txt2img/cartoon_real-cartoon.json build/pkg/workflows/chaoartist/txt2img/cartoon_real-cartoon.json
+    - cp -f workflows/production/chaoartist/txt2img/general_cyber-realistic-xl.json build/pkg/workflows/chaoartist/txt2img/general_cyber-realistic-xl.json
+    - cp -f workflows/production/chaoartist/txt2img/general_duchaiten-ai-art.json build/pkg/workflows/chaoartist/txt2img/general_duchaiten-ai-art.json
+    - cp -f workflows/production/chaoartist/txt2img/general_epic-journey-xl.json build/pkg/workflows/chaoartist/txt2img/general_epic-journey-xl.json
+    - cp -f workflows/production/chaoartist/txt2img/general_hot-art.json build/pkg/workflows/chaoartist/txt2img/general_hot-art.json
+    - cp -f workflows/production/chaoartist/txt2img/general_jib-mix-realistic-xl.json build/pkg/workflows/chaoartist/txt2img/general_jib-mix-realistic-xl.json
+    - cp -f workflows/production/chaoartist/txt2img/general_leo-sams-hello-world-xl.json build/pkg/workflows/chaoartist/txt2img/general_leo-sams-hello-world-xl.json
+    - cp -f workflows/production/chaoartist/txt2img/general_new-reality-xl.json build/pkg/workflows/chaoartist/txt2img/general_new-reality-xl.json
+    - cp -f workflows/production/chaoartist/txt2img/general_pixelwave.json build/pkg/workflows/chaoartist/txt2img/general_pixelwave.json
+    - cp -f workflows/production/chaoartist/txt2img/general_real-vis-xl.json build/pkg/workflows/chaoartist/txt2img/general_real-vis-xl.json
+    - cp -f workflows/production/chaoartist/txt2img/general_unstable-diffusers-nihilmania.json build/pkg/workflows/chaoartist/txt2img/general_unstable-diffusers-nihilmania.json
+    - cp -f workflows/production/chaoartist/txt2img/general_unstable-diffusers-run-diffusion.json build/pkg/workflows/chaoartist/txt2img/general_unstable-diffusers-run-diffusion.json
+    - cp -f workflows/production/chaoartist/txt2img/general_wildcard-x-xl-fusion-og.json build/pkg/workflows/chaoartist/txt2img/general_wildcard-x-xl-fusion-og.json
+    - cp -f workflows/production/chaoartist/txt2img/general_wildcard-x-xl-fusion.json build/pkg/workflows/chaoartist/txt2img/general_wildcard-x-xl-fusion.json
+    - cp -f workflows/production/chaoartist/txt2img/general_zavy-chroma-xl.json build/pkg/workflows/chaoartist/txt2img/general_zavy-chroma-xl.json
+    - cp -f workflows/production/chaoartist/txt2img/sd3_large.json build/pkg/workflows/chaoartist/txt2img/sd3_large.json
+    - cp -f workflows/production/chaoartist/txt2img/sd3_medium_1024.json build/pkg/workflows/chaoartist/txt2img/sd3_medium_1024.json
+    - cp -f workflows/production/chaoartist/txt2img/sd3_medium_1440.json build/pkg/workflows/chaoartist/txt2img/sd3_medium_1440.json
+    - cp -f workflows/production/chaoartist/txt2img/svd_dreamshaper.json build/pkg/workflows/chaoartist/txt2img/svd_dreamshaper.json
+    - cp -f workflows/production/composer/txt2music/ace-step-1.5.json build/pkg/workflows/composer/txt2music/ace-step-1.5.json
+    - cp -f workflows/production/composer/txt2music/ace-step-1.5-xl.json build/pkg/workflows/composer/txt2music/ace-step-1.5-xl.json
+    - cp -f workflows/production/director/txt2vid/ltx-2.json build/pkg/workflows/director/txt2vid/ltx-2.json
+    - cp -f workflows/production/dreamshaper/txt2img/general_dreamshaper-xl-turbo.json build/pkg/workflows/dreamshaper/txt2img/general_dreamshaper-xl-turbo.json
+    - cp -f workflows/production/dreamshaper/txt2img/general_juggernaut.json build/pkg/workflows/dreamshaper/txt2img/general_juggernaut.json
+    - cp -f workflows/production/dreamshaper/txt2img/general_midnight.json build/pkg/workflows/dreamshaper/txt2img/general_midnight.json
+    - cp -f workflows/production/flux/txt2img/flux.json build/pkg/workflows/flux/txt2img/flux.json
+    - cp -f workflows/production/flux/txt2img/flux-krea.json build/pkg/workflows/flux/txt2img/flux-krea.json
+    - cp -f workflows/production/goliath/txt2img/flux2-q4_wallpaper.json build/pkg/workflows/goliath/txt2img/flux2-q4_wallpaper.json
+    - cp -f workflows/production/goliath/txt2img/qwen-wallpaperer_desktop_refined_qwen.json build/pkg/workflows/goliath/txt2img/qwen-wallpaperer_desktop_refined_qwen.json
     - cp -f workflows/production/shared/img2img/01-upscale-detail.json build/pkg/workflows/img2img/01-upscale-detail.json
     - cp -f workflows/production/shared/img2img/02-upscale-design.json build/pkg/workflows/img2img/02-upscale-design.json
     - cp -f workflows/production/shared/img2img/03-extract-subject.json build/pkg/workflows/img2img/03-extract-subject.json
     - cp -f workflows/production/shared/img2img/04-wan.json build/pkg/workflows/img2img/04-wan.json
     - cp -f workflows/production/shared/img2img/contextual/kontext.json build/pkg/workflows/img2img/contextual/kontext.json
+    - cp -f workflows/production/pixelator/txt2img/pixel_pixel-mix.json build/pkg/workflows/pixelator/txt2img/pixel_pixel-mix.json
+    - cp -f workflows/production/pixelator/txt2img/pixel_sprite-shaper.json build/pkg/workflows/pixelator/txt2img/pixel_sprite-shaper.json
+    - cp -f workflows/production/tallpaperer/txt2img/tallpaperer_mobile_refined.json build/pkg/workflows/tallpaperer/txt2img/tallpaperer_mobile_refined.json
+    - cp -f workflows/production/tallpaperer/txt2img/tallpaperer_mobile_refined_krea.json build/pkg/workflows/tallpaperer/txt2img/tallpaperer_mobile_refined_krea.json
+    - cp -f workflows/production/wallpaperer/txt2img/wallpaperer_desktop_refined.json build/pkg/workflows/wallpaperer/txt2img/wallpaperer_desktop_refined.json
+    - cp -f workflows/production/wallpaperer/txt2img/wallpaperer_desktop_refined_krea.json build/pkg/workflows/wallpaperer/txt2img/wallpaperer_desktop_refined_krea.json
     - cp -f LICENSE.md build/pkg/LICENSE.txt
     - cp -f logo.jpg build/pkg/musebot.jpg
     - cp -f logo.png build/pkg/musebot.png
@@ -137,23 +183,69 @@ Build Windows Distributable:
     - npm run build:bin
     - mv build/pkg/musebot-win.exe build/pkg/musebot-win-x86_64.exe
     - rm build/pkg/musebot-linux
-    - cp -f .env.example build/pkg/.env
+    - cp -f config.jsonc build/pkg/config.jsonc
     - cp -rf docs/ build/pkg/docs/
+    - mkdir -p build/pkg/workflows/animetor/txt2img
+    - mkdir -p build/pkg/workflows/chaoartist/txt2img
+    - mkdir -p build/pkg/workflows/composer/txt2music
+    - mkdir -p build/pkg/workflows/director/txt2vid
+    - mkdir -p build/pkg/workflows/dreamshaper/txt2img
+    - mkdir -p build/pkg/workflows/flux/txt2img
+    - mkdir -p build/pkg/workflows/goliath/txt2img
     - mkdir -p build/pkg/workflows/img2img/contextual
-    - mkdir -p build/pkg/workflows/img2vid/
-    - mkdir -p build/pkg/workflows/txt2audio/
-    - mkdir -p build/pkg/workflows/txt2img/
-    - mkdir -p build/pkg/workflows/txt2music/
-    - mkdir -p build/pkg/workflows/txt2vid/
-    - cp -f workflows/production/composer/txt2music/ace-step-1.5.json build/pkg/workflows/txt2music/ace-step-1.5.json
-    - cp -f workflows/production/director/txt2vid/ltx-2.json build/pkg/workflows/txt2vid/ltx-2.json
-    - cp -f workflows/production/dreamshaper/txt2img/general_dreamshaper-xl-turbo.json build/pkg/workflows/txt2img/general_dreamshaper-xl-turbo.json
-    - cp -f workflows/production/flux/txt2img/flux.json build/pkg/workflows/txt2img/flux.json
+    - mkdir -p build/pkg/workflows/img2vid
+    - mkdir -p build/pkg/workflows/pixelator/txt2img
+    - mkdir -p build/pkg/workflows/tallpaperer/txt2img
+    - mkdir -p build/pkg/workflows/txt2audio
+    - mkdir -p build/pkg/workflows/txt2music
+    - mkdir -p build/pkg/workflows/txt2vid
+    - mkdir -p build/pkg/workflows/wallpaperer/txt2img
+    - cp -f workflows/production/animetor/txt2img/anime_anima-pencil.json build/pkg/workflows/animetor/txt2img/anime_anima-pencil.json
+    - cp -f workflows/production/animetor/txt2img/anime_animagineXL.json build/pkg/workflows/animetor/txt2img/anime_animagineXL.json
+    - cp -f workflows/production/animetor/txt2img/anime_envoken-anime-xl-delta.json build/pkg/workflows/animetor/txt2img/anime_envoken-anime-xl-delta.json
+    - cp -f workflows/production/animetor/txt2img/anime_ghost.json build/pkg/workflows/animetor/txt2img/anime_ghost.json
+    - cp -f workflows/production/animetor/txt2img/anime_sublimemix.json build/pkg/workflows/animetor/txt2img/anime_sublimemix.json
+    - cp -f workflows/production/chaoartist/txt2img/cartoon_cheyenne.json build/pkg/workflows/chaoartist/txt2img/cartoon_cheyenne.json
+    - cp -f workflows/production/chaoartist/txt2img/cartoon_real-cartoon.json build/pkg/workflows/chaoartist/txt2img/cartoon_real-cartoon.json
+    - cp -f workflows/production/chaoartist/txt2img/general_cyber-realistic-xl.json build/pkg/workflows/chaoartist/txt2img/general_cyber-realistic-xl.json
+    - cp -f workflows/production/chaoartist/txt2img/general_duchaiten-ai-art.json build/pkg/workflows/chaoartist/txt2img/general_duchaiten-ai-art.json
+    - cp -f workflows/production/chaoartist/txt2img/general_epic-journey-xl.json build/pkg/workflows/chaoartist/txt2img/general_epic-journey-xl.json
+    - cp -f workflows/production/chaoartist/txt2img/general_hot-art.json build/pkg/workflows/chaoartist/txt2img/general_hot-art.json
+    - cp -f workflows/production/chaoartist/txt2img/general_jib-mix-realistic-xl.json build/pkg/workflows/chaoartist/txt2img/general_jib-mix-realistic-xl.json
+    - cp -f workflows/production/chaoartist/txt2img/general_leo-sams-hello-world-xl.json build/pkg/workflows/chaoartist/txt2img/general_leo-sams-hello-world-xl.json
+    - cp -f workflows/production/chaoartist/txt2img/general_new-reality-xl.json build/pkg/workflows/chaoartist/txt2img/general_new-reality-xl.json
+    - cp -f workflows/production/chaoartist/txt2img/general_pixelwave.json build/pkg/workflows/chaoartist/txt2img/general_pixelwave.json
+    - cp -f workflows/production/chaoartist/txt2img/general_real-vis-xl.json build/pkg/workflows/chaoartist/txt2img/general_real-vis-xl.json
+    - cp -f workflows/production/chaoartist/txt2img/general_unstable-diffusers-nihilmania.json build/pkg/workflows/chaoartist/txt2img/general_unstable-diffusers-nihilmania.json
+    - cp -f workflows/production/chaoartist/txt2img/general_unstable-diffusers-run-diffusion.json build/pkg/workflows/chaoartist/txt2img/general_unstable-diffusers-run-diffusion.json
+    - cp -f workflows/production/chaoartist/txt2img/general_wildcard-x-xl-fusion-og.json build/pkg/workflows/chaoartist/txt2img/general_wildcard-x-xl-fusion-og.json
+    - cp -f workflows/production/chaoartist/txt2img/general_wildcard-x-xl-fusion.json build/pkg/workflows/chaoartist/txt2img/general_wildcard-x-xl-fusion.json
+    - cp -f workflows/production/chaoartist/txt2img/general_zavy-chroma-xl.json build/pkg/workflows/chaoartist/txt2img/general_zavy-chroma-xl.json
+    - cp -f workflows/production/chaoartist/txt2img/sd3_large.json build/pkg/workflows/chaoartist/txt2img/sd3_large.json
+    - cp -f workflows/production/chaoartist/txt2img/sd3_medium_1024.json build/pkg/workflows/chaoartist/txt2img/sd3_medium_1024.json
+    - cp -f workflows/production/chaoartist/txt2img/sd3_medium_1440.json build/pkg/workflows/chaoartist/txt2img/sd3_medium_1440.json
+    - cp -f workflows/production/chaoartist/txt2img/svd_dreamshaper.json build/pkg/workflows/chaoartist/txt2img/svd_dreamshaper.json
+    - cp -f workflows/production/composer/txt2music/ace-step-1.5.json build/pkg/workflows/composer/txt2music/ace-step-1.5.json
+    - cp -f workflows/production/composer/txt2music/ace-step-1.5-xl.json build/pkg/workflows/composer/txt2music/ace-step-1.5-xl.json
+    - cp -f workflows/production/director/txt2vid/ltx-2.json build/pkg/workflows/director/txt2vid/ltx-2.json
+    - cp -f workflows/production/dreamshaper/txt2img/general_dreamshaper-xl-turbo.json build/pkg/workflows/dreamshaper/txt2img/general_dreamshaper-xl-turbo.json
+    - cp -f workflows/production/dreamshaper/txt2img/general_juggernaut.json build/pkg/workflows/dreamshaper/txt2img/general_juggernaut.json
+    - cp -f workflows/production/dreamshaper/txt2img/general_midnight.json build/pkg/workflows/dreamshaper/txt2img/general_midnight.json
+    - cp -f workflows/production/flux/txt2img/flux.json build/pkg/workflows/flux/txt2img/flux.json
+    - cp -f workflows/production/flux/txt2img/flux-krea.json build/pkg/workflows/flux/txt2img/flux-krea.json
+    - cp -f workflows/production/goliath/txt2img/flux2-q4_wallpaper.json build/pkg/workflows/goliath/txt2img/flux2-q4_wallpaper.json
+    - cp -f workflows/production/goliath/txt2img/qwen-wallpaperer_desktop_refined_qwen.json build/pkg/workflows/goliath/txt2img/qwen-wallpaperer_desktop_refined_qwen.json
     - cp -f workflows/production/shared/img2img/01-upscale-detail.json build/pkg/workflows/img2img/01-upscale-detail.json
     - cp -f workflows/production/shared/img2img/02-upscale-design.json build/pkg/workflows/img2img/02-upscale-design.json
     - cp -f workflows/production/shared/img2img/03-extract-subject.json build/pkg/workflows/img2img/03-extract-subject.json
     - cp -f workflows/production/shared/img2img/04-wan.json build/pkg/workflows/img2img/04-wan.json
     - cp -f workflows/production/shared/img2img/contextual/kontext.json build/pkg/workflows/img2img/contextual/kontext.json
+    - cp -f workflows/production/pixelator/txt2img/pixel_pixel-mix.json build/pkg/workflows/pixelator/txt2img/pixel_pixel-mix.json
+    - cp -f workflows/production/pixelator/txt2img/pixel_sprite-shaper.json build/pkg/workflows/pixelator/txt2img/pixel_sprite-shaper.json
+    - cp -f workflows/production/tallpaperer/txt2img/tallpaperer_mobile_refined.json build/pkg/workflows/tallpaperer/txt2img/tallpaperer_mobile_refined.json
+    - cp -f workflows/production/tallpaperer/txt2img/tallpaperer_mobile_refined_krea.json build/pkg/workflows/tallpaperer/txt2img/tallpaperer_mobile_refined_krea.json
+    - cp -f workflows/production/wallpaperer/txt2img/wallpaperer_desktop_refined.json build/pkg/workflows/wallpaperer/txt2img/wallpaperer_desktop_refined.json
+    - cp -f workflows/production/wallpaperer/txt2img/wallpaperer_desktop_refined_krea.json build/pkg/workflows/wallpaperer/txt2img/wallpaperer_desktop_refined_krea.json
     - cp -f LICENSE.md build/pkg/LICENSE.txt
     - cp -f logo.jpg build/pkg/musebot.jpg
     - cp -f logo.png build/pkg/musebot.png
