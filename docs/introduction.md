@@ -61,25 +61,29 @@ running:
 1. Download the
    [latest Musebot release](https://discord.com/channels/198965819978416128/1342750267749302362).
 2. Extract the files into a new, empty directory.
-3. Copy `.env.example` to `.env`.
+3. Copy `config.example.jsonc` to `config.jsonc`.
 
 ---
 
-### **Step 3: Configure `.env`**
+### **Step 3: Configure `config.jsonc`**
 
-Edit your new `.env` file and set the following **required** variables:
+Edit your new `config.jsonc` file and set the following **required** properties.
+See the [Configuration](musebot/02-configuration.md) reference for all options.
 
-#### 1. Bot Function
+#### 1. Bot Mode
 
-```properties
-MUSEBOT_FUNCTION=chat
+```jsonc
+{
+  "bots": [
+    {
+      "botId": "bot-1",
+      "mode": "chat"
+    }
+  ]
+}
 ```
 
-or
-
-```properties
-MUSEBOT_FUNCTION=media
-```
+Set `mode` to `"chat"` for LLM chat or `"media"` for media generation.
 
 #### 2. Discord Setup
 
@@ -87,23 +91,29 @@ MUSEBOT_FUNCTION=media
   [Discord Developer Portal](https://discord.com/developers/applications).
 * Copy your bot's token and set:
 
-    ```properties
-    MUSEBOT_DISCORD_TOKEN=your_bot_token_here
+    ```jsonc
+    "discord": {
+      "token": "your_bot_token_here"
+    }
     ```
 
 #### 3. Configure Your Integration
 
-* **For `MUSEBOT_FUNCTION=chat`:**
+* **For `mode: "chat"`:**
 
-    ```properties
-    MUSEBOT_OLLAMA_HOSTS=http://localhost:11434/
-    MUSEBOT_OLLAMA_MODELS=mistral-nemo
+    ```jsonc
+    "ollama": {
+      "hosts": ["http://localhost:11434"],
+      "models": ["mistral-nemo"]
+    }
     ```
 
-* **For `MUSEBOT_FUNCTION=media`:**
+* **For `mode: "media"`:**
 
-    ```properties
-    MUSEBOT_STABLE_DIFFUSION_HOSTS=http://localhost:7801/ComfyBackendDirect
+    ```jsonc
+    "comfyUi": {
+      "hosts": ["http://localhost:7801/ComfyBackendDirect"]
+    }
     ```
 
 ---

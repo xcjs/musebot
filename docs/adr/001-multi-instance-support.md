@@ -82,15 +82,15 @@ signatures.
 - Validation: Throw `Error('No workflows found in bot workflow directory.')` if directory exists but contains no workflows
 - Conditional validation: Only apply workflow validation when `stableDiffusionHosts.length > 0`
 - Sharing: Multiple bots with the same `botId` share the same workflow directory
-- Backward compatibility: .env-based configuration (no botId) falls back to `./workflows/` without bot prefix
+- Backward compatibility: Configuration is handled via `config.jsonc` — no `.env` fallback
 
 **Implementation:**
 1. Add `botId: string` field to `IBotConfig` interface
 2. Add `botId: string | null` to `IGlobalSettings` interface
-3. Add `botId: string | null` property to `IEnvironmentSettings`
-4. Update `EnvironmentSettings` constructor to accept `botId` parameter
+3. Add `botId: string | null` property to `IConfigurationService`
+4. Update `ConfigurationService` constructor to accept `botId` parameter
 5. Update `IBotServiceContainer` interface
-6. Update `BotServiceContainer` to pass `botId` from config to `EnvironmentSettings`
+6. Update `BotServiceContainer` to pass `botId` from config to `ConfigurationService`
 7. Update `WorkflowService` constructor to accept `botId` parameter
 8. Update `WorkflowService.loadWorkflows()` to:
    - Use `./workflows/` as base path
@@ -110,7 +110,7 @@ signatures.
   - Centralized resource management (e.g., a single `TaskQueue` for all bots).
   - Clear separation between global and instance-level concerns.
   - Isolated workflow directories per bot while allowing shared workflows when needed.
-  - Full backward compatibility with .env-based configuration.
+  - Full configuration via `config.jsonc` (`.env` support has been removed)
 - **Negative:**
   - Significant refactoring of the DI chain across almost all services.
   - Increased complexity in the bootstrapping process.
@@ -120,12 +120,10 @@ signatures.
 ### Phase 1: Configuration Refactor
 
 - [x] Define `IBotConfig` interface that matches the structure of
-  `IEnvironmentSettings`.
-- [x] Create a `ConfigLoader` utility to handle reading `config.json` or falling
-  back to `process.env`.
-- [x] Refactor `EnvironmentSettings` to accept a config source in its
+  `IConfigurationService`.
+- [x] Create a `ConfigLoader` utility that reads `config.json` or `config.jsonc`.
+- [x] Refactor `ConfigurationService` to accept a config source in its
   constructor.
-- [x] Update `EnvironmentSettings.test.ts`.
 
 ### Phase 2: Container Restructuring
 
@@ -142,9 +140,9 @@ signatures.
 
 ### Phase 4: Verification & Cleanup
 
-- [x] Verify backward compatibility (env vars) — `EnvironmentSettings` falls
-  back to `process.env` when config is absent.
-- [x] Verify multi-instance support (`config.json`) — `app.ts` iterates over
+- [x] Verify config.jsonc support — `ConfigLoader` reads `config.json` or
+  `config.jsonc` and `ConfigurationService` validates at startup.
+- [x] Verify multi-instance support (`config.jsonc`) — `app.ts` iterates over
   all bot configs via `forEach` loop.
 - [x] Add workflow directory support for multiple bots
 - [x] Verify that the build still works (`npm run build`) — Build succeeds

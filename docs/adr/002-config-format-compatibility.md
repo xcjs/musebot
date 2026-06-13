@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed
+Superseded by [ADR 003](./003-drop-env-support.md) — `.env` support has been removed. This ADR is retained for historical reference only.
 
 ## Context
 

@@ -28,7 +28,7 @@ src/                          # TypeScript source
     ServiceContainer.ts       # IoC container — central DI; wires all singletons, transients, factories
     IServiceContainer.ts      # Interface for the service container
     Logger.ts / ILogger.ts    # Timestamped prefix logger with debug/info/warn/error levels
-    environment-settings/     # Reads .env via dotenv, exposes typed config (IEnvironmentSettings)
+    environment-settings/     # Loads config.jsonc, exposes typed config (IConfigurationService)
     features/                 # FeatureService — probes Ollama + ComfyUI to detect supported features
     help/                     # Help text generation (BaseHelpService, IHelpService)
     parallelization/          # Task execution strategies (ParallelStrategy, SerialStrategy)
@@ -139,32 +139,33 @@ The `BotFunction` enum determines mode at startup:
 - **`Dockerfile`** — Multi-stage: builds pkg binary on Node 24, copies to
   Debian slim for production
 - **`Dockerfile.dist`** — Simpler distribution image for pre-built binaries
-- **`docker-compose.yml`** — Runs container with `.env` file and `workflows/`
-  volume mount
+- **`docker-compose.yml`** — Runs container with `config.jsonc` file and
+  `workflows/` volume mount
 
 ## Configuration
 
-All configuration is via environment variables loaded from `.env` by
-`dotenv`. Key settings (from `IEnvironmentSettings`):
+All configuration is via `config.jsonc` (or `config.json`) loaded at startup.
+Key settings (from `IBotConfig`):
 
-| Variable                                   | Purpose                                         |
+| Property                                   | Purpose                                         |
 | ------------------------------------------ | ----------------------------------------------- |
-| `NODE_ENV`                                 | `development` or `production`                   |
-| `BOT_FUNCTION`                             | `chat` or `media` — determines bot mode         |
-| `DISCORD_TOKEN`                            | Discord bot token                               |
-| `DISCORD_CHANNELS`                         | Comma-separated allowed channel IDs             |
-| `DISCORD_CHANNELS_DISALLOWED`              | Comma-separated disallowed channel IDs          |
-| `BOT_REQUIRES_MENTION`                     | Whether the bot requires an @mention to respond |
-| `BOT_RESPONSE_RATE`                        | Response probability percentage                 |
-| `OLLAMA_HOSTS`                             | Comma-separated Ollama API URLs                 |
-| `OLLAMA_MODELS`                            | Comma-separated Ollama model names              |
-| `OLLAMA_SYSTEM_PROMPT`                     | System prompt for LLM conversations             |
-| `OLLAMA_STREAMS_RESPONSE`                  | Whether Ollama streams responses                |
-| `STABLE_DIFFUSION_HOSTS`                   | Comma-separated ComfyUI API URLs                |
-| `STABLE_DIFFUSION_GUIDANCE_SCALE_INTERVAL` | Guidance scale adjustment step                  |
-| `MAX_TASK_ATTEMPTS`                        | Max retry attempts for tasks                    |
-| `TASK_RETRY_DELAY_MILLISECONDS`            | Delay between task retries                      |
-| `TASK_QUEUE_STRATEGY`                      | `parallel` or `serial`                          |
+| `bots[].botId`                             | Unique bot instance identifier                  |
+| `bots[].mode`                              | `"chat"` or `"media"` — determines bot mode    |
+| `bots[].nodeEnvironment`                   | `"development"` or `"production"`               |
+| `bots[].discord.token`                     | Discord bot token                               |
+| `bots[].discord.channels`                  | Array of allowed channel IDs                    |
+| `bots[].discord.channelsDisallowed`        | Array of disallowed channel IDs                 |
+| `bots[].requiresMention`                  | Whether the bot requires an @mention to respond |
+| `bots[].responseRate`                      | Response probability percentage                 |
+| `bots[].ollama.hosts`                      | Array of Ollama API URLs                        |
+| `bots[].ollama.models`                     | Array of Ollama model names                     |
+| `bots[].ollama.systemPrompt`               | System prompt for LLM conversations             |
+| `bots[].ollama.streamsResponse`            | Whether Ollama streams responses                |
+| `bots[].comfyUi.hosts`                     | Array of ComfyUI API URLs                       |
+| `bots[].comfyUiGuidanceScaleInterval`     | Guidance scale adjustment step                  |
+| `global.taskQueue.numAttempts`             | Max retry attempts for tasks                    |
+| `global.taskQueue.retryDelayMs`            | Delay between task retries                      |
+| `global.taskQueue.strategy`                | `"parallel"` or `"serial"`                      |
 
 ## Testing
 
