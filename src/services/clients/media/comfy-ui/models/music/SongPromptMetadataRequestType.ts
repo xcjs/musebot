@@ -14,7 +14,7 @@ export const songPromptMetadataRequestData: IStructuredRequestData = {
                 type: 'array',
                 description: 'Tags are for terms or phrases that describe the song genre(s), mood, instruments, vocals, vocal gender, pitch, and more. ' +
                     'Anything goes, and use a lot of detail. If the prompt already includes tags, include all of them. ' +
-                    'You may add additional tags if you choose to. All tags should relate to musical terminology.' +
+                    'You may add additional tags if you choose to. All tags should relate to musical terminology. ' +
                     'Do not include lyrics in the song tags - they go in the lyrics property.',
                 items: {
                     type: 'string'
@@ -24,7 +24,7 @@ export const songPromptMetadataRequestData: IStructuredRequestData = {
                 type: 'string',
                 description: 'Song lyrics with verses for the provided prompt. '
                     + 'Verses can be marked up with [intro], [verse], [bridge], [chorus], or [outro] tags before each verse. '
-                    + 'Instrument hints or song instructions can be included in parentheses, such as (guitar solo).'
+                    + 'Instrument hints or song instructions can be included in parentheses, such as (guitar solo). '
                     + 'Do not include lyrics in the song tags - they go here.'
             },
             keyScale: {
