@@ -53,7 +53,7 @@ src/                          # TypeScript source
 workflows/                    # ComfyUI workflow JSON files organized by type
   txt2img/, txt2vid/, txt2music/, txt2audio/
   img2img/, img2vid/
-  production/                 # Named production workflow presets
+  examples/                   # Example workflow presets
 build/                        # Build outputs (tsc, parcel bundle, pkg binaries, SEA)
 docs/                         # End-user documentation (Markdown, built with sitedown)
 coverage/                     # Jest coverage reports
@@ -205,6 +205,6 @@ Tests are excluded from the TypeScript compilation via `tsconfig.json`
 
 ComfyUI workflow JSON files live under `workflows/` and are loaded at runtime
 by `WorkflowService`. They are organized by generation type (`txt2img`,
-`img2img`, `txt2vid`, etc.) with named production presets under
-`workflows/production/`. The `workflows/` directory is volume-mounted in Docker
+`img2img`, `txt2vid`, etc.) with example presets under
+`workflows/examples/`. The `workflows/` directory is volume-mounted in Docker
 for runtime customization.
