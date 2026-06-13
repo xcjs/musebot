@@ -149,7 +149,7 @@ services:
     build: .
     restart: unless-stopped
     volumes:
-      - ./config.jsonc:/app/config.json
+      - ./config.jsonc:/app/config.jsonc
       - ./workflows:/app/workflows
 ```
 
