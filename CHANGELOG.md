@@ -10,6 +10,8 @@ All notable changes to Musebot are documented in this file.
 - Removed unnecessary `as` typecasts in `mockBotServiceContainer` (`IGlobalConfiguration`, `IConfigurationService`, `IParallelizationStrategy`)
 - Removed `isChild` parameter from `IGlobalServiceContainer.getTaskChannelPostProcessor` — it was declared in the interface but never passed or used by any caller
 - `BotServiceContainer.getTaskChannelPostProcessor` now accepts `isChild` per the `IBotServiceContainer` interface signature (currently unused, marked with eslint-disable)
+- Consolidated `comfyUiOllamaPrompts` config property into `multiModal.randomPrompts` — the old top-level `comfyUiOllamaPrompts` key on `IBotConfig` has been removed in favor of `multiModal.randomPrompts`
+- Consolidated `discord` config property into `chatApis.discord` — the old top-level `discord` key on `IBotConfig` has been removed; `channelsDisallowed` is now under `chatApis.discord`; `chatApis` is now required (non-optional)
 
 ### Removed
 
