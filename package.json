@@ -3,7 +3,7 @@
   "version": "9.0.0",
   "description": "A Discord bot that connects to various generative AI APIs.",
   "private": "true",
-  "license": "XCJS Software License Agreement",
+  "license": "AGPL-3.0",
   "author": {
     "name": "Zackary Lowery",
     "email": "zlowery@xcjs.com",

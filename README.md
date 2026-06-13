@@ -171,4 +171,4 @@ Full end-user documentation is available in the
 
 ## License
 
-Proprietary — see [LICENSE.md](LICENSE.md).
+AGPL-3.0 — see [LICENSE](LICENSE).
