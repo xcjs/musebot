@@ -121,8 +121,11 @@ export class ConfigurationService implements IConfigurationService {
     }
 
     get ollamaSystemPrompt(): string {
-        return this.#botConfig.ollama?.systemPrompt
-            || '';
+        const prompt = this.#botConfig.ollama?.systemPrompt;
+        if (Array.isArray(prompt)) {
+            return prompt.join('\n');
+        }
+        return prompt || '';
     }
 
     get ollamaStreamsResponse(): boolean {

@@ -293,6 +293,24 @@ describe('ConfigurationService', () => {
             expect(service.ollamaStreamsResponse).toBe(false);
         });
 
+        it('should join system prompt array with newlines', () => {
+            const configWithArrayPrompt = {
+                ...validChatBotConfig,
+                ollama: {
+                    ...validChatBotConfig.ollama,
+                    systemPrompt: ['You are a helpful assistant.', 'Always be concise.', 'Never hallucinate.']
+                }
+            };
+
+            (ConfigLoader.load as jest.Mock).mockReturnValue({
+                global: globalConfig,
+                bots: [configWithArrayPrompt]
+            });
+
+            const service = new ConfigurationService(configWithArrayPrompt as unknown as IBotConfig);
+            expect(service.ollamaSystemPrompt).toBe('You are a helpful assistant.\nAlways be concise.\nNever hallucinate.');
+        });
+
         it('should have applicationName', () => {
             (ConfigLoader.load as jest.Mock).mockReturnValue({
                 global: globalConfig,

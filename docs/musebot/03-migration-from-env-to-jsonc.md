@@ -36,36 +36,11 @@ Create a new `config.jsonc` file in your project root. You can use `config.json`
 ```jsonc
 {
   "global": {
-    "nodeEnvironment": "production",
-    "botId": "bot-1",
-    "botResponseRate": 100,
-    "mode": "chat",
     "taskQueue": {
       "numAttempts": 10,
       "retryDelayMs": 1000,
       "strategy": "serial",
       "forceSerialAcrossHosts": false
-    },
-    "discord": {
-      "token": "YOUR_DISCORD_BOT_TOKEN_HERE",
-      "channels": ["YOUR_CHANNEL_ID_1"],
-      "privateMessageUsers": ["USER_ID_1"]
-    },
-    "chatApis": {
-      "discord": {
-        "token": "YOUR_DISCORD_BOT_TOKEN_HERE",
-        "channels": ["YOUR_CHANNEL_ID_2"],
-        "privateMessageUsers": ["USER_ID_2"]
-      }
-    },
-    "ollama": {
-      "hosts": ["http://localhost:11434"],
-      "models": ["llama2", "mistral"],
-      "systemPrompt": "You are a helpful assistant",
-      "streamsResponse": false
-    },
-    "comfyUi": {
-      "hosts": []
     }
   },
   "bots": [
@@ -73,17 +48,12 @@ Create a new `config.jsonc` file in your project root. You can use `config.json`
       "botId": "bot-1",
       "nodeEnvironment": "production",
       "mode": "chat",
+      "requiresMention": true,
+      "responseRate": 100,
       "discord": {
         "token": "YOUR_DISCORD_BOT_TOKEN_HERE",
         "channels": ["YOUR_CHANNEL_ID_1"],
         "privateMessageUsers": ["USER_ID_1"]
-      },
-      "chatApis": {
-        "discord": {
-          "token": "YOUR_DISCORD_BOT_TOKEN_HERE",
-          "channels": ["YOUR_CHANNEL_ID_2"],
-          "privateMessageUsers": ["USER_ID_2"]
-        }
       },
       "ollama": {
         "hosts": ["http://localhost:11434"],
@@ -93,7 +63,9 @@ Create a new `config.jsonc` file in your project root. You can use `config.json`
       },
       "comfyUi": {
         "hosts": []
-      }
+      },
+      "comfyUiGuidanceScaleInterval": 0.5,
+      "comfyUiOllamaPrompts": []
     }
   ]
 }
@@ -104,36 +76,11 @@ Create a new `config.jsonc` file in your project root. You can use `config.json`
 ```jsonc
 {
   "global": {
-    "nodeEnvironment": "production",
-    "botId": "bot-1",
-    "botResponseRate": 100,
-    "mode": "media",
     "taskQueue": {
       "numAttempts": 10,
       "retryDelayMs": 1000,
       "strategy": "serial",
       "forceSerialAcrossHosts": false
-    },
-    "discord": {
-      "token": "YOUR_DISCORD_BOT_TOKEN_HERE",
-      "channels": ["YOUR_CHANNEL_ID_1"],
-      "privateMessageUsers": ["USER_ID_1"]
-    },
-    "chatApis": {
-      "discord": {
-        "token": "YOUR_DISCORD_BOT_TOKEN_HERE",
-        "channels": ["YOUR_CHANNEL_ID_2"],
-        "privateMessageUsers": ["USER_ID_2"]
-      }
-    },
-    "ollama": {
-      "hosts": ["http://localhost:11434"],
-      "models": [],
-      "systemPrompt": "You are a helpful assistant",
-      "streamsResponse": false
-    },
-    "comfyUi": {
-      "hosts": ["http://localhost:8188"]
     }
   },
   "bots": [
@@ -141,17 +88,12 @@ Create a new `config.jsonc` file in your project root. You can use `config.json`
       "botId": "bot-1",
       "nodeEnvironment": "production",
       "mode": "media",
+      "requiresMention": true,
+      "responseRate": 100,
       "discord": {
         "token": "YOUR_DISCORD_BOT_TOKEN_HERE",
         "channels": ["YOUR_CHANNEL_ID_1"],
         "privateMessageUsers": ["USER_ID_1"]
-      },
-      "chatApis": {
-        "discord": {
-          "token": "YOUR_DISCORD_BOT_TOKEN_HERE",
-          "channels": ["YOUR_CHANNEL_ID_2"],
-          "privateMessageUsers": ["USER_ID_2"]
-        }
       },
       "ollama": {
         "hosts": ["http://localhost:11434"],
@@ -161,7 +103,9 @@ Create a new `config.jsonc` file in your project root. You can use `config.json`
       },
       "comfyUi": {
         "hosts": ["http://localhost:8188"]
-      }
+      },
+      "comfyUiGuidanceScaleInterval": 0.5,
+      "comfyUiOllamaPrompts": []
     }
   ]
 }
@@ -171,23 +115,37 @@ Create a new `config.jsonc` file in your project root. You can use `config.json`
 
 | .env Variable (Old) | config.jsonc Property (New) | Type | Required |
 |---------------------|-----------------------------|------|----------|
-| `MUSEBOT_FUNCTION` | `global.mode` / `bots[].mode` | enum | Yes |
-| `MUSEBOT_DISCORD_TOKEN` | `global.discord.token` / `bots[].discord.token` | string | Yes |
-| `MUSEBOT_DISCORD_CHANNELS` | `global.discord.channels` / `bots[].discord.channels` | string[] | No |
-| `MUSEBOT_DISCORD_CHANNELS_DISALLOWED` | `global.discord.privateMessageUsers` / `bots[].discord.privateMessageUsers` | string[] | No |
-| `MUSEBOT_OLLAMA_HOSTS` | `global.ollama.hosts` / `bots[].ollama.hosts` | string[] | Yes (chat mode) |
-| `MUSEBOT_OLLAMA_MODELS` | `global.ollama.models` / `bots[].ollama.models` | string[] | No (chat mode) |
-| `MUSEBOT_OLLAMA_SYSTEM_PROMPT` | `global.ollama.systemPrompt` / `bots[].ollama.systemPrompt` | string | Yes |
-| `MUSEBOT_OLLAMA_STREAMS_RESPONSE` | `global.ollama.streamsResponse` / `bots[].ollama.streamsResponse` | boolean | No |
+| `MUSEBOT_FUNCTION` | `bots[].mode` | enum | Yes |
+| `MUSEBOT_DISCORD_TOKEN` | `bots[].discord.token` | string | Yes |
+| `MUSEBOT_DISCORD_CHANNELS` | `bots[].discord.channels` | string[] | No |
+| `MUSEBOT_DISCORD_CHANNELS_DISALLOWED` | `bots[].discord.channelsDisallowed` | string[] | No |
+| `MUSEBOT_REQUIRES_MENTION` | `bots[].requiresMention` | boolean | No |
+| `MUSEBOT_RESPONSE_RATE` | `bots[].responseRate` | number | No |
+| `MUSEBOT_PRIVATE_MESSAGE_USERS` | `bots[].discord.privateMessageUsers` | string[] | No |
+| `MUSEBOT_ERROR_MESSAGE` | `bots[].errorMessage` | string | No |
+| `MUSEBOT_OLLAMA_HOSTS` | `bots[].ollama.hosts` | string[] | Yes (chat mode) |
+| `MUSEBOT_OLLAMA_MODELS` | `bots[].ollama.models` | string[] | No (chat mode) |
+| `MUSEBOT_OLLAMA_SYSTEM_PROMPT` | `bots[].ollama.systemPrompt` | string or string[] | No |
+| `MUSEBOT_OLLAMA_STREAMS_RESPONSE` | `bots[].ollama.streamsResponse` | boolean | No |
+| `MUSEBOT_STABLE_DIFFUSION_HOSTS` | `bots[].comfyUi.hosts` | string[] | Yes (media mode) |
+| `MUSEBOT_STABLE_DIFFUSION_GUIDANCE_SCALE_INTERVAL` | `bots[].comfyUiGuidanceScaleInterval` | number | No |
+| `MUSEBOT_STABLE_DIFFUSION_OLLAMA_PROMPTS` | `bots[].comfyUiOllamaPrompts` | string[] | No |
 | `MUSEBOT_MAX_TASK_ATTEMPTS` | `global.taskQueue.numAttempts` / `bots[].taskQueue.numAttempts` | number | No |
 | `MUSEBOT_TASK_RETRY_DELAY_MILLISECONDS` | `global.taskQueue.retryDelayMs` / `bots[].taskQueue.retryDelayMs` | number | No |
 | `MUSEBOT_TASK_QUEUE_STRATEGY` | `global.taskQueue.strategy` / `bots[].taskQueue.strategy` | enum | No |
 | `MUSEBOT_TASK_QUEUE_FORCE_SERIAL_ACROSS_HOSTS` | `global.taskQueue.forceSerialAcrossHosts` / `bots[].taskQueue.forceSerialAcrossHosts` | boolean | No |
 
 **Notes:**
-- `MUSEBOT_MAX_TASK_ATTEMPTS`, `MUSEBOT_TASK_RETRY_DELAY_MILLISECONDS`, `MUSEBOT_TASK_QUEUE_STRATEGY`, and `MUSEBOT_TASK_QUEUE_FORCE_SERIAL_ACROSS_HOSTS` are now per-bot settings under `taskQueue`.
-- `MUSEBOT_DISCORD_CHANNELS_DISALLOWED` maps to `privateMessageUsers` in Discord configuration.
-- `MUSEBOT_OLLAMA_STREAMS_RESPONSE` maps to `streamsResponse` under `ollama` configuration.
+- `MUSEBOT_OLLAMA_SYSTEM_PROMPT` can be a `string` or `string[]`. When an array is provided, the entries are joined with newlines to form a single prompt. This allows large system prompts to be broken into multiple strings for legibility:
+  ```jsonc
+  "systemPrompt": [
+    "You are a helpful assistant.",
+    "Always be concise and clear.",
+    "Never hallucinate information."
+  ]
+  ```
+  This is equivalent to: `"You are a helpful assistant.\nAlways be concise and clear.\nNever hallucinate information."`
+- `MUSEBOT_MAX_TASK_ATTEMPTS`, `MUSEBOT_TASK_RETRY_DELAY_MILLISECONDS`, `MUSEBOT_TASK_QUEUE_STRATEGY`, and `MUSEBOT_TASK_QUEUE_FORCE_SERIAL_ACROSS_HOSTS` can be set globally in `global.taskQueue` or overridden per-bot in `bots[].taskQueue`.
 
 ### Step 4: Verify Configuration
 
@@ -249,7 +207,7 @@ node dist/app.js
 
 ## Complete Configuration Reference
 
-For a comprehensive reference on all configuration options, see: `docs/configuration.md`
+For a comprehensive reference on all configuration options, see: [Configuration](./02-configuration.md)
 
 ## Troubleshooting
 
@@ -274,7 +232,7 @@ This shouldn't happen anymore, but if you see the FATAL ERROR with detected `MUS
 ### Missing required properties
 
 Check that all properties defined in your `mode` (chat or media) are present:
-- **Chat mode**: `ollama.hosts`, `ollama.systemPrompt`, and `discord.token`
+- **Chat mode**: `ollama.hosts` and `discord.token`
 - **Media mode**: `comfyUi.hosts` and `discord.token`
 
 ## Support
@@ -283,5 +241,5 @@ If you encounter issues during migration:
 
 1. Check the error message - it should be very specific about what's wrong
 2. Review the examples in `config.example.jsonc` as a reference
-3. Consult `docs/configuration.md` for detailed configuration documentation
+3. Consult [Configuration](./02-configuration.md) for detailed configuration documentation
 4. Open an issue on the project repository

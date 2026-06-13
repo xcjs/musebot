@@ -32,7 +32,7 @@ export interface IBotConfig {
     ollama: {
         hosts: string[];
         models: string[];
-        systemPrompt: string;
+        systemPrompt: string | string[];
         streamsResponse: boolean;
     };
 
