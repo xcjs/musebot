@@ -161,8 +161,8 @@ new workflow JSON files and restart.
 
 ## Documentation
 
-Full end-user documentation is available in the
-[docs](docs/introduction.md), including:
+Full end-user documentation is available online at [musebot.docs.xcjs.com](https://musebot.docs.xcjs.com/) or in the
+[docs](docs/introduction.md) directory, including:
 
 - [Configuration Reference](docs/musebot/02-configuration.md)
 - [Ollama Integration](docs/chat/01-ollama.md)
