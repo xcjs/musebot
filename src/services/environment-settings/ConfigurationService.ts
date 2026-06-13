@@ -100,20 +100,14 @@ export class ConfigurationService implements IConfigurationService {
             || []).map(x => new URL(x));
     }
 
-    get stableDiffusionHosts(): URL[] {
-        return (this.#botConfig.stableDiffusion?.hosts
-            || []).map(x => new URL(x));
+    get comfyUiGuidanceScaleInterval(): number {
+        return this.#botConfig.comfyUiGuidanceScaleInterval ?? 0.5;
     }
 
-    get stableDiffusionGuidanceScaleInterval(): number {
-        return this.#botConfig.stableDiffusion?.guidanceScaleInterval
-            || 0.5;
-    }
-
-    get stableDiffusionOllamaPrompts(): string[] {
-        return this.#botConfig.stableDiffusionOllamaPrompts
-            || this.#botConfig.multiModal?.randomPrompts
-            || ['Describe something or someone with extraordinary detail.'];
+    get comfyUiOllamaPrompts(): string[] {
+        return this.#botConfig.comfyUiOllamaPrompts
+            ?? this.#botConfig.multiModal?.randomPrompts
+            ?? ['Describe something or someone with extraordinary detail.'];
     }
 
     get ollamaHosts(): URL[] {
@@ -195,33 +189,31 @@ Detected environment variables: ${envVarList}`);
             return;
         }
 
-        this.#log.info(`Package Name: ${this.packageName}`);
-        this.#log.info(`Package Version: ${this.version}`);
-        this.#log.info(`Bot ID: ${this.botId}`);
-        this.#log.info(`Node Environment: ${this.nodeEnvironment}`);
-        this.#log.info(`Mode: ${this.botFunction}`);
+        this.#log.info(`bots[].botId: ${this.botId}`);
+        this.#log.info(`bots[].nodeEnvironment: ${this.nodeEnvironment}`);
+        this.#log.info(`bots[].mode: ${this.botFunction}`);
 
-        this.#log.info(`Discord Channels: ${this.discordChannels.join(', ')}`);
-        this.#log.info(`Discord Channels Disallowed: ${this.discordChannelsDisallowed.join(', ')}`);
-        this.#log.info(`Requires Mention: ${this.botRequiresMention}`);
-        this.#log.info(`Response Rate: ${this.botResponseRate}`);
-        this.#log.info(`Private Message Users: ${this.botPrivateMessageUsers.join(', ')}`);
-        this.#log.info(`Error Message: ${this.errorMessage}`);
+        this.#log.info(`bots[].discord.channels: ${this.discordChannels.join(', ')}`);
+        this.#log.info(`bots[].discord.channelsDisallowed: ${this.discordChannelsDisallowed.join(', ')}`);
+        this.#log.info(`bots[].requiresMention: ${this.botRequiresMention}`);
+        this.#log.info(`bots[].responseRate: ${this.botResponseRate}`);
+        this.#log.info(`bots[].discord.privateMessageUsers: ${this.botPrivateMessageUsers.join(', ')}`);
+        this.#log.info(`bots[].errorMessage: ${this.errorMessage}`);
 
-        this.#log.info(`Task Queue Max Attempts: ${this.maxTaskAttempts}`);
-        this.#log.info(`Task Queue Retry Delay (ms): ${this.taskRetryDelayMilliseconds}`);
-        this.#log.info(`Task Queue Strategy: ${this.taskQueueStrategy}`);
-        this.#log.info(`Task Queue Force Serial Across Hosts: ${this.taskQueueForceSerialAcrossHosts}`);
+        this.#log.info(`bots[].taskQueue.numAttempts: ${this.maxTaskAttempts}`);
+        this.#log.info(`bots[].taskQueue.retryDelayMs: ${this.taskRetryDelayMilliseconds}`);
+        this.#log.info(`bots[].taskQueue.strategy: ${this.taskQueueStrategy}`);
+        this.#log.info(`bots[].taskQueue.forceSerialAcrossHosts: ${this.taskQueueForceSerialAcrossHosts}`);
 
-        this.#log.info(`ComfyUI Hosts: ${this.comfyUiHosts.join(', ')}`);
-        this.#log.info(`Stable Diffusion Hosts: ${this.stableDiffusionHosts.join(', ')}`);
-        this.#log.info(`Stable Diffusion Guidance Scale Interval: ${this.stableDiffusionGuidanceScaleInterval}`);
-        this.#log.info(`Stable Diffusion Ollama Prompts: ${this.stableDiffusionOllamaPrompts.join(' | ')}`);
+        this.#log.info(`bots[].comfyUi.hosts: ${this.comfyUiHosts.join(', ')}`);
+        this.#log.info(`bots[].comfyUiGuidanceScaleInterval: ${this.comfyUiGuidanceScaleInterval}`);
 
-        this.#log.info(`Ollama Hosts: ${this.ollamaHosts.join(', ')}`);
-        this.#log.info(`Ollama Models: ${this.ollamaModels.join(', ')}`);
-        this.#log.info(`Ollama System Prompt: ${this.ollamaSystemPrompt}`);
-        this.#log.info(`Ollama Streams Response: ${this.ollamaStreamsResponse}`);
+        this.#log.info(`bots[].ollama.hosts: ${this.ollamaHosts.join(', ')}`);
+        this.#log.info(`bots[].ollama.models: ${this.ollamaModels.join(', ')}`);
+        this.#log.info(`bots[].ollama.systemPrompt: ${this.ollamaSystemPrompt}`);
+        this.#log.info(`bots[].ollama.streamsResponse: ${this.ollamaStreamsResponse}`);
+
+        this.#log.info(`bots[].comfyUiOllamaPrompts: ${this.comfyUiOllamaPrompts.join(' | ')}`);
 
         this.#log.info('Configuration loaded successfully');
     }

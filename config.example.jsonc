@@ -166,25 +166,14 @@
         "streamsResponse": false
       },
 
-      // Stable Diffusion / ComfyUI advanced settings. Optional overrides.
-      "stableDiffusion": {
-        // Additional Stable Diffusion host URLs.
-        // Required: Optional
-        // Type:     Array of string (URLs)
-        "hosts": [],
+      // ComfyUI advanced settings. Optional overrides.
+      "comfyUiGuidanceScaleInterval": 0.5,
 
-        // The interval for guidance scale adjustments.
-        // Required: Optional
-        // Default:  0.5
-        // Type:     Number
-        "guidanceScaleInterval": 0.5
-      },
-
-      // Cross-capable prompts for the randomize button when both Stable Diffusion
+      // Cross-capable prompts for the randomize button when both ComfyUI
       // and Ollama APIs are available.
       // Required: Optional
       // Type:     Array of string
-      "stableDiffusionOllamaPrompts": [
+      "comfyUiOllamaPrompts": [
         "Describe something or someone with extraordinary detail."
       ],
 

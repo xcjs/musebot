@@ -36,12 +36,9 @@ export interface IBotConfig {
         streamsResponse: boolean;
     };
 
-    stableDiffusion?: {
-        hosts: string[];
-        guidanceScaleInterval: number;
-    };
+    comfyUiGuidanceScaleInterval: number;
 
-    stableDiffusionOllamaPrompts?: string[];
+    comfyUiOllamaPrompts: string[];
 
     multiModal?: {
         randomPrompts: string[];

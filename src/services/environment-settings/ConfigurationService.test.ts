@@ -323,16 +323,13 @@ describe('ConfigurationService', () => {
 
             const service = new ConfigurationService(validChatBotConfig as unknown as IBotConfig);
             expect(service.comfyUiHosts).toEqual([]);
-            expect(service.stableDiffusionGuidanceScaleInterval).toBe(0.5);
+            expect(service.comfyUiGuidanceScaleInterval).toBe(0.5);
         });
 
         it('should have correct guidanceScaleInterval from config', () => {
             const configWithCustomInterval = {
                 ...validChatBotConfig,
-                stableDiffusion: {
-                    hosts: [],
-                    guidanceScaleInterval: 0.7
-                }
+                comfyUiGuidanceScaleInterval: 0.7
             };
 
             (ConfigLoader.load as jest.Mock).mockReturnValue({
@@ -341,7 +338,7 @@ describe('ConfigurationService', () => {
             });
 
             const service = new ConfigurationService(configWithCustomInterval as unknown as IBotConfig);
-            expect(service.stableDiffusionGuidanceScaleInterval).toBe(0.7);
+            expect(service.comfyUiGuidanceScaleInterval).toBe(0.7);
         });
     });
 });

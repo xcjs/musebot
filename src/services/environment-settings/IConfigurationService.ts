@@ -11,8 +11,8 @@ export interface IConfigurationService {
     botFunction: BotMode;
 
     discordToken: string;
-    discordChannels: Array<string>;
-    discordChannelsDisallowed: Array<string>;
+    discordChannels: string[];
+    discordChannelsDisallowed: string[];
     botRequiresMention: boolean;
     botResponseRate: number;
     botPrivateMessageUsers: string[];
@@ -23,13 +23,12 @@ export interface IConfigurationService {
     taskQueueStrategy: TaskQueueStrategy;
     taskQueueForceSerialAcrossHosts: boolean;
 
-    comfyUiHosts: Array<URL>;
-    stableDiffusionHosts: Array<URL>;
-    stableDiffusionGuidanceScaleInterval: number;
-    stableDiffusionOllamaPrompts: Array<string>;
+    comfyUiHosts: URL[];
+    comfyUiGuidanceScaleInterval: number;
+    comfyUiOllamaPrompts: string[];
 
-    ollamaHosts: Array<URL>;
-    ollamaModels: Array<string>;
+    ollamaHosts: URL[];
+    ollamaModels: string[];
     ollamaSystemPrompt: string;
     ollamaStreamsResponse: boolean;
 
