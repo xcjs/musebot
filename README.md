@@ -85,8 +85,10 @@ documentation.
     {
       "botId": "chat-bot",
       "mode": "chat",
-      "discord": {
-        "token": "YOUR_DISCORD_BOT_TOKEN"
+      "chatApis": {
+        "discord": {
+          "token": "YOUR_DISCORD_BOT_TOKEN"
+        }
       },
       "ollama": {
         "hosts": ["http://localhost:11434"],
@@ -105,8 +107,10 @@ documentation.
     {
       "botId": "media-bot",
       "mode": "media",
-      "discord": {
-        "token": "YOUR_DISCORD_BOT_TOKEN"
+      "chatApis": {
+        "discord": {
+          "token": "YOUR_DISCORD_BOT_TOKEN"
+        }
       },
       "comfyUi": {
         "hosts": ["http://localhost:8188"]
@@ -121,8 +125,8 @@ documentation.
 | Setting | Description |
 | --- | --- |
 | `mode` | `"chat"` for LLM conversation, `"media"` for media generation |
-| `discord.token` | Bot token from the [Discord Developer Portal](https://discord.com/developers/applications) |
-| `discord.channels` | Allowed channel IDs (empty = all channels) |
+| `chatApis.discord.token` | Bot token from the [Discord Developer Portal](https://discord.com/developers/applications) |
+| `chatApis.discord.channels` | Allowed channel IDs (empty = all channels) |
 | `ollama.hosts` | Ollama API URLs (required for chat mode) |
 | `ollama.models` | LLM model names to use |
 | `ollama.systemPrompt` | Custom system prompt (string or string array) |
