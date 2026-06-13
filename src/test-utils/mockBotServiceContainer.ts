@@ -77,7 +77,7 @@ export function createMockGlobalContainer(config?: MockServiceContainerConfig): 
                 strategy: TaskQueueStrategy.Serial,
                 forceSerialAcrossHosts: false
             }
-        } as IGlobalConfiguration,
+        },
         configurationService: {
             packageName: 'musebot',
             version: '8.7.1',
@@ -104,15 +104,15 @@ export function createMockGlobalContainer(config?: MockServiceContainerConfig): 
             ollamaStreamsResponse: false,
             applicationName: 'Musebot',
             isProduction: false
-        } as IConfigurationService,
+        },
         taskQueue: null as never,
         parallelizationStrategy: {
             getTaskChannel: () => 'test_channel',
-        } as IParallelizationStrategy,
+        },
 
         getLogger: jest.fn(() => logger),
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        getTaskChannelPostProcessor: jest.fn((_services, _channelName, _isChild) => postProcessor),
+        getTaskChannelPostProcessor: jest.fn((_services, _channelName) => postProcessor),
 
         // Expose mocks for test access
         _logger: logger,
@@ -153,7 +153,7 @@ export function createMockServiceContainer(config?: MockServiceContainerConfig):
         ollamaStreamsResponse: false,
         applicationName: 'Musebot',
         isProduction: false
-    } as IConfigurationService;
+    };
     const parallelizationStrategy = {
         getTaskChannel: () => 'test_channel',
     } as IParallelizationStrategy;
