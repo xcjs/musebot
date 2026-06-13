@@ -2,7 +2,7 @@ services:
   musebot:
     container_name: musebot
     build: .
-    env_file: .env
     restart: unless-stopped
     volumes:
+      - ./config.jsonc:/app/config.json
       - ./workflows:/app/workflows
