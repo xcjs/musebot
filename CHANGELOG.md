@@ -1,0 +1,60 @@
+# Changelog
+
+All notable changes to Musebot are documented in this file.
+
+## [9.0.0] — 2025-06-12
+
+### Breaking Changes
+
+- **Configuration format changed from `.env` to `config.jsonc`.** Environment variable support (`.env` / `dotenv`) has been removed entirely. All configuration is now done via `config.jsonc` (or `config.json`), which supports JSON with comments. See the [Migration Guide](docs/musebot/03-migration-from-env-to-jsonc.md) for details.
+- **Multi-bot support.** The configuration now supports an array of bot instances, each with its own Discord token, channels, Ollama hosts, ComfyUI hosts, and system prompt. A single Musebot process can run multiple bots simultaneously.
+- **License changed to AGPL-3.0.** The proprietary XCJS license has been replaced with the GNU Affero General Public License v3.0.
+
+### Added
+
+- `config.jsonc` / `config.json` based configuration system with `ConfigurationService` and `ConfigLoader`
+- `IBotConfig`, `IGlobalConfiguration`, and `IConfigurationService` interfaces
+- Multi-bot support via `BotServiceContainer` — each bot gets its own service container with isolated configuration
+- `config.example.jsonc` with full schema documentation and comments
+- ADR documents: [001-multi-instance-support](docs/adr/001-multi-instance-support.md), [002-config-format-compatibility](docs/adr/002-config-format-compatibility.md), [003-drop-env-support](docs/adr/003-drop-env-support.md)
+- `FeatureService` unit tests
+- `ConfigurationService` unit tests (401 lines)
+- `mockBotServiceContainer` test utility
+- System prompt now accepts either a `string` or `string[]` (multi-line arrays)
+- `botId` included in logger output for multi-bot identification
+- JSON config settings logged to console on startup
+- `CHANGELOG.md`
+
+### Changed
+
+- **Configuration system overhauled:** `IEnvironmentSettings` / `EnvironmentSettings` replaced by `IConfigurationService` / `ConfigurationService`
+- `ServiceContainer` renamed to `BotServiceContainer` (per-bot); new `GlobalServiceContainer` manages cross-bot concerns
+- `WorkflowService` and task factories refactored to use `BotServiceContainer`
+- `docker-compose.yml` now mounts `config.jsonc` instead of `.env`
+- `.gitlab-ci.yml` simplified workflow copy to `cp -rf workflows/examples build/pkg/workflows` instead of per-file copies
+- `.gitlab-ci.yml` now copies `config.example.jsonc` and `LICENSE` (instead of `config.jsonc` and `LICENSE.md`)
+- Workflows directory reorganized: `workflows/production/` renamed to `workflows/examples/`
+- Archived workflow files removed from `workflows/examples/`
+- Root `README.md` rewritten with comprehensive documentation
+- Documentation updated throughout to reference `config.jsonc` instead of `.env`
+- ADR 002 status changed to "Superseded by ADR 003"
+- ADR 003 status changed to "Accepted"
+
+### Removed
+
+- `.env.example` file
+- `.env` / `dotenv` support (`EnvironmentSettings`, `EnvironmentKey`, related tests)
+- `BotFunction` enum (replaced by `BotMode`)
+- `mockServiceContainer` test utility (replaced by `mockBotServiceContainer`)
+- Continue Dev configuration files (`.continue/`)
+- Archived workflow files from `workflows/examples/`
+- Deprecated video workflows
+- `LICENSE.md` (proprietary XCJS license)
+
+### Fixed
+
+- JSON5/JSONC import corrected
+- Type issues resolved across service layer
+- Button labels restored
+- Documentation syntax corrections
+- ESLint and code quality issues resolved
