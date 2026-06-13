@@ -49,6 +49,7 @@ export class ExpandPromptMutator implements IWorkflowMutator {
         interaction: ButtonInteraction,
         workflow: IWorkflow): Promise<SerializableRenderRequest> {
         const mutatedRequest = SerializableRenderRequest.fromSerializableRenderRequest(renderRequest);
+        mutatedRequest.workflow = workflow.name;
 
         if(mutatedRequest.prompt === null) {
             throw new Error('The prompt could be expanded because no original prompt was found.');

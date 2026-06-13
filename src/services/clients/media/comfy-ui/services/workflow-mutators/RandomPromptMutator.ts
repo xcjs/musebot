@@ -59,6 +59,7 @@ export class RandomPromptMutator implements IWorkflowMutator {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         workflow: IWorkflow): Promise<SerializableRenderRequest> {
         const mutatedRequest = SerializableRenderRequest.fromSerializableRenderRequest(renderRequest);
+        mutatedRequest.workflow = workflow.name;
         mutatedRequest.prompt = (await this.#getRandomPrompt()).trim();
 
         mutatedRequest.refreshSeed();

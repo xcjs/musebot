@@ -48,6 +48,7 @@ export class GuidanceScaleMutator implements IWorkflowMutator {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         workflow: IWorkflow): Promise<SerializableRenderRequest> {
         const mutatedRequest = SerializableRenderRequest.fromSerializableRenderRequest(renderRequest);
+        mutatedRequest.workflow = workflow.name;
 
         switch(interaction.customId as BotInteraction) {
             case BotInteraction.GuidanceScaleMinus:

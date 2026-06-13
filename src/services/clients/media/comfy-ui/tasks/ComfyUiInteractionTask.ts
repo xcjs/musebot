@@ -62,6 +62,7 @@ export class ComfyUiInteractionTask extends ComfyUiBaseTask {
             }
 
             const newMediaRenderRequest = this.workflowService.getWorkflowDefaults(newMediaWorkflow);
+            newMediaRenderRequest.workflow = newMediaWorkflow.name;
 
             workflows.push(newMediaWorkflow);
             inputRenderRequests.push(newMediaRenderRequest);
