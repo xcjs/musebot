@@ -13,10 +13,10 @@ import { IReplyService } from '../../chat/IReplyService.js';
 type DiscordReplyService = IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
 
 export class ChatHelpService extends BaseHelpService implements IHelpService {
-    #services: IBotServiceContainer;
+    readonly #services: IBotServiceContainer;
 
-    #configurationService: IConfigurationService;
-    #replyService: DiscordReplyService;
+    readonly #configurationService: IConfigurationService;
+    readonly #replyService: DiscordReplyService;
 
     constructor(services: IBotServiceContainer) {
         super(services);

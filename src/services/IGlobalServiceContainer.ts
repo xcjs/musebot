@@ -14,5 +14,5 @@ export interface IGlobalServiceContainer {
     parallelizationStrategy: IParallelizationStrategy;
 
     getLogger(prefix: string): ILogger;
-    getTaskChannelPostProcessor(services: IBotServiceContainer, channelName: string, isChild: boolean): ITaskChannelPostProcessor;
+    getTaskChannelPostProcessor(services: IBotServiceContainer, channelName: string): ITaskChannelPostProcessor;
 }

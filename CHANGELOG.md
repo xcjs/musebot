@@ -2,6 +2,24 @@
 
 All notable changes to Musebot are documented in this file.
 
+## [9.0.1] — 2025-06-13
+
+### Changed
+
+- Marked `readonly` on private members in `ChatHelpService` that are only assigned in the constructor
+- Removed unnecessary `as` typecasts in `mockBotServiceContainer` (`IGlobalConfiguration`, `IConfigurationService`, `IParallelizationStrategy`)
+- Removed `isChild` parameter from `IGlobalServiceContainer.getTaskChannelPostProcessor` — it was declared in the interface but never passed or used by any caller
+- `BotServiceContainer.getTaskChannelPostProcessor` now accepts `isChild` per the `IBotServiceContainer` interface signature (currently unused, marked with eslint-disable)
+
+### Removed
+
+- Duplicated `getWorkflowMutator` method from `GlobalServiceContainer` and `IGlobalServiceContainer` — the canonical implementation lives on `BotServiceContainer` / `IBotServiceContainer`
+- Unused imports from `GlobalServiceContainer` (`BotInteraction`, `getRandomArrayEntry`, all workflow mutator imports, `IWorkflow`, `IWorkflowMutator`)
+
+### Fixed
+
+- Invalid docs link in `README.md` (`docs/Musebot.md` → `docs/introduction.md`)
+
 ## [9.0.0] — 2025-06-12
 
 ### Breaking Changes

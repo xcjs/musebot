@@ -299,7 +299,8 @@ export class BotServiceContainer implements IBotServiceContainer {
         }
     }
 
-    getTaskChannelPostProcessor(channelName: string): ITaskChannelPostProcessor {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    getTaskChannelPostProcessor(channelName: string, _isChild: boolean): ITaskChannelPostProcessor {
         return this.#globalServiceContainer.getTaskChannelPostProcessor(this, channelName);
     }
 
