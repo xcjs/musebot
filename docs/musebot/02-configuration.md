@@ -38,14 +38,14 @@ variables, you need to migrate to JSON configuration. See [Migration Guide](./03
 
 ### **Discord Configuration**
 
-#### `discord.token`
+#### `chatApis.discord.token`
 
 * **Description:** The authentication token for your bot, obtained from the
   [Discord Developer Portal](https://discord.com/developers/applications).
 * **Required:** Yes
 * **Type:** `String`
 
-#### `discord.channels`
+#### `chatApis.discord.channels`
 
 * **Description:** An array of **allowed** channel IDs. The bot
   will *only* respond in these channels. If left empty, all channels are
@@ -53,11 +53,11 @@ variables, you need to migrate to JSON configuration. See [Migration Guide](./03
 * **Required:** No
 * **Type:** `String[]`
 
-#### `discord.channelsDisallowed`
+#### `chatApis.discord.channelsDisallowed`
 
 * **Description:** An array of **disallowed** channel IDs. The bot
   will *never* respond in these channels, even if they are in
-  `discord.channels`.
+  `chatApis.discord.channels`.
 * **Required:** No
 * **Type:** `String[]`
 
@@ -157,7 +157,7 @@ variables, you need to migrate to JSON configuration. See [Migration Guide](./03
 * **Type:** `Number`
 * **Default:** `0.5`
 
-#### `comfyUiOllamaPrompts`
+#### `multiModal.randomPrompts`
 
 * **Description:** If *both* Ollama and ComfyUI/SwarmUI are configured, this
   provides an array of prompt strings used by the "Randomize" button in the media

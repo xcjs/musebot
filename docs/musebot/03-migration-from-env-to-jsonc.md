@@ -50,10 +50,12 @@ Create a new `config.jsonc` file in your project root. You can use `config.json`
       "mode": "chat",
       "requiresMention": true,
       "responseRate": 100,
-      "discord": {
-        "token": "YOUR_DISCORD_BOT_TOKEN_HERE",
-        "channels": ["YOUR_CHANNEL_ID_1"],
-        "privateMessageUsers": ["USER_ID_1"]
+      "chatApis": {
+        "discord": {
+          "token": "YOUR_DISCORD_BOT_TOKEN_HERE",
+          "channels": ["YOUR_CHANNEL_ID_1"],
+          "privateMessageUsers": ["USER_ID_1"]
+        }
       },
       "ollama": {
         "hosts": ["http://localhost:11434"],
@@ -65,7 +67,9 @@ Create a new `config.jsonc` file in your project root. You can use `config.json`
         "hosts": []
       },
       "comfyUiGuidanceScaleInterval": 0.5,
-      "comfyUiOllamaPrompts": []
+      "multiModal": {
+        "randomPrompts": []
+      }
     }
   ]
 }
@@ -90,10 +94,12 @@ Create a new `config.jsonc` file in your project root. You can use `config.json`
       "mode": "media",
       "requiresMention": true,
       "responseRate": 100,
-      "discord": {
-        "token": "YOUR_DISCORD_BOT_TOKEN_HERE",
-        "channels": ["YOUR_CHANNEL_ID_1"],
-        "privateMessageUsers": ["USER_ID_1"]
+      "chatApis": {
+        "discord": {
+          "token": "YOUR_DISCORD_BOT_TOKEN_HERE",
+          "channels": ["YOUR_CHANNEL_ID_1"],
+          "privateMessageUsers": ["USER_ID_1"]
+        }
       },
       "ollama": {
         "hosts": ["http://localhost:11434"],
@@ -105,7 +111,9 @@ Create a new `config.jsonc` file in your project root. You can use `config.json`
         "hosts": ["http://localhost:8188"]
       },
       "comfyUiGuidanceScaleInterval": 0.5,
-      "comfyUiOllamaPrompts": []
+      "multiModal": {
+        "randomPrompts": []
+      }
     }
   ]
 }
@@ -116,12 +124,12 @@ Create a new `config.jsonc` file in your project root. You can use `config.json`
 | .env Variable (Old) | config.jsonc Property (New) | Type | Required |
 |---------------------|-----------------------------|------|----------|
 | `MUSEBOT_FUNCTION` | `bots[].mode` | enum | Yes |
-| `MUSEBOT_DISCORD_TOKEN` | `bots[].discord.token` | string | Yes |
-| `MUSEBOT_DISCORD_CHANNELS` | `bots[].discord.channels` | string[] | No |
-| `MUSEBOT_DISCORD_CHANNELS_DISALLOWED` | `bots[].discord.channelsDisallowed` | string[] | No |
+| `MUSEBOT_DISCORD_TOKEN` | `bots[].chatApis.discord.token` | string | Yes |
+| `MUSEBOT_DISCORD_CHANNELS` | `bots[].chatApis.discord.channels` | string[] | No |
+| `MUSEBOT_DISCORD_CHANNELS_DISALLOWED` | `bots[].chatApis.discord.channelsDisallowed` | string[] | No |
 | `MUSEBOT_REQUIRES_MENTION` | `bots[].requiresMention` | boolean | No |
 | `MUSEBOT_RESPONSE_RATE` | `bots[].responseRate` | number | No |
-| `MUSEBOT_PRIVATE_MESSAGE_USERS` | `bots[].discord.privateMessageUsers` | string[] | No |
+| `MUSEBOT_PRIVATE_MESSAGE_USERS` | `bots[].chatApis.discord.privateMessageUsers` | string[] | No |
 | `MUSEBOT_ERROR_MESSAGE` | `bots[].errorMessage` | string | No |
 | `MUSEBOT_OLLAMA_HOSTS` | `bots[].ollama.hosts` | string[] | Yes (chat mode) |
 | `MUSEBOT_OLLAMA_MODELS` | `bots[].ollama.models` | string[] | No (chat mode) |
@@ -129,7 +137,7 @@ Create a new `config.jsonc` file in your project root. You can use `config.json`
 | `MUSEBOT_OLLAMA_STREAMS_RESPONSE` | `bots[].ollama.streamsResponse` | boolean | No |
 | `MUSEBOT_STABLE_DIFFUSION_HOSTS` | `bots[].comfyUi.hosts` | string[] | Yes (media mode) |
 | `MUSEBOT_STABLE_DIFFUSION_GUIDANCE_SCALE_INTERVAL` | `bots[].comfyUiGuidanceScaleInterval` | number | No |
-| `MUSEBOT_STABLE_DIFFUSION_OLLAMA_PROMPTS` | `bots[].comfyUiOllamaPrompts` | string[] | No |
+| `MUSEBOT_STABLE_DIFFUSION_OLLAMA_PROMPTS` | `bots[].multiModal.randomPrompts` | string[] | No |
 | `MUSEBOT_MAX_TASK_ATTEMPTS` | `global.taskQueue.numAttempts` / `bots[].taskQueue.numAttempts` | number | No |
 | `MUSEBOT_TASK_RETRY_DELAY_MILLISECONDS` | `global.taskQueue.retryDelayMs` / `bots[].taskQueue.retryDelayMs` | number | No |
 | `MUSEBOT_TASK_QUEUE_STRATEGY` | `global.taskQueue.strategy` / `bots[].taskQueue.strategy` | enum | No |

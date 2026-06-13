@@ -152,9 +152,9 @@ Key settings (from `IBotConfig`):
 | `bots[].botId`                             | Unique bot instance identifier                  |
 | `bots[].mode`                              | `"chat"` or `"media"` — determines bot mode    |
 | `bots[].nodeEnvironment`                   | `"development"` or `"production"`               |
-| `bots[].discord.token`                     | Discord bot token                               |
-| `bots[].discord.channels`                  | Array of allowed channel IDs                    |
-| `bots[].discord.channelsDisallowed`        | Array of disallowed channel IDs                 |
+| `bots[].chatApis.discord.token`            | Discord bot token                               |
+| `bots[].chatApis.discord.channels`        | Array of allowed channel IDs                    |
+| `bots[].chatApis.discord.channelsDisallowed` | Array of disallowed channel IDs               |
 | `bots[].requiresMention`                  | Whether the bot requires an @mention to respond |
 | `bots[].responseRate`                      | Response probability percentage                 |
 | `bots[].ollama.hosts`                      | Array of Ollama API URLs                        |
@@ -163,6 +163,7 @@ Key settings (from `IBotConfig`):
 | `bots[].ollama.streamsResponse`            | Whether Ollama streams responses                |
 | `bots[].comfyUi.hosts`                     | Array of ComfyUI API URLs                       |
 | `bots[].comfyUiGuidanceScaleInterval`     | Guidance scale adjustment step                  |
+| `bots[].multiModal.randomPrompts`         | Random prompts for the randomize button         |
 | `global.taskQueue.numAttempts`             | Max retry attempts for tasks                    |
 | `global.taskQueue.retryDelayMs`            | Delay between task retries                      |
 | `global.taskQueue.strategy`                | `"parallel"` or `"serial"`                      |

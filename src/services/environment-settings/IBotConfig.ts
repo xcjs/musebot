@@ -10,18 +10,12 @@ export interface IBotConfig {
     responseRate?: number;
     errorMessage?: string;
 
-    discord: {
-        token: string;
-        channels: string[];
-        privateMessageUsers: string[];
-        channelsDisallowed?: string[];
-    };
-
-    chatApis?: {
+    chatApis: {
         discord: {
             token: string;
             channels: string[];
             privateMessageUsers: string[];
+            channelsDisallowed?: string[];
         };
     };
 
@@ -37,8 +31,6 @@ export interface IBotConfig {
     };
 
     comfyUiGuidanceScaleInterval: number;
-
-    comfyUiOllamaPrompts: string[];
 
     multiModal?: {
         randomPrompts: string[];

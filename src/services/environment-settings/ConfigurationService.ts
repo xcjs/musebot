@@ -60,18 +60,16 @@ export class ConfigurationService implements IConfigurationService {
     }
 
     get discordToken(): string {
-        return this.#botConfig.chatApis?.discord?.token
-            || this.#botConfig.discord?.token;
+        return this.#botConfig.chatApis.discord.token;
     }
 
     get discordChannels(): string[] {
-        return this.#botConfig.chatApis?.discord?.channels
-            || this.#botConfig.discord?.channels
+        return this.#botConfig.chatApis.discord.channels
             || [];
     }
 
     get discordChannelsDisallowed(): string[] {
-        return this.#botConfig.discord?.channelsDisallowed
+        return this.#botConfig.chatApis.discord.channelsDisallowed
             || [];
     }
 
@@ -85,8 +83,7 @@ export class ConfigurationService implements IConfigurationService {
     }
 
     get botPrivateMessageUsers(): string[] {
-        return this.#botConfig.chatApis?.discord?.privateMessageUsers
-            || this.#botConfig.discord?.privateMessageUsers
+        return this.#botConfig.chatApis.discord.privateMessageUsers
             || [];
     }
 
@@ -104,9 +101,8 @@ export class ConfigurationService implements IConfigurationService {
         return this.#botConfig.comfyUiGuidanceScaleInterval ?? 0.5;
     }
 
-    get comfyUiOllamaPrompts(): string[] {
-        return this.#botConfig.comfyUiOllamaPrompts
-            ?? this.#botConfig.multiModal?.randomPrompts
+    get randomPrompts(): string[] {
+        return this.#botConfig.multiModal?.randomPrompts
             ?? ['Describe something or someone with extraordinary detail.'];
     }
 
@@ -196,11 +192,11 @@ Detected environment variables: ${envVarList}`);
         this.#log.info(`bots[].nodeEnvironment: ${this.nodeEnvironment}`);
         this.#log.info(`bots[].mode: ${this.botFunction}`);
 
-        this.#log.info(`bots[].discord.channels: ${this.discordChannels.join(', ')}`);
-        this.#log.info(`bots[].discord.channelsDisallowed: ${this.discordChannelsDisallowed.join(', ')}`);
+        this.#log.info(`bots[].chatApis.discord.channels: ${this.discordChannels.join(', ')}`);
+        this.#log.info(`bots[].chatApis.discord.channelsDisallowed: ${this.discordChannelsDisallowed.join(', ')}`);
         this.#log.info(`bots[].requiresMention: ${this.botRequiresMention}`);
         this.#log.info(`bots[].responseRate: ${this.botResponseRate}`);
-        this.#log.info(`bots[].discord.privateMessageUsers: ${this.botPrivateMessageUsers.join(', ')}`);
+        this.#log.info(`bots[].chatApis.discord.privateMessageUsers: ${this.botPrivateMessageUsers.join(', ')}`);
         this.#log.info(`bots[].errorMessage: ${this.errorMessage}`);
 
         this.#log.info(`bots[].taskQueue.numAttempts: ${this.maxTaskAttempts}`);
@@ -216,7 +212,7 @@ Detected environment variables: ${envVarList}`);
         this.#log.info(`bots[].ollama.systemPrompt: ${this.ollamaSystemPrompt}`);
         this.#log.info(`bots[].ollama.streamsResponse: ${this.ollamaStreamsResponse}`);
 
-        this.#log.info(`bots[].comfyUiOllamaPrompts: ${this.comfyUiOllamaPrompts.join(' | ')}`);
+        this.#log.info(`bots[].multiModal.randomPrompts: ${this.randomPrompts.join(' | ')}`);
 
         this.#log.info('Configuration loaded successfully');
     }
