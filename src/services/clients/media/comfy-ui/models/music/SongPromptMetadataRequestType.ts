@@ -12,10 +12,10 @@ export const songPromptMetadataRequestData: IStructuredRequestData = {
         properties: {
             tags: {
                 type: 'array',
-                description: 'Tags are for terms or phrases that describe the song genre(s), mood, instruments, vocals, vocal gender, pitch, and more. ' +
-                    'Anything goes, and use a lot of detail. If the prompt already includes tags, include all of them. ' +
-                    'You may add additional tags if you choose to. All tags should relate to musical terminology. ' +
-                    'Do not include lyrics in the song tags - they go in the lyrics property.',
+                description: 'Tags are for terms or phrases that describe the song genre(s), mood, instruments, vocals, vocal gender, pitch, and more. '
+                    + 'Anything goes, and use a lot of detail. If the prompt already includes tags, include all of them. '
+                    + 'You may add additional tags if you choose to. All tags should relate to musical terminology. '
+                    + 'Do not include lyrics in the song tags - they go in the lyrics property.',
                 items: {
                     type: 'string'
                 }
