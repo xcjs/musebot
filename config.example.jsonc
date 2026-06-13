@@ -1,0 +1,200 @@
+{
+  // Global configuration shared across all bot instances.
+  "global": {
+    // Task queue settings for managing concurrent task execution.
+    "taskQueue": {
+      // The number of times to retry a failed task.
+      // Required: Optional
+      // Default:  10
+      // Type:     Integer
+      "numAttempts": 10,
+
+      // The delay in milliseconds between task retry attempts.
+      // Required: Optional
+      // Default:  1000
+      // Type:     Integer
+      "retryDelayMs": 1000,
+
+      // Determines if tasks can execute concurrently or must run one at a time.
+      // If your system can handle executing both large language models (Ollama)
+      // *and* media generation (ComfyUI) at the same time, set this to "parallel".
+      // Systems on separate hosts will execute in parallel always.
+      // Required: Optional
+      // Default:  "serial"
+      // Values:   "serial" | "parallel"
+      "strategy": "serial",
+
+      // If true, even if systems are on separate hosts, Musebot will force tasks
+      // to execute in a serial manner across all hosts.
+      // Required: Optional
+      // Default:  false
+      // Type:     Boolean
+      "forceSerialAcrossHosts": false
+    }
+  },
+
+  // Per-bot configuration. Each object in the array defines a separate bot instance.
+  "bots": [
+    {
+      // A unique identifier for this bot instance. Used for logging and workflow paths.
+      // Required: Required
+      // Type:     String
+      "botId": "bot-1",
+
+      // The current Node environment.
+      // Required: Required
+      // Values:   "production" | "development"
+      "nodeEnvironment": "production",
+
+      // Musebot primary functionality — determines the bot's main mode of operation.
+      //   "chat" — for large language model integration (Ollama)
+      //   "media" — for audio/images/video/etc. generation (ComfyUI)
+      // Required: Required
+      // Values:   "chat" | "media"
+      "mode": "chat",
+
+      // Whether the bot requires users to @mention it to reply.
+      // Required: Optional
+      // Default:  true
+      // Type:     Boolean
+      "requiresMention": true,
+
+      // If requiresMention is false, what percentage of the time should it respond?
+      // Affects public responses only.
+      // Required: Optional
+      // Default:  100
+      // Values:   1-100
+      // Type:     Integer
+      "responseRate": 100,
+
+      // A custom error message to display when a render fails.
+      // Required: Optional
+      // Default:  "An error occurred while processing your request. Please try again later."
+      // Type:     String
+      "errorMessage": "An error occurred while processing your request. Please try again later.",
+
+      // Discord configuration. Token and channel settings for the bot's Discord connection.
+      "discord": {
+        // The Discord App Token used to authenticate as the bot created in the
+        // Discord developer portal.
+        // Required: Required
+        // Type:     String
+        "token": "YOUR_DISCORD_BOT_TOKEN_HERE",
+
+        // The Discord channel IDs the bot is allowed to reply in.
+        // If left empty, all channels will be allowed.
+        // Required: Optional
+        // Type:     Array of string (channel IDs)
+        "channels": [
+          "YOUR_CHANNEL_ID_1",
+          "YOUR_CHANNEL_ID_2"
+        ],
+
+        // Which users, if any, are allowed to message the bot privately.
+        // Ensure this is the username, not the display name. Case-sensitive.
+        // Required: Optional
+        // Type:     Array of string (usernames)
+        "privateMessageUsers": [
+          "USER_ID_1",
+          "USER_ID_2"
+        ],
+
+        // The Discord channel IDs the bot is not allowed to reply in.
+        // If the bot is simultaneously allowed and disallowed in a channel,
+        // the disallowed rule takes precedence.
+        // Required: Optional
+        // Type:     Array of string (channel IDs)
+        "channelsDisallowed": []
+      },
+
+      // Chat API overrides. When present, these take priority over the top-level
+      // discord settings for token, channels, and privateMessageUsers.
+      "chatApis": {
+        "discord": {
+          "token": "YOUR_DISCORD_BOT_TOKEN_HERE",
+          "channels": [
+            "YOUR_CHANNEL_ID_1",
+            "YOUR_CHANNEL_ID_2"
+          ],
+          "privateMessageUsers": [
+            "USER_ID_1",
+            "USER_ID_2"
+          ]
+        }
+      },
+
+      // ComfyUI configuration for media generation. Required when mode is "media".
+      "comfyUi": {
+        // The base URL(s) of the ComfyUI instance(s). Can be a list for multiple hosts.
+        // Required: Required when mode="media"
+        // Type:     Array of string (URLs)
+        "hosts": [
+          "http://localhost:8188"
+        ]
+      },
+
+      // Ollama configuration for large language model chat. Required when mode is "chat".
+      "ollama": {
+        // The base URL(s) of the Ollama instance(s). Can be a list for multiple hosts.
+        // Required: Required when mode="chat"
+        // Type:     Array of string (URLs)
+        "hosts": [
+          "http://localhost:11434"
+        ],
+
+        // The name(s) of the large language model(s) to use. Can be a list for multiple models.
+        // Required: Required when mode="chat"
+        // Type:     Array of string (model names)
+        "models": [
+          "llama2",
+          "mistral"
+        ],
+
+        // The system prompt used to give the LLM context or a custom persona.
+        // Musebot also pulls the current channel topic as part of its system prompt.
+        // Required: Optional
+        // Type:     String
+        "systemPrompt": "You are a helpful assistant.",
+
+        // Whether Musebot can stream the Ollama response or not.
+        // This determines if the response shows up all at once at the end or in
+        // batches of tokens, making it seem like Musebot is typing in real time.
+        // Note: This is experimental and may not be stable.
+        // Required: Optional
+        // Default:  false
+        // Type:     Boolean
+        "streamsResponse": false
+      },
+
+      // ComfyUI advanced settings. Optional overrides.
+      "comfyUiGuidanceScaleInterval": 0.5,
+
+      // Cross-capable prompts for the randomize button when both ComfyUI
+      // and Ollama APIs are available.
+      // Required: Optional
+      // Type:     Array of string
+      "comfyUiOllamaPrompts": [
+        "Describe something or someone with extraordinary detail."
+      ],
+
+      // Multi-modal settings for cross-capable features.
+      "multiModal": {
+        // Random prompts used for the randomize button.
+        // Required: Optional
+        // Type:     Array of string
+        "randomPrompts": [
+          "Describe something or someone with extraordinary detail."
+        ]
+      },
+
+      // Per-bot task queue overrides. If provided, these take priority over
+      // the global taskQueue settings.
+      "taskQueue": {
+        "numAttempts": 10,
+        "retryDelayMs": 1000,
+        "strategy": "serial",
+        "forceSerialAcrossHosts": false
+      }
+    }
+  ]
+}

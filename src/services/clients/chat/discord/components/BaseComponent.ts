@@ -1,5 +1,5 @@
-import { IFeatureService } from '../../../../features/IFeatureService.js';
-import { IServiceContainer } from '../../../../IServiceContainer.js';
+﻿import { IFeatureService } from '../../../../features/IFeatureService.js';
+import { IBotServiceContainer } from "../../../../IBotServiceContainer.js"
 
 export abstract class BaseComponent<ComponentType> {
     protected featureService: IFeatureService;
@@ -20,7 +20,7 @@ export abstract class BaseComponent<ComponentType> {
         return '';
     }
 
-    constructor(services: IServiceContainer) {
+    constructor(services: IBotServiceContainer) {
         this.featureService = services.featureService;
     }
 

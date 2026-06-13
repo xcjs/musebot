@@ -1,13 +1,13 @@
-import { ButtonBuilder, ButtonStyle } from 'discord.js';
+﻿import { ButtonBuilder, ButtonStyle } from 'discord.js';
 
 import { BotInteraction } from '../../../../../../../enums/BotInteraction.js';
 import { SupportedFeature } from '../../../../../../features/enum/SupportedFeature.js';
-import { IServiceContainer } from '../../../../../../IServiceContainer.js';
+import { IBotServiceContainer } from "../../../../../../IBotServiceContainer.js"
 import { BaseComponent } from '../../BaseComponent.js';
 
 export class ShowSourceButton extends BaseComponent<ButtonBuilder> {
     override get label(): string {
-        return '{⠀}';
+        return '{ }';
     }
 
     override get isSupported(): boolean {
@@ -26,7 +26,7 @@ export class ShowSourceButton extends BaseComponent<ButtonBuilder> {
             + ' Some prompts may be too large to save, so some actions may be hidden when this happens.';
     }
 
-    constructor(services: IServiceContainer) {
+    constructor(services: IBotServiceContainer) {
         super(services);
     }
 

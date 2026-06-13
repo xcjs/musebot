@@ -1,11 +1,11 @@
-import { Attachment, Message as DiscordMessage, MessageReaction } from 'discord.js';
+﻿import { Attachment, Message as DiscordMessage, MessageReaction } from 'discord.js';
 import { Message as OllamaMessage } from 'ollama';
 
 import { TaskQueueStrategy } from '../../../../../enums/TaskQueueStrategy.js';
-import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
+import { IConfigurationService } from '../../../../environment-settings/IConfigurationService.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../../../../features/IFeatureService.js';
-import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { IBotServiceContainer } from "../../../../IBotServiceContainer.js"
 import { ResourceType } from '../../../../parallelization/ResourceType.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { OllamaReplyService } from '../../../chat/discord/ollama/OllamaReplyService.js';
@@ -25,7 +25,7 @@ export abstract class OllamaBaseTask<T> extends BaseTask<T> {
         return ResourceType.LargeLanguageModel;
     }
 
-    readonly environmentSettings: IEnvironmentSettings;
+    readonly configurationService: IConfigurationService;
     readonly ollamaClient: OllamaClient;
     readonly contextMessageFactory: IContextMessageFactory<DiscordMessage, OllamaMessage>;
     readonly contextService: IContextService<DiscordMessage, OllamaMessage>;
@@ -35,10 +35,10 @@ export abstract class OllamaBaseTask<T> extends BaseTask<T> {
     readonly #featureService: IFeatureService;
     readonly #comfyUiClient: ComfyUiClient;
 
-    constructor(services: IServiceContainer) {
+    constructor(services: IBotServiceContainer) {
         super(services);
 
-        this.environmentSettings = services.environmentSettings;
+        this.configurationService = services.configurationService;
         this.ollamaClient = services.ollamaClient;
         this.contextMessageFactory = services.getContextMessageFactory<DiscordMessage, OllamaMessage>();
         this.contextService = services.getContextService<DiscordMessage, OllamaMessage>();
@@ -52,7 +52,7 @@ export abstract class OllamaBaseTask<T> extends BaseTask<T> {
     override async preProcess(): Promise<void> {
         await super.preProcess();
 
-        if (this.environmentSettings.taskQueueStrategy === TaskQueueStrategy.Serial
+        if (this.configurationService.taskQueueStrategy === TaskQueueStrategy.Serial
             && (this.#featureService.hasFeature(SupportedFeature.ContextualImg2Img)
                 || this.#featureService.hasFeature(SupportedFeature.Img2Img)
                 || this.#featureService.hasFeature(SupportedFeature.Img2Vid)

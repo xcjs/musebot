@@ -1,7 +1,7 @@
-import { randomUUID, UUID } from 'node:crypto';
+﻿import { randomUUID, UUID } from 'node:crypto';
 
+import { IBotServiceContainer } from '../../IBotServiceContainer.js';
 import { ILogger } from '../../ILogger.js';
-import { IServiceContainer } from '../../IServiceContainer.js';
 import { IParallelizationStrategy } from '../../parallelization/IParallelizationStrategy.js';
 import { ResourceType } from '../../parallelization/ResourceType.js';
 import { TaskStatus } from '../enums/TaskStatus.js';
@@ -60,6 +60,7 @@ export abstract class BaseTask<T> {
 
     set onSuccess(callback: (payload: T) => void) { }
 
+    protected services: IBotServiceContainer;
     parallelizationStrategy: IParallelizationStrategy;
     logger: ILogger;
 
@@ -70,14 +71,15 @@ export abstract class BaseTask<T> {
     readonly #createdTime: Date;
     #startedTime: Date | null = null;
 
-    constructor(services: IServiceContainer) {
+    constructor(services: IBotServiceContainer) {
+        this.services = services;
         this.parallelizationStrategy = services.parallelizationStrategy;
 
         this.logger = services.getLogger('BaseTask');
 
         this.#id = randomUUID();
         this.#createdTime = new Date();
-        this.#maxAttempts = services.environmentSettings.maxTaskAttempts;
+        this.#maxAttempts = services.configurationService.maxTaskAttempts;
     }
 
     async preProcess(): Promise<void> {

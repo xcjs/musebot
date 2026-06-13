@@ -1,9 +1,9 @@
-import { Attachment, ButtonInteraction, Message, MessageReaction } from 'discord.js';
+﻿import { Attachment, ButtonInteraction, Message, MessageReaction } from 'discord.js';
 
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
-import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { IBotServiceContainer } from "../../../../IBotServiceContainer.js"
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
@@ -27,7 +27,7 @@ export class ComfyUiAttachmentTask extends ComfyUiBaseTask {
     readonly #prompt: string;
 
     constructor(
-        services: IServiceContainer,
+        services: IBotServiceContainer,
         message: Message,
         prompt: string) {
         super(services);

@@ -1,7 +1,7 @@
-import { GenerateRequest, GenerateResponse } from 'ollama';
+﻿import { GenerateRequest, GenerateResponse } from 'ollama';
 
 import { IHttpExchangeWithAttachedData } from '../../../../../models/IHttpExchangeWithAttachedData.js';
-import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { IBotServiceContainer } from "../../../../IBotServiceContainer.js"
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { IStructuredRequestData } from '../models/IStructuredRequestData.js';
 import { OllamaBaseTask } from './OllamaBaseTask.js';
@@ -19,7 +19,7 @@ export class OllamaGenerateStructuredTask<T> extends OllamaBaseTask<IHttpExchang
 
     #onSuccess: (payload: IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, T>) => void = () => { };
 
-    constructor(services: IServiceContainer, prompt: string, structuredRequestData: IStructuredRequestData) {
+    constructor(services: IBotServiceContainer, prompt: string, structuredRequestData: IStructuredRequestData) {
         super(services);
         this.logger = services.getLogger('OllamaGenerateStructuredTask');
 

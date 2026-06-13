@@ -1,6 +1,6 @@
-import { ActionRowBuilder, ButtonBuilder } from 'discord.js';
+﻿import { ActionRowBuilder, ButtonBuilder } from 'discord.js';
 
-import { IServiceContainer } from '../../../../../IServiceContainer.js';
+import { IBotServiceContainer } from "../../../../../IBotServiceContainer.js"
 import { BaseComponent } from '../BaseComponent.js';
 import { HelpButton } from '../buttons/HelpButton.js';
 import { RandomizeButton } from '../buttons/images/RandomizeButton.js';
@@ -17,11 +17,11 @@ export class StatelessImageGenerationActionRow extends BaseComponent<ActionRowBu
         return false;
     }
 
-    #services: IServiceContainer;
+    #services: IBotServiceContainer;
 
     #actionRowBuilderFactory: IActionRowBuilderFactory;
 
-    constructor(services: IServiceContainer) {
+    constructor(services: IBotServiceContainer) {
         super(services);
 
         this.#services = services;

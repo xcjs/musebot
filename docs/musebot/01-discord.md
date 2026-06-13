@@ -58,10 +58,10 @@ Discord. This guide will walk you through each required menu and setting.
 3. You can also explicitly set your bot's username if you wish to do so under
    `Username`.
 4. In order to obtain your bot's authentication token, you must click the
-   `Reset Token` button. Copy the value and save it under
-   `MUSEBOT_DISCORD_TOKEN` in your `.env` file.
+   `Reset Token` button. Copy the value and set it as `discord.token` in your
+   `config.jsonc` file.
 
-   ![Reset Token Button](../images/discord/reset-token.png)
+    ![Reset Token Button](../images/discord/reset-token.png)
 5. It is recommended that unless you know what you're doing, disable the toggle
    titled `Public Bot`.
 
@@ -106,8 +106,8 @@ channel IDs up:
 
 1. In Discord, go to `User Settings` » `Advanced` » `Enable Developer Mode`.
 2. Right click on a channel for Musebot to use and click `Copy Channel ID`.
-3. Add the channel ID(s) to the `MUSEBOT_DISCORD_CHANNELS` environment variable
-   in Musebot's `.env` configuration file.
+3. Add the channel ID(s) to the `discord.channels` array in Musebot's
+   `config.jsonc` configuration file.
 
 Additionally, Musebot can work across multiple Discord servers as long as the
 bot is added to the server by an administrator or owner. Channel IDs are unique

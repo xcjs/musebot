@@ -1,8 +1,8 @@
-import { ButtonBuilder, ButtonStyle } from 'discord.js';
+﻿import { ButtonBuilder, ButtonStyle } from 'discord.js';
 
 import { BotInteraction } from '../../../../../../../enums/BotInteraction.js';
 import { SupportedFeature } from '../../../../../../features/enum/SupportedFeature.js';
-import { IServiceContainer } from '../../../../../../IServiceContainer.js';
+import { IBotServiceContainer } from "../../../../../../IBotServiceContainer.js"
 import { BaseComponent } from '../../BaseComponent.js';
 
 export class RandomizeButton extends BaseComponent<ButtonBuilder> {
@@ -25,7 +25,7 @@ export class RandomizeButton extends BaseComponent<ButtonBuilder> {
             + ' The result will not be related to the context of the previous image.';
     }
 
-    constructor(services: IServiceContainer) {
+    constructor(services: IBotServiceContainer) {
         super(services);
     }
 

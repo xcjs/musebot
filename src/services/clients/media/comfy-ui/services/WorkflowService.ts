@@ -1,4 +1,4 @@
-import fs from 'node:fs/promises'
+import fs from 'node:fs/promises';
 import path from 'node:path';
 
 import { Prompt } from 'comfy-ui-client';
@@ -7,7 +7,6 @@ import Handlebars from 'handlebars';
 import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { ILogger } from '../../../../ILogger.js';
-import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { IWorkflow } from '../models/IWorkflow.js';
 import { IWorkflowDefaults } from '../models/IWorkflowDefaults.js';
 import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
@@ -23,11 +22,13 @@ export class WorkflowService implements IWorkflowService {
     }
 
     readonly #logger: ILogger;
+    readonly #botId: string | null;
 
     #workflows: IWorkflow[] = [];
 
-    public constructor(services: IServiceContainer) {
-        this.#logger = services.getLogger('WorkflowService');
+    public constructor(logger: ILogger, botId: string | null = null) {
+        this.#logger = logger;
+        this.#botId = botId;
     }
 
     async loadWorkflows(): Promise<void> {
@@ -37,7 +38,7 @@ export class WorkflowService implements IWorkflowService {
             this.#workflows = [];
         }
 
-        const workflowPathBase = './workflows';
+        const workflowPathBase = this.#botId ? `./workflows/${this.#botId}` : './workflows';
         const workflowTypes = Object.values(SupportedFeature);
 
         try {
@@ -74,9 +75,17 @@ export class WorkflowService implements IWorkflowService {
                     }
                 }
             }
+
+            if(this.#workflows.length === 0 && this.#botId !== null) {
+                throw new Error('No workflows found in bot workflow directory.');
+            }
         } catch(error) {
-            this.#logger.error('Failed to load workflow templates.'
-                 + ' Check if Musebot can read and write from ./workflows/ and that it contains workflows.', error);
+            if(this.#workflows.length === 0 && this.#botId !== null) {
+                this.#logger.error('No workflows found in bot workflow directory.', error);
+            } else {
+                this.#logger.error('Failed to load workflow templates.'
+                     + ' Check if Musebot can read and write from ./workflows/ and that it contains workflows.', error);
+            }
         }
     }
 

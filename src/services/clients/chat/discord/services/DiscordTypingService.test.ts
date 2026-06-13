@@ -1,8 +1,8 @@
-import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
+﻿import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { BaseGuildTextChannel, ButtonInteraction, DMChannel, Message } from 'discord.js';
 
+import { IBotServiceContainer } from '../../../../IBotServiceContainer.js';
 import { ILogger } from '../../../../ILogger.js';
-import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
 import { ITypingService } from '../../ITypingService.js';
 import { DiscordTypingService } from './DiscordTypingService.js';
@@ -71,7 +71,7 @@ describe('TypingService', () => {
         typingService = new DiscordTypingService({
             taskQueue: mockTaskQueue,
             getLogger: getLoggerFn
-        } as IServiceContainer);
+        } as IBotServiceContainer);
     });
 
     afterEach(() => {

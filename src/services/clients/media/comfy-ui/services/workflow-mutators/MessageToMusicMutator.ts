@@ -1,4 +1,4 @@
-import { Attachment, AttachmentBuilder, ButtonInteraction, Message, MessageReaction } from 'discord.js';
+﻿import { Attachment, AttachmentBuilder, ButtonInteraction, Message, MessageReaction } from 'discord.js';
 import { GenerateRequest, GenerateResponse } from 'ollama';
 
 import { BotInteraction } from '../../../../../../enums/BotInteraction.js';
@@ -6,7 +6,7 @@ import { IHttpExchangeWithAttachedData } from '../../../../../../models/IHttpExc
 import { getRandomArrayEntry, getRandomInt } from '../../../../../../utilities/random-utilities.js';
 import { SupportedFeature } from '../../../../../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../../../../../features/IFeatureService.js';
-import { IServiceContainer } from '../../../../../IServiceContainer.js';
+import { IBotServiceContainer } from "../../../../../IBotServiceContainer.js"
 import { ITaskQueue } from '../../../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../../../tasks/models/BaseTask.js';
 import { IReplyService } from '../../../../chat/IReplyService.js';
@@ -37,12 +37,12 @@ export class MessageToMusicMutator implements IWorkflowMutator {
         return [];
     }
 
-    readonly #services: IServiceContainer;
+    readonly #services: IBotServiceContainer;
     readonly #featureService: IFeatureService;
     readonly #taskQueue: ITaskQueue;
     readonly #replyService: IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
 
-    constructor(services: IServiceContainer) {
+    constructor(services: IBotServiceContainer) {
         this.#services = services;
         this.#featureService = services.featureService;
         this.#taskQueue = services.taskQueue;

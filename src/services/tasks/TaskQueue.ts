@@ -1,45 +1,37 @@
-import { PromisedSettledResultStatus } from '../../enums/PromisedSettledResultStatus.js';
-import { IEnvironmentSettings } from '../environment-settings/IEnvironmentSettings.js';
-import { ILogger } from '../ILogger.js';
-import { IServiceContainer } from '../IServiceContainer.js';
+﻿import { PromisedSettledResultStatus } from '../../enums/PromisedSettledResultStatus.js';
+import { IBotServiceContainer } from '../IBotServiceContainer.js';
+import { IGlobalServiceContainer } from '../IGlobalServiceContainer.js';
 import { TaskStatus } from './enums/TaskStatus.js';
 import { ITaskQueue } from './ITaskQueue.js';
 import { BaseTask } from './models/BaseTask.js';
 import { TaskChannel } from './models/TaskChannel.js';
 
 export class TaskQueue implements ITaskQueue {
-    readonly #services: IServiceContainer;
+    readonly #globalServices: IGlobalServiceContainer;
+    readonly #channels: TaskChannel[] = [];
 
-    readonly #environmentSettings: IEnvironmentSettings;
-
-    readonly #logger: ILogger;
-
-    readonly #channels: Array<TaskChannel> = [];
-
-    get isActive(): boolean {
-        return this.#channels.some(channel => channel.hasTasks);
+    constructor(globalServices: IGlobalServiceContainer) {
+        this.#globalServices = globalServices;
     }
 
-    constructor(services: IServiceContainer) {
-        this.#services = services;
-
-        this.#environmentSettings = services.environmentSettings;
-        this.#logger = services.getLogger('TaskQueue');
+    get isActive(): boolean {
+        return this.#channels.some(channel => channel.isActive);
     }
 
     add(task: BaseTask<unknown>): void {
-        this.#logger.info(`Adding task ${task.id} to the ${task.taskChannel} queue.`);
+        this.#globalServices.getLogger('TaskQueue').info(`Adding task ${task.id} to the ${task.taskChannel} queue.`);
 
         let taskChannel: TaskChannel;
+        const taskServices = this.#getTaskServices(task);
 
         if (this.#channels.filter(x => x.name === task.taskChannel).length === 0) {
-            taskChannel = new TaskChannel(this.#services, task.taskChannel);
+            taskChannel = new TaskChannel(taskServices, task.taskChannel);
             this.#channels.push(taskChannel);
         } else {
             const potentialTaskChannel = this.#channels.find(x => x.name === task.taskChannel);
 
             if(potentialTaskChannel === undefined) {
-                taskChannel = new TaskChannel(this.#services, task.taskChannel);
+                taskChannel = new TaskChannel(taskServices, task.taskChannel);
             } else {
                 taskChannel = potentialTaskChannel;
             }
@@ -54,6 +46,11 @@ export class TaskQueue implements ITaskQueue {
         void this.#processQueue();
     }
 
+    #getTaskServices(task: BaseTask<unknown>): IBotServiceContainer {
+        // Access the private services field via type assertion
+        return (task as unknown as { services: IBotServiceContainer }).services;
+    }
+
     async #processQueue(): Promise<void> {
         let tasks = this.#getNextTasks();
 
@@ -62,7 +59,7 @@ export class TaskQueue implements ITaskQueue {
             const numTasks = this.#channels.map((channel) => channel.queue.length)
                 .reduce((accumulator, value) => accumulator + value);
 
-            this.#logger.info(`Processing the task queue with ${numChannels} channel(s) and ${numTasks} task(s).`);
+            this.#globalServices.getLogger('TaskQueue').info(`Processing the task queue with ${numChannels} channel(s) and ${numTasks} task(s).`);
 
             try {
                 const preProcessPromises = tasks
@@ -90,25 +87,25 @@ export class TaskQueue implements ITaskQueue {
 
                     if (promise.status === PromisedSettledResultStatus.Rejected.toString()) {
                         task.taskStatus = TaskStatus.Failed;
-                        this.#logger.error(`Task ${task.id} was rejected ${task.numAttempts} time(s):`, task,
+                        this.#globalServices.getLogger('TaskQueue').error(`Task ${task.id} was rejected ${task.numAttempts} time(s):`, task,
                             (promise as PromiseRejectedResult).reason);
 
-                        if (task.numAttempts >= this.#environmentSettings.maxTaskAttempts) {
+                        if (task.numAttempts >= this.#globalServices.globalConfiguration.taskQueue.numAttempts) {
                             return task.postProcess();
                         } else {
-                            this.#logger.info('Scheduling a failed task to be resumed:', task.id);
+                            this.#globalServices.getLogger('TaskQueue').info('Scheduling a failed task to be resumed:', task.id);
 
                             setTimeout(() => {
                                 task.taskStatus = TaskStatus.Idle;
                                 this.add(task);
-                            }, this.#environmentSettings.taskRetryDelayMilliseconds);
+                            }, this.#globalServices.globalConfiguration.taskQueue.retryDelayMs);
                         }
                     }
                 });
 
                 await Promise.allSettled(postProcessingPromises);
             } catch (error) {
-                this.#logger.error('An exception occurred while processing a task:', error);
+                this.#globalServices.getLogger('TaskQueue').error('An exception occurred while processing a task:', error);
             }
 
             tasks = this.#getNextTasks();
@@ -116,7 +113,7 @@ export class TaskQueue implements ITaskQueue {
     }
 
     #getNextTasks(): BaseTask<unknown>[] {
-        this.#logger.info('Retrieving the next tasks...');
+        this.#globalServices.getLogger('TaskQueue').info('Retrieving the next tasks...');
 
         this.#cleanChannels();
 
@@ -125,7 +122,7 @@ export class TaskQueue implements ITaskQueue {
             .map(channel => channel.queue[0]);
 
         tasks.forEach((task) => {
-            this.#logger.info(`Adding task ${task.id} to the queue from ${task.taskChannel}.`);
+            this.#globalServices.getLogger('TaskQueue').info(`Adding task ${task.id} to the queue from ${task.taskChannel}.`);
         });
 
         return tasks;

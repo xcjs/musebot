@@ -1,9 +1,9 @@
-import { Attachment, ButtonInteraction, Client as DiscordClient, Events, Message as DiscordMessage, MessageReaction, TextChannel,User } from 'discord.js';
+﻿import { Attachment, ButtonInteraction, Client as DiscordClient, Events, Message as DiscordMessage, MessageReaction, TextChannel,User } from 'discord.js';
 import { Message as OllamaMessage } from 'ollama';
 
 import { BotInteraction } from '../../../../enums/BotInteraction.js';
-import { IEnvironmentSettings } from '../../../environment-settings/IEnvironmentSettings.js';
-import { IServiceContainer } from '../../../IServiceContainer.js';
+import { IConfigurationService } from '../../../environment-settings/IConfigurationService.js';
+import { IBotServiceContainer } from "../../../IBotServiceContainer.js"
 import { ITaskQueue } from '../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { IContextMessageFactory } from '../../llm/services/IContextMessageFactory.js';
@@ -14,24 +14,24 @@ import { BaseDiscordClient } from './BaseDiscordClient.js';
 import { ChatConfirmClearActionRow } from './components/buttonRows/ChatConfirmClearActionRow.js';
 
 export class GenerativeChatClient extends BaseDiscordClient {
-    #services: IServiceContainer;
+    readonly #services: IBotServiceContainer;
 
-    #environmentSettings: IEnvironmentSettings;
-    #discordClient: DiscordClient;
-    #contextMessageFactory: IContextMessageFactory<DiscordMessage, OllamaMessage>;
-    #contextService: IContextService<DiscordMessage, OllamaMessage>;
-    #typingService: ITypingService;
-    #replyService: IReplyService<DiscordMessage, MessageReaction, Attachment, DiscordMessage | ButtonInteraction>;
-    #taskQueue: ITaskQueue;
+    readonly #configurationService: IConfigurationService;
+    readonly #discordClient: DiscordClient;
+    readonly #contextMessageFactory: IContextMessageFactory<DiscordMessage, OllamaMessage>;
+    readonly #contextService: IContextService<DiscordMessage, OllamaMessage>;
+    readonly #typingService: ITypingService;
+    readonly #replyService: IReplyService<DiscordMessage, MessageReaction, Attachment, DiscordMessage | ButtonInteraction>;
+    readonly #taskQueue: ITaskQueue;
 
     #channelTopicsCached: string[] = [];
 
-    constructor(services: IServiceContainer) {
+    constructor(services: IBotServiceContainer) {
         super(services);
         this.logger = services.getLogger('GenerativeChatClient');
 
         this.#services = services;
-        this.#environmentSettings = services.environmentSettings;
+        this.#configurationService = services.configurationService;
         this.#contextMessageFactory = services.getContextMessageFactory<DiscordMessage, OllamaMessage>();
         this.#contextService = services.getContextService<DiscordMessage, OllamaMessage>();
         this.#discordClient = services.discordClient;
@@ -39,7 +39,7 @@ export class GenerativeChatClient extends BaseDiscordClient {
         this.#replyService = services.getReplyService();
         this.#taskQueue = services.taskQueue;
 
-        const systemPrompt = this.#environmentSettings.ollamaSystemPrompt;
+        const systemPrompt = this.#configurationService.ollamaSystemPrompt;
         this.#contextService.addContext([this.#contextMessageFactory.fromSystemPrompt(systemPrompt, null, true)]);
 
         this.#registerEvents();
@@ -70,7 +70,7 @@ export class GenerativeChatClient extends BaseDiscordClient {
 
         this.logger.info('Replying to message...');
         const messageTask = this.#services.getMessageTask(message) as BaseTask<OllamaMessage[]>;
-        this.#taskQueue.add(messageTask);
+        this.#taskQueue.add(messageTask as BaseTask<unknown>);
         await this.#typingService.startTyping(message);
     }
 
@@ -160,7 +160,7 @@ export class GenerativeChatClient extends BaseDiscordClient {
         }
 
         const emojiReactionTask = this.#services.getEmojiReactionTask(reaction, user);
-        this.#taskQueue.add(emojiReactionTask as BaseTask<OllamaMessage[]>);
+        this.#taskQueue.add(emojiReactionTask);
         await this.#typingService.startTyping(reaction.message as DiscordMessage);
     }
 }

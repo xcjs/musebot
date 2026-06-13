@@ -1,9 +1,9 @@
 {
   "name": "musebot",
-  "version": "8.7.1",
+  "version": "9.0.0",
   "description": "A Discord bot that connects to various generative AI APIs.",
   "private": "true",
-  "license": "XCJS Software License Agreement",
+  "license": "AGPL-3.0",
   "author": {
     "name": "Zackary Lowery",
     "email": "zlowery@xcjs.com",
@@ -43,6 +43,7 @@
     "cross-env": "^10.1.0",
     "discord.js": "14.23.2",
     "handlebars": "^4.7.8",
+    "json5": "^2.2.3",
     "ollama": "^0.6.0",
     "parcel": "^2.15.4",
     "sharp": "^0.34.2",

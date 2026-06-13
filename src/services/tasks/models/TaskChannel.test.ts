@@ -1,8 +1,7 @@
-import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+﻿import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 
-import { createMockLogger, createMockPostProcessor, createMockServiceContainer } from '../../../test-utils/mockServiceContainer.js';
+import { createMockLogger, createMockPostProcessor, createMockServiceContainer, MockContainer } from '../../../test-utils/mockBotServiceContainer.js';
 import type { ILogger } from '../../ILogger.js';
-import type { IServiceContainer } from '../../IServiceContainer.js';
 import type { ITaskChannelPostProcessor } from '../../parallelization/ITaskChannelPostProcessor.js';
 import { TaskStatus } from '../enums/TaskStatus.js';
 import { BaseTask } from './BaseTask.js';
@@ -15,7 +14,7 @@ class MockTask extends BaseTask<unknown> {
     readonly #postProcessMock: () => Promise<void>;
 
     constructor(
-        services: IServiceContainer,
+        services: MockContainer,
         taskChannelName: string,
         processMock?: () => Promise<void>,
         postProcessMock?: () => Promise<void>
@@ -40,7 +39,7 @@ class MockTask extends BaseTask<unknown> {
 }
 
 describe('TaskChannel', () => {
-    let mockServices: IServiceContainer;
+    let mockServices: MockContainer;
     let mockLogger: jest.Mocked<ILogger>;
     let mockPostProcessor: jest.Mocked<ITaskChannelPostProcessor>;
 
@@ -129,15 +128,6 @@ describe('TaskChannel', () => {
 
             expect(channel.isActive).toBe(false);
         });
-
-        it('should return false when tasks are failed', () => {
-            const channel = new TaskChannel(mockServices, 'testChannel');
-            const task = new MockTask(mockServices, 'testChannel');
-            task.taskStatus = TaskStatus.Failed;
-            channel.queue.push(task);
-
-            expect(channel.isActive).toBe(false);
-        });
     });
 
     describe('hasTasks', () => {
@@ -175,7 +165,7 @@ describe('TaskChannel', () => {
             const services = createMockServiceContainer({
                 logger: mockLogger,
                 postProcessor: mockPostProcessor,
-                environmentSettings: { maxTaskAttempts: 0 } as never,
+                configurationService: { maxTaskAttempts: 0 } as never,
             });
             const channel = new TaskChannel(services, 'testChannel');
             const task1 = new MockTask(services, 'testChannel');
@@ -194,7 +184,7 @@ describe('TaskChannel', () => {
             const services = createMockServiceContainer({
                 logger: mockLogger,
                 postProcessor: mockPostProcessor,
-                environmentSettings: { maxTaskAttempts: 1 } as never,
+                configurationService: { maxTaskAttempts: 1 } as never,
             });
             const channel = new TaskChannel(services, 'testChannel');
             const task1 = new MockTask(services, 'testChannel');

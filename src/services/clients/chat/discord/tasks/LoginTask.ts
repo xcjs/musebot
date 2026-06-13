@@ -1,7 +1,7 @@
-import { Client as DiscordClient } from 'discord.js';
+﻿import { Client as DiscordClient } from 'discord.js';
 
-import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
-import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { IConfigurationService } from '../../../../environment-settings/IConfigurationService.js';
+import { IBotServiceContainer } from "../../../../IBotServiceContainer.js"
 import { IParallelizationStrategy } from '../../../../parallelization/IParallelizationStrategy.js';
 import { ResourceType } from '../../../../parallelization/ResourceType.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
@@ -13,20 +13,20 @@ export class LoginTask extends BaseTask<void> {
         return this.#parallelizationStrategy.getTaskChannel(ResourceType.Chat, this.isChild, null);
     }
 
-    readonly #services: IServiceContainer;
+    readonly #services: IBotServiceContainer;
 
-    readonly #environmentSettings: IEnvironmentSettings;
+    readonly #configurationService: IConfigurationService;
     readonly #discordClient: DiscordClient;
     readonly #parallelizationStrategy: IParallelizationStrategy;
     readonly #taskQueue: ITaskQueue;
 
-    constructor(services: IServiceContainer) {
+    constructor(services: IBotServiceContainer) {
         super(services);
         this.logger = services.getLogger('LoginTask');
 
         this.#services = services;
 
-        this.#environmentSettings = services.environmentSettings;
+        this.#configurationService = services.configurationService;
         this.#discordClient = services.discordClient;
         this.#parallelizationStrategy = services.parallelizationStrategy;
         this.#taskQueue = services.taskQueue;
@@ -34,7 +34,7 @@ export class LoginTask extends BaseTask<void> {
 
     async process(): Promise<void> {
         this.logger.info('Attempting Discord login...');
-        await this.#discordClient.login(this.#environmentSettings.discordToken);
+        await this.#discordClient.login(this.#configurationService.discordToken);
     }
 
     override async postProcess(): Promise<void> {

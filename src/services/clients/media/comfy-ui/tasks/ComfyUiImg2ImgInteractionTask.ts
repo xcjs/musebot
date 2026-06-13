@@ -1,10 +1,10 @@
-import { Prompt } from 'comfy-ui-client';
+﻿import { Prompt } from 'comfy-ui-client';
 import { Attachment, BaseMessageOptions, ButtonInteraction, Message, MessageReaction } from 'discord.js';
 import sharp from 'sharp';
 
 import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
-import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { IBotServiceContainer } from "../../../../IBotServiceContainer.js"
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
@@ -27,7 +27,7 @@ export class ComfyUiImg2ImgInteractionTask extends ComfyUiBaseTask {
     readonly #interaction: ButtonInteraction;
     readonly #workflow: IWorkflow;
 
-    constructor(services: IServiceContainer, interaction: ButtonInteraction, workflow: IWorkflow) {
+    constructor(services: IBotServiceContainer, interaction: ButtonInteraction, workflow: IWorkflow) {
         super(services);
         this.logger = services.getLogger('ComfyUiImg2ImgInteractionTask');
 

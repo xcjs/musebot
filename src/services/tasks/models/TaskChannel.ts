@@ -1,11 +1,11 @@
+﻿import { IBotServiceContainer } from '../../IBotServiceContainer.js';
 import { ILogger } from '../../ILogger.js';
-import { IServiceContainer } from '../../IServiceContainer.js';
 import { ITaskChannelPostProcessor } from '../../parallelization/ITaskChannelPostProcessor.js';
 import { TaskStatus } from '../enums/TaskStatus.js';
 import { BaseTask } from './BaseTask.js';
 
 export class TaskChannel {
-    readonly #services: IServiceContainer;
+    readonly #services: IBotServiceContainer;
 
     readonly #logger: ILogger;
 
@@ -30,7 +30,7 @@ export class TaskChannel {
         return this.#queue.length > 0;
     }
 
-    constructor(services: IServiceContainer, name: string) {
+    constructor(services: IBotServiceContainer, name: string) {
         this.#services = services;
 
         this.#logger = services.getLogger('TaskChannel');

@@ -1,8 +1,8 @@
-import { Attachment, ButtonInteraction, Client as DiscordClient, Events, Message as DiscordMessage, MessageReaction } from 'discord.js';
+﻿import { Attachment, ButtonInteraction, Client as DiscordClient, Events, Message as DiscordMessage, MessageReaction } from 'discord.js';
 
 import { BotInteraction } from '../../../../enums/BotInteraction.js';
-import { IEnvironmentSettings } from '../../../environment-settings/IEnvironmentSettings.js';
-import { IServiceContainer } from '../../../IServiceContainer.js';
+import { IConfigurationService } from '../../../environment-settings/IConfigurationService.js';
+import { IBotServiceContainer } from "../../../IBotServiceContainer.js"
 import { ITaskQueue } from '../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { IWorkflow } from '../../media/comfy-ui/models/IWorkflow.js';
@@ -13,22 +13,22 @@ import { ITypingService } from '../ITypingService.js';
 import { BaseDiscordClient } from './BaseDiscordClient.js';
 
 export class GenerativeMediaChatClient extends BaseDiscordClient {
-    #services: IServiceContainer;
+    #services: IBotServiceContainer;
 
-    #environmentSettings: IEnvironmentSettings;
+    #configurationService: IConfigurationService;
     #discordClient: DiscordClient;
     #replyService: IReplyService<DiscordMessage, MessageReaction, Attachment, DiscordMessage | ButtonInteraction>;
     #typingService: ITypingService;
     #workflowService: IWorkflowService;
     #taskQueue: ITaskQueue;
 
-    constructor(services: IServiceContainer) {
+    constructor(services: IBotServiceContainer) {
         super(services);
         this.logger = services.getLogger('GenerativeMediaChatClient');
 
         this.#services = services;
 
-        this.#environmentSettings = services.environmentSettings;
+        this.#configurationService = services.configurationService;
         this.#discordClient = services.discordClient;
         this.#replyService = services.getReplyService();
         this.#typingService = services.typingService;
@@ -67,7 +67,7 @@ export class GenerativeMediaChatClient extends BaseDiscordClient {
             await interaction.deferUpdate();
         } catch (error) {
             this.logger.error(`Error while deferring a reply. Ignore this error if `
-                + `${this.#environmentSettings.applicationName} is functioning normally:`, error);
+                + `${this.#configurationService.applicationName} is functioning normally:`, error);
         }
 
         if(Object.values(BotInteraction).includes(interaction.customId as BotInteraction)) {

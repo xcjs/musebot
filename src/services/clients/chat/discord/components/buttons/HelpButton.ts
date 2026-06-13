@@ -1,7 +1,7 @@
-import { ButtonBuilder, ButtonStyle } from 'discord.js';
+﻿import { ButtonBuilder, ButtonStyle } from 'discord.js';
 
 import { BotInteraction } from '../../../../../../enums/BotInteraction.js';
-import { IServiceContainer } from '../../../../../IServiceContainer.js';
+import { IBotServiceContainer } from "../../../../../IBotServiceContainer.js"
 import { BaseComponent } from '../BaseComponent.js';
 
 export class HelpButton extends BaseComponent<ButtonBuilder> {
@@ -21,7 +21,7 @@ export class HelpButton extends BaseComponent<ButtonBuilder> {
         return 'Show this help information.';
     }
 
-    constructor(services: IServiceContainer) {
+    constructor(services: IBotServiceContainer) {
         super(services);
     }
 

@@ -1,7 +1,7 @@
-import { BaseGuildTextChannel, ButtonInteraction, DMChannel, Message } from 'discord.js';
+﻿import { BaseGuildTextChannel, ButtonInteraction, DMChannel, Message } from 'discord.js';
 
+import { IBotServiceContainer } from '../../../../IBotServiceContainer.js';
 import { ILogger } from '../../../../ILogger.js';
-import { IServiceContainer } from '../../../../IServiceContainer.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
 import { ITypingService } from '../../ITypingService.js';
 import { IChannelTypingIndicator } from '../models/IChannelTypingIndicator.js';
@@ -15,7 +15,7 @@ export class DiscordTypingService implements ITypingService {
     readonly #sendTypingIntervalMilliseconds = 1000;
     readonly #typingIndicators: Array<IChannelTypingIndicator> = [];
 
-    constructor(services: IServiceContainer) {
+    constructor(services: IBotServiceContainer) {
         this.#taskQueue = services.taskQueue;
 
         this.#logger = services.getLogger('TypingService');

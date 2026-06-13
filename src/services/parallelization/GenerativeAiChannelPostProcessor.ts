@@ -1,9 +1,9 @@
-import { OllamaClient } from '../clients/llm/ollama/OllamaClient.js';
+﻿import { OllamaClient } from '../clients/llm/ollama/OllamaClient.js';
 import { ComfyUiClient } from '../clients/media/comfy-ui/ComfyUiClient.js';
 import { SupportedFeature } from '../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../features/IFeatureService.js';
+import { IBotServiceContainer } from '../IBotServiceContainer.js';
 import { ILogger } from '../ILogger.js';
-import { IServiceContainer } from '../IServiceContainer.js';
 import { ITaskChannelPostProcessor } from './ITaskChannelPostProcessor.js';
 
 export class GenerativeAiChannelPostProcessor implements ITaskChannelPostProcessor {
@@ -13,7 +13,7 @@ export class GenerativeAiChannelPostProcessor implements ITaskChannelPostProcess
 
   readonly #logger: ILogger;
 
-  constructor(services: IServiceContainer) {
+  constructor(services: IBotServiceContainer) {
     this.#featureService = services.featureService;
     this.#ollamaClient = services.ollamaClient;
     this.#comfyUiClient = services.comfyUiClient;

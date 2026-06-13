@@ -1,16 +1,16 @@
-import { ChatRequest, ChatResponse, GenerateRequest, GenerateResponse, Message, Ollama } from 'ollama';
+﻿import { ChatRequest, ChatResponse, GenerateRequest, GenerateResponse, Message, Ollama } from 'ollama';
 
 import { IHttpExchange } from '../../../../models/IHttpExchange.js';
 import { IHttpExchangeWithAttachedData } from '../../../../models/IHttpExchangeWithAttachedData.js';
 import { getRandomArrayEntry, getRandomInt } from '../../../../utilities/random-utilities.js';
-import { IEnvironmentSettings } from '../../../environment-settings/IEnvironmentSettings.js';
+import { IConfigurationService } from '../../../environment-settings/IConfigurationService.js';
+import { IBotServiceContainer } from '../../../IBotServiceContainer.js';
 import { ILogger } from '../../../ILogger.js';
-import { IServiceContainer } from '../../../IServiceContainer.js';
 import { OllamaRole } from './enums/OllamaRole.js';
 import { IStructuredRequestData } from './models/IStructuredRequestData.js';
 
 export class OllamaClient {
-    readonly #environmentSettings: IEnvironmentSettings;
+    readonly #configurationService: IConfigurationService;
     readonly #logger: ILogger;
 
     readonly #host: URL;
@@ -21,12 +21,12 @@ export class OllamaClient {
         return this.#host;
     }
 
-    constructor(services: IServiceContainer) {
-        this.#environmentSettings = services.environmentSettings;
+    constructor(services: IBotServiceContainer) {
+        this.#configurationService = services.configurationService;
 
         this.#logger = services.getLogger('OllamaClient');
 
-        const host = getRandomArrayEntry(this.#environmentSettings.ollamaHosts);
+        const host = getRandomArrayEntry(this.#configurationService.ollamaHosts);
 
         if (!host) {
             throw new Error('No Ollama hosts configured in environment settings.');
@@ -39,7 +39,7 @@ export class OllamaClient {
             host: host.toString()
         });
 
-        this.#model = this.#selectModel(this.#environmentSettings.ollamaModels);
+        this.#model = this.#selectModel(this.#configurationService.ollamaModels);
     }
 
     async generate(prompt: string, temperature: number | undefined = undefined): Promise<IHttpExchange<GenerateRequest, GenerateResponse>> {
@@ -72,7 +72,7 @@ export class OllamaClient {
     async free(): Promise<void> {
         try {
             await this.#client.generate({
-                prompt: null,
+                prompt: null!,
                 model: this.#model,
                 stream: false,
                 keep_alive: 0

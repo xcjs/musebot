@@ -11,6 +11,8 @@ Code Review.md
 
 # Configuration Files
 .env*
+config.json
+config.jsonc
 
 # Package Management
 node_modules/
@@ -19,9 +21,5 @@ node_modules/
 coverage/
 
 # Testing Workflows
-workflows/img2img/
-workflows/img2vid/
-workflows/txt2audio/
-workflows/txt2img/
-workflows/txt2music/
-workflows/txt2vid/
+# workflows/examples should be included.
+workflows/

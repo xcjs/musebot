@@ -1,7 +1,7 @@
-import { Attachment, BaseMessageOptions, ButtonInteraction, Message, MessageReaction, User } from 'discord.js';
+﻿import { Attachment, BaseMessageOptions, ButtonInteraction, Message, MessageReaction, User } from 'discord.js';
 
 import { ContentType } from '../../../../../enums/ContentType.js';
-import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { IBotServiceContainer } from "../../../../IBotServiceContainer.js"
 import { IReplyService } from '../../IReplyService.js';
 import { DiscordAttachmentService } from '../services/DiscordAttachmentService.js';
 import { DiscordMentionService } from '../services/DiscordMentionService.js';
@@ -16,7 +16,7 @@ export class DiscordReplyService implements IReplyService<Message, MessageReacti
     readonly #extractor: DiscordMessageExtractor;
     readonly #attachmentService: DiscordAttachmentService;
 
-    constructor(services: IServiceContainer) {
+    constructor(services: IBotServiceContainer) {
         this.#filter = new DiscordReplyFilter(services);
         this.#sender = new DiscordReplySender(services);
         this.#mentionService = new DiscordMentionService();

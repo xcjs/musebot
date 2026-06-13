@@ -15,16 +15,21 @@ download, configure, and install Ollama.
 
 Once Ollama is running as a server, it's typically accessible on port `11434`
 of your assigned host. If you're running Ollama on your current device, you can
-most likely use `http://localhost:11434/` as the value for the
-`MUSEBOT_OLLAMA_HOSTS` environment variable in your `.env` configuration file,
-though make sure you specify the correct host and port if that's not the case.
+most likely use `http://localhost:11434/` as a host in the `ollama.hosts` array
+in your `config.jsonc` file, though make sure you specify the correct host and
+port if that's not the case.
 
-```bash
-...
-
-MUSEBOT_OLLAMA_HOSTS=http://localhost:11434/
-
-...
+```jsonc
+{
+  "bots": [
+    {
+      // ...
+      "ollama": {
+        "hosts": ["http://localhost:11434/"]
+      }
+    }
+  ]
+}
 ```
 
 Make sure to substitute your machine's hostname or IP address instead and that
@@ -46,13 +51,12 @@ Ollama provides a CLI for downloading these models:
 ollama pull mistral-nemo
 ```
 
-Once Ollama downloads your preferred model, you can specify it in your `.env`
-configuration by assigning it to the `MUSEBOT_OLLAMA_MODELS` environment
-variable.
+Once Ollama downloads your preferred model, you can specify it in your
+`config.jsonc` file by adding it to the `ollama.models` array.
 
 ## Image Attachment Support
 
-If you also integrate Musebot with a [ComfyUI](../comfyui/index.html) or
-[SwarmUI](../swarmui/index.html) instance with `MUSEBOT_FUNCTION` set to `text`,
-Musebot will use the large language model response as a prompt for an image and
-attach it to its response asynchronously, providing a visual for the response.
+If you also integrate Musebot with a [ComfyUI](../media/01-swarm-ui.md) instance
+with `mode` set to `"chat"`, Musebot will use the large language model response
+as a prompt for an image and attach it to its response asynchronously, providing
+a visual for the response.

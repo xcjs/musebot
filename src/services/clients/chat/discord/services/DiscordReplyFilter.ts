@@ -1,20 +1,20 @@
-import { Client as DiscordClient, Message, MessageReaction, MessageType } from 'discord.js';
+﻿import { Client as DiscordClient, Message, MessageReaction, MessageType } from 'discord.js';
 
 import { getRandomInt } from '../../../../../utilities/random-utilities.js';
-import { IEnvironmentSettings } from '../../../../environment-settings/IEnvironmentSettings.js';
+import { IConfigurationService } from '../../../../environment-settings/IConfigurationService.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../../../../features/IFeatureService.js';
+import { IBotServiceContainer } from '../../../../IBotServiceContainer.js';
 import { ILogger } from '../../../../ILogger.js';
-import { IServiceContainer } from '../../../../IServiceContainer.js';
 
 export class DiscordReplyFilter {
-    #environmentSettings: IEnvironmentSettings;
+    #configurationService: IConfigurationService;
     #discordClient: DiscordClient;
     #featureService: IFeatureService;
     #logger: ILogger;
 
-    constructor(services: IServiceContainer) {
-        this.#environmentSettings = services.environmentSettings;
+    constructor(services: IBotServiceContainer) {
+        this.#configurationService = services.configurationService;
         this.#discordClient = services.discordClient;
         this.#featureService = services.featureService;
 
@@ -38,7 +38,7 @@ export class DiscordReplyFilter {
                 return false;
             }
 
-            if (!message.guild && !(this.#environmentSettings.botPrivateMessageUsers.includes(message.author.username))) {
+            if (!message.guild && !(this.#configurationService.botPrivateMessageUsers.includes(message.author.username))) {
                 this.#logger.info('Not replying to a non-guild message that\'s not from someone in a private messaging role.');
                 return false;
             }
@@ -65,7 +65,7 @@ export class DiscordReplyFilter {
             }
 
             if (message.guild !== null
-                && (this.#environmentSettings.botRequiresMention
+                && (this.#configurationService.botRequiresMention
                     && !message.mentions.members?.find(x => x.id === this.#discordClient.user?.id))) {
                 const botRole = message.guild.members?.resolve(this.#discordClient.user).roles.botRole;
 
@@ -77,24 +77,24 @@ export class DiscordReplyFilter {
 
             const generatedResponseRate = getRandomInt(1, 100);
 
-            if ((!this.#environmentSettings.botRequiresMention
-                && generatedResponseRate > this.#environmentSettings.botResponseRate)
+            if ((!this.#configurationService.botRequiresMention
+                && generatedResponseRate > this.#configurationService.botResponseRate)
                 && !message.mentions.members?.find(x => x.id === this.#discordClient.user?.id)) {
                 this.#logger.info(`Not replying to a message outside the response rate` +
-                    ` (${generatedResponseRate} > ${this.#environmentSettings.botResponseRate}).`);
+                    ` (${generatedResponseRate} > ${this.#configurationService.botResponseRate}).`);
                 return false;
             }
 
             if (message.guild !== null
-                && this.#environmentSettings.discordChannels.length > 0
-                && !this.#environmentSettings.discordChannels.includes(message.channel.id)) {
+                && this.#configurationService.discordChannels.length > 0
+                && !this.#configurationService.discordChannels.includes(message.channel.id)) {
                 this.#logger.info('Not replying to a message in a channel outside this bot\'s allowed channels.');
                 return false;
             }
 
             if (message.guild !== null
-                && this.#environmentSettings.discordChannelsDisallowed.length > 0
-                && this.#environmentSettings.discordChannelsDisallowed.includes(message.channel.id)) {
+                && this.#configurationService.discordChannelsDisallowed.length > 0
+                && this.#configurationService.discordChannelsDisallowed.includes(message.channel.id)) {
                 this.#logger.info('Not replying to a message in a disallowed channel.');
                 return false;
             }

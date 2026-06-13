@@ -1,10 +1,10 @@
-import { AttachmentBuilder, ButtonInteraction } from 'discord.js';
+﻿import { AttachmentBuilder, ButtonInteraction } from 'discord.js';
 import { GenerateRequest, GenerateResponse } from 'ollama';
 
 import { BotInteraction } from '../../../../../../enums/BotInteraction.js';
 import { IHttpExchange } from '../../../../../../models/IHttpExchange.js';
 import { SupportedFeature } from '../../../../../features/enum/SupportedFeature.js';
-import { IServiceContainer } from '../../../../../IServiceContainer.js';
+import { IBotServiceContainer } from "../../../../../IBotServiceContainer.js"
 import { ITaskQueue } from '../../../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../../../tasks/models/BaseTask.js';
 import { OLLAMA_TEMPERATURE_DEFAULT } from '../../../../llm/ollama/constants/OllamaConstants.js';
@@ -33,13 +33,13 @@ export class ExpandPromptMutator implements IWorkflowMutator {
         return [];
     }
 
-    readonly #services: IServiceContainer;
+    readonly #services: IBotServiceContainer;
 
     readonly #taskQueue: ITaskQueue;
 
     #contentMessage = '';
 
-    constructor(services: IServiceContainer) {
+    constructor(services: IBotServiceContainer) {
         this.#services = services;
 
         this.#taskQueue = services.taskQueue;
@@ -49,6 +49,7 @@ export class ExpandPromptMutator implements IWorkflowMutator {
         interaction: ButtonInteraction,
         workflow: IWorkflow): Promise<SerializableRenderRequest> {
         const mutatedRequest = SerializableRenderRequest.fromSerializableRenderRequest(renderRequest);
+        mutatedRequest.workflow = workflow.name;
 
         if(mutatedRequest.prompt === null) {
             throw new Error('The prompt could be expanded because no original prompt was found.');

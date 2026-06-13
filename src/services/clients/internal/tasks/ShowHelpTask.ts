@@ -1,7 +1,7 @@
-import { Attachment, ButtonInteraction, Message, MessageReaction } from 'discord.js';
+﻿import { Attachment, ButtonInteraction, Message, MessageReaction } from 'discord.js';
 
 import { IHelpService } from '../../../help/IHelpService.js';
-import { IServiceContainer } from '../../../IServiceContainer.js';
+import { IBotServiceContainer } from "../../../IBotServiceContainer.js"
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { IReplyService } from '../../chat/IReplyService.js';
 
@@ -17,7 +17,7 @@ export class ShowHelpTask extends BaseTask<void> {
 
     #interaction: ButtonInteraction;
 
-    constructor(services: IServiceContainer, interaction: ButtonInteraction) {
+    constructor(services: IBotServiceContainer, interaction: ButtonInteraction) {
         super(services);
 
         this.#helpService = services.helpService;

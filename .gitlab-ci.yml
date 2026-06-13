@@ -97,24 +97,10 @@ Build Linux Distributable:
     - npm run build:bin
     - rm build/pkg/musebot-win.exe
     - mv build/pkg/musebot-linux build/pkg/musebot-linux-x86_64
-    - cp -f .env.example build/pkg/.env
+    - cp -f config.example.jsonc build/pkg/config.example.jsonc
     - cp -rf docs/ build/pkg/docs/
-    - mkdir -p build/pkg/workflows/img2img/contextual
-    - mkdir -p build/pkg/workflows/img2vid/
-    - mkdir -p build/pkg/workflows/txt2audio/
-    - mkdir -p build/pkg/workflows/txt2img/
-    - mkdir -p build/pkg/workflows/txt2music/
-    - mkdir -p build/pkg/workflows/txt2vid/
-    - cp -f workflows/production/composer/txt2music/ace-step-1.5.json build/pkg/workflows/txt2music/ace-step-1.5.json
-    - cp -f workflows/production/director/txt2vid/ltx-2.json build/pkg/workflows/txt2vid/ltx-2.json
-    - cp -f workflows/production/dreamshaper/txt2img/general_dreamshaper-xl-turbo.json build/pkg/workflows/txt2img/general_dreamshaper-xl-turbo.json
-    - cp -f workflows/production/flux/txt2img/flux.json build/pkg/workflows/txt2img/flux.json
-    - cp -f workflows/production/shared/img2img/01-upscale-detail.json build/pkg/workflows/img2img/01-upscale-detail.json
-    - cp -f workflows/production/shared/img2img/02-upscale-design.json build/pkg/workflows/img2img/02-upscale-design.json
-    - cp -f workflows/production/shared/img2img/03-extract-subject.json build/pkg/workflows/img2img/03-extract-subject.json
-    - cp -f workflows/production/shared/img2img/04-wan.json build/pkg/workflows/img2img/04-wan.json
-    - cp -f workflows/production/shared/img2img/contextual/kontext.json build/pkg/workflows/img2img/contextual/kontext.json
-    - cp -f LICENSE.md build/pkg/LICENSE.txt
+    - cp -rf workflows/examples build/pkg/workflows
+    - cp -f LICENSE build/pkg/LICENSE.txt
     - cp -f logo.jpg build/pkg/musebot.jpg
     - cp -f logo.png build/pkg/musebot.png
     - cp -f musebot.ico build/pkg/musebot.ico
@@ -137,24 +123,10 @@ Build Windows Distributable:
     - npm run build:bin
     - mv build/pkg/musebot-win.exe build/pkg/musebot-win-x86_64.exe
     - rm build/pkg/musebot-linux
-    - cp -f .env.example build/pkg/.env
+    - cp -f config.example.jsonc build/pkg/config.example.jsonc
     - cp -rf docs/ build/pkg/docs/
-    - mkdir -p build/pkg/workflows/img2img/contextual
-    - mkdir -p build/pkg/workflows/img2vid/
-    - mkdir -p build/pkg/workflows/txt2audio/
-    - mkdir -p build/pkg/workflows/txt2img/
-    - mkdir -p build/pkg/workflows/txt2music/
-    - mkdir -p build/pkg/workflows/txt2vid/
-    - cp -f workflows/production/composer/txt2music/ace-step-1.5.json build/pkg/workflows/txt2music/ace-step-1.5.json
-    - cp -f workflows/production/director/txt2vid/ltx-2.json build/pkg/workflows/txt2vid/ltx-2.json
-    - cp -f workflows/production/dreamshaper/txt2img/general_dreamshaper-xl-turbo.json build/pkg/workflows/txt2img/general_dreamshaper-xl-turbo.json
-    - cp -f workflows/production/flux/txt2img/flux.json build/pkg/workflows/txt2img/flux.json
-    - cp -f workflows/production/shared/img2img/01-upscale-detail.json build/pkg/workflows/img2img/01-upscale-detail.json
-    - cp -f workflows/production/shared/img2img/02-upscale-design.json build/pkg/workflows/img2img/02-upscale-design.json
-    - cp -f workflows/production/shared/img2img/03-extract-subject.json build/pkg/workflows/img2img/03-extract-subject.json
-    - cp -f workflows/production/shared/img2img/04-wan.json build/pkg/workflows/img2img/04-wan.json
-    - cp -f workflows/production/shared/img2img/contextual/kontext.json build/pkg/workflows/img2img/contextual/kontext.json
-    - cp -f LICENSE.md build/pkg/LICENSE.txt
+    - cp -rf workflows/examples build/pkg/workflows
+    - cp -f LICENSE build/pkg/LICENSE.txt
     - cp -f logo.jpg build/pkg/musebot.jpg
     - cp -f logo.png build/pkg/musebot.png
     - cp -f musebot.ico build/pkg/musebot.ico
@@ -196,13 +168,13 @@ Publish Docs Docker Image:
     - docker build -f Dockerfile.docs -t $CI_REGISTRY/xcjs/musebot/docs:latest .
     - docker push $CI_REGISTRY/xcjs/musebot/docs:latest
 
-Review with gemma3:1b-it-qat:
+Review with gemma4:e4b:
   stage: Review
   image:
     name: ollama/ollama:latest
     entrypoint: [""]
   script:
-    - .gitlab-ci/review.sh "gemma3:1b-it-qat"
+    - .gitlab-ci/review.sh "gemma4:e4b"
   needs: []
   when: manual
   tags:
@@ -211,43 +183,13 @@ Review with gemma3:1b-it-qat:
     paths:
       - Code Review.md
 
-Review with gemma3n:latest:
+Review with gemma4:12b-it-qat:
   stage: Review
   image:
     name: ollama/ollama:latest
     entrypoint: [""]
   script:
-    - .gitlab-ci/review.sh "gemma3n:latest"
-  needs: []
-  when: manual
-  tags:
-    - docker
-  artifacts:
-    paths:
-      - Code Review.md
-
-Review with qwen2.5-coder:latest:
-  stage: Review
-  image:
-    name: ollama/ollama:latest
-    entrypoint: [""]
-  script:
-    - .gitlab-ci/review.sh "qwen2.5-coder:latest"
-  needs: []
-  when: manual
-  tags:
-    - docker
-  artifacts:
-    paths:
-      - Code Review.md
-
-Review with gemma3:12b-it-qat:
-  stage: Review
-  image:
-    name: ollama/ollama:latest
-    entrypoint: [""]
-  script:
-    - .gitlab-ci/review.sh "gemma3:12b-it-qat"
+    - .gitlab-ci/review.sh "gemma4:12b-it-qat"
   needs: []
   when: manual
   tags:

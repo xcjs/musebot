@@ -1,9 +1,9 @@
-import { AttachmentBuilder, ButtonInteraction } from 'discord.js';
+﻿import { AttachmentBuilder, ButtonInteraction } from 'discord.js';
 
 import { BotInteraction } from '../../../../../../enums/BotInteraction.js';
-import { IEnvironmentSettings } from '../../../../../environment-settings/IEnvironmentSettings.js';
+import { IConfigurationService } from '../../../../../environment-settings/IConfigurationService.js';
 import { SupportedFeature } from '../../../../../features/enum/SupportedFeature.js';
-import { IServiceContainer } from '../../../../../IServiceContainer.js';
+import { IBotServiceContainer } from "../../../../../IBotServiceContainer.js"
 import { guidanceScaleMax, guidanceScaleMin } from '../../../stable-diffusion/constants/constants.js';
 import { IWorkflow } from '../../models/IWorkflow.js';
 import { SerializableRenderRequest } from '../../models/SerializableRenderRequest.js';
@@ -34,12 +34,12 @@ export class GuidanceScaleMutator implements IWorkflowMutator {
         return [];
     }
 
-    #environmentSettings: IEnvironmentSettings;
+    #configurationService: IConfigurationService;
 
     #contentMessage = '';
 
-    constructor(services: IServiceContainer) {
-        this.#environmentSettings = services.environmentSettings;
+    constructor(services: IBotServiceContainer) {
+        this.#configurationService = services.configurationService;
     }
 
     // Method signature required for interface.
@@ -48,17 +48,18 @@ export class GuidanceScaleMutator implements IWorkflowMutator {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         workflow: IWorkflow): Promise<SerializableRenderRequest> {
         const mutatedRequest = SerializableRenderRequest.fromSerializableRenderRequest(renderRequest);
+        mutatedRequest.workflow = workflow.name;
 
         switch(interaction.customId as BotInteraction) {
             case BotInteraction.GuidanceScaleMinus:
-                const lowerScale = mutatedRequest.cfgScale -= this.#environmentSettings.stableDiffusionGuidanceScaleInterval;
+                const lowerScale = mutatedRequest.cfgScale -= this.#configurationService.comfyUiGuidanceScaleInterval;
                 mutatedRequest.cfgScale = lowerScale >= guidanceScaleMin ? lowerScale : mutatedRequest.cfgScale;
 
                 // eslint-disable-next-line @typescript-eslint/no-base-to-string
                 this.#contentMessage = this.#contentMessage = `${interaction.member?.user.toString() || 'You'} decreased the guidance scale from \`${renderRequest.cfgScale}\` to \`${ mutatedRequest.cfgScale }\`.`
                 break;
             case BotInteraction.GuidanceScalePlus:
-                const higherScale = mutatedRequest.cfgScale += this.#environmentSettings.stableDiffusionGuidanceScaleInterval;
+                const higherScale = mutatedRequest.cfgScale += this.#configurationService.comfyUiGuidanceScaleInterval;
                 mutatedRequest.cfgScale = higherScale <= guidanceScaleMax ? higherScale : mutatedRequest.cfgScale;
 
                 // eslint-disable-next-line @typescript-eslint/no-base-to-string

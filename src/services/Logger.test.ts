@@ -45,6 +45,21 @@ describe('Logger', () => {
             // Restore original length for other tests
             Logger.longestPrefix = originalLength;
         });
+
+        it('should create a logger with botId', () => {
+            const log = new Logger('MyPrefix', 'TestBot');
+            expect(log).toBeInstanceOf(Logger);
+        });
+
+        it('should update longestBotId when a longer botId is used', () => {
+            const originalLength = Logger.longestBotId;
+            
+            new Logger('Prefix', 'VeryLongBotId');
+            
+            expect(Logger.longestBotId).toBeGreaterThanOrEqual('VeryLongBotId'.length);
+            
+            Logger.longestBotId = originalLength;
+        });
     });
 
     describe('info()', () => {
@@ -199,6 +214,49 @@ describe('Logger', () => {
             
             // The prefix should be padded
             expect(consoleInfoSpy).toHaveBeenCalled();
+        });
+
+        it('should include botId in prefix when provided', () => {
+            const botLogger = new Logger('Svc', 'MyBot');
+            botLogger.info('Test');
+            
+            expect(consoleInfoSpy).toHaveBeenCalledWith(
+                expect.stringContaining('MyBot')
+            );
+        });
+
+        it('should not include botId column when no botId has been set', () => {
+            Logger.longestBotId = 0;
+            Logger.longestPrefix = 0;
+            const plainLogger = new Logger('Svc');
+            plainLogger.info('Test');
+            
+            const callArg = consoleInfoSpy.mock.calls[0][0] as string;
+            expect(callArg).not.toContain('| MyBot');
+            expect(callArg).toMatch(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2} \| Svc \|/);
+        });
+
+        it('should pad botId to match longest botId', () => {
+            Logger.longestBotId = 10;
+            Logger.longestPrefix = 0;
+            const botLogger = new Logger('Svc', 'Short');
+            
+            botLogger.info('Test');
+            
+            const callArg = consoleInfoSpy.mock.calls[0][0] as string;
+            expect(callArg).toContain('Short');
+        });
+
+        it('should format prefix as timestamp | botId | prefix | message', () => {
+            Logger.longestBotId = 0;
+            Logger.longestPrefix = 0;
+            const botLogger = new Logger('TestSvc', 'Bot1');
+            botLogger.info('Hello');
+            
+            const callArg = consoleInfoSpy.mock.calls[0][0] as string;
+            expect(callArg).toContain('Bot1');
+            expect(callArg).toContain('TestSvc');
+            expect(callArg).toContain('Hello');
         });
     });
 

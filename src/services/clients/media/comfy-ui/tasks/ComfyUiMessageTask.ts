@@ -1,4 +1,4 @@
-import { Prompt } from 'comfy-ui-client';
+﻿import { Prompt } from 'comfy-ui-client';
 import { Attachment, ButtonInteraction, Message, MessageReaction, MessageType } from 'discord.js';
 
 import { BotInteraction } from '../../../../../enums/BotInteraction.js';
@@ -6,7 +6,7 @@ import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { getRandomArrayEntry } from '../../../../../utilities/random-utilities.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../../../../features/IFeatureService.js';
-import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { IBotServiceContainer } from "../../../../IBotServiceContainer.js"
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 
@@ -18,14 +18,14 @@ import { SerializableRenderRequest } from '../models/SerializableRenderRequest.j
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 
 export class ComfyUiMessageTask extends ComfyUiBaseTask {
-    readonly #services: IServiceContainer;
+    readonly #services: IBotServiceContainer;
 
     readonly #featureService: IFeatureService;
     readonly #replyService: DiscordReplyService;
 
     readonly #message: Message;
 
-    constructor(services: IServiceContainer, message: Message) {
+    constructor(services: IBotServiceContainer, message: Message) {
         super(services);
         this.logger = services.getLogger('ComfyUiMessageTask');
 

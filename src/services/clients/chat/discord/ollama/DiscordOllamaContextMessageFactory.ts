@@ -1,7 +1,7 @@
-import { Attachment, ButtonInteraction, Message as DiscordMessage, MessageReaction } from 'discord.js';
+﻿import { Attachment, ButtonInteraction, Message as DiscordMessage, MessageReaction } from 'discord.js';
 import { Message as OllamaMessage } from 'ollama';
 
-import { IServiceContainer } from '../../../../IServiceContainer.js';
+import { IBotServiceContainer } from "../../../../IBotServiceContainer.js"
 import { OllamaRole } from '../../../llm/ollama/enums/OllamaRole.js';
 import { ContextMessage } from '../../../llm/ollama/models/ContextMessage.js';
 import { IContextMessageFactory } from '../../../llm/services/IContextMessageFactory.js';
@@ -12,7 +12,7 @@ type DiscordReplyService = IReplyService<DiscordMessage, MessageReaction, Attach
 export class DiscordOllamaContextMessageFactory implements IContextMessageFactory<DiscordMessage, OllamaMessage> {
     #replyService: DiscordReplyService;
 
-    constructor(services: IServiceContainer) {
+    constructor(services: IBotServiceContainer) {
         this.#replyService = services.getReplyService();
     }
 
