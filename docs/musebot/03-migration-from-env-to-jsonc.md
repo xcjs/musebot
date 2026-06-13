@@ -173,10 +173,10 @@ Create a new `config.jsonc` file in your project root. You can use `config.json`
 |---------------------|-----------------------------|------|----------|
 | `MUSEBOT_FUNCTION` | `global.mode` / `bots[].mode` | enum | Yes |
 | `MUSEBOT_DISCORD_TOKEN` | `global.discord.token` / `bots[].discord.token` | string | Yes |
-| `MUSEBOT_DISCORD_CHANNELS` | `global.discord.channels` / `bots[].discord.channels` | array<string> | No |
-| `MUSEBOT_DISCORD_CHANNELS_DISALLOWED` | `global.discord.privateMessageUsers` / `bots[].discord.privateMessageUsers` | array<string> | No |
-| `MUSEBOT_OLLAMA_HOSTS` | `global.ollama.hosts` / `bots[].ollama.hosts` | array<string> | Yes (chat mode) |
-| `MUSEBOT_OLLAMA_MODELS` | `global.ollama.models` / `bots[].ollama.models` | array<string> | No (chat mode) |
+| `MUSEBOT_DISCORD_CHANNELS` | `global.discord.channels` / `bots[].discord.channels` | string[] | No |
+| `MUSEBOT_DISCORD_CHANNELS_DISALLOWED` | `global.discord.privateMessageUsers` / `bots[].discord.privateMessageUsers` | string[] | No |
+| `MUSEBOT_OLLAMA_HOSTS` | `global.ollama.hosts` / `bots[].ollama.hosts` | string[] | Yes (chat mode) |
+| `MUSEBOT_OLLAMA_MODELS` | `global.ollama.models` / `bots[].ollama.models` | string[] | No (chat mode) |
 | `MUSEBOT_OLLAMA_SYSTEM_PROMPT` | `global.ollama.systemPrompt` / `bots[].ollama.systemPrompt` | string | Yes |
 | `MUSEBOT_OLLAMA_STREAMS_RESPONSE` | `global.ollama.streamsResponse` / `bots[].ollama.streamsResponse` | boolean | No |
 | `MUSEBOT_MAX_TASK_ATTEMPTS` | `global.taskQueue.numAttempts` / `bots[].taskQueue.numAttempts` | number | No |
