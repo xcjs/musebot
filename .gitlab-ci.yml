@@ -168,13 +168,13 @@ Publish Docs Docker Image:
     - docker build -f Dockerfile.docs -t $CI_REGISTRY/xcjs/musebot/docs:latest .
     - docker push $CI_REGISTRY/xcjs/musebot/docs:latest
 
-Review with gemma3:1b-it-qat:
+Review with gemma4:e4b:
   stage: Review
   image:
     name: ollama/ollama:latest
     entrypoint: [""]
   script:
-    - .gitlab-ci/review.sh "gemma3:1b-it-qat"
+    - .gitlab-ci/review.sh "gemma4:12b-it-qat"
   needs: []
   when: manual
   tags:
@@ -183,43 +183,13 @@ Review with gemma3:1b-it-qat:
     paths:
       - Code Review.md
 
-Review with gemma3n:latest:
+Review with gemma4:12b-it-qat:
   stage: Review
   image:
     name: ollama/ollama:latest
     entrypoint: [""]
   script:
-    - .gitlab-ci/review.sh "gemma3n:latest"
-  needs: []
-  when: manual
-  tags:
-    - docker
-  artifacts:
-    paths:
-      - Code Review.md
-
-Review with qwen2.5-coder:latest:
-  stage: Review
-  image:
-    name: ollama/ollama:latest
-    entrypoint: [""]
-  script:
-    - .gitlab-ci/review.sh "qwen2.5-coder:latest"
-  needs: []
-  when: manual
-  tags:
-    - docker
-  artifacts:
-    paths:
-      - Code Review.md
-
-Review with gemma3:12b-it-qat:
-  stage: Review
-  image:
-    name: ollama/ollama:latest
-    entrypoint: [""]
-  script:
-    - .gitlab-ci/review.sh "gemma3:12b-it-qat"
+    - .gitlab-ci/review.sh "gemma4:12b-it-qat"
   needs: []
   when: manual
   tags:
