@@ -174,7 +174,7 @@ Review with gemma4:e4b:
     name: ollama/ollama:latest
     entrypoint: [""]
   script:
-    - .gitlab-ci/review.sh "gemma4:12b-it-qat"
+    - .gitlab-ci/review.sh "gemma4:e4b"
   needs: []
   when: manual
   tags:
