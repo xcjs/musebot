@@ -1,18 +1,6 @@
-﻿import { BotInteraction } from '../enums/BotInteraction.js';
-import { TaskQueueStrategy } from '../enums/TaskQueueStrategy.js';
-import { getRandomArrayEntry } from '../utilities/random-utilities.js';
+﻿import { TaskQueueStrategy } from '../enums/TaskQueueStrategy.js';
 import { OllamaTaskChannelPostProcessor } from './clients/llm/ollama/tasks/OllamaTaskChannelPostProcessor.js';
-import { IWorkflow } from './clients/media/comfy-ui/models/IWorkflow.js';
 import { ComfyUiTaskChannelPostProcessor } from './clients/media/comfy-ui/services/ComfyUiTaskChannelPostProcessor.js';
-import { ContextualMediaMutator } from './clients/media/comfy-ui/services/workflow-mutators/ContextualMediaMutator.js';
-import { ExpandPromptMutator } from './clients/media/comfy-ui/services/workflow-mutators/ExpandPromptMutator.js';
-import { GuidanceScaleMutator } from './clients/media/comfy-ui/services/workflow-mutators/GuidanceScaleMutator.js';
-import { IWorkflowMutator } from './clients/media/comfy-ui/services/workflow-mutators/IWorkflowMutator.js';
-import { JsonMutator } from './clients/media/comfy-ui/services/workflow-mutators/JsonMutator.js';
-import { MessageToMediaMutator } from './clients/media/comfy-ui/services/workflow-mutators/MessageToMediaMutator.js';
-import { MessageToMusicMutator } from './clients/media/comfy-ui/services/workflow-mutators/MessageToMusicMutator.js';
-import { RandomPromptMutator } from './clients/media/comfy-ui/services/workflow-mutators/RandomPromptMutator.js';
-import { RetryMutator } from './clients/media/comfy-ui/services/workflow-mutators/RetryMutator.js';
 import { IGlobalConfiguration } from './environment-settings/IGlobalConfiguration.js';
 import { IBotServiceContainer } from './IBotServiceContainer.js';
 import { IGlobalServiceContainer } from './IGlobalServiceContainer.js';
@@ -57,37 +45,6 @@ export class GlobalServiceContainer implements IGlobalServiceContainer {
             return new GenerativeAiChannelPostProcessor(services);
         } else {
             return new NoOpTaskChannelPostProcessor();
-        }
-    }
-
-    getWorkflowMutator(services: IBotServiceContainer, interactionType: BotInteraction, workflow: IWorkflow): IWorkflowMutator {
-        const mutators: IWorkflowMutator[] = [
-            new ContextualMediaMutator(services),
-            new GuidanceScaleMutator(services),
-            new JsonMutator(services),
-            new MessageToMediaMutator(services),
-            new MessageToMusicMutator(services),
-            new ExpandPromptMutator(services),
-            new RandomPromptMutator(services),
-            new RetryMutator(services)
-        ];
-
-        const supportedMutators = mutators.filter(
-            mutator => mutator.interactions.includes(interactionType)
-                && mutator.types.includes(workflow.type));
-
-        if(supportedMutators.length === 1) {
-            return supportedMutators[0];
-        } else if(supportedMutators.length > 1) {
-            const mutator = getRandomArrayEntry(supportedMutators);
-
-            if(mutator === null) {
-                throw new Error('A supported mutator could not be found.');
-            }
-
-            return mutator;
-        } else {
-            throw new Error('The task you are attempting to instantiate is not supported by your current configuration.');
         }
     }
 
