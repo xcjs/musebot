@@ -14,7 +14,7 @@ RUN mkdir /app
 WORKDIR /app
 
 COPY --from=builder /home/node/app/build/pkg/musebot-linux musebot
-COPY --from=builder /home/node/app/LICENSE.md LICENSE.txt
+COPY --from=builder /home/node/app/LICENSE LICENSE.txt
 
 RUN chmod +x musebot
 
