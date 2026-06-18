@@ -2,6 +2,16 @@
 
 All notable changes to Musebot are documented in this file.
 
+## [9.0.2] — 2026-06-17
+
+### Added
+
+- `getMediaAttachments` method to `IAttachmentService`, `IReplyService`, `DiscordAttachmentService`, and `DiscordReplyService` — returns attachments matching image, audio, and video content types (`jpeg`, `jpg`, `png`, `webp`, `mp3`, `mp4`)
+
+### Fixed
+
+- "Show Source" (`{ }`) button no longer loops indefinitely with a typing indicator when used on a video response. `ShowDescriptionTask` now retrieves all media attachments instead of image-only attachments, so video responses (`video/mp4`) are included and their JSON render request is extracted and sent successfully
+
 ## [9.0.1] — 2025-06-13
 
 ### Changed
