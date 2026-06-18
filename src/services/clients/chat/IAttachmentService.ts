@@ -9,5 +9,7 @@ export interface IAttachmentService<AttachmentType> {
 
     getImageAttachments(interaction: unknown): AttachmentType[];
 
+    getMediaAttachments(interaction: unknown): AttachmentType[];
+
     getAttachedImagesAsBase64(interaction: unknown): Promise<string[]>;
 }

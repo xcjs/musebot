@@ -51,6 +51,19 @@ export class DiscordAttachmentService {
         return this.getAttachmentsByType(interaction, imageTypes);
     }
 
+    getMediaAttachments(interaction: Message | ButtonInteraction): Attachment[] {
+        const mediaTypes = [
+            ContentType.Jpeg,
+            ContentType.Jpg,
+            ContentType.Png,
+            ContentType.WebP,
+            ContentType.Mp3,
+            ContentType.Mp4
+        ];
+
+        return this.getAttachmentsByType(interaction, mediaTypes);
+    }
+
     async getAttachedImagesAsBase64(interaction: Message | ButtonInteraction): Promise<string[]> {
         const imageAttachments = this.getImageAttachments(interaction);
         const imagesAsBase64: string[] = [];
