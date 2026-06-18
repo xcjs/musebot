@@ -34,5 +34,7 @@ export interface IReplyService<
 
     getImageAttachments(interaction: InteractionType): AttachmentType[];
 
+    getMediaAttachments(interaction: InteractionType): AttachmentType[];
+
     getAttachedImagesAsBase64(interaction: InteractionType): Promise<string[]>;
 }

@@ -35,7 +35,7 @@ export class ShowDescriptionTask extends BaseTask<void> {
     override async process(): Promise<void> {
         await super.process();
 
-        const imageAttachments = this.#replyService.getImageAttachments(this.#interaction);
+        const imageAttachments = this.#replyService.getMediaAttachments(this.#interaction);
         let messageContent: string = '';
         const jsonAttachments: AttachmentBuilder[] = [];
 
