@@ -1,5 +1,4 @@
 import { readFileSync } from 'node:fs';
-import { execSync } from 'node:child_process';
 
 const tag = process.env.CI_COMMIT_TAG;
 if (!tag) {
@@ -50,27 +49,14 @@ function truncateForEmbed(text, maxLength = 4096) {
 const rawChangelog = extractChangelog(version);
 if (!rawChangelog) {
 	console.error(`No changelog entry found for version "${version}" in CHANGELOG.md`);
-	console.error('CHANGELOG.md first 500 chars:');
-	console.error(readFileSync('CHANGELOG.md', 'utf8').slice(0, 500));
 	process.exit(1);
 }
 
 const changelog = formatForDiscord(rawChangelog);
 const changelogEmbed = truncateForEmbed(changelog);
 
-const zipFiles = [];
-
-execSync('zip -r musebot-linux-x86_64.zip build/dist/linux', { stdio: 'inherit' });
-zipFiles.push('musebot-linux-x86_64.zip');
-
-execSync('zip -r musebot-win-x86_64.zip build/dist/windows', { stdio: 'inherit' });
-zipFiles.push('musebot-win-x86_64.zip');
-
 console.log(`Release version: ${version}`);
-console.log(`Zip files: ${zipFiles.join(', ')}`);
 console.log(`Changelog length: ${changelog.length} chars`);
-
-zipFiles.push('logo.jpg');
 
 const EMBED_COLOR = 0x5865f2;
 const now = new Date().toISOString();
@@ -80,7 +66,7 @@ async function postToMediaChannel() {
 	const formData = new FormData();
 
 	const payload = {
-		content: `**Musebot ${version}** — release archives attached below.`,
+		content: `**Musebot ${version}** — release archives will be attached as a comment.`,
 		thread_name: `Musebot ${version} Release`,
 		embeds: [
 			{
@@ -96,11 +82,9 @@ async function postToMediaChannel() {
 
 	formData.append('payload_json', JSON.stringify(payload));
 
-	for (let i = 0; i < zipFiles.length; i++) {
-		const buf = readFileSync(zipFiles[i]);
-		formData.append(`files[${i}]`, new Blob([buf]), zipFiles[i]);
-		console.log(`  Attached: ${zipFiles[i]} (${(buf.length / 1024 / 1024).toFixed(1)} MB)`);
-	}
+	const buf = readFileSync('logo.jpg');
+	formData.append('files[0]', new Blob([buf]), 'logo.jpg');
+	console.log(`  Attached: logo.jpg (${(buf.length / 1024 / 1024).toFixed(1)} MB)`);
 
 	const response = await fetch(mediaWebhook, { method: 'POST', body: formData });
 
