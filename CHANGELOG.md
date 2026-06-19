@@ -2,6 +2,12 @@
 
 All notable changes to Musebot are documented in this file.
 
+## [9.0.6] — 2026-06-19
+
+### Changed
+
+- Release CI job now creates zip archives matching GitLab artifact path layout (`build/dist/linux/...`, `build/dist/windows/...`) using `zip`, replacing the GitLab API download approach.
+
 ## [9.0.5] — 2026-06-19
 
 ### Changed
