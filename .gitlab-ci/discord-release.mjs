@@ -59,7 +59,7 @@ console.log(`Release version: ${version}`);
 console.log(`Zip files: ${zipFiles.join(', ')}`);
 console.log(`Changelog length: ${changelog.length} chars`);
 
-zipFiles.push('musebot.jpg');
+zipFiles.push('build/dist/linux/musebot.jpg');
 
 const EMBED_COLOR = 0x5865f2;
 const now = new Date().toISOString();
@@ -86,7 +86,7 @@ async function postToMediaChannel() {
 
 	for (let i = 0; i < zipFiles.length; i++) {
 		const buf = readFileSync(zipFiles[i]);
-		formData.append(`files[${i}]`, new Blob([buf]), zipFiles[i]);
+		formData.append(`files[${i}]`, new Blob([buf]), zipFiles[i].split('/').pop());
 		console.log(`  Attached: ${zipFiles[i]} (${(buf.length / 1024 / 1024).toFixed(1)} MB)`);
 	}
 
