@@ -2,11 +2,11 @@
 
 All notable changes to Musebot are documented in this file.
 
-## [9.0.7] — 2026-06-19
+## [9.0.8] — 2026-06-19
 
 ### Fixed
 
-- Release CI job now reads `musebot.jpg` from the extracted artifact directory (`build/dist/linux/musebot.jpg`) instead of the project root, fixing an ENOENT error during Discord media channel posting.
+- Release CI job now reads `logo.jpg` from the project root for the Discord media channel embed image, instead of looking for it inside the extracted artifact directory.
 
 ## [9.0.6] — 2026-06-19
 
