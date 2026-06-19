@@ -1,6 +1,4 @@
-import { readFileSync, readdirSync } from 'node:fs';
-import { execSync } from 'node:child_process';
-import { join } from 'node:path';
+import { readFileSync, writeFileSync } from 'node:fs';
 
 const tag = process.env.CI_COMMIT_TAG;
 if (!tag) {
@@ -48,13 +46,35 @@ if (!rawChangelog) {
 const changelog = formatForDiscord(rawChangelog);
 const changelogEmbed = truncateForEmbed(changelog);
 
+const apiV4Url = process.env.CI_API_V4_URL;
+const projectId = process.env.CI_PROJECT_ID;
+const jobToken = process.env.CI_JOB_TOKEN;
+const refName = process.env.CI_COMMIT_REF_NAME;
+
+if (!apiV4Url || !projectId || !jobToken || !refName) {
+	console.error('Required GitLab CI environment variables (CI_API_V4_URL, CI_PROJECT_ID, CI_JOB_TOKEN, CI_COMMIT_REF_NAME) must be set.');
+	process.exit(1);
+}
+
+async function downloadArtifactZip(jobName, outputPath) {
+	const url = `${apiV4Url}/projects/${projectId}/jobs/artifacts/${encodeURIComponent(refName)}/download?job=${encodeURIComponent(jobName)}`;
+	console.log(`Downloading artifacts from: ${url}`);
+	const response = await fetch(url, { headers: { 'JOB-TOKEN': jobToken } });
+	if (!response.ok) {
+		const text = await response.text();
+		console.error(`Failed to download artifacts for "${jobName}" (${response.status}): ${text}`);
+		process.exit(1);
+	}
+	const buffer = Buffer.from(await response.arrayBuffer());
+	writeFileSync(outputPath, buffer);
+	console.log(`  Downloaded: ${outputPath} (${(buffer.length / 1024 / 1024).toFixed(1)} MB)`);
+	return outputPath;
+}
+
 const zipFiles = [];
 
-execSync('cd build/dist/linux && zip -r ../../musebot-linux-x86_64.zip .', { stdio: 'inherit' });
-zipFiles.push('musebot-linux-x86_64.zip');
-
-execSync('cd build/dist/windows && zip -r ../../musebot-win-x86_64.zip .', { stdio: 'inherit' });
-zipFiles.push('musebot-win-x86_64.zip');
+zipFiles.push(await downloadArtifactZip('Build Linux Distributable', 'musebot-linux-x86_64.zip'));
+zipFiles.push(await downloadArtifactZip('Build Windows Distributable', 'musebot-win-x86_64.zip'));
 
 console.log(`Release version: ${version}`);
 console.log(`Zip files: ${zipFiles.join(', ')}`);

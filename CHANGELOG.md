@@ -2,6 +2,18 @@
 
 All notable changes to Musebot are documented in this file.
 
+## [9.0.5] — 2026-06-19
+
+### Changed
+
+- Release CI job now downloads GitLab artifact zips directly via the API instead of re-zipping extracted directories. Removes the `zip` dependency and `before_script` install step.
+
+## [9.0.4] — 2026-06-19
+
+### Fixed
+
+- Release CI job now installs `zip` via `before_script` — the `node:24` Docker image does not include `zip` by default, causing the release script to fail when creating archives
+
 ## [9.0.3] — 2026-06-19
 
 ### Added
