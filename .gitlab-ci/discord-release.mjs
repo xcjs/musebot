@@ -67,7 +67,7 @@ async function postToMediaChannel() {
 
 	const payload = {
 		content: `**Musebot ${version}** — release archives will be attached as a comment.`,
-		thread_name: `Musebot ${version} Release`,
+		thread_name: `Musebot ${version}`,
 		embeds: [
 			{
 				title: `Changelog — ${version}`,

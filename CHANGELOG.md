@@ -2,6 +2,12 @@
 
 All notable changes to Musebot are documented in this file.
 
+## [9.0.12] — 2026-06-19
+
+### Changed
+
+- Media channel thread title simplified from "Musebot {version} Release" to "Musebot {version}".
+
 ## [9.0.11] — 2026-06-19
 
 ### Changed
