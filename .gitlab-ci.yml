@@ -4,6 +4,7 @@ stages:
   - Test
   - Build
   - Publish
+  - Release
   - Review
 
 Install Linux Dependencies:
@@ -101,15 +102,18 @@ Build Linux Distributable:
     - cp -rf docs/ build/pkg/docs/
     - cp -rf workflows/examples build/pkg/workflows
     - cp -f LICENSE build/pkg/LICENSE.txt
+    - cp -f CHANGELOG.md build/pkg/CHANGELOG.md
     - cp -f logo.jpg build/pkg/musebot.jpg
     - cp -f logo.png build/pkg/musebot.png
     - cp -f musebot.ico build/pkg/musebot.ico
     - cp -f Dockerfile.dist build/pkg/Dockerfile
     - cp -f docker-compose.yml build/pkg/docker-compose.yml
+    - mkdir -p build/dist/linux
+    - mv build/pkg/* build/dist/linux/
   artifacts:
-    name: musebot_linux
+    name: musebot-linux-x86_64
     paths:
-      - build/pkg/
+      - build/dist/
     expire_in: 1 week
 
 Build Windows Distributable:
@@ -127,13 +131,16 @@ Build Windows Distributable:
     - cp -rf docs/ build/pkg/docs/
     - cp -rf workflows/examples build/pkg/workflows
     - cp -f LICENSE build/pkg/LICENSE.txt
+    - cp -f CHANGELOG.md build/pkg/CHANGELOG.md
     - cp -f logo.jpg build/pkg/musebot.jpg
     - cp -f logo.png build/pkg/musebot.png
     - cp -f musebot.ico build/pkg/musebot.ico
+    - mkdir -p build/dist/windows
+    - mv build/pkg/* build/dist/windows/
   artifacts:
-    name: musebot_win32
+    name: musebot-win-x86_64
     paths:
-      - build/pkg/
+      - build/dist/
     expire_in: 1 week
 
 Publish Musebot Docker Image:
@@ -167,6 +174,21 @@ Publish Docs Docker Image:
   script:
     - docker build -f Dockerfile.docs -t $CI_REGISTRY/xcjs/musebot/docs:latest .
     - docker push $CI_REGISTRY/xcjs/musebot/docs:latest
+
+Release Musebot:
+  stage: Release
+  image: node:24
+  needs:
+    - job: "Build Linux Distributable"
+      artifacts: true
+    - job: "Build Windows Distributable"
+      artifacts: true
+  rules:
+    - if: $CI_COMMIT_TAG
+  tags:
+    - docker
+  script:
+    - node .gitlab-ci/discord-release.mjs
 
 Review with gemma4:e4b:
   stage: Review

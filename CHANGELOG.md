@@ -2,6 +2,13 @@
 
 All notable changes to Musebot are documented in this file.
 
+## [9.0.3] — 2026-06-19
+
+### Added
+
+- GitLab CI release pipeline — tagging a release now automatically publishes to a Discord media channel (with Windows and Linux release archives, `logo.jpg` preview, and changelog embed) and a Discord release news channel (with a "Musebot {version} Released!" embed). Requires `DISCORD_MEDIA_WEBHOOK` and `DISCORD_NEWS_WEBHOOK` CI/CD variables.
+- `CHANGELOG.md` is now included in both Windows and Linux release archives.
+
 ## [9.0.2] — 2026-06-17
 
 ### Added
