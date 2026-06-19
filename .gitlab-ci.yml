@@ -187,6 +187,8 @@ Release Musebot:
     - if: $CI_COMMIT_TAG
   tags:
     - docker
+  before_script:
+    - apt-get update && apt-get install -y zip
   script:
     - node .gitlab-ci/discord-release.mjs
 
