@@ -2,6 +2,12 @@
 
 All notable changes to Musebot are documented in this file.
 
+## [9.0.9] — 2026-06-19
+
+### Fixed
+
+- Release CI job now sets `thread_name` when posting to the Discord media channel (required for forum channels).
+
 ## [9.0.8] — 2026-06-19
 
 ### Fixed
