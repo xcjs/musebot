@@ -18,10 +18,19 @@ if (!mediaWebhook || !newsWebhook) {
 
 function extractChangelog(ver) {
 	const content = readFileSync('CHANGELOG.md', 'utf8');
-	const escaped = ver.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-	const regex = new RegExp(`## \\[${escaped}\\][^\\n]*\\n([\\s\\S]*?)(?=\\n## \\[|$)`);
-	const match = content.match(regex);
-	return match ? match[1].trim() : null;
+	const lines = content.split(/\r?\n/);
+	const headerRegex = new RegExp(`^##\\s+\\[${ver.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\]`);
+	let capturing = false;
+	const collected = [];
+	for (const line of lines) {
+		if (capturing) {
+			if (/^##\s+\[/.test(line)) break;
+			collected.push(line);
+		} else if (headerRegex.test(line)) {
+			capturing = true;
+		}
+	}
+	return collected.length > 0 ? collected.join('\n').trim() : null;
 }
 
 function formatForDiscord(markdown) {
@@ -40,7 +49,9 @@ function truncateForEmbed(text, maxLength = 4096) {
 
 const rawChangelog = extractChangelog(version);
 if (!rawChangelog) {
-	console.error(`No changelog entry found for version ${version} in CHANGELOG.md`);
+	console.error(`No changelog entry found for version "${version}" in CHANGELOG.md`);
+	console.error('CHANGELOG.md first 500 chars:');
+	console.error(readFileSync('CHANGELOG.md', 'utf8').slice(0, 500));
 	process.exit(1);
 }
 
