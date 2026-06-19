@@ -2,6 +2,12 @@
 
 All notable changes to Musebot are documented in this file.
 
+## [9.0.11] — 2026-06-19
+
+### Changed
+
+- Release CI job no longer attaches zip archives to the Discord media channel post (they exceeded webhook upload limits). The post now includes only the changelog embed and `logo.jpg`. Release archives can be attached manually as a comment. Removed the `zip` dependency and `before_script` install step.
+
 ## [9.0.10] — 2026-06-19
 
 ### Fixed
