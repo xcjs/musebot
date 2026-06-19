@@ -2,6 +2,18 @@
 
 All notable changes to Musebot are documented in this file.
 
+## [9.0.10] — 2026-06-19
+
+### Fixed
+
+- Changelog extraction now uses line-by-line parsing instead of a single multiline regex, resolving an issue where the changelog entry could not be found for the current release version in CI.
+
+## [9.0.9] — 2026-06-19
+
+### Fixed
+
+- Release CI job now sets `thread_name` when posting to the Discord media channel (required for forum channels).
+
 ## [9.0.8] — 2026-06-19
 
 ### Fixed
