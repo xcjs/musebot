@@ -131,7 +131,7 @@ export class OllamaClient {
                     request,
                     response,
                 },
-                data: JSON.parse(response.thinking ?? response.response) as TOutput
+                data: JSON.parse(response.response || response.thinking) as TOutput
             };
         } catch (error) {
             this.#logger.error('Failed to send Ollama a message:', error);
