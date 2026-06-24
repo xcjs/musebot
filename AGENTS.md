@@ -163,8 +163,7 @@ Key settings (from `IBotConfig`):
 | `bots[].ollama.streamsResponse`            | Whether Ollama streams responses                |
 | `bots[].comfyUi.hosts`                     | Array of ComfyUI API URLs                       |
 | `bots[].comfyUiGuidanceScaleInterval`     | Guidance scale adjustment step                  |
-| `bots[].comfyUi.freeVerificationThreshold` | VRAM reclamation ratio to verify after `/free`  |
-| `bots[].comfyUi.minVramFreeRatio`          | Min free VRAM ratio required before rendering   |
+| `bots[].comfyUi.minVramFreeRatio`          | Min free VRAM ratio (free verification + pre-render gate) |
 | `bots[].multiModal.randomPrompts`         | Random prompts for the randomize button         |
 | `global.taskQueue.numAttempts`             | Max retry attempts for tasks                    |
 | `global.taskQueue.retryDelayMs`            | Delay between task retries                      |

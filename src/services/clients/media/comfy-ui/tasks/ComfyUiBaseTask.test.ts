@@ -98,8 +98,7 @@ function createMockServices(
 function createMockConfig(overrides: Partial<IConfigurationService> = {}): IConfigurationService {
     return {
         taskQueueStrategy: TaskQueueStrategy.Serial,
-        comfyUiMinVramFreeRatio: 0.5,
-        comfyUiFreeVerificationThreshold: 0.9,
+        comfyUiMinVramFreeRatio: 0.9,
         maxTaskAttempts: 3,
         ...overrides,
     } as unknown as IConfigurationService;
@@ -189,7 +188,7 @@ describe('ComfyUiBaseTask', () => {
 
         it('should pass when VRAM is exactly at threshold', async (): Promise<void> => {
             mockComfyUiClient.getSystemStats.mockResolvedValue({
-                devices: [createDevice(10000, 5000)]
+                devices: [createDevice(10000, 9000)]
             });
 
             await expect(task.process()).resolves.toBeUndefined();

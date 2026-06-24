@@ -82,7 +82,7 @@ export class ComfyUiClient {
     }
 
     async free(): Promise<boolean> {
-        const threshold = this.#configurationService.comfyUiFreeVerificationThreshold;
+        const minRatio = this.#configurationService.comfyUiMinVramFreeRatio;
 
         try {
             const ok = await this.#client.free();
@@ -92,14 +92,14 @@ export class ComfyUiClient {
             }
 
             const stats = await this.getSystemStats();
-            const stillOccupied = stats.devices.some(d => d.vram_free < d.vram_total * threshold);
+            const stillOccupied = stats.devices.some(d => d.vram_free < d.vram_total * minRatio);
 
             if (stillOccupied) {
                 this.#logger.warn('ComfyUI VRAM still occupied after free(); retrying.');
                 await this.#client.free();
 
                 const stats2 = await this.getSystemStats();
-                if (stats2.devices.some(d => d.vram_free < d.vram_total * threshold)) {
+                if (stats2.devices.some(d => d.vram_free < d.vram_total * minRatio)) {
                     this.#logger.error('ComfyUI VRAM still occupied after retry; cannot free VRAM.');
                     return false;
                 }

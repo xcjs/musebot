@@ -118,22 +118,15 @@
           "http://localhost:8188"
         ],
 
-        // The ratio of vram_free / vram_total below which a device is considered
-        // "still occupied" after a /free call. Used to verify that ComfyUI actually
-        // released VRAM before handing control to Ollama in serial mode.
+        // Minimum vram_free / vram_total ratio required on every ComfyUI device.
+        // Used in two places: (1) after /free to verify VRAM was reclaimed, and
+        // (2) as a pre-execution gate before rendering. If any device falls below
+        // this ratio, the task fails (and retries) instead of silently OOMing and
+        // hanging the serial channel.
         // Required: Optional
-        // Default:  0.9 (90% free = considered clean)
+        // Default:  0.9 (90% free required)
         // Type:     Number (0-1)
-        "freeVerificationThreshold": 0.9,
-
-        // Minimum vram_free / vram_total ratio required on every device before
-        // dispatching a ComfyUI workflow. Acts as a pre-execution gate: if any
-        // device falls below this ratio, the task fails (and retries) instead of
-        // silently OOMing and hanging the serial channel.
-        // Required: Optional
-        // Default:  0.5 (50% free required)
-        // Type:     Number (0-1)
-        "minVramFreeRatio": 0.5
+        "minVramFreeRatio": 0.9
       },
 
       // Ollama configuration for large language model chat. Required when mode is "chat".

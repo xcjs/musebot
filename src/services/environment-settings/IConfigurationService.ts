@@ -25,7 +25,6 @@ export interface IConfigurationService {
 
     comfyUiHosts: URL[];
     comfyUiGuidanceScaleInterval: number;
-    comfyUiFreeVerificationThreshold: number;
     comfyUiMinVramFreeRatio: number;
     randomPrompts: string[];
 
