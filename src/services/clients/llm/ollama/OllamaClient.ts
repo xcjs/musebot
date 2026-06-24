@@ -3,6 +3,7 @@
 import { IHttpExchange } from '../../../../models/IHttpExchange.js';
 import { IHttpExchangeWithAttachedData } from '../../../../models/IHttpExchangeWithAttachedData.js';
 import { getRandomArrayEntry, getRandomInt } from '../../../../utilities/random-utilities.js';
+import { trimTrailingJsonContent } from '../../../../utilities/string-utilities.js';
 import { IConfigurationService } from '../../../environment-settings/IConfigurationService.js';
 import { IBotServiceContainer } from '../../../IBotServiceContainer.js';
 import { ILogger } from '../../../ILogger.js';
@@ -131,7 +132,7 @@ export class OllamaClient {
                     request,
                     response,
                 },
-                data: JSON.parse(response.thinking ?? response.response) as TOutput
+                data: JSON.parse(trimTrailingJsonContent(response.thinking ?? response.response)) as TOutput
             };
         } catch (error) {
             this.#logger.error('Failed to send Ollama a message:', error);
