@@ -45,7 +45,6 @@ export class GuidanceScaleMutator implements IWorkflowMutator {
     // Method signature required for interface.
     async mutate(renderRequest: SerializableRenderRequest,
         interaction: ButtonInteraction,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         workflow: IWorkflow): Promise<SerializableRenderRequest> {
         const mutatedRequest = SerializableRenderRequest.fromSerializableRenderRequest(renderRequest);
         mutatedRequest.workflow = workflow.name;
