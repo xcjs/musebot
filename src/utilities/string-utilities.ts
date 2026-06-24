@@ -72,6 +72,16 @@ export function hasOnly(containingText: string, searchText: string): boolean {
     return containingText.trim().replaceAll(searchText, '').length === 0;
 }
 
+/**
+ * Extracts the first balanced JSON object from a string, discarding any
+ * trailing content. Some LLMs emit valid JSON followed by non-JSON artifacts
+ * (e.g. `<|tool_response>` tokens, prose, or markdown) despite a structured
+ * format constraint, which breaks `JSON.parse`. This function scans with
+ * brace-depth tracking that respects string literals and escape sequences,
+ * returning the substring from the first `{` through the matching `}`.
+ * @param text - Raw model output that may contain trailing non-JSON content.
+ * @returns The first balanced JSON object, or the original text if no `{` is found.
+ */
 export function trimTrailingJsonContent(text: string): string {
     const start = text.indexOf('{');
     if (start === -1) {
