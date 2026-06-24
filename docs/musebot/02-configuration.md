@@ -157,6 +157,34 @@ variables, you need to migrate to JSON configuration. See [Migration Guide](./03
 * **Type:** `Number`
 * **Default:** `0.5`
 
+#### `comfyUi.freeVerificationThreshold`
+
+* **Description:** When freeing ComfyUI VRAM (via `/free` with `unload_models` and
+  `free_memory`), Musebot verifies reclamation by polling `/system_stats` and
+  comparing `vram_free / vram_total` against this ratio. If the ratio is not met
+  after the first attempt, Musebot retries once. A value of `0.9` means ComfyUI
+  must report at least 90% of total VRAM as free after the unload. Lower this
+  threshold if your GPU has reserved memory that ComfyUI can never fully return.
+  Can be set globally in `global.comfyUi` or overridden per-bot.
+* **Required:** No
+* **Type:** `Number` (0–1)
+* **Default:** `0.9`
+
+#### `comfyUi.minVramFreeRatio`
+
+* **Description:** A pre-execution VRAM gate for ComfyUI media tasks. After loading
+  a workflow but before rendering, Musebot polls `/system_stats` and requires every
+  GPU device to have at least this ratio of free VRAM (`vram_free / vram_total`).
+  If any device falls below the threshold, the task fails (and is retried up to
+  `taskQueue.numAttempts` times). This prevents heavy workflows (e.g., ACE-Step
+  music generation) from silently hanging due to insufficient VRAM when sharing a
+  host with Ollama in `serial` mode. Lower this if running smaller models that
+  don't need most of the GPU's memory.
+  Can be set globally in `global.comfyUi` or overridden per-bot.
+* **Required:** No
+* **Type:** `Number` (0–1)
+* **Default:** `0.5`
+
 #### `multiModal.randomPrompts`
 
 * **Description:** If *both* Ollama and ComfyUI/SwarmUI are configured, this

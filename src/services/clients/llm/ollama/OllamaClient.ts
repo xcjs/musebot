@@ -69,7 +69,7 @@ export class OllamaClient {
         }
     }
 
-    async free(): Promise<void> {
+    async free(): Promise<boolean> {
         try {
             await this.#client.generate({
                 prompt: null!,
@@ -77,9 +77,32 @@ export class OllamaClient {
                 stream: false,
                 keep_alive: 0
             });
+
+            if (await this.isModelLoaded()) {
+                this.#logger.warn(`Model ${this.#model} still loaded after free(); retrying unload.`);
+                await this.#client.generate({
+                    prompt: null!,
+                    model: this.#model,
+                    stream: false,
+                    keep_alive: 0
+                });
+
+                if (await this.isModelLoaded()) {
+                    this.#logger.error(`Model ${this.#model} still loaded after retry; cannot free VRAM.`);
+                    return false;
+                }
+            }
+
+            return true;
         } catch (error) {
             this.#logger.error('Failed to free Ollama resources:', error);
+            return false;
         }
+    }
+
+    async isModelLoaded(): Promise<boolean> {
+        const running = await this.#client.ps();
+        return running.models?.some(m => m.name === this.#model || m.model === this.#model) ?? false;
     }
 
     async generateStructured<TOutput>(prompt: string, requestData: IStructuredRequestData):

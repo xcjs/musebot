@@ -101,6 +101,18 @@ export class ConfigurationService implements IConfigurationService {
         return this.#botConfig.comfyUiGuidanceScaleInterval ?? 0.5;
     }
 
+    get comfyUiFreeVerificationThreshold(): number {
+        return this.#botConfig.comfyUi?.freeVerificationThreshold
+            ?? this.#config?.global?.comfyUi?.freeVerificationThreshold
+            ?? 0.9;
+    }
+
+    get comfyUiMinVramFreeRatio(): number {
+        return this.#botConfig.comfyUi?.minVramFreeRatio
+            ?? this.#config?.global?.comfyUi?.minVramFreeRatio
+            ?? 0.5;
+    }
+
     get randomPrompts(): string[] {
         return this.#botConfig.multiModal?.randomPrompts
             ?? ['Describe something or someone with extraordinary detail.'];
@@ -206,6 +218,8 @@ Detected environment variables: ${envVarList}`);
 
         this.#log.info(`bots[].comfyUi.hosts: ${this.comfyUiHosts.join(', ')}`);
         this.#log.info(`bots[].comfyUiGuidanceScaleInterval: ${this.comfyUiGuidanceScaleInterval}`);
+        this.#log.info(`bots[].comfyUi.freeVerificationThreshold: ${this.comfyUiFreeVerificationThreshold}`);
+        this.#log.info(`bots[].comfyUi.minVramFreeRatio: ${this.comfyUiMinVramFreeRatio}`);
 
         this.#log.info(`bots[].ollama.hosts: ${this.ollamaHosts.join(', ')}`);
         this.#log.info(`bots[].ollama.models: ${this.ollamaModels.join(', ')}`);

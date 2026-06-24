@@ -27,6 +27,8 @@ function createMockConfigurationService(overrides: Partial<IConfigurationService
         taskQueueForceSerialAcrossHosts: false,
         comfyUiHosts: [],
         comfyUiGuidanceScaleInterval: 0.5,
+        comfyUiFreeVerificationThreshold: 0.9,
+        comfyUiMinVramFreeRatio: 0.5,
         randomPrompts: [],
         ollamaHosts: [],
         ollamaModels: [],
@@ -192,7 +194,7 @@ describe('FeatureService', () => {
 
             await service.loadFeatures();
 
-            // eslint-disable-next-line @typescript-eslint/unbound-method
+             
             expect(logger.info).toHaveBeenCalledWith(`${SupportedFeature.Txt2Txt} supported.`);
         });
 
@@ -213,7 +215,7 @@ describe('FeatureService', () => {
 
             await service.loadFeatures();
 
-            // eslint-disable-next-line @typescript-eslint/unbound-method
+             
             expect(logger.info).toHaveBeenCalledWith(`${SupportedFeature.Txt2Img} supported.`);
         });
     });

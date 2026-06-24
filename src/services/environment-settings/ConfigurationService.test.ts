@@ -100,7 +100,7 @@ describe('ConfigurationService', () => {
             const service = new ConfigurationService(validChatBotConfig as unknown as IBotConfig);
 
             expect(service.nodeEnvironment).toBe(NodeEnvironment.Test);
-            // eslint-disable-next-line @typescript-eslint/unbound-method
+             
             expect(jest.mocked(ConfigLoader.load)).toHaveBeenCalled();
         });
     });

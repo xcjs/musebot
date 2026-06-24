@@ -108,18 +108,23 @@ export class ExtendedComfyUIClient extends ComfyUIClient {
         return blob;
     }
 
-    async free(): Promise<void> {
+    async free(): Promise<boolean> {
         const requestBody: IFreeMemoryRequest = {
             unload_models: true,
             free_memory: true
         };
 
-        await fetch(`${this.#baseUrl}free`, {
-            method: HttpMethod.Post,
-            headers: {
-                [HttpHeader.ContentType]: ContentType.Json
-            },
-            body: JSON.stringify(requestBody)
-        });
+        try {
+            await fetch(`${this.#baseUrl}free`, {
+                method: HttpMethod.Post,
+                headers: {
+                    [HttpHeader.ContentType]: ContentType.Json
+                },
+                body: JSON.stringify(requestBody)
+            });
+            return true;
+        } catch {
+            return false;
+        }
     }
 }

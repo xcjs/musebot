@@ -21,6 +21,8 @@ export interface IBotConfig {
 
     comfyUi: {
         hosts: string[];
+        freeVerificationThreshold?: number;
+        minVramFreeRatio?: number;
     };
 
     ollama: {

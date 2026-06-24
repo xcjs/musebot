@@ -1,4 +1,4 @@
-﻿import { Prompt } from 'comfy-ui-client';
+﻿import { Prompt, SystemStatsResponse } from 'comfy-ui-client';
 
 import { PromisedSettledResultStatus } from '../../../../enums/PromisedSettledResultStatus.js';
 import { getRandomArrayEntry } from '../../../../utilities/random-utilities.js';
@@ -81,12 +81,39 @@ export class ComfyUiClient {
         return multiMediaResponse;
     }
 
-    async free(): Promise<void> {
+    async free(): Promise<boolean> {
+        const threshold = this.#configurationService.comfyUiFreeVerificationThreshold;
+
         try {
-            await this.#client.free();
+            const ok = await this.#client.free();
+            if (!ok) {
+                this.#logger.error('ComfyUI /free request failed.');
+                return false;
+            }
+
+            const stats = await this.getSystemStats();
+            const stillOccupied = stats.devices.some(d => d.vram_free < d.vram_total * threshold);
+
+            if (stillOccupied) {
+                this.#logger.warn('ComfyUI VRAM still occupied after free(); retrying.');
+                await this.#client.free();
+
+                const stats2 = await this.getSystemStats();
+                if (stats2.devices.some(d => d.vram_free < d.vram_total * threshold)) {
+                    this.#logger.error('ComfyUI VRAM still occupied after retry; cannot free VRAM.');
+                    return false;
+                }
+            }
+
+            return true;
         } catch (error) {
             this.#logger.error('Failed to free ComfyUI resources:', error);
+            return false;
         }
+    }
+
+    async getSystemStats(): Promise<SystemStatsResponse> {
+        return this.#client.getSystemStats();
     }
 
     async disconnect(): Promise<void> {

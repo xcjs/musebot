@@ -96,7 +96,7 @@ describe('TaskQueue', () => {
 
             queue.add(task);
 
-            // eslint-disable-next-line @typescript-eslint/unbound-method
+             
             expect(mockLogger.info).toHaveBeenCalledWith(
                 expect.stringContaining('Adding task')
             );
@@ -108,7 +108,7 @@ describe('TaskQueue', () => {
 
             queue.add(task);
 
-            // eslint-disable-next-line @typescript-eslint/unbound-method
+             
             expect(mockLogger.info).toHaveBeenCalledWith(
                 expect.stringContaining('Created a new task channel')
             );
@@ -147,7 +147,7 @@ describe('TaskQueue', () => {
 
             queue.add(task);
 
-            // eslint-disable-next-line @typescript-eslint/unbound-method
+             
             expect(mockLogger.info).toHaveBeenCalledWith(
                 expect.stringContaining('myCustomChannel')
             );
@@ -307,7 +307,7 @@ describe('TaskQueue', () => {
             await jest.runAllTimersAsync();
 
             expect(callCount).toBe(2);
-            // eslint-disable-next-line @typescript-eslint/unbound-method
+             
             expect(mockLogger.error).toHaveBeenCalled();
         });
 
@@ -347,7 +347,7 @@ describe('TaskQueue', () => {
 
             await jest.runAllTimersAsync();
 
-            // eslint-disable-next-line @typescript-eslint/unbound-method
+             
             expect(mockLogger.info).toHaveBeenCalledWith(
                 expect.stringContaining('Processing the task queue')
             );
@@ -361,7 +361,7 @@ describe('TaskQueue', () => {
 
             await jest.runAllTimersAsync();
 
-            // eslint-disable-next-line @typescript-eslint/unbound-method
+             
             expect(mockLogger.info).toHaveBeenCalledWith(
                 expect.stringContaining('Retrieving the next tasks')
             );
