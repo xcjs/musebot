@@ -91,6 +91,10 @@ export class OllamaClient {
                     this.#logger.error(`Model ${this.#model} still loaded after retry; cannot free VRAM.`);
                     return false;
                 }
+
+                this.#logger.info(`Model ${this.#model} unloaded after retry.`);
+            } else {
+                this.#logger.info(`Model ${this.#model} unloaded.`);
             }
 
             return true;

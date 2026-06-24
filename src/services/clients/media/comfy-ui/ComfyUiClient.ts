@@ -103,6 +103,10 @@ export class ComfyUiClient {
                     this.#logger.error('ComfyUI VRAM still occupied after retry; cannot free VRAM.');
                     return false;
                 }
+
+                this.#logger.info('ComfyUI VRAM reclaimed after retry.');
+            } else {
+                this.#logger.info('ComfyUI VRAM reclaimed.');
             }
 
             return true;
