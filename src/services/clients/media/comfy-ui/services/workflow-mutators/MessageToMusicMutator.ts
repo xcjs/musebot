@@ -91,7 +91,7 @@ export class MessageToMusicMutator implements IWorkflowMutator {
         }
 
         if(this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
-            return new Promise((resolve) => {
+            return new Promise((resolve, reject) => {
                 const task = this.#services.getLlmGenerateStructuredTask<SongPromptRequestType>(prompt, songPromptTypeRequestTypeData);
                 task.isChild = true;
 
@@ -104,6 +104,7 @@ export class MessageToMusicMutator implements IWorkflowMutator {
                 };
 
                 task.onSuccess = callback;
+                task.onFailure = reject;
                 this.#taskQueue.add(task as BaseTask<unknown>);
             });
         } else {
@@ -121,7 +122,7 @@ export class MessageToMusicMutator implements IWorkflowMutator {
 
     async #getSongPromptMetadata(prompt: string, songPromptRequestType: SongPromptRequestType & { tags: string[], lyrics: string }): Promise<SongPromptMetadata> {
         if(this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
-            return new Promise((resolve) => {
+            return new Promise((resolve, reject) => {
                 const task = this.#services.getLlmGenerateStructuredTask<SongPromptMetadata>(prompt, songPromptMetadataRequestData);
                 task.isChild = true;
 
@@ -139,6 +140,7 @@ export class MessageToMusicMutator implements IWorkflowMutator {
                 };
 
                 task.onSuccess = callback;
+                task.onFailure = reject;
                 this.#taskQueue.add(task as BaseTask<unknown>);
             });
         } else {

@@ -64,7 +64,7 @@ export class ExpandPromptMutator implements IWorkflowMutator {
     }
 
     async #getExpandedPrompt(prompt: string, feature: SupportedFeature): Promise<string> {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             prompt = `The following is a prompt used to generate a piece of media from ${feature} ` +
                 ` - expand it with meticulous detail to generate better results: ${prompt}`;
 
@@ -76,6 +76,7 @@ export class ExpandPromptMutator implements IWorkflowMutator {
             };
 
             task.onSuccess = callback;
+            task.onFailure = reject;
             this.#taskQueue.add(task as BaseTask<unknown>);
         });
     }

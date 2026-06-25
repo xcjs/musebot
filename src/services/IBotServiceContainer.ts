@@ -75,7 +75,7 @@ export interface IBotServiceContainer {
     getAttachmentTask(message: DiscordMessage, prompt: string): BaseTask<unknown>;
     getCustomInteractionTask(interaction: ButtonInteraction, workflow: IWorkflow): BaseTask<unknown>;
 
-    getTaskChannelPostProcessor(channelName: string, isChild: boolean): ITaskChannelPostProcessor;
+    getTaskChannelPostProcessor(channelName: string): ITaskChannelPostProcessor;
 
     getReplyService<MessageType, ReactionType, AttachmentType, InteractionType>(): IReplyService<MessageType, ReactionType, AttachmentType, InteractionType>;
 }

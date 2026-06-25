@@ -91,6 +91,8 @@ export class TaskQueue implements ITaskQueue {
                             (promise as PromiseRejectedResult).reason);
 
                         if (task.numAttempts >= this.#globalServices.globalConfiguration.taskQueue.numAttempts) {
+                            const reason: unknown = (promise as PromiseRejectedResult).reason;
+                            task.lastError = reason instanceof Error ? reason : new Error(typeof reason === 'string' ? reason : '[object Object]');
                             return task.postProcess();
                         } else {
                             this.#globalServices.getLogger('TaskQueue').info('Scheduling a failed task to be resumed:', task.id);
