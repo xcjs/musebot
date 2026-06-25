@@ -6,6 +6,7 @@ import { ResourceType } from '../../../../parallelization/ResourceType.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
+import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 
 type DiscordReplyService = IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
@@ -35,18 +36,12 @@ export class ShowDescriptionTask extends BaseTask<void> {
     override async process(): Promise<void> {
         await super.process();
 
-        const imageAttachments = this.#replyService.getMediaAttachments(this.#interaction);
-        let messageContent: string = '';
+        const renderRequests = await this.#readRenderRequests();
+        let messageContent = '';
         const jsonAttachments: AttachmentBuilder[] = [];
 
-        for(const imageAttachment of imageAttachments) {
-            const jsonRequest = imageAttachment.description;
-
-            if(jsonRequest === null) {
-                throw new Error('JSON request could not be read from attachment description.');
-            }
-
-            const renderRequest = SerializableRenderRequest.fromJson(jsonRequest);
+        for (const renderRequest of renderRequests) {
+            const jsonRequest = renderRequest.toString();
 
             const jsonBuffer = Buffer.from(jsonRequest, BufferEncoding.UTF8);
             jsonAttachments.push(new AttachmentBuilder(jsonBuffer, {
@@ -63,6 +58,41 @@ export class ShowDescriptionTask extends BaseTask<void> {
         };
 
         await this.#interaction.message.reply(reply);
+    }
+
+    async #readRenderRequests(): Promise<SerializableRenderRequest[]> {
+        // Prefer the dedicated state JSON file attachment.
+        const stateAttachments = this.#replyService.getAttachmentsByName(this.#interaction, DiscordConstants.StateFileName);
+
+        if (stateAttachments.length > 0) {
+            const stateAttachment = stateAttachments[0];
+            const response = await fetch(stateAttachment.url);
+            const buffer = Buffer.from(await response.arrayBuffer());
+            const json = buffer.toString('utf-8');
+            const parsed = JSON.parse(json) as SerializableRenderRequest[];
+
+            return parsed.map(item => SerializableRenderRequest.fromSerializableRenderRequest(item));
+        }
+
+        // Legacy fallback: read SerializableRenderRequest from media attachment descriptions.
+        const imageAttachments = this.#replyService.getMediaAttachments(this.#interaction);
+        const renderRequests: SerializableRenderRequest[] = [];
+
+        for (const imageAttachment of imageAttachments) {
+            const jsonRequest = imageAttachment.description;
+
+            if (jsonRequest === null) {
+                continue;
+            }
+
+            renderRequests.push(SerializableRenderRequest.fromJson(jsonRequest));
+        }
+
+        if (renderRequests.length === 0) {
+            throw new Error('JSON request could not be read from state file or attachment descriptions.');
+        }
+
+        return renderRequests;
     }
 
     override async postProcess(): Promise<void> {

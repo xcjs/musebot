@@ -44,7 +44,7 @@ export class StatefulImageGenerationActionRows extends BaseComponent<ActionRowBu
             new RetryButton(this.#services),
             new GuidanceScaleMinusButton(this.#services, this.#renderRequest),
             new GuidanceScalePlusButton(this.#services, this.#renderRequest),
-            new ShowSourceButton(this.#services),
+            new ShowSourceButton(this.#services, this.#renderRequest),
             new HelpButton(this.#services),
             new ExpandPromptButton(this.#services),
             new RandomizeButton(this.#services)

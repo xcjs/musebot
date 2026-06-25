@@ -7,6 +7,7 @@ import { HelpButton } from '../buttons/HelpButton.js';
 import { GuidanceScaleMinusButton } from '../buttons/images/GuidanceScaleMinusButton.js';
 import { GuidanceScalePlusButton } from '../buttons/images/GuidanceScalePlusButton.js';
 import { RetryButton } from '../buttons/images/RetryButton.js';
+import { ShowSourceButton } from '../buttons/images/ShowSourceButton.js';
 import { IActionRowBuilderFactory } from '../IActionRowBuilderFactory.js';
 import { IActionRows } from './IActionRows.js';
 
@@ -41,6 +42,7 @@ export class StatefulAudioGenerationActionRow extends BaseComponent<ActionRowBui
             new RetryButton(this.#services),
             new GuidanceScaleMinusButton(this.#services, this.#renderRequest),
             new GuidanceScalePlusButton(this.#services, this.#renderRequest),
+            new ShowSourceButton(this.#services, this.#renderRequest),
             new HelpButton(this.#services)
         ];
 

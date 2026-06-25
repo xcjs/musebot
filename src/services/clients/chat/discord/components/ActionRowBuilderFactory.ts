@@ -5,10 +5,6 @@ import { BaseComponent } from './BaseComponent.js'
 import { IActionRowBuilderFactory } from './IActionRowBuilderFactory.js';
 
 export class ActionRowBuilderFactory implements IActionRowBuilderFactory {
-    constructor() {
-
-    }
-
     buildActionRows(buttons: BaseComponent<ButtonBuilder>[]): ActionRowBuilder<ButtonBuilder>[] {
         const actionRows: ActionRowBuilder<ButtonBuilder>[] = [];
         let actionRow: ActionRowBuilder<ButtonBuilder> | null = null;
@@ -16,12 +12,10 @@ export class ActionRowBuilderFactory implements IActionRowBuilderFactory {
         const addedButtons: BaseComponent<ButtonBuilder>[] = [];
 
         buttons.forEach((button, i) => {
-            if (actionRow === null) {
-                actionRow = new ActionRowBuilder<ButtonBuilder>();
-            }
+            actionRow ??= new ActionRowBuilder<ButtonBuilder>();
 
             if (button.isSupported
-                && !addedButtons.find(addedButton => addedButton === button)
+                && !addedButtons.includes(button)
             ) {
                 actionRow.addComponents(button.build());
                 addedButtons.push(button);

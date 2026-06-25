@@ -38,11 +38,7 @@ export class ComfyUiInteractionTask extends ComfyUiBaseTask {
     override async process(): Promise<void> {
         await super.process();
 
-        const attachmentsWithRenderRequests = this.#replyService.getAttachments(this.#interaction)
-            .filter(attachment => attachment.description?.length || 0 > 0);
-
-        const inputRenderRequests = attachmentsWithRenderRequests
-            .map(attachment => SerializableRenderRequest.fromJson(attachment.description || ''));
+        const inputRenderRequests = await this.#readRenderRequests();
         const outputRenderRequests: SerializableRenderRequest[] = [];
 
         const workflows = inputRenderRequests.map(renderRequest => this.workflowService.workflows
@@ -110,18 +106,40 @@ export class ComfyUiInteractionTask extends ComfyUiBaseTask {
             response: mediaCollectionResponse
         };
 
-        if (additionalAttachments.length > DiscordConstants.MaxAttachmentsPerMessage) {
-            this.logger.warn('The maximum attachment count has been exceeded:',
+        if (additionalAttachments.length > DiscordConstants.MaxMediaAttachmentsPerMessage - 1) {
+            this.logger.warn('The maximum media attachment count has been exceeded:',
                 additionalAttachments.length,
-                DiscordConstants.MaxAttachmentsPerMessage);
+                DiscordConstants.MaxMediaAttachmentsPerMessage - 1);
 
-            additionalAttachments.length = DiscordConstants.ContentMaxLength;
+            additionalAttachments.length = DiscordConstants.MaxMediaAttachmentsPerMessage - 1;
         }
 
         await this.comfyUiReplyService.reply(this.#interaction, {
             content,
             files: additionalAttachments
         }, false, exchange);
+    }
+
+    async #readRenderRequests(): Promise<SerializableRenderRequest[]> {
+        // Prefer the dedicated state JSON file attachment.
+        const stateAttachments = this.#replyService.getAttachmentsByName(this.#interaction, DiscordConstants.StateFileName);
+
+        if (stateAttachments.length > 0) {
+            const stateAttachment = stateAttachments[0];
+            const response = await fetch(stateAttachment.url);
+            const buffer = Buffer.from(await response.arrayBuffer());
+            const json = buffer.toString('utf-8');
+            const parsed = JSON.parse(json) as SerializableRenderRequest[];
+
+            return parsed.map(item => SerializableRenderRequest.fromSerializableRenderRequest(item));
+        }
+
+        // Legacy fallback: read SerializableRenderRequest from attachment descriptions.
+        const attachmentsWithRenderRequests = this.#replyService.getAttachments(this.#interaction)
+            .filter(attachment => attachment.description?.length || 0 > 0);
+
+        return attachmentsWithRenderRequests
+            .map(attachment => SerializableRenderRequest.fromJson(attachment.description || ''));
     }
 
     override async postProcess(): Promise<void> {

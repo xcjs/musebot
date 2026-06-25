@@ -61,13 +61,6 @@ export class ComfyUiReplyService {
             return await this.#replyService.replyWithError(interaction);
         }
 
-        const jsonDescriptions: string[] = renderExchange.request.map((request) => {
-            const requestString = JSON.stringify(request);
-            return requestString.length <= DiscordConstants.MaxAttachmentDescriptionLength
-                ? requestString
-                : '';
-        });
-
         const fileAttachments: AttachmentBuilder[] = [];
         let components: ActionRowBuilder<ButtonBuilder>[] = [];
 
@@ -101,13 +94,31 @@ export class ComfyUiReplyService {
 
                 fileAttachments.push(new AttachmentBuilder(
                     file, {
-                    name: `${filename}${extension}`,
-                    description: jsonDescriptions[i] || jsonDescriptions[0]
+                    name: `${filename}${extension}`
                     }
                 ));
 
                 i++;
             }
+        }
+
+        // Enforce max media attachments, reserving one slot for the state JSON file.
+        const maxMediaAttachments = DiscordConstants.MaxMediaAttachmentsPerMessage - 1;
+        if (fileAttachments.length > maxMediaAttachments) {
+            this.#logger.warn('The maximum media attachment count has been exceeded:',
+                fileAttachments.length,
+                maxMediaAttachments);
+
+            fileAttachments.length = maxMediaAttachments;
+        }
+
+        // Attach the serializable render request state as a JSON file.
+        if (renderExchange.request !== null && renderExchange.request.length > 0) {
+            const stateJson = JSON.stringify(renderExchange.request);
+            const stateBuffer = Buffer.from(stateJson, 'utf-8');
+            fileAttachments.push(new AttachmentBuilder(stateBuffer, {
+                name: DiscordConstants.StateFileName
+            }));
         }
 
         reply.files = reply.files.concat(fileAttachments);
@@ -151,14 +162,7 @@ export class ComfyUiReplyService {
         const contentType = mediaContainer.blob.type as ContentType;
         const contentTypeCategory = this.#contentTypeService.getContentTypeCategoryFromContentType(contentType);
 
-        const isStatefulResponse = requests.filter((request) => {
-            if (request === null) {
-                return false;
-            } else {
-                const description = JSON.stringify(request);
-                return description.length <= DiscordConstants.MaxAttachmentDescriptionLength;
-            }
-        }).length === requests.length;
+        const isStatefulResponse = requests.every(request => request !== null);
 
         switch(contentTypeCategory) {
             case ContentTypeCategory.Audio:

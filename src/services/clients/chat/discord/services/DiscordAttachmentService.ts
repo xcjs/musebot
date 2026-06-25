@@ -64,6 +64,22 @@ export class DiscordAttachmentService {
         return this.getAttachmentsByType(interaction, mediaTypes);
     }
 
+    getJsonAttachments(interaction: Message | ButtonInteraction): Attachment[] {
+        return this.getAttachmentsByType(interaction, [ContentType.Json]);
+    }
+
+    getAttachmentsByName(interaction: Message | ButtonInteraction, name: string): Attachment[] {
+        let attachments: Attachment[] = [];
+
+        if (interaction instanceof Message) {
+            attachments = Array.from(interaction.attachments, ([, value]) => value);
+        } else if (interaction instanceof ButtonInteraction) {
+            attachments = Array.from(interaction.message.attachments, ([, value]) => value);
+        }
+
+        return attachments.filter(attachment => attachment.name === name);
+    }
+
     async getAttachedImagesAsBase64(interaction: Message | ButtonInteraction): Promise<string[]> {
         const imageAttachments = this.getImageAttachments(interaction);
         const imagesAsBase64: string[] = [];
