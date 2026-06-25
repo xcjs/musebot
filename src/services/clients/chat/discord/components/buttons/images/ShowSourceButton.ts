@@ -2,17 +2,29 @@
 
 import { BotInteraction } from '../../../../../../../enums/BotInteraction.js';
 import { SupportedFeature } from '../../../../../../features/enum/SupportedFeature.js';
-import { IBotServiceContainer } from "../../../../../../IBotServiceContainer.js"
+import { IBotServiceContainer } from '../../../../../../IBotServiceContainer.js';
+import { SerializableRenderRequest } from '../../../../../media/comfy-ui/models/SerializableRenderRequest.js';
+import { DiscordConstants } from '../../../enums/DiscordConstants.js';
 import { BaseComponent } from '../../BaseComponent.js';
 
 export class ShowSourceButton extends BaseComponent<ButtonBuilder> {
     override get label(): string {
-        return '{ }';
+        return '{\u00A0}';
     }
 
     override get isSupported(): boolean {
-        return this.featureService.hasFeature(SupportedFeature.Txt2Img)
-            || this.featureService.hasFeature(SupportedFeature.Txt2Vid);
+        if (!this.featureService.hasFeature(SupportedFeature.Txt2Img)
+            && !this.featureService.hasFeature(SupportedFeature.Txt2Vid)
+            && !this.featureService.hasFeature(SupportedFeature.Txt2Music)
+            && !this.featureService.hasFeature(SupportedFeature.Txt2Audio)) {
+            return false;
+        }
+
+        if (this.#renderRequest === null) {
+            return false;
+        }
+
+        return this.#renderRequest.toString().length <= DiscordConstants.ContentMaxLength;
     }
 
     override get title(): string {
@@ -26,8 +38,11 @@ export class ShowSourceButton extends BaseComponent<ButtonBuilder> {
             + ' Some prompts may be too large to save, so some actions may be hidden when this happens.';
     }
 
-    constructor(services: IBotServiceContainer) {
+    #renderRequest: SerializableRenderRequest | null;
+
+    constructor(services: IBotServiceContainer, renderRequest: SerializableRenderRequest | null) {
         super(services);
+        this.#renderRequest = renderRequest;
     }
 
     override build(): ButtonBuilder {
