@@ -9,3 +9,5 @@ export enum ResourceType {
     // Merged Resource Types
     GenerativeAI = 'GenerativeAI'
 }
+
+export const CHILD_TASK_CHANNEL_SUFFIX = 'Child';

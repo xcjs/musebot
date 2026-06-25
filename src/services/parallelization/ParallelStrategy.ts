@@ -1,5 +1,5 @@
 import { IParallelizationStrategy } from './IParallelizationStrategy.js';
-import { ResourceType } from './ResourceType.js';
+import { CHILD_TASK_CHANNEL_SUFFIX, ResourceType } from './ResourceType.js';
 
 export class ParallelStrategy implements IParallelizationStrategy {
 
@@ -8,7 +8,7 @@ export class ParallelStrategy implements IParallelizationStrategy {
         parts.push(resourceType);
 
         if(isChild) {
-            parts.push('Child');
+            parts.push(CHILD_TASK_CHANNEL_SUFFIX);
         }
 
         if (resourceUrl !== null) {
