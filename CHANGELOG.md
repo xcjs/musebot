@@ -2,6 +2,33 @@
 
 All notable changes to Musebot are documented in this file.
 
+## [9.1.0] — 2026-06-25
+
+### Added
+
+- Child tasks now support an `onFailure` callback so parent tasks can react to child task failures, replacing the dead `isChild` parameter on `IGlobalServiceContainer.getTaskChannelPostProcessor`
+- `CHILD_TASK_CHANNEL_SUFFIX` constant extracted for child task channel naming
+- `ShowSource` (`{ }`) button now appears on audio (txt2music/txt2audio) action rows, not just image/video
+- JSDoc on `trimTrailingJsonContent`
+
+### Changed
+
+- VRAM reclamation now polls Ollama model unload status (using `taskRetryDelayMilliseconds`) instead of gating on a `minVramFreeRatio` ratio, removing the abort iteration limit
+- VRAM config consolidated to a single `minVramFreeRatio` key (removed from docs, example config, and mock container after the polling approach replaced it)
+- Structured JSON parsing prefers `response.response` over `response.thinking`, then restores original reasoning-content preference as a fallback
+- State file attachment renamed from `SerializableRenderRequest.json` to `Prompt.dat` — the `.dat` extension hides Discord's built-in code-block preview while keeping the content as parseable JSON
+- `SerializableRenderRequest` is now stored in a dedicated JSON attachment on media responses
+- `ShowSource` button only renders when the JSON render request fits within a single Discord message (2000 chars)
+- `ActionRowBuilderFactory` simplified to use nullish coalescing (`??=`) and `Array.includes`
+
+### Fixed
+
+- Structured LLM responses now have trailing non-JSON content trimmed, and raw control characters in JSON string values are escaped before parsing
+- `TaskChannel` sort moved to a separate statement, removing the `@typescript-eslint/unbound-method` eslint-disable directive
+- Stale eslint-disable directives removed from workflow mutators
+- VRAM reclamation hardened to prevent ACE-Step hang in serial mode
+- Successful VRAM reclamation now logged in Ollama and ComfyUI `free()`
+
 ## [9.0.12] — 2026-06-19
 
 ### Changed
