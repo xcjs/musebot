@@ -97,7 +97,6 @@ export function createMockGlobalContainer(config?: MockServiceContainerConfig): 
             errorMessage: 'An error occurred',
             comfyUiHosts: [],
             comfyUiGuidanceScaleInterval: 0.5,
-            comfyUiMinVramFreeRatio: 0.9,
             randomPrompts: [],
             ollamaHosts: [],
             ollamaModels: [],

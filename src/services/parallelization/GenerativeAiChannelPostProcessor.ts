@@ -32,17 +32,11 @@ export class GenerativeAiChannelPostProcessor implements ITaskChannelPostProcess
       || this.#featureService.hasFeature(SupportedFeature.Img2Vid)
       || this.#featureService.hasFeature(SupportedFeature.Txt2Music)
       || this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
-      const freed = await this.#comfyUiClient.free();
-      if (!freed) {
-        this.#logger.warn('ComfyUI VRAM could not be freed during post-process.');
-      }
+      await this.#comfyUiClient.free();
     }
 
     if(this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
-      const freed = await this.#ollamaClient.free();
-      if (!freed) {
-        this.#logger.warn('Ollama model could not be unloaded during post-process.');
-      }
+      await this.#ollamaClient.free();
     }
   }
 }

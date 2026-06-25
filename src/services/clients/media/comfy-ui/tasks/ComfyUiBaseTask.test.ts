@@ -28,18 +28,20 @@ function createMockFeatureService(hasTxt2Txt: boolean): jest.Mocked<IFeatureServ
     } as unknown as jest.Mocked<IFeatureService>;
 }
 
-function createMockComfyUiClient(freeResult: boolean, statsDevices: { name: string; type: string; index: number; vram_total: number; vram_free: number; torch_vram_total: number; torch_vram_free: number }[]): jest.Mocked<ComfyUiClient> {
+function createMockComfyUiClient(freeResult: boolean): jest.Mocked<ComfyUiClient> {
     return {
         host: new URL('http://localhost:8188'),
         free: jest.fn<() => Promise<boolean>>().mockResolvedValue(freeResult),
-        getSystemStats: jest.fn<() => Promise<{ devices: { name: string; type: string; index: number; vram_total: number; vram_free: number; torch_vram_total: number; torch_vram_free: number }[] }>>().mockResolvedValue({ devices: statsDevices }),
         render: jest.fn(),
         disconnect: jest.fn<() => Promise<void>>().mockResolvedValue(undefined),
     } as unknown as jest.Mocked<ComfyUiClient>;
 }
 
-function createMockOllamaClient(): { free: jest.MockedFunction<() => Promise<boolean>> } {
-    return { free: jest.fn<() => Promise<boolean>>().mockResolvedValue(true) };
+function createMockOllamaClient(): { free: jest.MockedFunction<() => Promise<boolean>>; waitForModelUnload: jest.MockedFunction<() => Promise<boolean>> } {
+    return {
+        free: jest.fn<() => Promise<boolean>>().mockResolvedValue(true),
+        waitForModelUnload: jest.fn<() => Promise<boolean>>().mockResolvedValue(true)
+    };
 }
 
 function createMockWorkflowService(): jest.Mocked<IWorkflowService> {
@@ -59,7 +61,7 @@ function createMockServices(
     logger: jest.Mocked<ILogger>,
     featureService: jest.Mocked<IFeatureService>,
     comfyUiClient: jest.Mocked<ComfyUiClient>,
-    ollamaClient: { free: jest.MockedFunction<() => Promise<boolean>> },
+    ollamaClient: { free: jest.MockedFunction<() => Promise<boolean>>; waitForModelUnload: jest.MockedFunction<() => Promise<boolean>> },
     workflowService: jest.Mocked<IWorkflowService>
 ): IBotServiceContainer {
     return {
@@ -98,14 +100,9 @@ function createMockServices(
 function createMockConfig(overrides: Partial<IConfigurationService> = {}): IConfigurationService {
     return {
         taskQueueStrategy: TaskQueueStrategy.Serial,
-        comfyUiMinVramFreeRatio: 0.9,
         maxTaskAttempts: 3,
         ...overrides,
     } as unknown as IConfigurationService;
-}
-
-function createDevice(vramTotal: number, vramFree: number): { name: string; type: string; index: number; vram_total: number; vram_free: number; torch_vram_total: number; torch_vram_free: number } {
-    return { name: 'cuda:0', type: 'cuda', index: 0, vram_total: vramTotal, vram_free: vramFree, torch_vram_total: vramTotal, torch_vram_free: vramFree };
 }
 
 describe('ComfyUiBaseTask', () => {
@@ -113,7 +110,7 @@ describe('ComfyUiBaseTask', () => {
     let mockConfig: IConfigurationService;
     let mockFeatureService: jest.Mocked<IFeatureService>;
     let mockComfyUiClient: jest.Mocked<ComfyUiClient>;
-    let mockOllamaClient: { free: jest.MockedFunction<() => Promise<boolean>> };
+    let mockOllamaClient: { free: jest.MockedFunction<() => Promise<boolean>>; waitForModelUnload: jest.MockedFunction<() => Promise<boolean>> };
     let mockWorkflowService: jest.Mocked<IWorkflowService>;
     let task: TestableComfyUiTask;
 
@@ -121,7 +118,7 @@ describe('ComfyUiBaseTask', () => {
         mockLogger = createMockLogger();
         mockConfig = createMockConfig();
         mockFeatureService = createMockFeatureService(true);
-        mockComfyUiClient = createMockComfyUiClient(true, [createDevice(10000, 9500)]);
+        mockComfyUiClient = createMockComfyUiClient(true);
         mockOllamaClient = createMockOllamaClient();
         mockWorkflowService = createMockWorkflowService();
 
@@ -135,19 +132,19 @@ describe('ComfyUiBaseTask', () => {
     });
 
     describe('preProcess()', () => {
-        it('should call ollama.free() and not throw when it returns true', async (): Promise<void> => {
+        it('should call ollama.waitForModelUnload() and not throw when it returns true', async (): Promise<void> => {
             await task.preProcess();
 
-            expect(mockOllamaClient.free).toHaveBeenCalledTimes(1);
+            expect(mockOllamaClient.waitForModelUnload).toHaveBeenCalledTimes(1);
         });
 
-        it('should throw when ollama.free() returns false', async (): Promise<void> => {
-            mockOllamaClient.free.mockResolvedValue(false);
+        it('should throw when ollama.waitForModelUnload() returns false', async (): Promise<void> => {
+            mockOllamaClient.waitForModelUnload.mockResolvedValue(false);
 
             await expect(task.preProcess()).rejects.toThrow('Ollama model could not be unloaded');
         });
 
-        it('should not call ollama.free() when not in serial mode', async (): Promise<void> => {
+        it('should not call ollama.waitForModelUnload() when not in serial mode', async (): Promise<void> => {
             const parallelConfig = createMockConfig({ taskQueueStrategy: TaskQueueStrategy.Parallel });
             task = new TestableComfyUiTask(createMockServices(
                 parallelConfig, mockLogger, mockFeatureService, mockComfyUiClient, mockOllamaClient, mockWorkflowService
@@ -155,10 +152,10 @@ describe('ComfyUiBaseTask', () => {
 
             await task.preProcess();
 
-            expect(mockOllamaClient.free).not.toHaveBeenCalled();
+            expect(mockOllamaClient.waitForModelUnload).not.toHaveBeenCalled();
         });
 
-        it('should not call ollama.free() when Txt2Txt feature is unavailable', async (): Promise<void> => {
+        it('should not call ollama.waitForModelUnload() when Txt2Txt feature is unavailable', async (): Promise<void> => {
             const noTxt2Txt = createMockFeatureService(false);
             task = new TestableComfyUiTask(createMockServices(
                 mockConfig, mockLogger, noTxt2Txt, mockComfyUiClient, mockOllamaClient, mockWorkflowService
@@ -166,52 +163,15 @@ describe('ComfyUiBaseTask', () => {
 
             await task.preProcess();
 
-            expect(mockOllamaClient.free).not.toHaveBeenCalled();
+            expect(mockOllamaClient.waitForModelUnload).not.toHaveBeenCalled();
         });
     });
 
     describe('process()', () => {
-        it('should load workflows and pass VRAM gate when sufficient', async (): Promise<void> => {
+        it('should load workflows', async (): Promise<void> => {
             await task.process();
 
             expect(mockWorkflowService.loadWorkflows).toHaveBeenCalledTimes(1);
-            expect(mockComfyUiClient.getSystemStats).toHaveBeenCalledTimes(1);
-        });
-
-        it('should throw when VRAM free ratio is below minVramFreeRatio', async (): Promise<void> => {
-            mockComfyUiClient.getSystemStats.mockResolvedValue({
-                devices: [createDevice(10000, 4000)]
-            });
-
-            await expect(task.process()).rejects.toThrow('Insufficient VRAM');
-        });
-
-        it('should pass when VRAM is exactly at threshold', async (): Promise<void> => {
-            mockComfyUiClient.getSystemStats.mockResolvedValue({
-                devices: [createDevice(10000, 9000)]
-            });
-
-            await expect(task.process()).resolves.toBeUndefined();
-        });
-
-        it('should throw when any one device is below threshold', async (): Promise<void> => {
-            mockComfyUiClient.getSystemStats.mockResolvedValue({
-                devices: [createDevice(10000, 9000), createDevice(10000, 3000)]
-            });
-
-            await expect(task.process()).rejects.toThrow('Insufficient VRAM');
-        });
-
-        it('should respect custom minVramFreeRatio from config', async (): Promise<void> => {
-            const customConfig = createMockConfig({ comfyUiMinVramFreeRatio: 0.2 });
-            task = new TestableComfyUiTask(createMockServices(
-                customConfig, mockLogger, mockFeatureService, mockComfyUiClient, mockOllamaClient, mockWorkflowService
-            ));
-            mockComfyUiClient.getSystemStats.mockResolvedValue({
-                devices: [createDevice(10000, 3000)]
-            });
-
-            await expect(task.process()).resolves.toBeUndefined();
         });
     });
 });

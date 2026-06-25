@@ -17,9 +17,6 @@ export class ComfyUiTaskChannelPostProcessor implements ITaskChannelPostProcesso
   async postProcess(): Promise<void> {
     this.#logger.info('Freeing ComfyUI memory.');
 
-    const freed = await this.#comfyUiClient.free();
-    if (!freed) {
-      this.#logger.warn('ComfyUI VRAM could not be freed during post-process.');
-    }
+    await this.#comfyUiClient.free();
   }
 }

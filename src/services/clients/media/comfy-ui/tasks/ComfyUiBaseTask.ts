@@ -47,7 +47,7 @@ export abstract class ComfyUiBaseTask extends BaseTask<void> {
 
         if (this.configurationService.taskQueueStrategy === TaskQueueStrategy.Serial
             && this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
-            const freed = await this.#ollamaClient.free();
+            const freed = await this.#ollamaClient.waitForModelUnload();
             if (!freed) {
                 throw new Error('Ollama model could not be unloaded; aborting to prevent ComfyUI VRAM contention.');
             }
@@ -59,15 +59,6 @@ export abstract class ComfyUiBaseTask extends BaseTask<void> {
 
         this.logger.info('Loading workflows...');
         await this.workflowService.loadWorkflows();
-
-        const minRatio = this.configurationService.comfyUiMinVramFreeRatio;
-        const stats = await this.comfyUiClient.getSystemStats();
-        const insufficient = stats.devices.filter(d => d.vram_free < d.vram_total * minRatio);
-
-        if (insufficient.length > 0) {
-            const names = insufficient.map(d => d.name).join(', ');
-            throw new Error(`Insufficient VRAM on device(s): ${names}. Required free ratio: ${minRatio}.`);
-        }
     }
 
     override async postProcess(): Promise<void> {

@@ -57,7 +57,6 @@ function createMockConfigurationService(overrides: Partial<IConfigurationService
         taskQueueForceSerialAcrossHosts: false,
         comfyUiHosts: [new URL('http://localhost:8188')],
         comfyUiGuidanceScaleInterval: 0.5,
-        comfyUiMinVramFreeRatio: 0.9,
         randomPrompts: [],
         ollamaHosts: [],
         ollamaModels: [],
@@ -130,44 +129,14 @@ describe('ComfyUiClient', () => {
     });
 
     describe('free()', () => {
-        it('should return true when VRAM is freed above threshold', async (): Promise<void> => {
+        it('should return true when /free succeeds', async (): Promise<void> => {
             mockExtendedClient.free.mockResolvedValue(true);
-            mockExtendedClient.getSystemStats.mockResolvedValue({
-                devices: [createDeviceStats(10000, 9500)]
-            });
 
             const result = await client.free();
 
             expect(result).toBe(true);
             expect(mockExtendedClient.free).toHaveBeenCalledTimes(1);
-            expect(mockExtendedClient.getSystemStats).toHaveBeenCalledTimes(1);
-        });
-
-        it('should retry and succeed when VRAM is freed on second attempt', async (): Promise<void> => {
-            mockExtendedClient.free.mockResolvedValue(true);
-            mockExtendedClient.getSystemStats
-                .mockResolvedValueOnce({ devices: [createDeviceStats(10000, 5000)] })
-                .mockResolvedValueOnce({ devices: [createDeviceStats(10000, 9500)] });
-
-            const result = await client.free();
-
-            expect(result).toBe(true);
-            expect(mockExtendedClient.free).toHaveBeenCalledTimes(2);
-            expect(mockExtendedClient.getSystemStats).toHaveBeenCalledTimes(2);
-            expect(mockLogger.warn).toHaveBeenCalled();
-        });
-
-        it('should return false when VRAM still occupied after retry', async (): Promise<void> => {
-            mockExtendedClient.free.mockResolvedValue(true);
-            mockExtendedClient.getSystemStats.mockResolvedValue({
-                devices: [createDeviceStats(10000, 5000)]
-            });
-
-            const result = await client.free();
-
-            expect(result).toBe(false);
-            expect(mockExtendedClient.free).toHaveBeenCalledTimes(2);
-            expect(mockLogger.error).toHaveBeenCalled();
+            expect(mockExtendedClient.getSystemStats).not.toHaveBeenCalled();
         });
 
         it('should return false when ExtendedComfyUIClient.free returns false', async (): Promise<void> => {
@@ -180,28 +149,13 @@ describe('ComfyUiClient', () => {
             expect(mockLogger.error).toHaveBeenCalled();
         });
 
-        it('should return false when getSystemStats throws', async (): Promise<void> => {
-            mockExtendedClient.free.mockResolvedValue(true);
-            mockExtendedClient.getSystemStats.mockRejectedValue(new Error('stats failed'));
+        it('should return false when free throws', async (): Promise<void> => {
+            mockExtendedClient.free.mockRejectedValue(new Error('free failed'));
 
             const result = await client.free();
 
             expect(result).toBe(false);
             expect(mockLogger.error).toHaveBeenCalled();
-        });
-
-        it('should check all devices and fail if any is below threshold', async (): Promise<void> => {
-            mockExtendedClient.free.mockResolvedValue(true);
-            mockExtendedClient.getSystemStats.mockResolvedValue({
-                devices: [
-                    createDeviceStats(10000, 9500),
-                    createDeviceStats(10000, 5000)
-                ]
-            });
-
-            const result = await client.free();
-
-            expect(result).toBe(false);
         });
     });
 

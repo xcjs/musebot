@@ -79,25 +79,6 @@ export class OllamaClient {
                 keep_alive: 0
             });
 
-            if (await this.isModelLoaded()) {
-                this.#logger.warn(`Model ${this.#model} still loaded after free(); retrying unload.`);
-                await this.#client.generate({
-                    prompt: null!,
-                    model: this.#model,
-                    stream: false,
-                    keep_alive: 0
-                });
-
-                if (await this.isModelLoaded()) {
-                    this.#logger.error(`Model ${this.#model} still loaded after retry; cannot free VRAM.`);
-                    return false;
-                }
-
-                this.#logger.info(`Model ${this.#model} unloaded after retry.`);
-            } else {
-                this.#logger.info(`Model ${this.#model} unloaded.`);
-            }
-
             return true;
         } catch (error) {
             this.#logger.error('Failed to free Ollama resources:', error);
@@ -108,6 +89,27 @@ export class OllamaClient {
     async isModelLoaded(): Promise<boolean> {
         const running = await this.#client.ps();
         return running.models?.some(m => m.name === this.#model || m.model === this.#model) ?? false;
+    }
+
+    async waitForModelUnload(maxAttempts = 30, intervalMs = 1000): Promise<boolean> {
+        const freed = await this.free();
+        if (!freed) {
+            return false;
+        }
+
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            const loaded = await this.isModelLoaded();
+            if (!loaded) {
+                this.#logger.info(`Model ${this.#model} unloaded after ${attempt + 1} check(s).`);
+                return true;
+            }
+
+            this.#logger.info(`Model ${this.#model} still loaded; waiting ${intervalMs}ms (attempt ${attempt + 1}/${maxAttempts}).`);
+            await new Promise(resolve => setTimeout(resolve, intervalMs));
+        }
+
+        this.#logger.error(`Model ${this.#model} still loaded after ${maxAttempts} checks; cannot free VRAM.`);
+        return false;
     }
 
     async generateStructured<TOutput>(prompt: string, requestData: IStructuredRequestData):

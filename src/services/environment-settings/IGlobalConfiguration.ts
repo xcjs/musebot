@@ -7,8 +7,4 @@ export interface IGlobalConfiguration {
         strategy: TaskQueueStrategy;
         forceSerialAcrossHosts: boolean;
     };
-
-    comfyUi?: {
-        minVramFreeRatio?: number;
-    };
 }

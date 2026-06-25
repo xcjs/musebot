@@ -112,32 +112,6 @@ describe('GenerativeAiChannelPostProcessor', () => {
             expect(mockLogger.warn).not.toHaveBeenCalled();
         });
 
-        it('should warn-log (not throw) when ComfyUI free() returns false', async (): Promise<void> => {
-            mockComfyUiClient.free.mockResolvedValue(false);
-
-            await processor.postProcess();
-
-            expect(mockComfyUiClient.free).toHaveBeenCalledTimes(1);
-            expect(mockLogger.warn).toHaveBeenCalledWith('ComfyUI VRAM could not be freed during post-process.');
-        });
-
-        it('should warn-log (not throw) when Ollama free() returns false', async (): Promise<void> => {
-            mockOllamaClient.free.mockResolvedValue(false);
-
-            await processor.postProcess();
-
-            expect(mockOllamaClient.free).toHaveBeenCalledTimes(1);
-            expect(mockLogger.warn).toHaveBeenCalledWith('Ollama model could not be unloaded during post-process.');
-        });
-
-        it('should complete without throwing when both free() return false', async (): Promise<void> => {
-            mockComfyUiClient.free.mockResolvedValue(false);
-            mockOllamaClient.free.mockResolvedValue(false);
-
-            await expect(processor.postProcess()).resolves.toBeUndefined();
-            expect(mockLogger.warn).toHaveBeenCalledTimes(2);
-        });
-
         it('should not call ComfyUI free() when no media features available', async (): Promise<void> => {
             const noMedia = createMockFeatureService(true, false);
             processor = new GenerativeAiChannelPostProcessor(createMockServices(
