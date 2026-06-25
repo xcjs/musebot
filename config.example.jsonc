@@ -116,7 +116,17 @@
         // Type:     Array of string (URLs)
         "hosts": [
           "http://localhost:8188"
-        ]
+        ],
+
+        // Minimum vram_free / vram_total ratio required on every ComfyUI device.
+        // Used in two places: (1) after /free to verify VRAM was reclaimed, and
+        // (2) as a pre-execution gate before rendering. If any device falls below
+        // this ratio, the task fails (and retries) instead of silently OOMing and
+        // hanging the serial channel.
+        // Required: Optional
+        // Default:  0.9 (90% free required)
+        // Type:     Number (0-1)
+        "minVramFreeRatio": 0.9
       },
 
       // Ollama configuration for large language model chat. Required when mode is "chat".

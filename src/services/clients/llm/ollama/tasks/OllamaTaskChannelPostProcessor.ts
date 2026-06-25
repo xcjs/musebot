@@ -17,10 +17,6 @@ export class OllamaTaskChannelPostProcessor implements ITaskChannelPostProcessor
   async postProcess(): Promise<void> {
     this.#logger.info('Freeing Ollama memory.');
 
-    try {
-      await this.#ollamaClient.free();
-    } catch (error) {
-      this.#logger.error('An error occurred while instructing Ollama to free memory:', error);
-    }
+    await this.#ollamaClient.free();
   }
 }

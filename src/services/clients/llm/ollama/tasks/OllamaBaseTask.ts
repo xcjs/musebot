@@ -61,7 +61,10 @@ export abstract class OllamaBaseTask<T> extends BaseTask<T> {
                 || this.#featureService.hasFeature(SupportedFeature.Txt2Music)
                 || this.#featureService.hasFeature(SupportedFeature.Txt2Vid))
         ) {
-            await this.#comfyUiClient.free();
+            const freed = await this.#comfyUiClient.free();
+            if (!freed) {
+                throw new Error('ComfyUI VRAM could not be freed; aborting to prevent Ollama VRAM contention.');
+            }
         }
     }
 

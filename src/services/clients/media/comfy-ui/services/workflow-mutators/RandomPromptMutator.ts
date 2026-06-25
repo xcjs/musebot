@@ -55,8 +55,6 @@ export class RandomPromptMutator implements IWorkflowMutator {
 
     async mutate(renderRequest: SerializableRenderRequest,
         interaction: ButtonInteraction,
-        // This parameter is required by the interface.
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         workflow: IWorkflow): Promise<SerializableRenderRequest> {
         const mutatedRequest = SerializableRenderRequest.fromSerializableRenderRequest(renderRequest);
         mutatedRequest.workflow = workflow.name;

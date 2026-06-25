@@ -71,3 +71,75 @@ export function endsWithWhitespace(text: string): boolean {
 export function hasOnly(containingText: string, searchText: string): boolean {
     return containingText.trim().replaceAll(searchText, '').length === 0;
 }
+
+/**
+ * Extracts the first balanced JSON object from a string, discarding any
+ * trailing content. Some LLMs emit valid JSON followed by non-JSON artifacts
+ * (e.g. `<|tool_response>` tokens, prose, or markdown) despite a structured
+ * format constraint, which breaks `JSON.parse`. This function scans with
+ * brace-depth tracking that respects string literals and escape sequences,
+ * returning the substring from the first `{` through the matching `}`.
+ *
+ * Also escapes raw control characters (newline, carriage return, tab, etc.)
+ * that appear inside JSON string values, which some models emit unescaped
+ * (particularly in fields like `lyrics`), causing "Unterminated string" errors.
+ * @param text - Raw model output that may contain trailing non-JSON content.
+ * @returns The first balanced JSON object with escaped control characters, or the original text if no `{` is found.
+ */
+export function trimTrailingJsonContent(text: string): string {
+    const start = text.indexOf('{');
+    if (start === -1) {
+        return text;
+    }
+
+    let depth = 0;
+    let inString = false;
+    let escaped = false;
+    let result = '';
+
+    for (let i = start; i < text.length; i++) {
+        const char = text[i];
+
+        if (inString) {
+            if (escaped) {
+                escaped = false;
+                result += char;
+            } else if (char === '\\') {
+                escaped = true;
+                result += char;
+            } else if (char === '"') {
+                inString = false;
+                result += char;
+            } else if (char === '\n') {
+                result += '\\n';
+            } else if (char === '\r') {
+                result += '\\r';
+            } else if (char === '\t') {
+                result += '\\t';
+            } else if (char.charCodeAt(0) < 0x20) {
+                result += `\\u${char.charCodeAt(0).toString(16).padStart(4, '0')}`;
+            } else {
+                result += char;
+            }
+            continue;
+        }
+
+        if (char === '"') {
+            inString = true;
+            result += char;
+        } else if (char === '{') {
+            depth++;
+            result += char;
+        } else if (char === '}') {
+            depth--;
+            result += char;
+            if (depth === 0) {
+                return result;
+            }
+        } else {
+            result += char;
+        }
+    }
+
+    return result;
+}

@@ -6,6 +6,7 @@ import {
     isOnlyWhitespace,
     splitText,
     toTitleCase,
+    trimTrailingJsonContent,
     wrapText
 } from './string-utilities.js';
 
@@ -258,6 +259,75 @@ describe('string-utilities', () => {
 
         it('should return false when multi-character search does not match completely', () => {
             expect(hasOnly('ababa', 'ab')).toBe(false);
+        });
+    });
+
+    describe('trimTrailingJsonContent()', () => {
+        it('should trim trailing non-JSON content after a valid object', () => {
+            const input = '{"a": 1}\n    <|tool_response>';
+            expect(trimTrailingJsonContent(input)).toBe('{"a": 1}');
+        });
+
+        it('should handle the reported model output format', () => {
+            const input = '{"songPromptType": "instrumental", "promptHasTags": false, "promptHasLyrics": true}\n    <|tool_response>';
+            expect(trimTrailingJsonContent(input)).toBe('{"songPromptType": "instrumental", "promptHasTags": false, "promptHasLyrics": true}');
+        });
+
+        it('should handle nested objects', () => {
+            const input = '{"a": {"b": 2}}\ntrailing';
+            expect(trimTrailingJsonContent(input)).toBe('{"a": {"b": 2}}');
+        });
+
+        it('should handle braces inside string values', () => {
+            const input = '{"a": "has } brace"}\ntrailing';
+            expect(trimTrailingJsonContent(input)).toBe('{"a": "has } brace"}');
+        });
+
+        it('should handle escaped quotes inside string values', () => {
+            const input = '{"a": "say \\"hi\\""}\ntrailing';
+            expect(JSON.parse(trimTrailingJsonContent(input))).toEqual({ a: 'say "hi"' });
+        });
+
+        it('should return original text when no opening brace', () => {
+            expect(trimTrailingJsonContent('no json here')).toBe('no json here');
+        });
+
+        it('should return from start to end when no trailing content', () => {
+            expect(trimTrailingJsonContent('{"a": 1}')).toBe('{"a": 1}');
+        });
+
+        it('should handle whitespace before the object', () => {
+            const input = '   \n  {"a": 1}\ntrailing';
+            expect(trimTrailingJsonContent(input)).toBe('{"a": 1}');
+        });
+
+        it('should return partial text when JSON is incomplete', () => {
+            expect(trimTrailingJsonContent('{"a": 1')).toBe('{"a": 1');
+        });
+
+        it('should escape raw newlines inside string values', () => {
+            const input = '{"lyrics": "line1\nline2"}';
+            expect(JSON.parse(trimTrailingJsonContent(input))).toEqual({ lyrics: 'line1\nline2' });
+        });
+
+        it('should escape raw carriage returns inside string values', () => {
+            const input = '{"lyrics": "line1\rline2"}';
+            expect(JSON.parse(trimTrailingJsonContent(input))).toEqual({ lyrics: 'line1\rline2' });
+        });
+
+        it('should escape raw tabs inside string values', () => {
+            const input = '{"lyrics": "col1\tcol2"}';
+            expect(JSON.parse(trimTrailingJsonContent(input))).toEqual({ lyrics: 'col1\tcol2' });
+        });
+
+        it('should escape other control characters inside string values', () => {
+            const input = '{"a": "val\u0001ue"}';
+            expect(JSON.parse(trimTrailingJsonContent(input))).toEqual({ a: 'val\u0001ue' });
+        });
+
+        it('should not escape already-escaped newlines inside string values', () => {
+            const input = '{"lyrics": "line1\\nline2"}';
+            expect(JSON.parse(trimTrailingJsonContent(input))).toEqual({ lyrics: 'line1\nline2' });
         });
     });
 });

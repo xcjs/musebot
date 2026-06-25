@@ -47,7 +47,10 @@ export abstract class ComfyUiBaseTask extends BaseTask<void> {
 
         if (this.configurationService.taskQueueStrategy === TaskQueueStrategy.Serial
             && this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
-            await this.#ollamaClient.free();
+            const freed = await this.#ollamaClient.waitForModelUnload();
+            if (!freed) {
+                throw new Error('Ollama model could not be unloaded; aborting to prevent ComfyUI VRAM contention.');
+            }
         }
     }
 

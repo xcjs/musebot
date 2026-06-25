@@ -32,5 +32,11 @@ export default tseslint.config(
       'simple-import-sort/exports': 'error',
       'simple-import-sort/imports': 'error'
     }
+  },
+  {
+    files: ['src/**/*.test.ts'],
+    rules: {
+      '@typescript-eslint/unbound-method': 'off'
+    }
   }
 );

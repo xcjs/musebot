@@ -1,4 +1,4 @@
-﻿import { Prompt } from 'comfy-ui-client';
+﻿import { Prompt, SystemStatsResponse } from 'comfy-ui-client';
 
 import { PromisedSettledResultStatus } from '../../../../enums/PromisedSettledResultStatus.js';
 import { getRandomArrayEntry } from '../../../../utilities/random-utilities.js';
@@ -81,12 +81,23 @@ export class ComfyUiClient {
         return multiMediaResponse;
     }
 
-    async free(): Promise<void> {
+    async free(): Promise<boolean> {
         try {
-            await this.#client.free();
+            const ok = await this.#client.free();
+            if (!ok) {
+                this.#logger.error('ComfyUI /free request failed.');
+                return false;
+            }
+
+            return true;
         } catch (error) {
             this.#logger.error('Failed to free ComfyUI resources:', error);
+            return false;
         }
+    }
+
+    async getSystemStats(): Promise<SystemStatsResponse> {
+        return this.#client.getSystemStats();
     }
 
     async disconnect(): Promise<void> {

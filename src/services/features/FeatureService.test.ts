@@ -192,7 +192,7 @@ describe('FeatureService', () => {
 
             await service.loadFeatures();
 
-            // eslint-disable-next-line @typescript-eslint/unbound-method
+             
             expect(logger.info).toHaveBeenCalledWith(`${SupportedFeature.Txt2Txt} supported.`);
         });
 
@@ -213,7 +213,7 @@ describe('FeatureService', () => {
 
             await service.loadFeatures();
 
-            // eslint-disable-next-line @typescript-eslint/unbound-method
+             
             expect(logger.info).toHaveBeenCalledWith(`${SupportedFeature.Txt2Img} supported.`);
         });
     });
