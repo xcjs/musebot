@@ -82,6 +82,14 @@ export class DiscordReplyService implements IReplyService<Message, MessageReacti
         return this.#attachmentService.getMediaAttachments(interaction);
     }
 
+    getJsonAttachments(interaction: Message | ButtonInteraction): Attachment[] {
+        return this.#attachmentService.getJsonAttachments(interaction);
+    }
+
+    getAttachmentsByName(interaction: Message | ButtonInteraction, name: string): Attachment[] {
+        return this.#attachmentService.getAttachmentsByName(interaction, name);
+    }
+
     async getAttachedImagesAsBase64(interaction: Message | ButtonInteraction): Promise<string[]> {
         return this.#attachmentService.getAttachedImagesAsBase64(interaction);
     }

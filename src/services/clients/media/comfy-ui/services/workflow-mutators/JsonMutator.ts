@@ -58,8 +58,8 @@ export class JsonMutator implements IWorkflowMutator {
             mutatedRequest.refreshSeed();
         }
 
-        if (mutatedRequest.num > DiscordConstants.MaxAttachmentsPerMessage) {
-            mutatedRequest.num = DiscordConstants.MaxAttachmentsPerMessage;
+        if (mutatedRequest.num > DiscordConstants.MaxMediaAttachmentsPerMessage - 1) {
+            mutatedRequest.num = DiscordConstants.MaxMediaAttachmentsPerMessage - 1;
         }
 
         return mutatedRequest;
