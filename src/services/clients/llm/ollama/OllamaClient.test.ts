@@ -178,7 +178,7 @@ describe('OllamaClient', () => {
             mockOllamaInstance.generate.mockResolvedValue({});
             mockOllamaInstance.ps.mockResolvedValue({ models: [] });
 
-            const result = await client.waitForModelUnload(5, 10);
+            const result = await client.waitForModelUnload(10);
 
             expect(result).toBe(true);
             expect(mockOllamaInstance.generate).toHaveBeenCalledTimes(1);
@@ -191,27 +191,16 @@ describe('OllamaClient', () => {
                 .mockResolvedValueOnce({ models: [{ name: 'test-model' }] })
                 .mockResolvedValueOnce({ models: [] });
 
-            const result = await client.waitForModelUnload(5, 10);
+            const result = await client.waitForModelUnload(10);
 
             expect(result).toBe(true);
             expect(mockOllamaInstance.ps).toHaveBeenCalledTimes(2);
         });
 
-        it('should return false when model still loaded after maxAttempts', async (): Promise<void> => {
-            mockOllamaInstance.generate.mockResolvedValue({});
-            mockOllamaInstance.ps.mockResolvedValue({ models: [{ name: 'test-model' }] });
-
-            const result = await client.waitForModelUnload(3, 10);
-
-            expect(result).toBe(false);
-            expect(mockOllamaInstance.ps).toHaveBeenCalledTimes(3);
-            expect(mockLogger.error).toHaveBeenCalled();
-        });
-
         it('should return false when free() fails', async (): Promise<void> => {
             mockOllamaInstance.generate.mockRejectedValue(new Error('network error'));
 
-            const result = await client.waitForModelUnload(5, 10);
+            const result = await client.waitForModelUnload(10);
 
             expect(result).toBe(false);
             expect(mockLogger.error).toHaveBeenCalled();

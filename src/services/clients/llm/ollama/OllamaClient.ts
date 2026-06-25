@@ -91,25 +91,24 @@ export class OllamaClient {
         return running.models?.some(m => m.name === this.#model || m.model === this.#model) ?? false;
     }
 
-    async waitForModelUnload(maxAttempts = 30, intervalMs = 1000): Promise<boolean> {
+    async waitForModelUnload(intervalMs = this.#configurationService.taskRetryDelayMilliseconds): Promise<boolean> {
         const freed = await this.free();
         if (!freed) {
             return false;
         }
 
-        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        let attempt = 0;
+        while (true) {
             const loaded = await this.isModelLoaded();
             if (!loaded) {
                 this.#logger.info(`Model ${this.#model} unloaded after ${attempt + 1} check(s).`);
                 return true;
             }
 
-            this.#logger.info(`Model ${this.#model} still loaded; waiting ${intervalMs}ms (attempt ${attempt + 1}/${maxAttempts}).`);
+            attempt++;
+            this.#logger.info(`Model ${this.#model} still loaded; waiting ${intervalMs}ms (attempt ${attempt}).`);
             await new Promise(resolve => setTimeout(resolve, intervalMs));
         }
-
-        this.#logger.error(`Model ${this.#model} still loaded after ${maxAttempts} checks; cannot free VRAM.`);
-        return false;
     }
 
     async generateStructured<TOutput>(prompt: string, requestData: IStructuredRequestData):
