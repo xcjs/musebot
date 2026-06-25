@@ -304,5 +304,30 @@ describe('string-utilities', () => {
         it('should return partial text when JSON is incomplete', () => {
             expect(trimTrailingJsonContent('{"a": 1')).toBe('{"a": 1');
         });
+
+        it('should escape raw newlines inside string values', () => {
+            const input = '{"lyrics": "line1\nline2"}';
+            expect(JSON.parse(trimTrailingJsonContent(input))).toEqual({ lyrics: 'line1\nline2' });
+        });
+
+        it('should escape raw carriage returns inside string values', () => {
+            const input = '{"lyrics": "line1\rline2"}';
+            expect(JSON.parse(trimTrailingJsonContent(input))).toEqual({ lyrics: 'line1\rline2' });
+        });
+
+        it('should escape raw tabs inside string values', () => {
+            const input = '{"lyrics": "col1\tcol2"}';
+            expect(JSON.parse(trimTrailingJsonContent(input))).toEqual({ lyrics: 'col1\tcol2' });
+        });
+
+        it('should escape other control characters inside string values', () => {
+            const input = '{"a": "val\u0001ue"}';
+            expect(JSON.parse(trimTrailingJsonContent(input))).toEqual({ a: 'val\u0001ue' });
+        });
+
+        it('should not escape already-escaped newlines inside string values', () => {
+            const input = '{"lyrics": "line1\\nline2"}';
+            expect(JSON.parse(trimTrailingJsonContent(input))).toEqual({ lyrics: 'line1\nline2' });
+        });
     });
 });
