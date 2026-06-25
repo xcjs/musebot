@@ -60,6 +60,16 @@ export abstract class BaseTask<T> {
 
     set onSuccess(callback: (payload: T) => void) { }
 
+    set onFailure(callback: (error: Error) => void) { }
+
+    get lastError(): Error | null {
+        return this.#lastError;
+    }
+
+    set lastError(error: Error) {
+        this.#lastError = error;
+    }
+
     protected services: IBotServiceContainer;
     parallelizationStrategy: IParallelizationStrategy;
     logger: ILogger;
@@ -70,6 +80,7 @@ export abstract class BaseTask<T> {
     readonly #maxAttempts: number = 0;
     readonly #createdTime: Date;
     #startedTime: Date | null = null;
+    #lastError: Error | null = null;
 
     constructor(services: IBotServiceContainer) {
         this.services = services;

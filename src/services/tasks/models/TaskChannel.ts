@@ -45,7 +45,7 @@ export class TaskChannel {
 
         if(this.hasTasks && this.#postProcessor === null) {
             this.#postProcessor = this.#services.getTaskChannelPostProcessor(
-                this.#queue[0].taskChannel, this.#queue.some(x => x.isChild));
+                this.#queue[0].taskChannel);
         }
 
         const incompleteTasks = this.#queue.filter(task => {

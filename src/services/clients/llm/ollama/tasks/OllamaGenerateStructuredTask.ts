@@ -12,12 +12,17 @@ export class OllamaGenerateStructuredTask<T> extends OllamaBaseTask<IHttpExchang
         this.#onSuccess = callback;
     }
 
+    override set onFailure(callback: (error: Error) => void) {
+        this.#onFailure = callback;
+    }
+
     readonly #prompt: string;
     readonly #structuredRequestData: IStructuredRequestData;
 
     #ollamaExchange: IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, T> | null = null;
 
     #onSuccess: (payload: IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, T>) => void = () => { };
+    #onFailure: (error: Error) => void = () => { };
 
     constructor(services: IBotServiceContainer, prompt: string, structuredRequestData: IStructuredRequestData) {
         super(services);
@@ -42,6 +47,13 @@ export class OllamaGenerateStructuredTask<T> extends OllamaBaseTask<IHttpExchang
                 if(this.#ollamaExchange !== null) {
                     this.#onSuccess(this.#ollamaExchange);
                 }
+
+                break;
+
+            case TaskStatus.Dead:
+                this.logger.error('Task dead - invoking onFailure callback.');
+
+                this.#onFailure(this.lastError ?? new Error('Task died without a captured error.'));
 
                 break;
         }

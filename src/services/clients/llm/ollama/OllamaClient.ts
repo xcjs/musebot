@@ -133,6 +133,9 @@ export class OllamaClient {
                     request,
                     response,
                 },
+                // Some models place structured outputs in the reasoning (thinking) property
+                // instead of the main response body, so we check it first and fall back to the
+                // response property when reasoning is absent.
                 data: JSON.parse(trimTrailingJsonContent(response.thinking ?? response.response)) as TOutput
             };
         } catch (error) {

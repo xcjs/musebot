@@ -71,7 +71,7 @@ export class RandomPromptMutator implements IWorkflowMutator {
     }
 
     async #getRandomPrompt(): Promise<string> {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             const prompt = getRandomArrayEntry(this.#configurationService.randomPrompts) || '';
             const task = this.#services.getLlmGenerateTask(prompt, OLLAMA_TEMPERATURE_MAX);
             task.isChild = true;
@@ -84,6 +84,7 @@ export class RandomPromptMutator implements IWorkflowMutator {
             };
 
             task.onSuccess = callback;
+            task.onFailure = reject;
             this.#taskQueue.add(task as BaseTask<unknown>);
         });
     }
