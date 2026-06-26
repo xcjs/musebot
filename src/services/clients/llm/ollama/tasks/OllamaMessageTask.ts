@@ -1,6 +1,7 @@
 ﻿import { Message as DiscordMessage } from 'discord.js';
-import { Message as OllamaMessage } from 'ollama';
+import { GenerateRequest, GenerateResponse, Message as OllamaMessage } from 'ollama';
 
+import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { endsWithWhitespace, hasOnly, isOnlyWhitespace } from '../../../../../utilities/string-utilities.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../../../../features/IFeatureService.js';
@@ -9,6 +10,7 @@ import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.js';
+import { OLLAMA_TEMPERATURE_DEFAULT } from '../constants/OllamaConstants.js';
 import { OllamaBaseTask } from './OllamaBaseTask.js';
 
 export class OllamaMessageTask extends OllamaBaseTask<void> {
@@ -55,7 +57,7 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
 
         if (this.#featureService.hasFeature(SupportedFeature.Txt2Img)
             && replies.length > 0) {
-            await this.#attachImage(exchange.exchange.response.message.content, replies);
+            this.#attachImage(exchange.exchange.response.message.content, replies);
         }
     }
 
@@ -134,7 +136,7 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
 
                 if (this.#featureService.hasFeature(SupportedFeature.Txt2Img)
                     && replies.length > 0) {
-                    await this.#attachImage(fullResponse, replies);
+                    this.#attachImage(fullResponse, replies);
                 }
             }
 
@@ -144,8 +146,15 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
         }
     }
 
-    async #attachImage(prompt: string, replies: Array<DiscordMessage>): Promise<void> {
+    #attachImage(prompt: string, replies: Array<DiscordMessage>): void {
         this.logger.info('An image will be attached to the Ollama response.');
+
+        const lastReply = replies[replies.length - 1];
+
+        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
+            this.#enqueueAttachmentTask(lastReply, prompt);
+            return;
+        }
 
         const llmImagePrompt = 'The following prompt is a response to a message.'
             + ' Describe an artistic or creative image to go with this response.'
@@ -153,23 +162,23 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
             + ' If you do decide to include any text in the image, make sure to surround it with quotes and remain brief.'
             + `\n\n\`\`\`text\n${prompt}\n\`\`\``;
 
-        let imagePrompt = '';
+        const generateTask = this.#services.getLlmGenerateTask(llmImagePrompt, OLLAMA_TEMPERATURE_DEFAULT);
+        generateTask.isChild = true;
 
-        // TODO: Consider creating an OllamaGenerateResponseTask to do this instead.
-        try
-        {
-            const exchange = await this.ollamaClient.generate(llmImagePrompt);
-            imagePrompt = exchange.response.response;
-        }
-        catch(error)
-        {
+        generateTask.onSuccess = (payload: IHttpExchange<GenerateRequest, GenerateResponse>): void => {
+            this.#enqueueAttachmentTask(lastReply, payload.response.response);
+        };
+
+        generateTask.onFailure = (error: Error): void => {
             this.logger.error('Failed to generate an image for the prompt. Falling back to the original Ollama response to generate an image instead.', error);
-            imagePrompt = prompt;
-        }
+            this.#enqueueAttachmentTask(lastReply, prompt);
+        };
 
-        const lastReply = replies[replies.length - 1];
-        const attachTask = this.#services.getAttachmentTask(lastReply, imagePrompt) as BaseTask<void>;
+        this.#taskQueue.add(generateTask as BaseTask<unknown>);
+    }
 
+    #enqueueAttachmentTask(message: DiscordMessage, prompt: string): void {
+        const attachTask = this.#services.getAttachmentTask(message, prompt) as BaseTask<void>;
         this.#taskQueue.add(attachTask as BaseTask<unknown>);
     }
 }
