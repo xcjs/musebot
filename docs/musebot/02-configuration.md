@@ -149,6 +149,16 @@ variables, you need to migrate to JSON configuration. See [Migration Guide](./03
 * **Required:** Yes
 * **Type:** `String[]`
 
+#### `comfyUi.timeoutMinutes`
+
+* **Description:** The maximum duration in minutes that a single ComfyUI render
+  task is allowed to run before it is aborted. When the timeout elapses, Musebot
+  interrupts the ComfyUI workflow and disconnects the WebSocket, causing the task
+  to fail and be retried (subject to `taskQueue.numAttempts`).
+* **Required:** No
+* **Type:** `Number`
+* **Default:** `30`
+
 #### `comfyUiGuidanceScaleInterval`
 
 * **Description:** The interval step used when adjusting the guidance scale via

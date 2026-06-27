@@ -25,6 +25,7 @@ export interface IConfigurationService {
 
     comfyUiHosts: URL[];
     comfyUiGuidanceScaleInterval: number;
+    comfyUiTimeoutMinutes: number;
     randomPrompts: string[];
 
     ollamaHosts: URL[];

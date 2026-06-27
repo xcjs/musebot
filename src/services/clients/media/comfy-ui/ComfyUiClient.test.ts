@@ -56,6 +56,7 @@ function createMockConfigurationService(overrides: Partial<IConfigurationService
         taskQueueStrategy: TaskQueueStrategy.Serial,
         taskQueueForceSerialAcrossHosts: false,
         comfyUiHosts: [new URL('http://localhost:8188')],
+        comfyUiTimeoutMinutes: 30,
         comfyUiGuidanceScaleInterval: 0.5,
         randomPrompts: [],
         ollamaHosts: [],

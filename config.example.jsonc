@@ -118,6 +118,13 @@
           "http://localhost:8188"
         ],
 
+        // The maximum duration in minutes that a single ComfyUI render task
+        // is allowed to run before being aborted. When the timeout elapses,
+        // Musebot interrupts the workflow and disconnects the WebSocket.
+        // Required: Optional
+        // Default:  30
+        // Type:     Number
+        "timeoutMinutes": 30,
       },
 
       // Ollama configuration for large language model chat. Required when mode is "chat".
