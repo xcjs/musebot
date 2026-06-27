@@ -4,7 +4,6 @@ import { BotInteraction } from '../../../../../../../enums/BotInteraction.js';
 import { SupportedFeature } from '../../../../../../features/enum/SupportedFeature.js';
 import { IBotServiceContainer } from '../../../../../../IBotServiceContainer.js';
 import { SerializableRenderRequest } from '../../../../../media/comfy-ui/models/SerializableRenderRequest.js';
-import { DiscordConstants } from '../../../enums/DiscordConstants.js';
 import { BaseComponent } from '../../BaseComponent.js';
 
 export class ShowSourceButton extends BaseComponent<ButtonBuilder> {
@@ -20,11 +19,7 @@ export class ShowSourceButton extends BaseComponent<ButtonBuilder> {
             return false;
         }
 
-        if (this.#renderRequest === null) {
-            return false;
-        }
-
-        return this.#renderRequest.toString().length <= DiscordConstants.ContentMaxLength;
+        return this.#renderRequest !== null;
     }
 
     override get title(): string {
@@ -34,8 +29,7 @@ export class ShowSourceButton extends BaseComponent<ButtonBuilder> {
     override get helpText(): string {
         return 'Show JSON information used to render the image.'
             + ' This message can be used to fully customize image renders when used as a prompt.'
-            + ' _(Hint: use `-1` as the seed to use a random seed.)_'
-            + ' Some prompts may be too large to save, so some actions may be hidden when this happens.';
+            + ' _(Hint: use `-1` as the seed to use a random seed.)_';
     }
 
     #renderRequest: SerializableRenderRequest | null;
