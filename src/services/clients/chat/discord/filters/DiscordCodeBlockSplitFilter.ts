@@ -7,9 +7,9 @@ export class DiscordCodeBlockSplitFilter implements IChatMessageFilter {
     readonly #codeFence = '```';
     readonly #codeFenceLength = 3;
 
-    process(messages: IChatMessage[]): IChatMessage[] {
+    process(messages: IChatMessage[]): Promise<IChatMessage[]> {
         if (messages.length === 0) {
-            return messages;
+            return Promise.resolve(messages);
         }
 
         const attachments = messages.flatMap(m => m.attachments);
@@ -39,11 +39,11 @@ export class DiscordCodeBlockSplitFilter implements IChatMessageFilter {
             });
         }
 
-        return result;
+        return Promise.resolve(result);
     }
 
-    processStreaming(messages: IChatMessage[], _isDone: boolean): IChatMessage[] {
-        return this.process(messages);
+    async processStreaming(messages: IChatMessage[], _isDone: boolean): Promise<IChatMessage[]> {
+        return await this.process(messages);
     }
 
     #closeCodeBlock(content: string): string {

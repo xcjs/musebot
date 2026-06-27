@@ -34,7 +34,7 @@ export class OllamaStreamingReplyService {
         }];
 
         for (const filter of this.#filters) {
-            chatMessages = filter.processStreaming(chatMessages, done);
+            chatMessages = await filter.processStreaming(chatMessages, done);
         }
 
         this.#logger.info(`Processing ${chatMessages.length} messages.`);

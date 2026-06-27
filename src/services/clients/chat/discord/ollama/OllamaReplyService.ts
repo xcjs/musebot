@@ -33,7 +33,7 @@ export class OllamaReplyService {
         let messages: IChatMessage[] = [initialMessage];
 
         for (const filter of this.#filters) {
-            messages = filter.process(messages);
+            messages = await filter.process(messages);
         }
 
         this.#logger.info(`Replying with ${messages.length} messages.`);

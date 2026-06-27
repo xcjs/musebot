@@ -4,19 +4,21 @@ import { IChatMessageFilter } from '../../IChatMessageFilter.js';
 import { DiscordConstants } from '../enums/DiscordConstants.js';
 
 export class DiscordMessageSplitFilter implements IChatMessageFilter {
-    process(messages: IChatMessage[]): IChatMessage[] {
+    process(messages: IChatMessage[]): Promise<IChatMessage[]> {
         const combined = messages.map(m => m.content).join('');
         const chunks = splitText(combined, DiscordConstants.ContentMaxLength);
 
         const attachments = messages.flatMap(m => m.attachments);
 
-        return chunks.map((content, i) => ({
+        const result = chunks.map((content, i) => ({
             content,
             attachments: i === chunks.length - 1 ? attachments : []
         }));
+
+        return Promise.resolve(result);
     }
 
-    processStreaming(messages: IChatMessage[], _isDone: boolean): IChatMessage[] {
-        return this.process(messages);
+    async processStreaming(messages: IChatMessage[], _isDone: boolean): Promise<IChatMessage[]> {
+        return await this.process(messages);
     }
 }
