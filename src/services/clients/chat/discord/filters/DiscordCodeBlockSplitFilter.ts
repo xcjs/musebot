@@ -3,10 +3,10 @@ import { IChatMessage } from '../../IChatMessage.js';
 import { IChatMessageFilter } from '../../IChatMessageFilter.js';
 import { DiscordConstants } from '../enums/DiscordConstants.js';
 
-const CODE_FENCE = '```';
-const CODE_FENCE_LENGTH = CODE_FENCE.length;
-
 export class DiscordCodeBlockSplitFilter implements IChatMessageFilter {
+    readonly #codeFence = '```';
+    readonly #codeFenceLength = 3;
+
     process(messages: IChatMessage[]): IChatMessage[] {
         if (messages.length === 0) {
             return messages;
@@ -22,7 +22,7 @@ export class DiscordCodeBlockSplitFilter implements IChatMessageFilter {
             let content = messages[i].content;
 
             if (inCodeBlock) {
-                content = `${CODE_FENCE}${languageTag}\n${content}`;
+                content = `${this.#codeFence}${languageTag}\n${content}`;
             }
 
             const fenceState = this.#getFenceState(content);
@@ -31,9 +31,6 @@ export class DiscordCodeBlockSplitFilter implements IChatMessageFilter {
 
             if (inCodeBlock && !isLast) {
                 content = this.#closeCodeBlock(content);
-                const fenceStateAfter = this.#getFenceState(content);
-                inCodeBlock = fenceStateAfter.inCodeBlock;
-                languageTag = fenceStateAfter.languageTag;
             }
 
             result.push({
@@ -50,14 +47,14 @@ export class DiscordCodeBlockSplitFilter implements IChatMessageFilter {
     }
 
     #closeCodeBlock(content: string): string {
-        if (content.length + CODE_FENCE_LENGTH <= DiscordConstants.ContentMaxLength) {
+        if (content.length + this.#codeFenceLength <= DiscordConstants.ContentMaxLength) {
             return content.endsWith('\n')
-                ? `${content}${CODE_FENCE}`
-                : `${content}\n${CODE_FENCE}`;
+                ? `${content}${this.#codeFence}`
+                : `${content}\n${this.#codeFence}`;
         }
 
-        const trimmed = this.#trimToFit(content, DiscordConstants.ContentMaxLength - CODE_FENCE_LENGTH - 1);
-        return `${trimmed}\n${CODE_FENCE}`;
+        const trimmed = this.#trimToFit(content, DiscordConstants.ContentMaxLength - this.#codeFenceLength - 1);
+        return `${trimmed}\n${this.#codeFence}`;
     }
 
     #trimToFit(content: string, maxLength: number): string {
@@ -78,13 +75,13 @@ export class DiscordCodeBlockSplitFilter implements IChatMessageFilter {
         for (const line of lines) {
             const trimmed = line.trimStart();
 
-            if (trimmed.startsWith(CODE_FENCE)) {
+            if (trimmed.startsWith(this.#codeFence)) {
                 if (inCodeBlock) {
                     inCodeBlock = false;
                     languageTag = '';
                 } else {
                     inCodeBlock = true;
-                    languageTag = trimmed.slice(CODE_FENCE_LENGTH).trim();
+                    languageTag = trimmed.slice(this.#codeFenceLength).trim();
                 }
             }
         }

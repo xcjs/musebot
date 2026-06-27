@@ -23,12 +23,13 @@ export function splitText(text: string, lineLength: number): string[] {
             }
 
             if(splitPosition === -1) {
-                // If no newline or space is found, split at the lineLength.
                 splitPosition = lineLength;
+                splitText.push(mutableBuffer.substring(0, splitPosition));
+                mutableBuffer = mutableBuffer.substring(splitPosition);
+            } else {
+                splitText.push(mutableBuffer.substring(0, splitPosition));
+                mutableBuffer = mutableBuffer.substring(splitPosition + 1);
             }
-
-            splitText.push(mutableBuffer.substring(0, splitPosition));
-            mutableBuffer = mutableBuffer.substring(splitPosition);
         } else {
             splitText.push(mutableBuffer);
             mutableBuffer = '';

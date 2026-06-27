@@ -91,8 +91,7 @@ describe('string-utilities', () => {
 
             expect(lines.length).toBe(2);
             expect(lines[0]).toBe('hello');
-            // Note: splitText includes the newline in the remaining text
-            expect(lines[1]).toBe('\nworld test');
+            expect(lines[1]).toBe('world test');
         });
 
         it('should split at space when no newline available', () => {
@@ -101,11 +100,21 @@ describe('string-utilities', () => {
 
             const lines = splitText(text, lineLength);
 
-            // Splits at 'hello' (5 chars, before space), space stays with next part
             expect(lines.length).toBe(3);
             expect(lines[0]).toBe('hello');
-            expect(lines[1]).toBe(' world');
-            expect(lines[2]).toBe(' test');
+            expect(lines[1]).toBe('world');
+            expect(lines[2]).toBe('test');
+        });
+
+        it('should not infinite loop when newline is at start of buffer', () => {
+            const text = 'hello\nworld';
+            const lineLength = 6;
+
+            const lines = splitText(text, lineLength);
+
+            expect(lines.length).toBe(2);
+            expect(lines[0]).toBe('hello');
+            expect(lines[1]).toBe('world');
         });
 
         it('should split at line length when no newline or space', () => {
