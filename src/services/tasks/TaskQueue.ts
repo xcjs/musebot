@@ -41,8 +41,6 @@ export class TaskQueue implements ITaskQueue {
             taskChannel.queue.push(task);
         }
 
-        // Not awaited intentionally - this allows tasks of different channels
-        // to be processed in parallel.
         void this.#processQueue();
     }
 
@@ -62,6 +60,10 @@ export class TaskQueue implements ITaskQueue {
             this.#globalServices.getLogger('TaskQueue').info(`Processing the task queue with ${numChannels} channel(s) and ${numTasks} task(s).`);
 
             try {
+                tasks.forEach((task) => {
+                    task.taskStatus = TaskStatus.Busy;
+                });
+
                 const preProcessPromises = tasks
                     .map((x) => {
                         return x.preProcess();
@@ -71,7 +73,6 @@ export class TaskQueue implements ITaskQueue {
 
                 const processPromises = tasks
                     .map((x) => {
-                        x.taskStatus = TaskStatus.Busy;
                         return x.process();
                     });
 

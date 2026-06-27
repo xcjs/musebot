@@ -88,7 +88,7 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
 
         for await (const response of exchange.exchange.response) {
             const startTime = performance.now();
-            let replies: Array<DiscordMessage> = [];
+            let replies: DiscordMessage[] = [];
 
             fullResponse += response.message.content;
             responseBatch += response.message.content;
