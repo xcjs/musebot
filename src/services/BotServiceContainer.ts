@@ -21,6 +21,7 @@ import { DiscordConstants } from './clients/chat/discord/enums/DiscordConstants.
 import { DiscordAttachmentFilter } from './clients/chat/discord/filters/DiscordAttachmentFilter.js';
 import { DiscordCodeBlockExtractFilter } from './clients/chat/discord/filters/DiscordCodeBlockExtractFilter.js';
 import { DiscordCodeBlockSplitFilter } from './clients/chat/discord/filters/DiscordCodeBlockSplitFilter.js';
+import { DiscordMarkdownTableFilter } from './clients/chat/discord/filters/DiscordMarkdownTableFilter.js';
 import { DiscordMessageSplitFilter } from './clients/chat/discord/filters/DiscordMessageSplitFilter.js';
 import { GenerativeChatClient } from './clients/chat/discord/GenerativeChatClient.js';
 import { GenerativeMediaChatClient } from './clients/chat/discord/GenerativeMediaChatClient.js';
@@ -211,6 +212,7 @@ export class BotServiceContainer implements IBotServiceContainer {
     getChatMessageFilters(): IChatMessageFilter[] {
         return [
             new DiscordCodeBlockExtractFilter(this),
+            new DiscordMarkdownTableFilter(),
             new DiscordMessageSplitFilter(),
             new DiscordCodeBlockSplitFilter(),
             new DiscordAttachmentFilter()
