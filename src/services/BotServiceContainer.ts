@@ -18,6 +18,7 @@ import { ComfyUiReplyService } from './clients/chat/discord/comfy-ui/ComfyUiRepl
 import { ActionRowBuilderFactory } from './clients/chat/discord/components/ActionRowBuilderFactory.js';
 import { IActionRowBuilderFactory } from './clients/chat/discord/components/IActionRowBuilderFactory.js';
 import { DiscordConstants } from './clients/chat/discord/enums/DiscordConstants.js';
+import { DiscordCodeBlockSplitFilter } from './clients/chat/discord/filters/DiscordCodeBlockSplitFilter.js';
 import { DiscordMessageSplitFilter } from './clients/chat/discord/filters/DiscordMessageSplitFilter.js';
 import { GenerativeChatClient } from './clients/chat/discord/GenerativeChatClient.js';
 import { GenerativeMediaChatClient } from './clients/chat/discord/GenerativeMediaChatClient.js';
@@ -206,7 +207,10 @@ export class BotServiceContainer implements IBotServiceContainer {
     }
 
     getChatMessageFilters(): IChatMessageFilter[] {
-        return [new DiscordMessageSplitFilter()];
+        return [
+            new DiscordMessageSplitFilter(),
+            new DiscordCodeBlockSplitFilter()
+        ];
     }
 
     getChatMessageFactory<MessageType>(): IChatMessageFactory<MessageType> {
