@@ -2,6 +2,12 @@
 
 All notable changes to Musebot are documented in this file.
 
+## [9.2.1] — 2026-06-27
+
+### Added
+
+- Configurable ComfyUI render timeout (`comfyUi.timeoutMinutes`) aborts and interrupts the workflow when a render exceeds the time limit (default 30 minutes)
+
 ## [9.2.0] — 2026-06-27
 
 ### Added
@@ -12,7 +18,6 @@ All notable changes to Musebot are documented in this file.
 - `DiscordCodeBlockExtractFilter` extracts code blocks into file attachments with LLM-generated filenames
 - `DiscordAttachmentFilter` caps attachments at Discord's 10-file limit
 - `DiscordMarkdownTableFilter` wraps markdown tables in preformatted text blocks with word-wrapped, consistent-width columns
-- Configurable ComfyUI render timeout (`comfyUi.timeoutMinutes`) aborts and interrupts the workflow when a render exceeds the time limit (default 30 minutes)
 
 ### Changed
 
