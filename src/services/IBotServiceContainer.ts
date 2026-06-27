@@ -13,6 +13,8 @@ import { ComfyUiReplyService } from './clients/chat/discord/comfy-ui/ComfyUiRepl
 import { IActionRowBuilderFactory } from './clients/chat/discord/components/IActionRowBuilderFactory.js';
 import { OllamaReplyService } from './clients/chat/discord/ollama/OllamaReplyService.js';
 import { OllamaStreamingReplyService } from './clients/chat/discord/ollama/OllamaStreamingReplyService.js';
+import { IChatMessageFactory } from './clients/chat/IChatMessageFactory.js';
+import { IChatMessageFilter } from './clients/chat/IChatMessageFilter.js';
 import { IGenerativeChatClient } from './clients/chat/IGenerativeChatClient.js';
 import { IReplyService } from './clients/chat/IReplyService.js';
 import { ITypingService } from './clients/chat/ITypingService.js';
@@ -62,6 +64,9 @@ export interface IBotServiceContainer {
 
     // Factories --------------------------------------------------------------/
     getLogger(prefix: string): ILogger;
+
+    getChatMessageFilters(): IChatMessageFilter[];
+    getChatMessageFactory<MessageType>(): IChatMessageFactory<MessageType>;
 
     getContextMessageFactory<ChatMessageType, LlmMessageType>(): IContextMessageFactory<ChatMessageType, LlmMessageType>;
     getContextService<ChatMessageType, LlmMessageType>(): IContextService<ChatMessageType, LlmMessageType>

@@ -1,0 +1,22 @@
+import { splitText } from '../../../../../utilities/string-utilities.js';
+import { IChatMessage } from '../../IChatMessage.js';
+import { IChatMessageFilter } from '../../IChatMessageFilter.js';
+import { DiscordConstants } from '../enums/DiscordConstants.js';
+
+export class DiscordMessageSplitFilter implements IChatMessageFilter {
+    process(messages: IChatMessage[]): IChatMessage[] {
+        const combined = messages.map(m => m.content).join('');
+        const chunks = splitText(combined, DiscordConstants.ContentMaxLength);
+
+        const attachments = messages.flatMap(m => m.attachments);
+
+        return chunks.map((content, i) => ({
+            content,
+            attachments: i === chunks.length - 1 ? attachments : []
+        }));
+    }
+
+    processStreaming(messages: IChatMessage[], _isDone: boolean): IChatMessage[] {
+        return this.process(messages);
+    }
+}
