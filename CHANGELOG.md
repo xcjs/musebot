@@ -2,6 +2,30 @@
 
 All notable changes to Musebot are documented in this file.
 
+## [9.2.0] — 2026-06-27
+
+### Added
+
+- Message filter pipeline for chat processing (`IChatMessageFilter`) with streaming-aware filters that skip processing until the final chunk
+- `DiscordCodeBlockSplitFilter` closes and re-opens code fences split across multiple Discord messages
+- `DiscordMessageSplitFilter` splits content at Discord's 2000-char limit, preserving attachments on the last message
+- `DiscordCodeBlockExtractFilter` extracts code blocks into file attachments with LLM-generated filenames
+- `DiscordAttachmentFilter` caps attachments at Discord's 10-file limit
+- `DiscordMarkdownTableFilter` wraps markdown tables in preformatted text blocks with word-wrapped, consistent-width columns
+
+### Changed
+
+- `ShowSource` button render request length gate removed now that prompts are stored in a sidecar `.dat` file
+- `OllamaMessageTask` inline image-prompt generation extracted into a dependent child `OllamaGenerateTask` with `onSuccess`/`onFailure` callbacks
+- Full message context passed to code block filename generation prompt
+- `Prompt.dat` state file attachment skipped in chat mode
+- `ComfyUiAttachmentTask` preserves existing attachments on edit and skips when at the attachment limit
+
+### Fixed
+
+- `splitText` infinite loop on newline at buffer start; code fence constant made private
+- Duplicate `ComfyUiAttachmentTask` execution caused by concurrent `TaskQueue.#processQueue()` calls picking up the same `Idle` task — tasks are now marked `Busy` before `preProcess()`, closing the race window
+
 ## [9.1.0] — 2026-06-25
 
 ### Added

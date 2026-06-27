@@ -18,13 +18,21 @@ import { ComfyUiReplyService } from './clients/chat/discord/comfy-ui/ComfyUiRepl
 import { ActionRowBuilderFactory } from './clients/chat/discord/components/ActionRowBuilderFactory.js';
 import { IActionRowBuilderFactory } from './clients/chat/discord/components/IActionRowBuilderFactory.js';
 import { DiscordConstants } from './clients/chat/discord/enums/DiscordConstants.js';
+import { DiscordAttachmentFilter } from './clients/chat/discord/filters/DiscordAttachmentFilter.js';
+import { DiscordCodeBlockExtractFilter } from './clients/chat/discord/filters/DiscordCodeBlockExtractFilter.js';
+import { DiscordCodeBlockSplitFilter } from './clients/chat/discord/filters/DiscordCodeBlockSplitFilter.js';
+import { DiscordMarkdownTableFilter } from './clients/chat/discord/filters/DiscordMarkdownTableFilter.js';
+import { DiscordMessageSplitFilter } from './clients/chat/discord/filters/DiscordMessageSplitFilter.js';
 import { GenerativeChatClient } from './clients/chat/discord/GenerativeChatClient.js';
 import { GenerativeMediaChatClient } from './clients/chat/discord/GenerativeMediaChatClient.js';
+import { DiscordChatMessageFactory } from './clients/chat/discord/ollama/DiscordChatMessageFactory.js';
 import { DiscordOllamaContextMessageFactory } from './clients/chat/discord/ollama/DiscordOllamaContextMessageFactory.js';
 import { OllamaReplyService } from './clients/chat/discord/ollama/OllamaReplyService.js';
 import { OllamaStreamingReplyService } from './clients/chat/discord/ollama/OllamaStreamingReplyService.js';
 import { DiscordReplyService } from './clients/chat/discord/services/DiscordReplyService.js';
 import { DiscordTypingService } from './clients/chat/discord/services/DiscordTypingService.js';
+import { IChatMessageFactory } from './clients/chat/IChatMessageFactory.js';
+import { IChatMessageFilter } from './clients/chat/IChatMessageFilter.js';
 import { IGenerativeChatClient } from './clients/chat/IGenerativeChatClient.js';
 import { IReplyService } from './clients/chat/IReplyService.js';
 import { ITypingService } from './clients/chat/ITypingService.js';
@@ -199,6 +207,20 @@ export class BotServiceContainer implements IBotServiceContainer {
     // Factories --------------------------------------------------------------/
     getLogger(prefix: string): ILogger {
         return new Logger(prefix, this.#configurationService.botId);
+    }
+
+    getChatMessageFilters(): IChatMessageFilter[] {
+        return [
+            new DiscordCodeBlockExtractFilter(this),
+            new DiscordMarkdownTableFilter(),
+            new DiscordMessageSplitFilter(),
+            new DiscordCodeBlockSplitFilter(),
+            new DiscordAttachmentFilter()
+        ];
+    }
+
+    getChatMessageFactory<MessageType>(): IChatMessageFactory<MessageType> {
+        return new DiscordChatMessageFactory(this) as unknown as IChatMessageFactory<MessageType>;
     }
 
     #contextMessageFactory: IContextMessageFactory<unknown, unknown> | null = null;

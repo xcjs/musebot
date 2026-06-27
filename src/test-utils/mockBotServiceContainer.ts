@@ -111,7 +111,6 @@ export function createMockGlobalContainer(config?: MockServiceContainerConfig): 
         },
 
         getLogger: jest.fn(() => logger),
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         getTaskChannelPostProcessor: jest.fn((_services, _channelName) => postProcessor),
 
         // Expose mocks for test access
@@ -183,6 +182,8 @@ export function createMockServiceContainer(config?: MockServiceContainerConfig):
         // Factories
         getLogger: jest.fn(() => logger),
         getTaskChannelPostProcessor: jest.fn(() => postProcessor),
+        getChatMessageFilters: jest.fn(() => []),
+        getChatMessageFactory: jest.fn(() => null as never),
         getContextMessageFactory: () => null as never,
         getContextService: () => null as never,
         getLlmGenerateTask: () => null as never,

@@ -92,6 +92,8 @@ function createMockServices(config: IConfigurationService, logger: jest.Mocked<I
         ollamaReplyService: null as never,
         ollamaStreamingReplyService: null as never,
         actionRowBuilderFactory: null as never,
+        getChatMessageFilters: () => [],
+        getChatMessageFactory: () => null as never,
     };
 }
 
