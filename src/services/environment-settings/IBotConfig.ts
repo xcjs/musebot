@@ -21,6 +21,7 @@ export interface IBotConfig {
 
     comfyUi: {
         hosts: string[];
+        timeoutMinutes?: number;
     };
 
     ollama: {

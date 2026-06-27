@@ -51,6 +51,14 @@ export class ComfyUiClient {
     async render(prompts: Prompt[]): Promise<MediaCollectionResponse> {
         await this.#client.connect();
 
+        const timeoutMs = this.#configurationService.comfyUiTimeoutMinutes * 60 * 1000;
+
+        const timeoutPromise = new Promise<never>((_, reject) => {
+            setTimeout(() => {
+                reject(new Error(`ComfyUI render timed out after ${this.#configurationService.comfyUiTimeoutMinutes} minute(s).`));
+            }, timeoutMs);
+        });
+
         const mediaCollectionResponsePromises: Promise<MediaCollectionResponse>[] = [];
         const mediaCollectionResponses: MediaCollectionResponse[] = [];
 
@@ -60,7 +68,7 @@ export class ComfyUiClient {
             mediaCollectionResponsePromises.push(this.#client.getMultiMedia(prompt));
         });
 
-        await Promise.allSettled(mediaCollectionResponsePromises).then(async (results) => {
+        const renderPromise = Promise.allSettled(mediaCollectionResponsePromises).then(async (results) => {
             await this.#client.disconnect();
 
             results.forEach(result => {
@@ -70,15 +78,23 @@ export class ComfyUiClient {
                     this.#logger.error('Error rendering prompt:', prompts, result);
                 }
             });
+
+            const multiMediaResponse = this.#flattenMultipleMediaResponses(mediaCollectionResponses);
+
+            if (Object.keys(multiMediaResponse).length === 0) {
+                throw new Error('The render failed but was not reported as a failure by the Comfy UI client.');
+            }
+
+            return multiMediaResponse;
         });
 
-        const multiMediaResponse = this.#flattenMultipleMediaResponses(mediaCollectionResponses);
-
-        if (Object.keys(multiMediaResponse).length === 0) {
-            throw new Error('The render failed but was not reported as a failure by the Comfy UI client.');
+        try {
+            return await Promise.race([renderPromise, timeoutPromise]);
+        } catch (error) {
+            this.#logger.error('Aborting ComfyUI render due to error or timeout:', error);
+            await this.disconnect();
+            throw error;
         }
-
-        return multiMediaResponse;
     }
 
     async free(): Promise<boolean> {

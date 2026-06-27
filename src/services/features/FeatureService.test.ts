@@ -26,6 +26,7 @@ function createMockConfigurationService(overrides: Partial<IConfigurationService
         taskQueueStrategy: 'serial' as never,
         taskQueueForceSerialAcrossHosts: false,
         comfyUiHosts: [],
+        comfyUiTimeoutMinutes: 30,
         comfyUiGuidanceScaleInterval: 0.5,
         randomPrompts: [],
         ollamaHosts: [],

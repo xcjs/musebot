@@ -97,6 +97,10 @@ export class ConfigurationService implements IConfigurationService {
             || []).map(x => new URL(x));
     }
 
+    get comfyUiTimeoutMinutes(): number {
+        return this.#botConfig.comfyUi?.timeoutMinutes ?? 30;
+    }
+
     get comfyUiGuidanceScaleInterval(): number {
         return this.#botConfig.comfyUiGuidanceScaleInterval ?? 0.5;
     }
@@ -205,6 +209,7 @@ Detected environment variables: ${envVarList}`);
         this.#log.info(`bots[].taskQueue.forceSerialAcrossHosts: ${this.taskQueueForceSerialAcrossHosts}`);
 
         this.#log.info(`bots[].comfyUi.hosts: ${this.comfyUiHosts.join(', ')}`);
+        this.#log.info(`bots[].comfyUi.timeoutMinutes: ${this.comfyUiTimeoutMinutes}`);
         this.#log.info(`bots[].comfyUiGuidanceScaleInterval: ${this.comfyUiGuidanceScaleInterval}`);
 
         this.#log.info(`bots[].ollama.hosts: ${this.ollamaHosts.join(', ')}`);
