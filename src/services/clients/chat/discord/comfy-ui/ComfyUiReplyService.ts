@@ -1,6 +1,7 @@
 ﻿import { ActionRowBuilder, Attachment, AttachmentBuilder, BaseMessageOptions, ButtonBuilder, ButtonInteraction, Message, MessageReaction } from 'discord.js';
 
 import { MAX_FILE_NAME_LENGTH } from '../../../../../constants/FileConstants.js';
+import { BotMode } from '../../../../../enums/BotMode.js';
 import { ContentType } from '../../../../../enums/ContentType.js';
 import { ContentTypeCategory } from '../../../../../enums/ContentTypeCategory.js';
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
@@ -113,7 +114,8 @@ export class ComfyUiReplyService {
         }
 
         // Attach the serializable render request state as a JSON file.
-        if (renderExchange.request !== null && renderExchange.request.length > 0) {
+        if (this.#configurationService.botFunction !== BotMode.Chat
+            && renderExchange.request !== null && renderExchange.request.length > 0) {
             const stateJson = JSON.stringify(renderExchange.request);
             const stateBuffer = Buffer.from(stateJson, 'utf-8');
             fileAttachments.push(new AttachmentBuilder(stateBuffer, {
