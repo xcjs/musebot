@@ -6,6 +6,7 @@ import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js'
 import { IBotServiceContainer } from "../../../../IBotServiceContainer.js"
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
+import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
 
 type DiscordReplyService = IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
@@ -45,6 +46,13 @@ export class ComfyUiAttachmentTask extends ComfyUiBaseTask {
     override async process(): Promise<void> {
         await super.process();
 
+        const existingAttachments = [...this.#message.attachments.values()];
+
+        if (existingAttachments.length >= DiscordConstants.MaxAttachmentsPerMessage) {
+            this.logger.info('Skipping media attachment; message already has the maximum number of attachments.');
+            return;
+        }
+
         const workflows = this.#workflowService.workflows.filter(x =>
             x.type.startsWith('txt2')
             && x.type != SupportedFeature.Txt2Txt);
@@ -71,7 +79,9 @@ export class ComfyUiAttachmentTask extends ComfyUiBaseTask {
             response: imagesResponse
         };
 
-        await this.#comfyUiReplyService.reply(this.#message, { content: this.#message.content }, true, exchange);
+        await this.#comfyUiReplyService.reply(this.#message,
+            { content: this.#message.content, files: existingAttachments },
+            true, exchange);
     }
 
     override async postProcess(): Promise<void> {
