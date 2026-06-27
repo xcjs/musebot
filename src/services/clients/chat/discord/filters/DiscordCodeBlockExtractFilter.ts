@@ -54,7 +54,7 @@ export class DiscordCodeBlockExtractFilter implements IChatMessageFilter {
         const existingAttachments = messages.flatMap(m => m.attachments);
         const codeBlocks = this.#extractCodeBlocks(combined);
 
-        const filenames = await this.#getFilenames(codeBlocks);
+        const filenames = await this.#getFilenames(codeBlocks, combined);
 
         const attachments: IChatMessageAttachment[] = codeBlocks.map((block, i) => ({
             name: filenames[i] ?? `code-block-${i + 1}.${this.#getDefaultExtension(block.language)}`,
@@ -111,7 +111,7 @@ export class DiscordCodeBlockExtractFilter implements IChatMessageFilter {
         return blocks;
     }
 
-    async #getFilenames(codeBlocks: CodeBlock[]): Promise<string[]> {
+    async #getFilenames(codeBlocks: CodeBlock[], messageContext: string): Promise<string[]> {
         if (codeBlocks.length === 0) {
             return [];
         }
@@ -122,9 +122,11 @@ export class DiscordCodeBlockExtractFilter implements IChatMessageFilter {
         }
 
         return new Promise((resolve, reject) => {
-            const prompt = codeBlocks.map((block, i) =>
+            const codeBlockInfo = codeBlocks.map((block, i) =>
                 `Code block ${i + 1} (${block.language || 'unknown'}):\n${block.content.substring(0, 500)}`
             ).join('\n\n');
+
+            const prompt = `Full message context:\n${messageContext}\n\n---\n\n${codeBlockInfo}`;
 
             const task = this.#services.getLlmGenerateStructuredTask<CodeBlockFilenames>(prompt, filenameRequestData);
             task.isChild = true;
