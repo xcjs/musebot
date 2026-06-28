@@ -63,6 +63,52 @@ export class MemoryService implements IMemoryService {
         this.#logger.info(`Consent removed for user ${userId}. All memories deleted.`);
     }
 
+    async isBackfillComplete(userId: string): Promise<boolean> {
+        if (!this.isEnabled) {
+            return false;
+        }
+
+        const database = await this.#getDatabase();
+        return database.isBackfillComplete(userId);
+    }
+
+    async markBackfillComplete(userId: string): Promise<void> {
+        if (!this.isEnabled) {
+            return;
+        }
+
+        const database = await this.#getDatabase();
+        database.markBackfillComplete(userId);
+        this.#logger.info(`Backfill marked complete for user ${userId}.`);
+    }
+
+    async getIncompleteBackfillUserIds(): Promise<string[]> {
+        if (!this.isEnabled) {
+            return [];
+        }
+
+        const database = await this.#getDatabase();
+        return database.getIncompleteBackfillUserIds();
+    }
+
+    async getLatestMemoryTimestamp(userId: string): Promise<string | null> {
+        if (!this.isEnabled) {
+            return null;
+        }
+
+        const database = await this.#getDatabase();
+        return database.getLatestMemoryTimestamp(userId);
+    }
+
+    async getAllConsentingUserIds(): Promise<string[]> {
+        if (!this.isEnabled) {
+            return [];
+        }
+
+        const database = await this.#getDatabase();
+        return database.getAllConsentingUserIds();
+    }
+
     async store(llmChatMessage: LlmChatMessage, ownerUserId?: string): Promise<void> {
         if (!this.isEnabled) {
             return;
@@ -87,6 +133,7 @@ export class MemoryService implements IMemoryService {
                 llmChatMessage.server.id,
                 llmChatMessage.isBot,
                 embeddingModel,
+                llmChatMessage.messageId,
                 embedding);
         } catch (error) {
             this.#logger.error(`Failed to store memory for user ${consentUserId}:`, error);

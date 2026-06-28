@@ -7,6 +7,11 @@ export interface IMemoryService {
     hasConsent(userId: string): Promise<boolean>;
     setConsent(userId: string): Promise<void>;
     removeConsent(userId: string): Promise<void>;
+    isBackfillComplete(userId: string): Promise<boolean>;
+    markBackfillComplete(userId: string): Promise<void>;
+    getIncompleteBackfillUserIds(): Promise<string[]>;
+    getAllConsentingUserIds(): Promise<string[]>;
+    getLatestMemoryTimestamp(userId: string): Promise<string | null>;
     store(llmChatMessage: LlmChatMessage, ownerUserId?: string): Promise<void>;
     retrieve(llmChatMessage: LlmChatMessage): Promise<OllamaMessage[]>;
 }

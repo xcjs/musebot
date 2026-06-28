@@ -1,4 +1,5 @@
 export interface LlmChatMessage {
+    messageId: string | null;
     username: string;
     displayName: string;
     userId: string;

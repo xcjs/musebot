@@ -30,6 +30,7 @@ export class DiscordLlmChatMessageFactory implements ILlmChatMessageFactory<Disc
             : null;
 
         return {
+            messageId: chatMessage.id,
             username: chatMessage.author.username,
             displayName: chatMessage.author.displayName,
             userId: chatMessage.author.id,
@@ -79,6 +80,7 @@ export class DiscordLlmChatMessageFactory implements ILlmChatMessageFactory<Disc
         const clientUser = chatMessage.client.user;
 
         return {
+            messageId: null,
             username: clientUser?.username ?? 'musebot',
             displayName: clientUser?.displayName ?? 'Musebot',
             userId: clientUser?.id ?? '0',

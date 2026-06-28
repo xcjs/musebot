@@ -43,7 +43,8 @@ export class MemoryDatabase {
         this.#db.exec(`
             CREATE TABLE IF NOT EXISTS UserConsent (
                 userId TEXT PRIMARY KEY,
-                consentedAt TEXT NOT NULL
+                consentedAt TEXT NOT NULL,
+                backfillCompleted INTEGER NOT NULL DEFAULT 0
             );
 
             CREATE TABLE IF NOT EXISTS LlmChatMessage (
@@ -54,12 +55,14 @@ export class MemoryDatabase {
                 messageText TEXT NOT NULL,
                 isBot INTEGER NOT NULL,
                 embeddingModel TEXT NOT NULL,
+                discordMessageId TEXT,
                 createdAt TEXT NOT NULL
             );
 
             CREATE INDEX IF NOT EXISTS idx_LlmChatMessage_userId ON LlmChatMessage(userId);
             CREATE INDEX IF NOT EXISTS idx_LlmChatMessage_serverId ON LlmChatMessage(serverId);
             CREATE INDEX IF NOT EXISTS idx_LlmChatMessage_embeddingModel ON LlmChatMessage(embeddingModel);
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_LlmChatMessage_discordMessageId ON LlmChatMessage(discordMessageId) WHERE discordMessageId IS NOT NULL;
         `);
 
         this.#migrateExistingDb();
@@ -71,13 +74,29 @@ export class MemoryDatabase {
     }
 
     #migrateExistingDb(): void {
-        const columns = this.#db.prepare('PRAGMA table_info(LlmChatMessage)').all() as Array<{ name: string }>;
-        const hasEmbeddingModel = columns.some(c => c.name === 'embeddingModel');
+        const msgColumns = this.#db.prepare('PRAGMA table_info(LlmChatMessage)').all() as Array<{ name: string }>;
+        const hasEmbeddingModel = msgColumns.some(c => c.name === 'embeddingModel');
+        const hasDiscordMessageId = msgColumns.some(c => c.name === 'discordMessageId');
 
         if (!hasEmbeddingModel) {
             this.#db.exec('ALTER TABLE LlmChatMessage ADD COLUMN embeddingModel TEXT NOT NULL DEFAULT \'\'');
             this.#logger.info('Added embeddingModel column to LlmChatMessage table.');
         }
+
+        if (!hasDiscordMessageId) {
+            this.#db.exec('ALTER TABLE LlmChatMessage ADD COLUMN discordMessageId TEXT');
+            this.#logger.info('Added discordMessageId column to LlmChatMessage table.');
+        }
+
+        const consentColumns = this.#db.prepare('PRAGMA table_info(UserConsent)').all() as Array<{ name: string }>;
+        const hasBackfillCompleted = consentColumns.some(c => c.name === 'backfillCompleted');
+
+        if (!hasBackfillCompleted) {
+            this.#db.exec('ALTER TABLE UserConsent ADD COLUMN backfillCompleted INTEGER NOT NULL DEFAULT 0');
+            this.#logger.info('Added backfillCompleted column to UserConsent table.');
+        }
+
+        this.#db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_LlmChatMessage_discordMessageId ON LlmChatMessage(discordMessageId) WHERE discordMessageId IS NOT NULL');
     }
 
     hasConsent(userId: string): boolean {
@@ -88,9 +107,43 @@ export class MemoryDatabase {
     setConsent(userId: string): void {
         const consentedAt = new Date().toISOString();
         this.#drizzle.insert(UserConsent)
-            .values({ userId, consentedAt })
-            .onConflictDoUpdate({ target: UserConsent.userId, set: { consentedAt } })
+            .values({ userId, consentedAt, backfillCompleted: false })
+            .onConflictDoUpdate({ target: UserConsent.userId, set: { consentedAt, backfillCompleted: false } })
             .run();
+    }
+
+    isBackfillComplete(userId: string): boolean {
+        const row = this.#drizzle.select().from(UserConsent).where(eq(UserConsent.userId, userId)).get();
+        return row?.backfillCompleted ?? false;
+    }
+
+    markBackfillComplete(userId: string): void {
+        this.#drizzle.update(UserConsent)
+            .set({ backfillCompleted: true })
+            .where(eq(UserConsent.userId, userId))
+            .run();
+    }
+
+    getIncompleteBackfillUserIds(): string[] {
+        const rows = this.#drizzle.select({ userId: UserConsent.userId })
+            .from(UserConsent)
+            .where(eq(UserConsent.backfillCompleted, false))
+            .all();
+        return rows.map(r => r.userId);
+    }
+
+    getLatestMemoryTimestamp(userId: string): string | null {
+        const row = this.#db.prepare(
+            'SELECT createdAt FROM LlmChatMessage WHERE userId = ? ORDER BY createdAt DESC LIMIT 1'
+        ).get(userId) as { createdAt: string } | undefined;
+        return row?.createdAt ?? null;
+    }
+
+    getAllConsentingUserIds(): string[] {
+        const rows = this.#drizzle.select({ userId: UserConsent.userId })
+            .from(UserConsent)
+            .all();
+        return rows.map(r => r.userId);
     }
 
     removeConsent(userId: string): void {
@@ -105,7 +158,18 @@ export class MemoryDatabase {
         serverId: string | null,
         isBot: boolean,
         embeddingModel: string,
-        embedding: number[]): number {
+        discordMessageId: string | null,
+        embedding: number[]): number | null {
+        if (discordMessageId !== null) {
+            const existing = this.#db.prepare(
+                'SELECT id FROM LlmChatMessage WHERE discordMessageId = ?'
+            ).get(discordMessageId) as { id: number } | undefined;
+
+            if (existing !== undefined) {
+                return null;
+            }
+        }
+
         const createdAt = new Date().toISOString();
         this.#drizzle.insert(LlmChatMessageRecord)
             .values({
@@ -115,6 +179,7 @@ export class MemoryDatabase {
                 messageText,
                 isBot,
                 embeddingModel,
+                discordMessageId,
                 createdAt
             })
             .run();

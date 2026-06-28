@@ -6,6 +6,7 @@ import { ILogger } from '../../../ILogger.js';
 import { ITaskQueue } from '../../../tasks/ITaskQueue.js';
 import { IGenerativeChatClient } from '../IGenerativeChatClient.js';
 import { DiscordSlashCommandRegistrar } from './commands/DiscordSlashCommandRegistrar.js';
+import { MemoryCommandHandler } from './commands/MemoryCommandHandler.js';
 import { DiscordPresenceStatus } from './enums/DiscordPresenceStatus.js';
 import { LoginTask } from './tasks/LoginTask.js';
 
@@ -54,5 +55,18 @@ export class BaseDiscordClient implements IGenerativeChatClient {
 
         const registrar = new DiscordSlashCommandRegistrar(this.#services);
         void registrar.registerCommands(this.#id);
+
+        this.#resumeBackfills(discordClient);
+    }
+
+    #resumeBackfills(discordClient: DiscordClient): void {
+        void (async (): Promise<void> => {
+            try {
+                const handler = new MemoryCommandHandler(this.#services);
+                await handler.resumeBackfills(discordClient);
+            } catch (error) {
+                this.logger.error('Failed to resume backfills on startup:', error);
+            }
+        })();
     }
 }

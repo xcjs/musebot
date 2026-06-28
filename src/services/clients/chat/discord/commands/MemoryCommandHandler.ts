@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, GuildTextBasedChannel, Message as DiscordMessage } from 'discord.js';
+import { ChatInputCommandInteraction, Client as DiscordClient, GuildTextBasedChannel, Message as DiscordMessage } from 'discord.js';
 
 import { IConfigurationService } from '../../../../environment-settings/IConfigurationService.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
@@ -57,16 +57,29 @@ export class MemoryCommandHandler {
 
         const alreadyConsented = await this.#memoryService.hasConsent(userId);
 
-        await this.#memoryService.setConsent(userId);
-
         if (alreadyConsented) {
-            await interaction.editReply('You are already opted in to long-term memory. Your messages will continue to be remembered.');
+            const backfillComplete = await this.#memoryService.isBackfillComplete(userId);
+
+            if (backfillComplete) {
+                await interaction.editReply('You are already opted in to long-term memory. Your messages will continue to be remembered.');
+                return;
+            }
+
+            await interaction.editReply('You are already opted in to long-term memory. Resuming backfill of messages from all channels...');
+            const backfillCount = await this.#backfillMessages(interaction.client, userId);
+            await this.#memoryService.markBackfillComplete(userId);
+            await interaction.editReply(
+                `Backfill resumed and completed. Stored ${backfillCount} additional message${backfillCount === 1 ? '' : 's'} from all accessible channels.`);
             return;
         }
 
+        await this.#memoryService.setConsent(userId);
+
         await interaction.editReply('You have opted in to long-term memory. Backfilling messages from all channels...');
 
-        const backfillCount = await this.#backfillMessages(interaction);
+        const backfillCount = await this.#backfillMessages(interaction.client, userId);
+
+        await this.#memoryService.markBackfillComplete(userId);
 
         await interaction.editReply(
             `You have opted in to long-term memory. Backfilled ${backfillCount} message${backfillCount === 1 ? '' : 's'} from all accessible channels.`);
@@ -87,9 +100,148 @@ export class MemoryCommandHandler {
         await interaction.editReply('You have opted out of long-term memory. All your stored memories have been deleted.');
     }
 
-    async #backfillMessages(interaction: ChatInputCommandInteraction): Promise<number> {
-        const userId = interaction.user.id;
-        const client = interaction.client;
+    async resumeBackfills(client: DiscordClient): Promise<void> {
+        if (!this.#featureService.hasFeature(SupportedFeature.LongTermMemory)) {
+            return;
+        }
+
+        const incompleteUserIds = await this.#memoryService.getIncompleteBackfillUserIds();
+
+        if (incompleteUserIds.length > 0) {
+            this.#logger.info(`Found ${incompleteUserIds.length} user(s) with incomplete backfills. Resuming...`);
+
+            for (const userId of incompleteUserIds) {
+                try {
+                    const count = await this.#backfillMessages(client, userId);
+                    await this.#memoryService.markBackfillComplete(userId);
+                    this.#logger.info(`Resumed backfill complete for user ${userId}. Stored ${count} messages.`);
+                } catch (error) {
+                    this.#logger.error(`Failed to resume backfill for user ${userId}:`, error);
+                }
+            }
+        }
+
+        await this.#catchUpCompletedUsers(client);
+    }
+
+    async #catchUpCompletedUsers(client: DiscordClient): Promise<void> {
+        if (client.user === null) {
+            return;
+        }
+
+        const botId = client.user.id;
+        const disallowedChannelIds = this.#configurationService.discordChannelsDisallowed;
+        const channels: GuildTextBasedChannel[] = [];
+
+        for (const guild of client.guilds.cache.values()) {
+            for (const channel of guild.channels.cache.values()) {
+                if (!channel.isTextBased() || channel.isVoiceBased()) {
+                    continue;
+                }
+
+                if (disallowedChannelIds.includes(channel.id)) {
+                    continue;
+                }
+
+                if (!(channel as GuildTextBasedChannel).viewable) {
+                    continue;
+                }
+
+                channels.push(channel as GuildTextBasedChannel);
+            }
+        }
+
+        const userIds = await this.#memoryService.getAllConsentingUserIds();
+
+        if (userIds.length === 0) {
+            return;
+        }
+
+        for (const userId of userIds) {
+            const latestTimestamp = await this.#memoryService.getLatestMemoryTimestamp(userId);
+
+            if (latestTimestamp === null) {
+                continue;
+            }
+
+            const afterDate = new Date(latestTimestamp);
+
+            for (const channel of channels) {
+                try {
+                    const count = await this.#catchUpChannel(channel, userId, botId, afterDate);
+
+                    if (count > 0) {
+                        this.#logger.info(`Caught up ${count} new messages from #${channel.name ?? channel.id} for user ${userId}.`);
+                    }
+                } catch (error) {
+                    this.#logger.error(`Failed to catch up channel ${channel.id} for user ${userId}:`, error);
+                }
+            }
+        }
+    }
+
+    async #catchUpChannel(channel: GuildTextBasedChannel, userId: string, botId: string, afterDate: Date): Promise<number> {
+        let count = 0;
+        let afterId: string | undefined;
+
+        for (;;) {
+            const messages = await channel.messages.fetch({ limit: FETCH_LIMIT, after: afterId });
+
+            if (messages.size === 0) {
+                break;
+            }
+
+            const sortedMessages = [...messages.values()]
+                .filter(m => m.createdTimestamp > afterDate.getTime())
+                .sort((a: DiscordMessage, b: DiscordMessage) => a.createdTimestamp - b.createdTimestamp);
+
+            if (sortedMessages.length === 0) {
+                break;
+            }
+
+            for (const message of sortedMessages) {
+                if (message.author.id !== userId && message.author.id !== botId) {
+                    continue;
+                }
+
+                if (message.author.bot && message.author.id !== botId) {
+                    continue;
+                }
+
+                if (message.content.trim().length === 0) {
+                    continue;
+                }
+
+                const llmChatMessage = this.#llmChatMessageFactory.create(message);
+                const ownerUserId = message.author.id === botId ? userId : undefined;
+                const task = this.#services.getEmbedTask(llmChatMessage, ownerUserId);
+
+                const promise = new Promise<boolean>((resolve) => {
+                    task.onSuccess = (): void => resolve(true);
+                    task.onFailure = (): void => resolve(false);
+                });
+
+                this.#taskQueue.add(task as BaseTask<unknown>);
+
+                const [success] = await Promise.all([promise]);
+                if (success) {
+                    count++;
+                }
+            }
+
+            const lastMessage = sortedMessages[sortedMessages.length - 1];
+
+            if (lastMessage === undefined || messages.size < FETCH_LIMIT) {
+                break;
+            }
+
+            afterId = lastMessage.id;
+        }
+
+        return count;
+    }
+
+    async #backfillMessages(client: DiscordClient, userId: string): Promise<number> {
         const botId = client.user?.id;
 
         if (botId === undefined) {

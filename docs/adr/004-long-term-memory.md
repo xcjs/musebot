@@ -122,6 +122,19 @@ forget` slash commands.
     and inserting new ones while preserving the relational row and its rowid.
     Old embeddings are deleted during migration (not retained).
 
+19. **Backfill resume & catch-up**: The `UserConsent` table tracks a
+    `backfillCompleted` flag. On first opt-in, `backfillCompleted` is set to
+    `false`; it is set to `true` after the backfill completes. If a user runs
+    `/memory remember` again with an incomplete backfill, the backfill resumes
+    (skipping already-stored messages via `discordMessageId` deduplication). On
+    startup, `BaseDiscordClient.onClientReady` calls
+    `MemoryCommandHandler.resumeBackfills` which (a) resumes any incomplete
+    backfills and (b) catches up completed users by fetching messages newer
+    than the most recently stored memory timestamp (`getLatestMemoryTimestamp`)
+    per channel — handling messages sent while the bot was offline. Each
+    `LlmChatMessageRecord` stores a `discordMessageId` (null for bot responses)
+    with a unique partial index to prevent duplicate storage.
+
 ## Rationale
 
 **Persistent context**: Rolling context is lost on restart and scoped to a
@@ -309,10 +322,12 @@ allows other services to check LTM availability via `featureService.hasFeature`.
 ### Phase 6: Database Layer
 
 1. Create Drizzle schema (`schema.ts`) with relational tables:
-   - `UserConsent` — `userId` (PK), `consentedAt` (timestamp)
+   - `UserConsent` — `userId` (PK), `consentedAt` (timestamp),
+     `backfillCompleted` (boolean, default false)
    - `LlmChatMessage` — `id` (auto-increment PK), `userId`, `serverId`,
      `content` (JSON-serialized LlmChatMessage), `messageText` (just the message
      field), `isBot`, `embeddingModel` (model name used to generate the vector),
+     `discordMessageId` (nullable, unique partial index for deduplication),
      `createdAt`
 2. Create `MemoryDatabase` class:
     - Opens `better-sqlite3` at `workflows/{botId}/txt2txt/memory.db` (creates

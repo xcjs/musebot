@@ -2,7 +2,8 @@ import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 export const UserConsent = sqliteTable('UserConsent', {
     userId: text('userId').primaryKey(),
-    consentedAt: text('consentedAt').notNull()
+    consentedAt: text('consentedAt').notNull(),
+    backfillCompleted: integer('backfillCompleted', { mode: 'boolean' }).notNull().default(false)
 });
 
 export const LlmChatMessageRecord = sqliteTable('LlmChatMessage', {
@@ -13,5 +14,6 @@ export const LlmChatMessageRecord = sqliteTable('LlmChatMessage', {
     messageText: text('messageText').notNull(),
     isBot: integer('isBot', { mode: 'boolean' }).notNull(),
     embeddingModel: text('embeddingModel').notNull(),
+    discordMessageId: text('discordMessageId'),
     createdAt: text('createdAt').notNull()
 });
