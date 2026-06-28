@@ -84,12 +84,16 @@ Discord. This guide will walk you through each required menu and setting.
 1. Click the `OAuth2` link in the left navigation menu.
 
    ![OAuth2 Menu Item](../images/discord/menu-oauth2.png)
-2. Under the `OAuth2 URL Generator` in the `Scopes` checklist, check `bot`.
+2. Under the `OAuth2 URL Generator` in the `Scopes` checklist, check `bot`
+   and `applications.commands`.
 3. In the `Bot Permissions` checklist, check the following checkboxes:
 
     * View Channels
     * Send Messages
+    * Send Messages in Threads
     * Read Message History
+    * Embed Links
+    * Attach Files
 
    `Integration Type` should be set to `Guild Install`.
 
