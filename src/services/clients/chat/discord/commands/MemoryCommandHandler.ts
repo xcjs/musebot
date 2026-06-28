@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, DMChannel, Message as DiscordMessage, TextChannel } from 'discord.js';
+import { ChatInputCommandInteraction, GuildTextBasedChannel, Message as DiscordMessage } from 'discord.js';
 
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../../../../features/IFeatureService.js';
@@ -9,7 +9,7 @@ import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { ILlmChatMessageFactory } from '../../../llm/services/ILlmChatMessageFactory.js';
 import { IMemoryService } from '../../../llm/services/IMemoryService.js';
 
-const BACKFILL_LIMIT = 100;
+const FETCH_LIMIT = 100;
 
 export class MemoryCommandHandler {
     readonly #services: IBotServiceContainer;
@@ -61,12 +61,12 @@ export class MemoryCommandHandler {
             return;
         }
 
-        await interaction.editReply('You have opted in to long-term memory. Backfilling recent messages from this channel...');
+        await interaction.editReply('You have opted in to long-term memory. Backfilling messages from all channels...');
 
         const backfillCount = await this.#backfillMessages(interaction);
 
         await interaction.editReply(
-            `You have opted in to long-term memory. Backfilled ${backfillCount} recent message${backfillCount === 1 ? '' : 's'} from this channel.`);
+            `You have opted in to long-term memory. Backfilled ${backfillCount} message${backfillCount === 1 ? '' : 's'} from all accessible channels.`);
     }
 
     async #handleForget(interaction: ChatInputCommandInteraction): Promise<void> {
@@ -85,26 +85,64 @@ export class MemoryCommandHandler {
     }
 
     async #backfillMessages(interaction: ChatInputCommandInteraction): Promise<number> {
-        const channel = interaction.channel;
+        const userId = interaction.user.id;
+        const client = interaction.client;
+        const botId = client.user?.id;
 
-        if (channel === null) {
+        if (botId === undefined) {
             return 0;
         }
 
-        if (!(channel instanceof TextChannel) && !(channel instanceof DMChannel)) {
-            this.#logger.info('Backfill skipped — channel is not a text or DM channel.');
-            return 0;
+        const channels: GuildTextBasedChannel[] = [];
+
+        for (const guild of client.guilds.cache.values()) {
+            for (const channel of guild.channels.cache.values()) {
+                if (channel.isTextBased() && !channel.isVoiceBased()) {
+                    channels.push(channel as GuildTextBasedChannel);
+                }
+            }
         }
 
-        try {
-            const messages = await channel.messages.fetch({ limit: BACKFILL_LIMIT });
+        let totalCount = 0;
+
+        for (const channel of channels) {
+            try {
+                const count = await this.#backfillChannel(channel, userId, botId);
+
+                if (count > 0) {
+                    this.#logger.info(`Backfilled ${count} messages from #${channel.name ?? channel.id}.`);
+                }
+
+                totalCount += count;
+            } catch (error) {
+                this.#logger.error(`Failed to backfill channel ${channel.id}:`, error);
+            }
+        }
+
+        this.#logger.info(`Backfilled ${totalCount} total messages for user ${userId}.`);
+        return totalCount;
+    }
+
+    async #backfillChannel(channel: GuildTextBasedChannel, userId: string, botId: string): Promise<number> {
+        let count = 0;
+        let beforeId: string | undefined;
+
+        for (;;) {
+            const messages = await channel.messages.fetch({ limit: FETCH_LIMIT, before: beforeId });
+
+            if (messages.size === 0) {
+                break;
+            }
+
             const sortedMessages = [...messages.values()].sort(
                 (a: DiscordMessage, b: DiscordMessage) => a.createdTimestamp - b.createdTimestamp);
 
-            const promises: Promise<boolean>[] = [];
-
             for (const message of sortedMessages) {
-                if (message.author.bot && message.author.id !== interaction.client.user?.id) {
+                if (message.author.id !== userId && message.author.id !== botId) {
+                    continue;
+                }
+
+                if (message.author.bot && message.author.id !== botId) {
                     continue;
                 }
 
@@ -113,25 +151,35 @@ export class MemoryCommandHandler {
                 }
 
                 const llmChatMessage = this.#llmChatMessageFactory.create(message);
-                const task = this.#services.getEmbedTask(llmChatMessage);
+                const ownerUserId = message.author.id === botId ? userId : undefined;
+                const task = this.#services.getEmbedTask(llmChatMessage, ownerUserId);
 
                 const promise = new Promise<boolean>((resolve) => {
                     task.onSuccess = (): void => resolve(true);
                     task.onFailure = (): void => resolve(false);
                 });
 
-                promises.push(promise);
                 this.#taskQueue.add(task as BaseTask<unknown>);
+
+                const [success] = await Promise.all([promise]);
+                if (success) {
+                    count++;
+                }
             }
 
-            const results = await Promise.all(promises);
-            const count = results.filter(x => x).length;
+            const lastMessage = sortedMessages[sortedMessages.length - 1];
 
-            this.#logger.info(`Backfilled ${count} messages for user ${interaction.user.id}.`);
-            return count;
-        } catch (error) {
-            this.#logger.error('Failed to backfill messages:', error);
-            return 0;
+            if (lastMessage === undefined) {
+                break;
+            }
+
+            beforeId = lastMessage.id;
+
+            if (messages.size < FETCH_LIMIT) {
+                break;
+            }
         }
+
+        return count;
     }
 }
