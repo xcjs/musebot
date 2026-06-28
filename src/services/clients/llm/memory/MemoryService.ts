@@ -78,6 +78,7 @@ export class MemoryService implements IMemoryService {
             const embedding = await this.#embed(llmChatMessage.message);
             const json = JSON.stringify(llmChatMessage);
             const database = await this.#getDatabase();
+            const embeddingModel = this.#getEmbeddingModel();
 
             database.storeMemory(
                 json,
@@ -85,6 +86,7 @@ export class MemoryService implements IMemoryService {
                 consentUserId,
                 llmChatMessage.server.id,
                 llmChatMessage.isBot,
+                embeddingModel,
                 embedding);
         } catch (error) {
             this.#logger.error(`Failed to store memory for user ${consentUserId}:`, error);
@@ -105,8 +107,9 @@ export class MemoryService implements IMemoryService {
         try {
             const embedding = await this.#embed(llmChatMessage.message);
             const topK = this.#configurationService.ollamaTopK;
+            const embeddingModel = this.#getEmbeddingModel();
             const database = await this.#getDatabase();
-            const records = database.queryMemories(embedding, serverId, topK);
+            const records = database.queryMemories(embedding, serverId, embeddingModel, topK);
 
             if (records.length === 0) {
                 return [];
@@ -125,6 +128,14 @@ export class MemoryService implements IMemoryService {
         }
     }
 
+    #getEmbeddingModel(): string {
+        const model = this.#configurationService.ollamaEmbeddingModel;
+        if (model === null) {
+            throw new Error('Embedding model is not configured but LTM is enabled.');
+        }
+        return model;
+    }
+
     async #embed(text: string): Promise<number[]> {
         const client: OllamaClient = this.#services.ollamaClient;
         return await client.embed(text);
@@ -138,7 +149,45 @@ export class MemoryService implements IMemoryService {
         const dimensions = await this.#getEmbeddingDimensions();
         const dbPath = `${MEMORY_DATABASE_DIR}/${this.#configurationService.botId}/${MEMORY_DATABASE_FILENAME}`;
         this.#database = new MemoryDatabase(dbPath, dimensions, this.#logger);
+
+        await this.#migrateEmbeddingModel(this.#database);
+
         return this.#database;
+    }
+
+    async #migrateEmbeddingModel(database: MemoryDatabase): Promise<void> {
+        const currentModel = this.#getEmbeddingModel();
+
+        const currentModelCount = database.getMemoryCountByModel(currentModel);
+        const totalCount = database.getTotalMemoryCount();
+
+        if (totalCount === 0 || currentModelCount === totalCount) {
+            return;
+        }
+
+        this.#logger.info(`Migrating memories to embedding model '${currentModel}'. ${currentModelCount}/${totalCount} already using this model.`);
+
+        const outdatedRecords = database.getMemoriesByModel('');
+
+        if (outdatedRecords.length === 0) {
+            return;
+        }
+
+        let migrated = 0;
+        let failed = 0;
+
+        for (const record of outdatedRecords) {
+            try {
+                const embedding = await this.#embed(record.messageText);
+                database.updateMemoryEmbeddingModel(record.id, currentModel, embedding);
+                migrated++;
+            } catch (error) {
+                this.#logger.error(`Failed to re-embed memory ${record.id}:`, error);
+                failed++;
+            }
+        }
+
+        this.#logger.info(`Embedding model migration complete. Migrated: ${migrated}, Failed: ${failed}.`);
     }
 
     async #getEmbeddingDimensions(): Promise<number> {

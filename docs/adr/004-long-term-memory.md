@@ -60,8 +60,8 @@ forget` slash commands.
 5. **Consent scope**: Global per-user. Opt in once, applies across all servers.
    Opt-out deletes ALL that user's memories globally.
 
-6. **DB path**: `workflows/txt2txt/memory.db`. Musebot creates the directory if
-   missing.
+6. **DB path**: `workflows/{botId}/txt2txt/memory.db`. Musebot creates the
+   directory if missing. Scoped per bot instance.
 
 7. **topK config**: `ollama.topK` inside the existing `ollama` block. Defaults
    to 5 if omitted.
@@ -112,6 +112,15 @@ forget` slash commands.
 17. **Bot response identity**: When storing bot responses as `LlmChatMessage`,
     use the Discord client's user (`discordClient.user`) for
     `username`/`displayName`/`userId`, with `isBot: true`.
+
+18. **Embedding model tracking & auto-migration**: Each stored memory records
+    the `embeddingModel` used to generate its vector. Queries filter by the
+    currently configured model, preventing cross-model vector space mismatch.
+    On startup, if the database contains memories embedded with a different
+    model (or untagged memories from before this feature), `MemoryService`
+    automatically re-embeds them using the current model — deleting old vectors
+    and inserting new ones while preserving the relational row and its rowid.
+    Old embeddings are deleted during migration (not retained).
 
 ## Rationale
 
@@ -303,22 +312,25 @@ allows other services to check LTM availability via `featureService.hasFeature`.
    - `UserConsent` — `userId` (PK), `consentedAt` (timestamp)
    - `LlmChatMessage` — `id` (auto-increment PK), `userId`, `serverId`,
      `content` (JSON-serialized LlmChatMessage), `messageText` (just the message
-     field), `isBot`, `createdAt`
+     field), `isBot`, `embeddingModel` (model name used to generate the vector),
+     `createdAt`
 2. Create `MemoryDatabase` class:
-   - Opens `better-sqlite3` at `workflows/txt2txt/memory.db` (creates dir via
-     `fs.mkdirSync(dir, { recursive: true })`)
+    - Opens `better-sqlite3` at `workflows/{botId}/txt2txt/memory.db` (creates
+      dir via `fs.mkdirSync(dir, { recursive: true })`)
    - Loads `sqlite-vec` extension
    - Initializes Drizzle: `drizzle(db)`
    - Creates tables (`CREATE TABLE IF NOT EXISTS`)
    - Creates vec0 virtual table for vector ops
-   - Methods: `hasConsent`, `setConsent`, `removeConsent` (also deletes all
-     memories), `storeMemory`, `queryMemories` (raw SQL join between vec0
-     results and relational table, filtered by `serverId`),
-     `deleteMemoriesByUser`, `close`
+    - Methods: `hasConsent`, `setConsent`, `removeConsent` (also deletes all
+      memories), `storeMemory`, `queryMemories` (raw SQL join between vec0
+      results and relational table, filtered by `serverId` AND
+      `embeddingModel`), `deleteMemoriesByUser`, `getMemoryCountByModel`,
+      `getTotalMemoryCount`, `getMemoriesByModel`, `updateMemoryEmbeddingModel`
+      (for migration), `close`
 
 **Files created:**
-- `src/services/clients/llm/ollama/memory/schema.ts`
-- `src/services/clients/llm/ollama/memory/MemoryDatabase.ts`
+- `src/services/clients/llm/memory/schema.ts`
+- `src/services/clients/llm/memory/MemoryDatabase.ts`
 
 ### Phase 7: Memory Service
 
@@ -326,10 +338,10 @@ allows other services to check LTM availability via `featureService.hasFeature`.
    ```typescript
    export interface IMemoryService {
        isEnabled: boolean;
-       hasConsent(userId: string): boolean;
+       hasConsent(userId: string): Promise<boolean>;
        setConsent(userId: string): Promise<void>;
        removeConsent(userId: string): Promise<void>;
-       store(llmChatMessage: LlmChatMessage): Promise<void>;
+       store(llmChatMessage: LlmChatMessage, ownerUserId?: string): Promise<void>;
        retrieve(llmChatMessage: LlmChatMessage): Promise<OllamaMessage[]>;
    }
    ```
@@ -347,7 +359,7 @@ allows other services to check LTM availability via `featureService.hasFeature`.
 
 **Files created:**
 - `src/services/clients/llm/services/IMemoryService.ts`
-- `src/services/clients/llm/ollama/memory/MemoryService.ts`
+- `src/services/clients/llm/memory/MemoryService.ts`
 
 **Files modified:**
 - `src/services/IBotServiceContainer.ts`
@@ -478,7 +490,15 @@ Each phase is independently testable. Lint + build after each phase:
    binaries, native extension loading may fail.
    - **Mitigation**: Same as Risk 1 — defer pkg compatibility.
 
-6. **Cross-server consent vs. retrieval scope mismatch**: Consent is global but
+6. **sqlite-vec `rowid` parameter binding**: `better-sqlite3` binds JS numbers
+   to sqlite-vec's `rowid` parameter in a way sqlite-vec rejects (`Only
+   integers are allowed for primary key values`). Additionally, sqlite-vec
+   errors when both `k = ?` and `LIMIT ?` are present in the same query.
+   - **Mitigation**: Use `INSERT INTO ... VALUES ((SELECT last_insert_rowid()),
+     ?)` (SQL subquery) instead of `?` parameter binding for rowid. Use only
+     `k = ?` (not `LIMIT`) for KNN constraint.
+
+7. **Cross-server consent vs. retrieval scope mismatch**: Consent is global but
    retrieval is per-server. A user opted in to one server has their messages
    stored globally but only retrieved within the same server.
    - **Mitigation**: This is by design. Document clearly. A user's messages in
@@ -495,7 +515,8 @@ Each phase is independently testable. Lint + build after each phase:
 - **Conversation summarization**: Compress older memories into summaries to
   reduce context token usage.
 - **Embedding model hot-swap**: Support changing `embeddingModel` at runtime
-  with automatic re-embedding of stored memories.
+  with automatic re-embedding of stored memories. *(Implemented: see Decision
+  18 — auto-migration runs on startup when model mismatch is detected.)*
 - **pkg binary support**: Add `better-sqlite3` and `sqlite-vec` native assets to
   `pkg.assets` for standalone binary distribution.
 - **Memory export/import**: `/memory export` command to download stored memories
