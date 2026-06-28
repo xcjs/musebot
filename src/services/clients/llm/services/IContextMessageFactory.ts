@@ -6,6 +6,8 @@ export interface IContextMessageFactory<ChatMessageType, LlmMessageType> {
         chanelId: string | null,
         isReadOnly: boolean): ContextMessage<ChatMessageType, LlmMessageType>;
 
+    formatChatMessage(chatMessage: ChatMessageType): string;
+
     fromChatMessage(chatMessage: ChatMessageType): ContextMessage<ChatMessageType, LlmMessageType>;
 
     fromChatPrompt(

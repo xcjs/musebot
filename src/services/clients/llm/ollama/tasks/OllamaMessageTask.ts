@@ -38,7 +38,7 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
     override async process(): Promise<void> {
         await super.process();
 
-        const formattedMessage = `${this.#message.author.displayName}: ${this.replyService.getMessageWithoutBotMentions(this.#message)}`;
+        const formattedMessage = this.contextMessageFactory.formatChatMessage(this.#message);
         const context = this.contextService.getContextByChannelId(this.#message.channelId);
 
         if (this.configurationService.ollamaStreamsResponse) {
