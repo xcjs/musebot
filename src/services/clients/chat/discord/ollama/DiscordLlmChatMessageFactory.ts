@@ -1,16 +1,24 @@
 import { Attachment, BaseGuildTextChannel, ButtonInteraction, Message as DiscordMessage, MessageReaction, ThreadChannel } from 'discord.js';
 
+import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
+import { IFeatureService } from '../../../../features/IFeatureService.js';
 import { LlmChatMessage } from '../../../llm/ollama/models/LlmChatMessage.js';
+import { LlmChatMessageAttachment } from '../../../llm/ollama/models/LlmChatMessageAttachment.js';
 import { ILlmChatMessageFactory } from '../../../llm/services/ILlmChatMessageFactory.js';
 import { IReplyService } from '../../IReplyService.js';
+import { DiscordAttachmentService } from '../services/DiscordAttachmentService.js';
 
 type DiscordReplyService = IReplyService<DiscordMessage, MessageReaction, Attachment, DiscordMessage | ButtonInteraction>;
 
 export class DiscordLlmChatMessageFactory implements ILlmChatMessageFactory<DiscordMessage> {
     readonly #replyService: DiscordReplyService;
+    readonly #featureService: IFeatureService;
+    readonly #attachmentService: DiscordAttachmentService;
 
-    constructor(services: { getReplyService(): DiscordReplyService }) {
+    constructor(services: { getReplyService(): DiscordReplyService; featureService: IFeatureService }) {
         this.#replyService = services.getReplyService();
+        this.#featureService = services.featureService;
+        this.#attachmentService = new DiscordAttachmentService();
     }
 
     create(chatMessage: DiscordMessage): LlmChatMessage {
@@ -57,7 +65,8 @@ export class DiscordLlmChatMessageFactory implements ILlmChatMessageFactory<Disc
                 })),
                 roles: chatMessage.mentions.roles.map((role) => ({ id: role.id, name: role.name })),
                 everyone: chatMessage.mentions.everyone
-            }
+            },
+            attachments: this.#extractAttachments(chatMessage)
         };
     }
 
@@ -102,7 +111,22 @@ export class DiscordLlmChatMessageFactory implements ILlmChatMessageFactory<Disc
                 users: [],
                 roles: [],
                 everyone: false
-            }
+            },
+            attachments: []
         };
+    }
+
+    #extractAttachments(chatMessage: DiscordMessage): LlmChatMessageAttachment[] {
+        if (!this.#featureService.hasFeature(SupportedFeature.Vision)) {
+            return [];
+        }
+
+        const imageAttachments = this.#attachmentService.getImageAttachments(chatMessage);
+
+        return imageAttachments.map((attachment) => ({
+            filename: attachment.name,
+            url: attachment.url,
+            interpretation: ''
+        }));
     }
 }

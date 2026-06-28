@@ -1,4 +1,4 @@
-﻿import { ChatRequest, ChatResponse, GenerateRequest, GenerateResponse, Message, Ollama } from 'ollama';
+﻿import { ChatRequest, ChatResponse, GenerateRequest, GenerateResponse, Message, Ollama, ShowResponse } from 'ollama';
 
 import { IHttpExchange } from '../../../../models/IHttpExchange.js';
 import { IHttpExchangeWithAttachedData } from '../../../../models/IHttpExchangeWithAttachedData.js';
@@ -91,6 +91,24 @@ export class OllamaClient {
         return running.models?.some(m => m.name === this.#model || m.model === this.#model) ?? false;
     }
 
+    async show(model: string = this.#model): Promise<ShowResponse> {
+        try {
+            return await this.#client.show({ model });
+        } catch (error) {
+            this.#logger.error(`Failed to query Ollama for model details for '${model}':`, error);
+            throw new Error(error as string);
+        }
+    }
+
+    async hasVisionCapability(model: string = this.#model): Promise<boolean> {
+        try {
+            const response = await this.show(model);
+            return response.capabilities?.includes('vision') ?? false;
+        } catch {
+            return false;
+        }
+    }
+
     async waitForModelUnload(intervalMs = this.#configurationService.taskRetryDelayMilliseconds): Promise<boolean> {
         const freed = await this.free();
         if (!freed) {
@@ -144,14 +162,20 @@ export class OllamaClient {
         }
     }
 
-    async sendMessage(prompt: string, context: Message[]):
+    async sendMessage(prompt: string, context: Message[], images: string[] = []):
         Promise<IHttpExchangeWithAttachedData<ChatRequest, ChatResponse, Message[]>>
     {
+        const userMessage: Message = {
+            content: prompt,
+            role: OllamaRole.User
+        };
+
+        if (images.length > 0) {
+            userMessage.images = images;
+        }
+
         const request: ChatRequest = {
-            messages: [...context, {
-                content: prompt,
-                role: OllamaRole.User
-            }],
+            messages: [...context, userMessage],
             model: this.#model
         };
 
@@ -159,6 +183,10 @@ export class OllamaClient {
 
         if (context.length > 0) {
             this.#logger.info(`A context of ${context.length} message(s) is provided.`);
+        }
+
+        if (images.length > 0) {
+            this.#logger.info(`Attaching ${images.length} image(s) to the Ollama request.`);
         }
 
         try {
@@ -178,14 +206,20 @@ export class OllamaClient {
         }
     }
 
-    async sendMessageAndGetStream(prompt: string, context: Message[]):
+    async sendMessageAndGetStream(prompt: string, context: Message[], images: string[] = []):
         Promise<IHttpExchangeWithAttachedData<ChatRequest, AsyncIterable<ChatResponse>, Message[]> | null>
     {
+        const userMessage: Message = {
+            content: prompt,
+            role: OllamaRole.User
+        };
+
+        if (images.length > 0) {
+            userMessage.images = images;
+        }
+
         const request: ChatRequest = {
-            messages: [...context, {
-                content: prompt,
-                role: OllamaRole.User
-            }],
+            messages: [...context, userMessage],
             model: this.#model
         };
 
@@ -193,6 +227,10 @@ export class OllamaClient {
 
         if (context.length > 0) {
             this.#logger.info(`A context of ${context.length} messages is provided.`);
+        }
+
+        if (images.length > 0) {
+            this.#logger.info(`Attaching ${images.length} image(s) to the Ollama request.`);
         }
 
         try {
@@ -225,6 +263,34 @@ export class OllamaClient {
         const response = await this.#client.embed({ model: embeddingModel, input });
 
         return response.embeddings[0];
+    }
+
+    async interpretImages(images: string[], contextPrompt: string = ''): Promise<string> {
+        if (images.length === 0) {
+            return '';
+        }
+
+        const prompt = 'You are a visual assistant. Describe what you see in the attached image(s)'
+            + ' concisely and factually, as plain text. Focus on subjects, scene, colors, and any visible text.'
+            + ' If multiple images are attached, describe each in order.'
+            + (contextPrompt.length > 0 ? `\n\nContext for these images:\n${contextPrompt}` : '');
+
+        const request: GenerateRequest = {
+            prompt,
+            model: this.#model,
+            images,
+            stream: false
+        };
+
+        this.#logger.info(`Calling Ollama API to interpret ${images.length} image(s).`);
+
+        try {
+            const response = await this.#client.generate({ ...request, stream: false });
+            return response.response.trim();
+        } catch (error) {
+            this.#logger.error('Failed to interpret image(s) via Ollama:', error);
+            throw new Error(error as string);
+        }
     }
 
     #selectModel(models: Array<string>): string {

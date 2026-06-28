@@ -7,5 +7,6 @@ export enum SupportedFeature {
     Txt2Img = 'txt2img',
     Txt2Music = 'txt2music',
     Txt2Txt = 'txt2txt',
-    Txt2Vid = 'txt2vid'
+    Txt2Vid = 'txt2vid',
+    Vision = 'vision'
 }

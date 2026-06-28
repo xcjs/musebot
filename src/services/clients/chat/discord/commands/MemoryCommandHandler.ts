@@ -9,8 +9,9 @@ import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { ILlmChatMessageFactory } from '../../../llm/services/ILlmChatMessageFactory.js';
 import { IMemoryService } from '../../../llm/services/IMemoryService.js';
+import { DiscordAttachmentService } from '../services/DiscordAttachmentService.js';
 
-const FETCH_LIMIT = 100;
+const FETCH_PAGE_SIZE = 100;
 
 export class MemoryCommandHandler {
     readonly #services: IBotServiceContainer;
@@ -20,6 +21,7 @@ export class MemoryCommandHandler {
     readonly #configurationService: IConfigurationService;
     readonly #taskQueue: ITaskQueue;
     readonly #logger: ILogger;
+    readonly #attachmentService: DiscordAttachmentService;
 
     constructor(services: IBotServiceContainer) {
         this.#services = services;
@@ -29,6 +31,7 @@ export class MemoryCommandHandler {
         this.#configurationService = services.configurationService;
         this.#taskQueue = services.taskQueue;
         this.#logger = services.getLogger('MemoryCommandHandler');
+        this.#attachmentService = new DiscordAttachmentService();
     }
 
     async handle(interaction: ChatInputCommandInteraction): Promise<void> {
@@ -185,7 +188,7 @@ export class MemoryCommandHandler {
         let afterId: string | undefined;
 
         for (;;) {
-            const messages = await channel.messages.fetch({ limit: FETCH_LIMIT, after: afterId });
+            const messages = await channel.messages.fetch({ limit: FETCH_PAGE_SIZE, after: afterId });
 
             if (messages.size === 0) {
                 break;
@@ -208,7 +211,7 @@ export class MemoryCommandHandler {
                     continue;
                 }
 
-                if (message.content.trim().length === 0) {
+                if (!this.#isStorable(message)) {
                     continue;
                 }
 
@@ -231,7 +234,7 @@ export class MemoryCommandHandler {
 
             const lastMessage = sortedMessages[sortedMessages.length - 1];
 
-            if (lastMessage === undefined || messages.size < FETCH_LIMIT) {
+            if (lastMessage === undefined || messages.size < FETCH_PAGE_SIZE) {
                 break;
             }
 
@@ -294,7 +297,7 @@ export class MemoryCommandHandler {
         let beforeId: string | undefined;
 
         for (;;) {
-            const messages = await channel.messages.fetch({ limit: FETCH_LIMIT, before: beforeId });
+            const messages = await channel.messages.fetch({ limit: FETCH_PAGE_SIZE, before: beforeId });
 
             if (messages.size === 0) {
                 break;
@@ -312,7 +315,7 @@ export class MemoryCommandHandler {
                     continue;
                 }
 
-                if (message.content.trim().length === 0) {
+                if (!this.#isStorable(message)) {
                     continue;
                 }
 
@@ -341,11 +344,19 @@ export class MemoryCommandHandler {
 
             beforeId = lastMessage.id;
 
-            if (messages.size < FETCH_LIMIT) {
+            if (messages.size < FETCH_PAGE_SIZE) {
                 break;
             }
         }
 
         return count;
+    }
+
+    #isStorable(message: DiscordMessage): boolean {
+        const hasText = message.content.trim().length > 0;
+        const hasImages = this.#featureService.hasFeature(SupportedFeature.Vision)
+            && this.#attachmentService.getImageAttachments(message).length > 0;
+
+        return hasText || hasImages;
     }
 }

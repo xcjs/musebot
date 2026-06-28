@@ -1,4 +1,6 @@
-import { IBotServiceContainer } from "../../../../IBotServiceContainer.js"
+import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
+import { IFeatureService } from '../../../../features/IFeatureService.js';
+import { IBotServiceContainer } from '../../../../IBotServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { IMemoryService } from '../../services/IMemoryService.js';
 import { LlmChatMessage } from '../models/LlmChatMessage.js';
@@ -13,9 +15,11 @@ export class OllamaEmbedTask extends OllamaBaseTask<void> {
         this.#onFailure = callback;
     }
 
+    readonly #services: IBotServiceContainer;
     readonly #llmChatMessage: LlmChatMessage;
     readonly #ownerUserId: string | undefined;
     readonly #memoryService: IMemoryService;
+    readonly #featureService: IFeatureService;
 
     #onSuccess: () => void = () => { };
     #onFailure: (error: Error) => void = () => { };
@@ -23,13 +27,53 @@ export class OllamaEmbedTask extends OllamaBaseTask<void> {
     constructor(services: IBotServiceContainer, llmChatMessage: LlmChatMessage, ownerUserId?: string) {
         super(services);
         this.logger = services.getLogger('OllamaEmbedTask');
+        this.#services = services;
         this.#llmChatMessage = llmChatMessage;
         this.#ownerUserId = ownerUserId;
         this.#memoryService = services.getMemoryService();
+        this.#featureService = services.featureService;
     }
 
     override async process(): Promise<void> {
+        await this.#interpretAttachments();
         await this.#memoryService.store(this.#llmChatMessage, this.#ownerUserId);
+    }
+
+    async #interpretAttachments(): Promise<void> {
+        const attachments = this.#llmChatMessage.attachments;
+
+        if (attachments.length === 0) {
+            return;
+        }
+
+        if (!this.#featureService.hasFeature(SupportedFeature.Vision)) {
+            return;
+        }
+
+        const needsInterpretation = attachments.some(a => a.interpretation.length === 0);
+        if (!needsInterpretation) {
+            return;
+        }
+
+        const contextPrompt = `The user posted: "${this.#llmChatMessage.message}"`;
+        const client = this.#services.ollamaClient;
+
+        for (const attachment of attachments) {
+            if (attachment.interpretation.length > 0) {
+                continue;
+            }
+
+            try {
+                const response = await fetch(attachment.url);
+                const buffer = Buffer.from(await response.arrayBuffer());
+                const base64 = buffer.toString('base64');
+
+                attachment.interpretation = await client.interpretImages([base64], contextPrompt);
+                this.logger.info(`Interpreted attachment '${attachment.filename}'.`);
+            } catch (error) {
+                this.logger.error(`Failed to interpret attachment '${attachment.filename}':`, error);
+            }
+        }
     }
 
     override async postProcess(): Promise<void> {

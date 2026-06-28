@@ -3,6 +3,8 @@ import { Message as OllamaMessage } from 'ollama';
 
 import { BotInteraction } from '../../../../enums/BotInteraction.js';
 import { IConfigurationService } from '../../../environment-settings/IConfigurationService.js';
+import { SupportedFeature } from '../../../features/enum/SupportedFeature.js';
+import { IFeatureService } from '../../../features/IFeatureService.js';
 import { IBotServiceContainer } from "../../../IBotServiceContainer.js"
 import { ITaskQueue } from '../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
@@ -15,6 +17,7 @@ import { ITypingService } from '../ITypingService.js';
 import { BaseDiscordClient } from './BaseDiscordClient.js';
 import { MemoryCommandHandler } from './commands/MemoryCommandHandler.js';
 import { ChatConfirmClearActionRow } from './components/buttonRows/ChatConfirmClearActionRow.js';
+import { DiscordAttachmentService } from './services/DiscordAttachmentService.js';
 
 export class GenerativeChatClient extends BaseDiscordClient {
     readonly #services: IBotServiceContainer;
@@ -28,6 +31,8 @@ export class GenerativeChatClient extends BaseDiscordClient {
     readonly #taskQueue: ITaskQueue;
     readonly #memoryService: IMemoryService;
     readonly #llmChatMessageFactory: ILlmChatMessageFactory<DiscordMessage>;
+    readonly #featureService: IFeatureService;
+    readonly #attachmentService: DiscordAttachmentService;
 
     #channelTopicsCached: string[] = [];
 
@@ -45,6 +50,8 @@ export class GenerativeChatClient extends BaseDiscordClient {
         this.#taskQueue = services.taskQueue;
         this.#memoryService = services.getMemoryService();
         this.#llmChatMessageFactory = services.getLlmChatMessageFactory<DiscordMessage>();
+        this.#featureService = services.featureService;
+        this.#attachmentService = new DiscordAttachmentService();
 
         const systemPrompt = this.#configurationService.ollamaSystemPrompt;
         this.#contextService.addContext([this.#contextMessageFactory.fromSystemPrompt(systemPrompt, null, true)]);
@@ -92,7 +99,11 @@ export class GenerativeChatClient extends BaseDiscordClient {
             return;
         }
 
-        if (message.content.trim().length === 0) {
+        const hasText = message.content.trim().length > 0;
+        const hasImages = this.#featureService.hasFeature(SupportedFeature.Vision)
+            && this.#attachmentService.getImageAttachments(message).length > 0;
+
+        if (!hasText && !hasImages) {
             return;
         }
 

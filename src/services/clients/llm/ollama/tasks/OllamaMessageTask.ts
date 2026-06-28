@@ -10,6 +10,7 @@ import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.js';
+import { DiscordAttachmentService } from '../../../chat/discord/services/DiscordAttachmentService.js';
 import { IInputChatMessageFilter } from '../../../chat/IInputChatMessageFilter.js';
 import { ILlmChatMessageFactory } from '../../../llm/services/ILlmChatMessageFactory.js';
 import { IMemoryService } from '../../../llm/services/IMemoryService.js';
@@ -26,6 +27,7 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
     readonly #inputFilters: IInputChatMessageFilter<DiscordMessage>[];
     readonly #llmChatMessageFactory: ILlmChatMessageFactory<DiscordMessage>;
     readonly #memoryService: IMemoryService;
+    readonly #attachmentService: DiscordAttachmentService;
 
     readonly #message: DiscordMessage;
 
@@ -42,6 +44,7 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
         this.#inputFilters = services.getInputChatMessageFilters<DiscordMessage>();
         this.#llmChatMessageFactory = services.getLlmChatMessageFactory<DiscordMessage>();
         this.#memoryService = services.getMemoryService();
+        this.#attachmentService = new DiscordAttachmentService();
 
         this.#message = message;
     }
@@ -57,12 +60,14 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
             context = await filter.process(llmChatMessage, this.#message, context);
         }
 
+        const images = await this.#getImages();
+
         if (this.configurationService.ollamaStreamsResponse) {
-            await this.#processAsStream(formattedMessage, context, llmChatMessage);
+            await this.#processAsStream(formattedMessage, context, llmChatMessage, images);
             return;
         }
 
-        const exchange = await this.ollamaClient.sendMessage(formattedMessage, context);
+        const exchange = await this.ollamaClient.sendMessage(formattedMessage, context, images);
 
         this.contextService.addContext([this.contextMessageFactory.fromChatMessage(this.#message)]);
         this.contextService.addContext([
@@ -91,8 +96,8 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
         this.ollamaStreamingReplyService.clearState();
     }
 
-    async #processAsStream(formattedMessage: string, context: OllamaMessage[], llmChatMessage: LlmChatMessage): Promise<void> {
-        const exchange = await this.ollamaClient.sendMessageAndGetStream(formattedMessage, context);
+    async #processAsStream(formattedMessage: string, context: OllamaMessage[], llmChatMessage: LlmChatMessage, images: string[]): Promise<void> {
+        const exchange = await this.ollamaClient.sendMessageAndGetStream(formattedMessage, context, images);
 
         let averageResponseInMs = 0;
         let endTime = performance.now();
@@ -176,6 +181,19 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
             await this.#memoryService.store(botLlmChatMessage, llmChatMessage.userId);
         } catch (error) {
             this.logger.error('Failed to store memories:', error);
+        }
+    }
+
+    async #getImages(): Promise<string[]> {
+        if (!this.#featureService.hasFeature(SupportedFeature.Vision)) {
+            return [];
+        }
+
+        try {
+            return await this.#attachmentService.getAttachedImagesAsBase64(this.#message);
+        } catch (error) {
+            this.logger.error('Failed to fetch image attachments for vision request:', error);
+            return [];
         }
     }
 

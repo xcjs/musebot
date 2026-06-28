@@ -1,3 +1,5 @@
+import { LlmChatMessageAttachment } from './LlmChatMessageAttachment.js';
+
 export interface LlmChatMessage {
     messageId: string | null;
     username: string;
@@ -26,4 +28,5 @@ export interface LlmChatMessage {
         roles: Array<{ id: string; name: string }>;
         everyone: boolean;
     };
+    attachments: LlmChatMessageAttachment[];
 }
