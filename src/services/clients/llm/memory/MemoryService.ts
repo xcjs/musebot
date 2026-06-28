@@ -11,7 +11,8 @@ import { OllamaClient } from '../ollama/OllamaClient.js';
 import { IMemoryService } from '../services/IMemoryService.js';
 import { MemoryDatabase, MemoryRecord } from './MemoryDatabase.js';
 
-const MEMORY_DATABASE_PATH = 'workflows/txt2txt/memory.db';
+const MEMORY_DATABASE_DIR = 'workflows';
+const MEMORY_DATABASE_FILENAME = 'txt2txt/memory.db';
 
 export class MemoryService implements IMemoryService {
     readonly #services: IBotServiceContainer;
@@ -135,7 +136,8 @@ export class MemoryService implements IMemoryService {
         }
 
         const dimensions = await this.#getEmbeddingDimensions();
-        this.#database = new MemoryDatabase(MEMORY_DATABASE_PATH, dimensions, this.#logger);
+        const dbPath = `${MEMORY_DATABASE_DIR}/${this.#configurationService.botId}/${MEMORY_DATABASE_FILENAME}`;
+        this.#database = new MemoryDatabase(dbPath, dimensions, this.#logger);
         return this.#database;
     }
 

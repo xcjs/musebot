@@ -92,7 +92,7 @@ export class MemoryDatabase {
         isBot: boolean,
         embedding: number[]): number {
         const createdAt = new Date().toISOString();
-        const result = this.#drizzle.insert(LlmChatMessageRecord)
+        this.#drizzle.insert(LlmChatMessageRecord)
             .values({
                 userId,
                 serverId,
@@ -103,7 +103,8 @@ export class MemoryDatabase {
             })
             .run();
 
-        const rowid = Number(result.lastInsertRowid);
+        const rowidRow = this.#db.prepare('SELECT last_insert_rowid() AS rowid').get() as { rowid: number };
+        const rowid = rowidRow.rowid;
         const vecTable = `LlmChatMessage_vec_${this.#embeddingDimensions}`;
         this.#db.prepare(`INSERT INTO ${vecTable}(rowid, embedding) VALUES (?, ?)`)
             .run(rowid, JSON.stringify(embedding));
