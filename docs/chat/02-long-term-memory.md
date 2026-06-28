@@ -42,9 +42,10 @@ ollama pull nomic-embed-text
 ### Storage
 
 Memories are stored in a local SQLite database at
-`workflows/txt2txt/memory.db`. The directory is created automatically if it
-doesn't exist. The database uses [sqlite-vec](https://github.com/asg0171/sqlite-vec)
-for vector similarity search.
+`workflows/{botId}/txt2txt/memory.db`, where `{botId}` is the bot's configured
+`botId` value. The directory is created automatically if it doesn't exist. The
+database uses [sqlite-vec](https://github.com/asg0171/sqlite-vec) for vector
+similarity search.
 
 No external services or additional infrastructure are required — everything
 runs locally alongside Musebot.
@@ -96,9 +97,17 @@ via two slash commands:
 Opts the user into LTM. When invoked, Musebot:
 
 - Records the user's consent in the database.
-- **Backfills** up to 100 recent messages from the current channel, storing
-  each as a memory. Messages from other bots and empty messages are skipped.
+- **Backfills** messages from all accessible text channels across all servers
+  the bot is in (excluding channels listed in `channelsDisallowed`). The full
+  channel history is paginated — not just the most recent messages. Messages
+  from other bots and empty messages are skipped. Both the user's messages and
+  the bot's own responses are stored.
 - Replies with the number of messages stored.
+
+If the backfill is interrupted (e.g., the bot restarts), running
+`/memory remember` again will **resume** the backfill from where it left off.
+Already-stored messages are skipped via deduplication, so no duplicates are
+created.
 
 After opting in, the user's messages are stored passively as they continue to
 converse, even in channels where the bot doesn't respond.
@@ -118,6 +127,28 @@ This is a permanent deletion — memories cannot be recovered after opting out.
 Slash commands are registered globally when the bot starts up. It may take a
 few minutes for Discord to propagate new commands to all servers.
 :::
+
+## Startup Catch-Up
+
+When Musebot starts up, it automatically:
+
+1. **Resumes incomplete backfills** for any users whose backfill was
+   interrupted (e.g., by a bot restart during `/memory remember`).
+2. **Catches up on missed messages** for all consenting users. For each user,
+   Musebot checks the timestamp of their most recently stored memory and fetches
+   any newer messages from all accessible channels — ensuring messages sent
+   while the bot was offline are not lost.
+
+## Embedding Model Migration
+
+Each stored memory records the embedding model used to generate its vector.
+When querying, only memories matching the currently configured
+`ollama.embeddingModel` are considered — this prevents vector space mismatches
+between different embedding models.
+
+If you change the embedding model, Musebot automatically detects memories
+embedded with the old model on startup and re-embeds them using the new model.
+Old vectors are deleted and replaced; the relational record is preserved.
 
 ## Privacy Considerations
 
@@ -145,6 +176,13 @@ few minutes for Discord to propagate new commands to all servers.
 - **Memory injection** — retrieved memories are concatenated into a single
   system message prepended to the rolling context. They are not added to the
   persistent rolling context, so they don't accumulate over time.
-- **Database schema** uses Drizzle ORM for relational tables (user consent,
-  message records) and raw SQL for vector operations (sqlite-vec does not
-  support parameterized vector queries through ORMs).
+- **Database schema** uses Drizzle ORM for relational tables and raw SQL for
+  vector operations (sqlite-vec does not support parameterized vector queries
+  through ORMs).
+  - `UserConsent` — `userId` (PK), `consentedAt` (timestamp),
+    `backfillCompleted` (boolean, tracks whether the initial backfill finished)
+  - `LlmChatMessage` — `id` (auto-increment PK), `userId`, `serverId`,
+    `content` (JSON-serialized `LlmChatMessage`), `messageText`, `isBot`,
+    `embeddingModel` (model used for the vector), `discordMessageId`
+    (nullable, unique — used for deduplication during backfill resume),
+    `createdAt`
