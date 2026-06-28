@@ -96,7 +96,6 @@ export class MemoryCommandHandler {
             return 0;
         }
 
-        const allowedChannelIds = this.#configurationService.discordChannels;
         const disallowedChannelIds = this.#configurationService.discordChannelsDisallowed;
         const channels: GuildTextBasedChannel[] = [];
 
@@ -107,10 +106,6 @@ export class MemoryCommandHandler {
                 }
 
                 if (disallowedChannelIds.includes(channel.id)) {
-                    continue;
-                }
-
-                if (allowedChannelIds.length > 0 && !allowedChannelIds.includes(channel.id)) {
                     continue;
                 }
 
