@@ -125,6 +125,14 @@
         // Default:  30
         // Type:     Number
         "timeoutMinutes": 30,
+
+        // The interval used when adjusting the guidance scale (CFG) via the
+        // guidance scale +/- buttons on generated media. Each click increases
+        // or decreases the CFG by this amount.
+        // Required: Optional
+        // Default:  0.5
+        // Type:     Number
+        "guidanceScaleInterval": 0.5,
       },
 
       // Ollama configuration for large language model chat. Required when mode is "chat".
@@ -159,9 +167,6 @@
         // Type:     Boolean
         "streamsResponse": false
       },
-
-      // ComfyUI advanced settings. Optional overrides.
-      "comfyUiGuidanceScaleInterval": 0.5,
 
       // Multi-modal settings for cross-capable features.
       "multiModal": {

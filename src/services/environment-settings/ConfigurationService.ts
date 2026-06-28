@@ -102,7 +102,7 @@ export class ConfigurationService implements IConfigurationService {
     }
 
     get comfyUiGuidanceScaleInterval(): number {
-        return this.#botConfig.comfyUiGuidanceScaleInterval ?? 0.5;
+        return this.#botConfig.comfyUi?.guidanceScaleInterval ?? 0.5;
     }
 
     get randomPrompts(): string[] {
@@ -220,7 +220,7 @@ Detected environment variables: ${envVarList}`);
 
         this.#log.info(`bots[].comfyUi.hosts: ${this.comfyUiHosts.join(', ')}`);
         this.#log.info(`bots[].comfyUi.timeoutMinutes: ${this.comfyUiTimeoutMinutes}`);
-        this.#log.info(`bots[].comfyUiGuidanceScaleInterval: ${this.comfyUiGuidanceScaleInterval}`);
+        this.#log.info(`bots[].comfyUi.guidanceScaleInterval: ${this.comfyUiGuidanceScaleInterval}`);
 
         this.#log.info(`bots[].ollama.hosts: ${this.ollamaHosts.join(', ')}`);
         this.#log.info(`bots[].ollama.models: ${this.ollamaModels.join(', ')}`);
