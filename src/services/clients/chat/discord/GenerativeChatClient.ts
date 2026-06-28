@@ -97,9 +97,8 @@ export class GenerativeChatClient extends BaseDiscordClient {
         }
 
         const llmChatMessage = this.#llmChatMessageFactory.create(message);
-        void this.#memoryService.store(llmChatMessage).catch((error) => {
-            this.logger.error('Failed to store message to memory passively:', error);
-        });
+        const embedTask = this.#services.getEmbedTask(llmChatMessage);
+        this.#taskQueue.add(embedTask);
     }
 
      async #onInteractionCreate(interaction: ButtonInteraction | ChatInputCommandInteraction): Promise<void> {

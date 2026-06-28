@@ -20,6 +20,7 @@ import { IOutputChatMessageFilter } from './clients/chat/IOutputChatMessageFilte
 import { IReplyService } from './clients/chat/IReplyService.js';
 import { ITypingService } from './clients/chat/ITypingService.js';
 import { IStructuredRequestData } from './clients/llm/ollama/models/IStructuredRequestData.js';
+import { LlmChatMessage } from './clients/llm/ollama/models/LlmChatMessage.js';
 import { OllamaClient } from './clients/llm/ollama/OllamaClient.js';
 import { IContextMessageFactory } from './clients/llm/services/IContextMessageFactory.js';
 import { IContextService } from './clients/llm/services/IContextService.js';
@@ -81,6 +82,7 @@ export interface IBotServiceContainer {
     getLlmGenerateTask(prompt: string, temperature: number | undefined): BaseTask<IHttpExchange<GenerateRequest, GenerateResponse>>;
     getLlmGenerateStructuredTask<T>(prompt: string, structuredRequestData: IStructuredRequestData | undefined)
         : BaseTask<IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, T>>;
+    getEmbedTask(llmChatMessage: LlmChatMessage, ownerUserId?: string): BaseTask<void>;
     getEmojiReactionTask(reaction: MessageReaction, user: User): BaseTask<unknown>;
 
     getMessageTask(message: DiscordMessage): BaseTask<unknown>;

@@ -4,6 +4,8 @@ import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js'
 import { IFeatureService } from '../../../../features/IFeatureService.js';
 import { IBotServiceContainer } from '../../../../IBotServiceContainer.js';
 import { ILogger } from '../../../../ILogger.js';
+import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
+import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { ILlmChatMessageFactory } from '../../../llm/services/ILlmChatMessageFactory.js';
 import { IMemoryService } from '../../../llm/services/IMemoryService.js';
 
@@ -14,6 +16,7 @@ export class MemoryCommandHandler {
     readonly #memoryService: IMemoryService;
     readonly #llmChatMessageFactory: ILlmChatMessageFactory<DiscordMessage>;
     readonly #featureService: IFeatureService;
+    readonly #taskQueue: ITaskQueue;
     readonly #logger: ILogger;
 
     constructor(services: IBotServiceContainer) {
@@ -21,6 +24,7 @@ export class MemoryCommandHandler {
         this.#memoryService = services.getMemoryService();
         this.#llmChatMessageFactory = services.getLlmChatMessageFactory<DiscordMessage>();
         this.#featureService = services.featureService;
+        this.#taskQueue = services.taskQueue;
         this.#logger = services.getLogger('MemoryCommandHandler');
     }
 
@@ -97,7 +101,7 @@ export class MemoryCommandHandler {
             const sortedMessages = [...messages.values()].sort(
                 (a: DiscordMessage, b: DiscordMessage) => a.createdTimestamp - b.createdTimestamp);
 
-            let count = 0;
+            const promises: Promise<boolean>[] = [];
 
             for (const message of sortedMessages) {
                 if (message.author.bot && message.author.id !== interaction.client.user?.id) {
@@ -109,9 +113,19 @@ export class MemoryCommandHandler {
                 }
 
                 const llmChatMessage = this.#llmChatMessageFactory.create(message);
-                await this.#memoryService.store(llmChatMessage);
-                count++;
+                const task = this.#services.getEmbedTask(llmChatMessage);
+
+                const promise = new Promise<boolean>((resolve) => {
+                    task.onSuccess = (): void => resolve(true);
+                    task.onFailure = (): void => resolve(false);
+                });
+
+                promises.push(promise);
+                this.#taskQueue.add(task as BaseTask<unknown>);
             }
+
+            const results = await Promise.all(promises);
+            const count = results.filter(x => x).length;
 
             this.#logger.info(`Backfilled ${count} messages for user ${interaction.user.id}.`);
             return count;

@@ -43,7 +43,9 @@ import { ShowHelpTask } from './clients/internal/tasks/ShowHelpTask.js';
 import { ChatHelpService } from './clients/llm/help/ChatHelpService.js';
 import { MemoryService } from './clients/llm/memory/MemoryService.js';
 import { IStructuredRequestData } from './clients/llm/ollama/models/IStructuredRequestData.js';
+import { LlmChatMessage } from './clients/llm/ollama/models/LlmChatMessage.js';
 import { OllamaClient } from './clients/llm/ollama/OllamaClient.js';
+import { OllamaEmbedTask } from './clients/llm/ollama/tasks/OllamaEmbedTask.js';
 import { OllamaEmojiReactionTask } from './clients/llm/ollama/tasks/OllamaEmojiReactionTask.js';
 import { OllamaGenerateStructuredTask } from './clients/llm/ollama/tasks/OllamaGenerateStructuredTask.js';
 import { OllamaGenerateTask } from './clients/llm/ollama/tasks/OllamaGenerateTask.js';
@@ -287,6 +289,10 @@ export class BotServiceContainer implements IBotServiceContainer {
         }
 
         return new OllamaGenerateStructuredTask<T>(this, prompt, structuredRequestData) as BaseTask<IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, T>>;
+    }
+
+    getEmbedTask(llmChatMessage: LlmChatMessage, ownerUserId?: string): BaseTask<void> {
+        return new OllamaEmbedTask(this, llmChatMessage, ownerUserId) as BaseTask<void>;
     }
 
     getEmojiReactionTask(reaction: MessageReaction, user: User): BaseTask<unknown> {

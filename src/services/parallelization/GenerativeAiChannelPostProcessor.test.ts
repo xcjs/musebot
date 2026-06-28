@@ -65,6 +65,7 @@ function createMockServices(
         getLlmGenerateTask: () => null as never,
         getLlmGenerateStructuredTask: () => null as never,
         getEmojiReactionTask: () => null as never,
+        getEmbedTask: () => null as never,
         getMessageTask: () => null as never,
         getInteractionTask: () => null as never,
         getAttachmentTask: () => null as never,
