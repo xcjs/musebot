@@ -215,6 +215,18 @@ export class OllamaClient {
         return response.eval_count / response.eval_duration * (10 ** 9);
     }
 
+    async embed(input: string): Promise<number[]> {
+        const embeddingModel = this.#configurationService.ollamaEmbeddingModel;
+
+        if (!embeddingModel) {
+            throw new Error('No embedding model configured.');
+        }
+
+        const response = await this.#client.embed({ model: embeddingModel, input });
+
+        return response.embeddings[0];
+    }
+
     #selectModel(models: Array<string>): string {
         const model = models[getRandomInt(0, models.length - 1)];
 

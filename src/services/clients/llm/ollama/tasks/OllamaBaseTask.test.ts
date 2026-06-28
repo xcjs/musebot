@@ -93,8 +93,8 @@ function createMockServices(
         ollamaReplyService: null as never,
         ollamaStreamingReplyService: null as never,
         actionRowBuilderFactory: null as never,
-        getChatMessageFilters: () => [],
-        getChatMessageFactory: () => null as never,
+        getChatMessageFilters: () => [], getInputChatMessageFilters: () => [],
+        getChatMessageFactory: () => null as never, getLlmChatMessageFactory: () => null as never, getMemoryService: () => null as never,
     };
 }
 

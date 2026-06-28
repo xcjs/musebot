@@ -1,4 +1,4 @@
-﻿import { Attachment, ButtonInteraction, Client as DiscordClient, Events, Message as DiscordMessage, MessageReaction, TextChannel,User } from 'discord.js';
+﻿import { Attachment, ButtonInteraction, ChatInputCommandInteraction, Client as DiscordClient, Events, Message as DiscordMessage, MessageReaction, TextChannel,User } from 'discord.js';
 import { Message as OllamaMessage } from 'ollama';
 
 import { BotInteraction } from '../../../../enums/BotInteraction.js';
@@ -8,9 +8,12 @@ import { ITaskQueue } from '../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
 import { IContextMessageFactory } from '../../llm/services/IContextMessageFactory.js';
 import { IContextService } from '../../llm/services/IContextService.js';
+import { ILlmChatMessageFactory } from '../../llm/services/ILlmChatMessageFactory.js';
+import { IMemoryService } from '../../llm/services/IMemoryService.js';
 import { IReplyService } from '../IReplyService.js';
 import { ITypingService } from '../ITypingService.js';
 import { BaseDiscordClient } from './BaseDiscordClient.js';
+import { MemoryCommandHandler } from './commands/MemoryCommandHandler.js';
 import { ChatConfirmClearActionRow } from './components/buttonRows/ChatConfirmClearActionRow.js';
 
 export class GenerativeChatClient extends BaseDiscordClient {
@@ -23,6 +26,8 @@ export class GenerativeChatClient extends BaseDiscordClient {
     readonly #typingService: ITypingService;
     readonly #replyService: IReplyService<DiscordMessage, MessageReaction, Attachment, DiscordMessage | ButtonInteraction>;
     readonly #taskQueue: ITaskQueue;
+    readonly #memoryService: IMemoryService;
+    readonly #llmChatMessageFactory: ILlmChatMessageFactory<DiscordMessage>;
 
     #channelTopicsCached: string[] = [];
 
@@ -38,6 +43,8 @@ export class GenerativeChatClient extends BaseDiscordClient {
         this.#typingService = services.typingService;
         this.#replyService = services.getReplyService();
         this.#taskQueue = services.taskQueue;
+        this.#memoryService = services.getMemoryService();
+        this.#llmChatMessageFactory = services.getLlmChatMessageFactory<DiscordMessage>();
 
         const systemPrompt = this.#configurationService.ollamaSystemPrompt;
         this.#contextService.addContext([this.#contextMessageFactory.fromSystemPrompt(systemPrompt, null, true)]);
@@ -51,12 +58,14 @@ export class GenerativeChatClient extends BaseDiscordClient {
 
         this.#discordClient.once(Events.ClientReady, (event) => void this.onClientReady.call(self, event));
         this.#discordClient.on(Events.MessageCreate, (message) => void this.#onMessageCreate.call(self, message));
-        this.#discordClient.on(Events.InteractionCreate, (interaction) => void  this.#onInteraction.call(self, interaction));
+        this.#discordClient.on(Events.InteractionCreate, (interaction) => void  this.#onInteractionCreate.call(self, interaction));
         this.#discordClient.on(Events.MessageReactionAdd, (reaction, user) => void this.#onMessageReactionAdd.call(self, reaction, user));
     }
 
     async #onMessageCreate(message: DiscordMessage): Promise<void> {
         this.logger.info(`Discord message created. ${message.author.displayName} (${message.author.username}): "${message.content}"`);
+
+        this.#storeMessagePassively(message);
 
         if(!this.#replyService.shouldReply(message, null)) {
             return;
@@ -74,7 +83,55 @@ export class GenerativeChatClient extends BaseDiscordClient {
         await this.#typingService.startTyping(message);
     }
 
-     async #onInteraction(interaction: ButtonInteraction): Promise<void> {
+    #storeMessagePassively(message: DiscordMessage): void {
+        if (!this.#memoryService.isEnabled) {
+            return;
+        }
+
+        if (message.author.bot) {
+            return;
+        }
+
+        if (message.content.trim().length === 0) {
+            return;
+        }
+
+        const llmChatMessage = this.#llmChatMessageFactory.create(message);
+        void this.#memoryService.store(llmChatMessage).catch((error) => {
+            this.logger.error('Failed to store message to memory passively:', error);
+        });
+    }
+
+     async #onInteractionCreate(interaction: ButtonInteraction | ChatInputCommandInteraction): Promise<void> {
+        if (interaction.isChatInputCommand()) {
+            await this.#onSlashCommand(interaction);
+            return;
+        }
+
+        await this.#onButtonInteraction(interaction);
+     }
+
+     async #onSlashCommand(interaction: ChatInputCommandInteraction): Promise<void> {
+        this.logger.info('Beginning slash command response:', interaction.commandName);
+
+        try {
+            await interaction.deferReply();
+        } catch(error) {
+            this.logger.error('An error occurred while deferring a slash command reply:', error);
+        }
+
+        switch(interaction.commandName) {
+            case 'memory':
+                await new MemoryCommandHandler(this.#services).handle(interaction);
+                break;
+            default:
+                this.logger.warn('An unknown slash command was passed:', interaction.commandName);
+                await interaction.editReply('Unknown command.');
+                break;
+        }
+     }
+
+     async #onButtonInteraction(interaction: ButtonInteraction): Promise<void> {
         this.logger.info('Beginning interaction response to custom action:', interaction);
 
         try {

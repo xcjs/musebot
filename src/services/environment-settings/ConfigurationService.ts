@@ -133,6 +133,16 @@ export class ConfigurationService implements IConfigurationService {
             ?? false;
     }
 
+    get ollamaEmbeddingModel(): string | null {
+        return this.#botConfig.ollama?.embeddingModel
+            ?? null;
+    }
+
+    get ollamaTopK(): number {
+        return this.#botConfig.ollama?.topK
+            ?? 5;
+    }
+
     get applicationName(): string {
         return toTitleCase(this.packageName);
     }
@@ -216,6 +226,8 @@ Detected environment variables: ${envVarList}`);
         this.#log.info(`bots[].ollama.models: ${this.ollamaModels.join(', ')}`);
         this.#log.info(`bots[].ollama.systemPrompt: ${this.ollamaSystemPrompt}`);
         this.#log.info(`bots[].ollama.streamsResponse: ${this.ollamaStreamsResponse}`);
+        this.#log.info(`bots[].ollama.embeddingModel: ${this.ollamaEmbeddingModel ?? '(not set)'}`);
+        this.#log.info(`bots[].ollama.topK: ${this.ollamaTopK}`);
 
         this.#log.info(`bots[].multiModal.randomPrompts: ${this.randomPrompts.join(' | ')}`);
 

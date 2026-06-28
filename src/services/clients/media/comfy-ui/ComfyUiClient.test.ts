@@ -63,6 +63,8 @@ function createMockConfigurationService(overrides: Partial<IConfigurationService
         ollamaModels: [],
         ollamaSystemPrompt: '',
         ollamaStreamsResponse: false,
+        ollamaEmbeddingModel: null,
+        ollamaTopK: 5,
         applicationName: 'Musebot',
         isProduction: false,
         ...overrides,
@@ -100,8 +102,8 @@ function createMockServices(config: IConfigurationService, logger: jest.Mocked<I
         ollamaReplyService: null as never,
         ollamaStreamingReplyService: null as never,
         actionRowBuilderFactory: null as never,
-        getChatMessageFilters: () => [],
-        getChatMessageFactory: () => null as never,
+        getChatMessageFilters: () => [], getInputChatMessageFilters: () => [],
+        getChatMessageFactory: () => null as never, getLlmChatMessageFactory: () => null as never, getMemoryService: () => null as never,
     };
 }
 

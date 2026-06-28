@@ -37,6 +37,12 @@ export class FeatureService implements IFeatureService {
                 this.#supportedFeatures.push(SupportedFeature.Txt2Txt);
         }
 
+        if (this.#configurationService.ollamaHosts.length > 0
+            && this.#configurationService.ollamaEmbeddingModel !== null) {
+                this.#logger.info(`${SupportedFeature.LongTermMemory} supported.`);
+                this.#supportedFeatures.push(SupportedFeature.LongTermMemory);
+        }
+
         if (!this.#workflowService.hasWorkflows) {
             return;
         }

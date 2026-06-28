@@ -33,6 +33,8 @@ function createMockConfigurationService(overrides: Partial<IConfigurationService
         ollamaModels: [],
         ollamaSystemPrompt: '',
         ollamaStreamsResponse: false,
+        ollamaEmbeddingModel: null,
+        ollamaTopK: 5,
         applicationName: 'Musebot',
         isProduction: false,
         ...overrides,

@@ -29,6 +29,8 @@ export interface IBotConfig {
         models: string[];
         systemPrompt: string | string[];
         streamsResponse: boolean;
+        embeddingModel?: string;
+        topK?: number;
     };
 
     comfyUiGuidanceScaleInterval: number;

@@ -10,7 +10,11 @@ import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.js';
+import { IInputChatMessageFilter } from '../../../chat/IInputChatMessageFilter.js';
+import { ILlmChatMessageFactory } from '../../../llm/services/ILlmChatMessageFactory.js';
+import { IMemoryService } from '../../../llm/services/IMemoryService.js';
 import { OLLAMA_TEMPERATURE_DEFAULT } from '../constants/OllamaConstants.js';
+import { LlmChatMessage } from '../models/LlmChatMessage.js';
 import { OllamaBaseTask } from './OllamaBaseTask.js';
 
 export class OllamaMessageTask extends OllamaBaseTask<void> {
@@ -18,6 +22,10 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
 
     readonly #featureService: IFeatureService;
     readonly #taskQueue: ITaskQueue;
+
+    readonly #inputFilters: IInputChatMessageFilter<DiscordMessage>[];
+    readonly #llmChatMessageFactory: ILlmChatMessageFactory<DiscordMessage>;
+    readonly #memoryService: IMemoryService;
 
     readonly #message: DiscordMessage;
 
@@ -31,6 +39,9 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
 
         this.#featureService = services.featureService;
         this.#taskQueue = services.taskQueue;
+        this.#inputFilters = services.getInputChatMessageFilters<DiscordMessage>();
+        this.#llmChatMessageFactory = services.getLlmChatMessageFactory<DiscordMessage>();
+        this.#memoryService = services.getMemoryService();
 
         this.#message = message;
     }
@@ -38,11 +49,16 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
     override async process(): Promise<void> {
         await super.process();
 
-        const formattedMessage = this.contextMessageFactory.formatChatMessage(this.#message);
-        const context = this.contextService.getContextByChannelId(this.#message.channelId);
+        const llmChatMessage = this.#llmChatMessageFactory.create(this.#message);
+        const formattedMessage = JSON.stringify(llmChatMessage);
+        let context = this.contextService.getContextByChannelId(this.#message.channelId);
+
+        for (const filter of this.#inputFilters) {
+            context = await filter.process(llmChatMessage, this.#message, context);
+        }
 
         if (this.configurationService.ollamaStreamsResponse) {
-            await this.#processAsStream(formattedMessage, context);
+            await this.#processAsStream(formattedMessage, context, llmChatMessage);
             return;
         }
 
@@ -52,6 +68,8 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
         this.contextService.addContext([
             this.contextMessageFactory.fromLlmMessage(exchange.exchange.response.message,
                 this.#message.id, this.#message.author.id, this.#message.channelId, this.#message.guildId)]);
+
+        await this.#storeMemories(llmChatMessage, exchange.exchange.response.message.content);
 
         const replies = await this.ollamaReplyService.reply(this.#message, exchange.exchange);
 
@@ -73,7 +91,7 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
         this.ollamaStreamingReplyService.clearState();
     }
 
-    async #processAsStream(formattedMessage: string, context: OllamaMessage[]): Promise<void> {
+    async #processAsStream(formattedMessage: string, context: OllamaMessage[], llmChatMessage: LlmChatMessage): Promise<void> {
         const exchange = await this.ollamaClient.sendMessageAndGetStream(formattedMessage, context);
 
         let averageResponseInMs = 0;
@@ -134,6 +152,8 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
                         this.#message.guildId
                     )]);
 
+                await this.#storeMemories(llmChatMessage, fullResponse);
+
                 if (this.#featureService.hasFeature(SupportedFeature.Txt2Img)
                     && replies.length > 0) {
                     this.#attachImage(fullResponse, replies);
@@ -143,6 +163,19 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
             endTime = performance.now();
             averageResponseInMs = (averageResponseInMs + endTime - startTime) / 2;
             this.logger.debug(`The average streaming response time is ${averageResponseInMs}ms.`);
+        }
+    }
+
+    async #storeMemories(llmChatMessage: LlmChatMessage, botResponseContent: string): Promise<void> {
+        if (!this.#memoryService.isEnabled) {
+            return;
+        }
+
+        try {
+            const botLlmChatMessage = this.#llmChatMessageFactory.createFromLlmResponse(botResponseContent, this.#message);
+            await this.#memoryService.store(botLlmChatMessage, llmChatMessage.userId);
+        } catch (error) {
+            this.logger.error('Failed to store memories:', error);
         }
     }
 

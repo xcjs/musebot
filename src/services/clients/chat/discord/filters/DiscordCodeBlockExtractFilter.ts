@@ -6,7 +6,7 @@ import { IBotServiceContainer } from '../../../../IBotServiceContainer.js';
 import { IStructuredRequestData } from '../../../llm/ollama/models/IStructuredRequestData.js';
 import { IChatMessage } from '../../IChatMessage.js';
 import { IChatMessageAttachment } from '../../IChatMessageAttachment.js';
-import { IChatMessageFilter } from '../../IChatMessageFilter.js';
+import { IOutputChatMessageFilter } from '../../IOutputChatMessageFilter.js';
 
 const CODE_FENCE = '```';
 const CODE_FENCE_LENGTH = CODE_FENCE.length;
@@ -38,7 +38,7 @@ const filenameRequestData: IStructuredRequestData = {
     }
 };
 
-export class DiscordCodeBlockExtractFilter implements IChatMessageFilter {
+export class DiscordCodeBlockExtractFilter implements IOutputChatMessageFilter {
     readonly #services: IBotServiceContainer;
 
     constructor(services: IBotServiceContainer) {

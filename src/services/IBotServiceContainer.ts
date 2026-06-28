@@ -14,14 +14,17 @@ import { IActionRowBuilderFactory } from './clients/chat/discord/components/IAct
 import { OllamaReplyService } from './clients/chat/discord/ollama/OllamaReplyService.js';
 import { OllamaStreamingReplyService } from './clients/chat/discord/ollama/OllamaStreamingReplyService.js';
 import { IChatMessageFactory } from './clients/chat/IChatMessageFactory.js';
-import { IChatMessageFilter } from './clients/chat/IChatMessageFilter.js';
 import { IGenerativeChatClient } from './clients/chat/IGenerativeChatClient.js';
+import { IInputChatMessageFilter } from './clients/chat/IInputChatMessageFilter.js';
+import { IOutputChatMessageFilter } from './clients/chat/IOutputChatMessageFilter.js';
 import { IReplyService } from './clients/chat/IReplyService.js';
 import { ITypingService } from './clients/chat/ITypingService.js';
 import { IStructuredRequestData } from './clients/llm/ollama/models/IStructuredRequestData.js';
 import { OllamaClient } from './clients/llm/ollama/OllamaClient.js';
 import { IContextMessageFactory } from './clients/llm/services/IContextMessageFactory.js';
 import { IContextService } from './clients/llm/services/IContextService.js';
+import { ILlmChatMessageFactory } from './clients/llm/services/ILlmChatMessageFactory.js';
+import { IMemoryService } from './clients/llm/services/IMemoryService.js';
 import { ComfyUiClient } from './clients/media/comfy-ui/ComfyUiClient.js';
 import { IWorkflow } from './clients/media/comfy-ui/models/IWorkflow.js';
 import { IWorkflowService } from './clients/media/comfy-ui/services/IWorkflowService.js';
@@ -65,8 +68,13 @@ export interface IBotServiceContainer {
     // Factories --------------------------------------------------------------/
     getLogger(prefix: string): ILogger;
 
-    getChatMessageFilters(): IChatMessageFilter[];
+    getChatMessageFilters(): IOutputChatMessageFilter[];
+    getInputChatMessageFilters<ChatMessageType>(): IInputChatMessageFilter<ChatMessageType>[];
     getChatMessageFactory<MessageType>(): IChatMessageFactory<MessageType>;
+
+    getLlmChatMessageFactory<ChatMessageType>(): ILlmChatMessageFactory<ChatMessageType>;
+
+    getMemoryService(): IMemoryService;
 
     getContextMessageFactory<ChatMessageType, LlmMessageType>(): IContextMessageFactory<ChatMessageType, LlmMessageType>;
     getContextService<ChatMessageType, LlmMessageType>(): IContextService<ChatMessageType, LlmMessageType>

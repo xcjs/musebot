@@ -1,4 +1,4 @@
-﻿import { Message } from 'discord.js';
+import { Message } from 'discord.js';
 import { ChatRequest, ChatResponse } from 'ollama';
 
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
@@ -6,12 +6,12 @@ import { IBotServiceContainer } from '../../../../IBotServiceContainer.js';
 import { ILogger } from '../../../../ILogger.js';
 import { IChatMessage } from '../../IChatMessage.js';
 import { IChatMessageFactory } from '../../IChatMessageFactory.js';
-import { IChatMessageFilter } from '../../IChatMessageFilter.js';
+import { IOutputChatMessageFilter } from '../../IOutputChatMessageFilter.js';
 
 export class OllamaReplyService {
     readonly #services: IBotServiceContainer;
     readonly #logger: ILogger;
-    readonly #filters: IChatMessageFilter[];
+    readonly #filters: IOutputChatMessageFilter[];
     readonly #factory: IChatMessageFactory<Message>;
 
     constructor(services: IBotServiceContainer) {

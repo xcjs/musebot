@@ -5,6 +5,7 @@ import { IBotServiceContainer } from '../../../IBotServiceContainer.js';
 import { ILogger } from '../../../ILogger.js';
 import { ITaskQueue } from '../../../tasks/ITaskQueue.js';
 import { IGenerativeChatClient } from '../IGenerativeChatClient.js';
+import { DiscordSlashCommandRegistrar } from './commands/DiscordSlashCommandRegistrar.js';
 import { DiscordPresenceStatus } from './enums/DiscordPresenceStatus.js';
 import { LoginTask } from './tasks/LoginTask.js';
 
@@ -50,5 +51,8 @@ export class BaseDiscordClient implements IGenerativeChatClient {
 
         this.logger.info(`${this.#configurationService.applicationName} is ready.`);
         discordClient.user.setPresence({ activities: [], status: DiscordPresenceStatus.Online });
+
+        const registrar = new DiscordSlashCommandRegistrar(this.#services);
+        void registrar.registerCommands(this.#id);
     }
 }

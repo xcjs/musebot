@@ -1,4 +1,4 @@
-﻿import { jest } from '@jest/globals';
+import { jest } from '@jest/globals';
 
 import { BotMode } from '../enums/BotMode.js';
 import { NodeEnvironment } from '../enums/NodeEnvironment.js';
@@ -103,6 +103,8 @@ export function createMockGlobalContainer(config?: MockServiceContainerConfig): 
             ollamaModels: [],
             ollamaSystemPrompt: '',
             ollamaStreamsResponse: false,
+            ollamaEmbeddingModel: null,
+            ollamaTopK: 5,
             applicationName: 'Musebot',
             isProduction: false
         },
@@ -152,6 +154,8 @@ export function createMockServiceContainer(config?: MockServiceContainerConfig):
         ollamaModels: [],
         ollamaSystemPrompt: '',
         ollamaStreamsResponse: false,
+        ollamaEmbeddingModel: null,
+        ollamaTopK: 5,
         applicationName: 'Musebot',
         isProduction: false
     };
@@ -185,7 +189,10 @@ export function createMockServiceContainer(config?: MockServiceContainerConfig):
         getLogger: jest.fn(() => logger),
         getTaskChannelPostProcessor: jest.fn(() => postProcessor),
         getChatMessageFilters: jest.fn(() => []),
+        getInputChatMessageFilters: jest.fn(() => []),
         getChatMessageFactory: jest.fn(() => null as never),
+        getLlmChatMessageFactory: () => null as never,
+        getMemoryService: () => null as never,
         getContextMessageFactory: () => null as never,
         getContextService: () => null as never,
         getLlmGenerateTask: () => null as never,
