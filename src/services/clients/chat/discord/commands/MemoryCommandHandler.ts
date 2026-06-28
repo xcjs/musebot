@@ -1,5 +1,6 @@
 import { ChatInputCommandInteraction, GuildTextBasedChannel, Message as DiscordMessage } from 'discord.js';
 
+import { IConfigurationService } from '../../../../environment-settings/IConfigurationService.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../../../../features/IFeatureService.js';
 import { IBotServiceContainer } from '../../../../IBotServiceContainer.js';
@@ -16,6 +17,7 @@ export class MemoryCommandHandler {
     readonly #memoryService: IMemoryService;
     readonly #llmChatMessageFactory: ILlmChatMessageFactory<DiscordMessage>;
     readonly #featureService: IFeatureService;
+    readonly #configurationService: IConfigurationService;
     readonly #taskQueue: ITaskQueue;
     readonly #logger: ILogger;
 
@@ -24,6 +26,7 @@ export class MemoryCommandHandler {
         this.#memoryService = services.getMemoryService();
         this.#llmChatMessageFactory = services.getLlmChatMessageFactory<DiscordMessage>();
         this.#featureService = services.featureService;
+        this.#configurationService = services.configurationService;
         this.#taskQueue = services.taskQueue;
         this.#logger = services.getLogger('MemoryCommandHandler');
     }
@@ -93,13 +96,29 @@ export class MemoryCommandHandler {
             return 0;
         }
 
+        const allowedChannelIds = this.#configurationService.discordChannels;
+        const disallowedChannelIds = this.#configurationService.discordChannelsDisallowed;
         const channels: GuildTextBasedChannel[] = [];
 
         for (const guild of client.guilds.cache.values()) {
             for (const channel of guild.channels.cache.values()) {
-                if (channel.isTextBased() && !channel.isVoiceBased()) {
-                    channels.push(channel as GuildTextBasedChannel);
+                if (!channel.isTextBased() || channel.isVoiceBased()) {
+                    continue;
                 }
+
+                if (disallowedChannelIds.includes(channel.id)) {
+                    continue;
+                }
+
+                if (allowedChannelIds.length > 0 && !allowedChannelIds.includes(channel.id)) {
+                    continue;
+                }
+
+                if (!(channel as GuildTextBasedChannel).viewable) {
+                    continue;
+                }
+
+                channels.push(channel as GuildTextBasedChannel);
             }
         }
 
