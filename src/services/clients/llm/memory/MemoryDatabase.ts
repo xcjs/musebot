@@ -99,6 +99,13 @@ export class MemoryDatabase {
         this.#db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_LlmChatMessage_discordMessageId ON LlmChatMessage(discordMessageId) WHERE discordMessageId IS NOT NULL');
     }
 
+    hasMessage(discordMessageId: string): boolean {
+        const existing = this.#db.prepare(
+            'SELECT id FROM LlmChatMessage WHERE discordMessageId = ?'
+        ).get(discordMessageId) as { id: number } | undefined;
+        return existing !== undefined;
+    }
+
     hasConsent(userId: string): boolean {
         const row = this.#drizzle.select().from(UserConsent).where(eq(UserConsent.userId, userId)).get();
         return row !== undefined;
@@ -160,12 +167,15 @@ export class MemoryDatabase {
         embeddingModel: string,
         discordMessageId: string | null,
         embedding: number[]): number | null {
+        this.#logger.debug(`storeMemory() called: discordMessageId=${discordMessageId}, userId=${userId}, isBot=${isBot}.`);
+
         if (discordMessageId !== null) {
             const existing = this.#db.prepare(
                 'SELECT id FROM LlmChatMessage WHERE discordMessageId = ?'
             ).get(discordMessageId) as { id: number } | undefined;
 
             if (existing !== undefined) {
+                this.#logger.debug(`storeMemory() deduped: discordMessageId=${discordMessageId} matched existing row id=${existing.id}.`);
                 return null;
             }
         }
@@ -190,6 +200,8 @@ export class MemoryDatabase {
         const vecTable = `LlmChatMessage_vec_${this.#embeddingDimensions}`;
         this.#db.prepare(`INSERT INTO ${vecTable}(rowid, embedding) VALUES ((SELECT last_insert_rowid()), ?)`)
             .run(JSON.stringify(embedding));
+
+        this.#logger.debug(`storeMemory() inserted row id=${rowid} for discordMessageId=${discordMessageId}.`);
 
         return rowid;
     }

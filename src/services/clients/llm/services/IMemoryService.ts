@@ -12,6 +12,7 @@ export interface IMemoryService {
     getIncompleteBackfillUserIds(): Promise<string[]>;
     getAllConsentingUserIds(): Promise<string[]>;
     getLatestMemoryTimestamp(userId: string): Promise<string | null>;
+    hasMessage(discordMessageId: string): Promise<boolean>;
     store(llmChatMessage: LlmChatMessage, ownerUserId?: string): Promise<void>;
     retrieve(llmChatMessage: LlmChatMessage): Promise<OllamaMessage[]>;
 }

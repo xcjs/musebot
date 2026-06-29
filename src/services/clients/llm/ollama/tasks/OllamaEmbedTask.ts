@@ -35,8 +35,18 @@ export class OllamaEmbedTask extends OllamaBaseTask<void> {
     }
 
     override async process(): Promise<void> {
+        this.logger.debug(`process() starting for messageId=${this.#llmChatMessage.messageId} (attachments=${this.#llmChatMessage.attachments.length}).`);
+
+        if (this.#llmChatMessage.messageId !== null
+            && await this.#memoryService.hasMessage(this.#llmChatMessage.messageId)) {
+            this.logger.debug(`process() skipping: messageId=${this.#llmChatMessage.messageId} already stored.`);
+            return;
+        }
+
         await this.#interpretAttachments();
+        this.logger.debug(`process() calling memoryService.store() for messageId=${this.#llmChatMessage.messageId}.`);
         await this.#memoryService.store(this.#llmChatMessage, this.#ownerUserId);
+        this.logger.debug(`process() completed for messageId=${this.#llmChatMessage.messageId}.`);
     }
 
     async #interpretAttachments(): Promise<void> {

@@ -109,16 +109,34 @@ export class MemoryService implements IMemoryService {
         return database.getAllConsentingUserIds();
     }
 
+    async hasMessage(discordMessageId: string): Promise<boolean> {
+        if (!this.isEnabled || discordMessageId === null) {
+            return false;
+        }
+
+        try {
+            const database = await this.#getDatabase();
+            return database.hasMessage(discordMessageId);
+        } catch (error) {
+            this.#logger.error('Failed to check existing message:', error);
+            return false;
+        }
+    }
+
     async store(llmChatMessage: LlmChatMessage, ownerUserId?: string): Promise<void> {
         if (!this.isEnabled) {
+            this.#logger.debug('store() skipped: memory not enabled.');
             return;
         }
 
         const consentUserId = ownerUserId ?? llmChatMessage.userId;
 
         if (!await this.hasConsent(consentUserId)) {
+            this.#logger.debug(`store() skipped: no consent for user ${consentUserId} (messageId=${llmChatMessage.messageId}).`);
             return;
         }
+
+        this.#logger.debug(`store() proceeding for user ${consentUserId} (messageId=${llmChatMessage.messageId}, isBot=${llmChatMessage.isBot}).`);
 
         try {
             const embedding = await this.#embed(llmChatMessage.message);
@@ -126,7 +144,7 @@ export class MemoryService implements IMemoryService {
             const database = await this.#getDatabase();
             const embeddingModel = this.#getEmbeddingModel();
 
-            database.storeMemory(
+            const rowId = database.storeMemory(
                 json,
                 llmChatMessage.message,
                 consentUserId,
@@ -135,8 +153,14 @@ export class MemoryService implements IMemoryService {
                 embeddingModel,
                 llmChatMessage.messageId,
                 embedding);
+
+            if (rowId === null) {
+                this.#logger.debug(`store() deduped: messageId=${llmChatMessage.messageId} already exists.`);
+            } else {
+                this.#logger.debug(`store() inserted: messageId=${llmChatMessage.messageId} rowId=${rowId}.`);
+            }
         } catch (error) {
-            this.#logger.error(`Failed to store memory for user ${consentUserId}:`, error);
+            this.#logger.error(`Failed to store memory for user ${consentUserId} (messageId=${llmChatMessage.messageId}):`, error);
         }
     }
 
