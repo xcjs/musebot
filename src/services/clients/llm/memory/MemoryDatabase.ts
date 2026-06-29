@@ -16,6 +16,8 @@ export interface MemoryRecord {
     distance: number;
 }
 
+let vecExtensionTempPath: string | null = null;
+
 export class MemoryDatabase {
     readonly #db: Database.Database;
     readonly #drizzle: BetterSQLite3Database<Record<string, unknown>>;
@@ -48,10 +50,19 @@ export class MemoryDatabase {
             return;
         }
 
-        const tempPath = join(tmpdir(), `vec0${extname(loadablePath)}`);
-        writeFileSync(tempPath, readFileSync(loadablePath));
+        if (vecExtensionTempPath === null) {
+            const tempDir = join(tmpdir(), 'musebot');
+            if (!existsSync(tempDir)) {
+                mkdirSync(tempDir, { recursive: true });
+            }
+
+            vecExtensionTempPath = join(tempDir, `vec0${extname(loadablePath)}`);
+            writeFileSync(vecExtensionTempPath, readFileSync(loadablePath));
+            this.#logger.info(`Wrote sqlite-vec extension to '${vecExtensionTempPath}'.`);
+        }
+
         (this.#db as unknown as { loadExtension(path: string, entryPoint: string): void })
-            .loadExtension(tempPath, 'sqlite3_vec_init');
+            .loadExtension(vecExtensionTempPath, 'sqlite3_vec_init');
     }
 
     #initialize(): void {
