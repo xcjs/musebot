@@ -145,11 +145,12 @@
         ],
 
         // The name(s) of the large language model(s) to use. Can be a list for multiple models.
+        // Vision-capable models (e.g. gemma3, llava) are auto-detected and enable
+        // image interpretation in chat and long-term memory.
         // Required: Required when mode="chat"
         // Type:     Array of string (model names)
         "models": [
-          "llama2",
-          "mistral"
+          "gemma3"
         ],
 
         // The system prompt used to give the LLM context or a custom persona.

@@ -111,7 +111,12 @@ variables, you need to migrate to JSON configuration. See [Migration Guide](./03
 #### `ollama.models`
 
 * **Description:** An array of LLM names to use. A random one will be selected
-  for each request to the Ollama backend.
+  for each request to the Ollama backend. Models with vision capability (e.g.
+  `gemma3`, `llava`) are auto-detected at startup via Ollama's `/api/show`
+  endpoint — when at least one vision-capable model is configured, Musebot
+  passes image attachments to the LLM and stores image interpretations in
+  long-term memory. No additional configuration is required to enable vision.
+  See [Vision](../chat/01-ollama.md#vision) for details.
 * **Required:** No
 * **Type:** `String[]`
 

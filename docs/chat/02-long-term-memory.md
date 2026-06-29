@@ -12,7 +12,8 @@ When LTM is enabled, Musebot:
 
 1. **Passively listens** to all messages in channels it can see, storing them
    as structured `LlmChatMessage` objects (username, display name, message
-   text, timestamp, roles, channel info, server info) with vector embeddings.
+   text, timestamp, roles, channel info, server info, and attachments) with
+   vector embeddings.
 2. **Stores its own responses** alongside user messages, attributed to the
    triggering user for consent and deletion purposes.
 3. **Retrieves relevant memories** before generating a reply. The current
@@ -62,7 +63,7 @@ To enable LTM, add the `embeddingModel` field to the `ollama` block in your
       // ...
       "ollama": {
         "hosts": ["http://localhost:11434/"],
-        "models": ["mistral-nemo"],
+        "models": ["gemma3"],
         "systemPrompt": "You are a helpful assistant.",
         "streamsResponse": false,
         "embeddingModel": "nomic-embed-text"
@@ -111,6 +112,28 @@ created.
 
 After opting in, the user's messages are stored passively as they continue to
 converse, even in channels where the bot doesn't respond.
+
+### Messages with Attachments
+
+When a message contains image attachments or web links, Musebot interprets the
+content before storing it:
+
+* **Image attachments** — If the [Vision](01-ollama.md#vision) feature is
+  enabled, each image is sent to the vision-capable model and a text
+  description (the "interpretation") is generated and stored as part of the
+  `LlmChatMessage`'s `attachments` array. Image-only messages (no text body)
+  are eligible for storage only when Vision is enabled; without Vision, they
+  are skipped.
+* **Web link attachments** — URLs in the message text are fetched and their
+  readable content is extracted via [Readability](https://github.com/mozilla/readability).
+  The extracted text is stored as a `web` attachment on the `LlmChatMessage`.
+  This works with any chat model — no vision capability is required.
+
+Attachments are stored within the JSON-serialized `content` column of the
+`LlmChatMessage` record. The embedding is generated from the `messageText`
+field (the raw message text), not from attachment interpretations, but the
+full attachment content is available to the LLM when a memory is retrieved
+and injected into context.
 
 ### `/memory forget`
 
@@ -171,18 +194,22 @@ Old vectors are deleted and replaced; the relational record is preserved.
 
 - **Embeddings** are generated from the `message` field of each
   `LlmChatMessage` (the raw message text with bot mentions stripped), not the
-  full JSON structure.
+  full JSON structure. Attachment interpretations are not included in the
+  embedding vector.
 - **Similarity search** uses cosine distance via sqlite-vec.
-- **Memory injection** — retrieved memories are concatenated into a single
-  system message prepended to the rolling context. They are not added to the
-  persistent rolling context, so they don't accumulate over time.
+- **Memory injection** — retrieved memories are serialized into a single
+  system message prepended to the rolling context. The full `LlmChatMessage`
+  JSON (including attachments) is included, so the LLM can see both the
+  original message text and any image descriptions or web link content from
+  that message. Memories are not added to the persistent rolling context, so
+  they don't accumulate over time.
 - **Database schema** uses Drizzle ORM for relational tables and raw SQL for
   vector operations (sqlite-vec does not support parameterized vector queries
   through ORMs).
   - `UserConsent` — `userId` (PK), `consentedAt` (timestamp),
     `backfillCompleted` (boolean, tracks whether the initial backfill finished)
   - `LlmChatMessage` — `id` (auto-increment PK), `userId`, `serverId`,
-    `content` (JSON-serialized `LlmChatMessage`), `messageText`, `isBot`,
-    `embeddingModel` (model used for the vector), `discordMessageId`
-    (nullable, unique — used for deduplication during backfill resume),
-    `createdAt`
+    `content` (JSON-serialized `LlmChatMessage`, including `attachments`),
+    `messageText`, `isBot`, `embeddingModel` (model used for the vector),
+    `discordMessageId` (nullable, unique — used for deduplication during
+    backfill resume), `createdAt`
