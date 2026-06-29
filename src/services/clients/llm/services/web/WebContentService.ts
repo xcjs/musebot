@@ -28,7 +28,7 @@ export class WebContentService {
             const response = await fetch(url, {
                 headers: {
                     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                    'User-Agent': 'Musebot/1.0 (+https://github.com/your-repo/musebot)'
+                    'User-Agent': 'Musebot/1.0 (+https://github.com/xcjs/musebot)'
                 },
                 redirect: 'follow',
                 signal: AbortSignal.timeout(15000)

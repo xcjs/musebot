@@ -29,5 +29,5 @@ features:
   - title: img2img Extensions
     details: Extend image generation with custom workflows.
 
-footer: Copyright 2026 XCJS, LLC
+footer: Copyright 2026 XCJS, LLC — [GitHub](https://github.com/xcjs/musebot)
 ---

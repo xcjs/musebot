@@ -63,7 +63,7 @@ To enable LTM, add the `embeddingModel` field to the `ollama` block in your
       // ...
       "ollama": {
         "hosts": ["http://localhost:11434/"],
-        "models": ["gemma3"],
+        "models": ["gemma4:12b"],
         "systemPrompt": "You are a helpful assistant.",
         "streamsResponse": false,
         "embeddingModel": "nomic-embed-text"

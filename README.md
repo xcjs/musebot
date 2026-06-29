@@ -7,6 +7,8 @@ Discord. It connects to **Ollama** for LLM-powered conversation and
 **ComfyUI/SwarmUI** for media generation (images, video, audio, music) — all
 running on your own hardware, no external APIs required.
 
+[![GitHub](docs/images/github-mark.svg)](https://github.com/xcjs/musebot)
+
 ## Features
 
 - **Chat Mode** — Context-aware LLM conversations via Ollama, with streaming
@@ -14,6 +16,12 @@ running on your own hardware, no external APIs required.
 - **Long-Term Memory** — Optional vector-based memory that stores past
   conversations and retrieves relevant context to augment the LLM's prompt
   (requires an Ollama embedding model)
+- **Vision** — Automatically detected when a vision-capable model (e.g.
+  `gemma4:12b`, `llava`) is configured; image attachments are passed to the LLM
+  and interpreted for long-term memory storage
+- **Web Link Reading** — URLs in messages are fetched and their content is
+  extracted and used as context for the LLM's response, then stored in
+  long-term memory
 - **Media Mode** — Generate images, video, audio, and music from text or image
   prompts via ComfyUI/SwarmUI workflows
 - **Multi-Instance** — Run multiple bot instances (chat, media, or both) from a
@@ -29,7 +37,7 @@ running on your own hardware, no external APIs required.
 
 - **Node.js** 24+ (for development) or a pre-built binary (for production)
 - **For Chat Mode:** [Ollama](https://ollama.com/) with at least one model
-  downloaded (e.g., `ollama pull mistral-nemo`)
+  downloaded (e.g., `ollama pull gemma4:12b`)
 - **For Media Mode:** [ComfyUI](https://github.com/comfyanonymous/ComfyUI) or
   [SwarmUI](https://github.com/mcmonkeyprojects/SwarmUI) with a ComfyUI
   backend
@@ -95,7 +103,7 @@ documentation.
       },
       "ollama": {
         "hosts": ["http://localhost:11434"],
-        "models": ["mistral-nemo"]
+        "models": ["gemma4:12b"]
       }
     }
   ]

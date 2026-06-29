@@ -59,7 +59,7 @@ Create a new `config.jsonc` file in your project root. You can use `config.json`
       },
       "ollama": {
         "hosts": ["http://localhost:11434"],
-        "models": ["gemma3"],
+        "models": ["gemma4:12b"],
         "systemPrompt": "You are a helpful assistant",
         "streamsResponse": false
       },

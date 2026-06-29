@@ -39,16 +39,16 @@ it's accessible from your Musebot instance(s).
 
 You can browse models for Ollama at
 [https://ollama.com/search](https://ollama.com/search). If you're not certain
-which model is best for your use case, we recommend trying out `gemma3`. It
+which model is best for your use case, we recommend trying out `gemma4:12b`. It
 should perform well on most hardware and is flexible enough to answer most
-questions and adopt most personas. If `gemma3` is still too slow for your
+questions and adopt most personas. If `gemma4:12b` is still too slow for your
 hardware, consider a smaller quantization or a lighter model. You can, of
 course, use any large language model that you prefer.
 
 Ollama provides a CLI for downloading these models:
 
 ```bash
-ollama pull gemma3
+ollama pull gemma4:12b
 ```
 
 Once Ollama downloads your preferred model, you can specify it in your
@@ -76,7 +76,7 @@ When Vision is enabled:
 
 No configuration is required — Vision is purely auto-detected based on the
 models you configure. To use it, simply pull a vision-capable model (such as
-`llava` or `gemma3`) and list it in `ollama.models`.
+`llava` or `gemma4:12b`) and list it in `ollama.models`.
 
 ## Web Link Reading
 

@@ -40,7 +40,7 @@ running:
   Download a model, for example:
 
     ```bash
-    ollama pull gemma3
+    ollama pull gemma4:12b
     ```
 
     Your Ollama instance should be running on `http://localhost:11434/` (or a
@@ -105,7 +105,7 @@ Set `mode` to `"chat"` for LLM chat or `"media"` for media generation.
     ```jsonc
     "ollama": {
       "hosts": ["http://localhost:11434"],
-      "models": ["gemma3"]
+      "models": ["gemma4:12b"]
     }
     ```
 
@@ -114,7 +114,7 @@ Set `mode` to `"chat"` for LLM chat or `"media"` for media generation.
     ```jsonc
     "ollama": {
       "hosts": ["http://localhost:11434"],
-      "models": ["gemma3"],
+      "models": ["gemma4:12b"],
       "embeddingModel": "nomic-embed-text"
     }
     ```
