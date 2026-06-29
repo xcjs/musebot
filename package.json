@@ -25,8 +25,10 @@
   "pkg": {
     "assets": [
       "node_modules/@img/**/**",
-      "node_modules/@exodus/bytes/**/**",
-      "node_modules/drizzle-orm/**"
+      "node_modules/better-sqlite3/build/Release/better_sqlite3.node",
+      "node_modules/drizzle-orm/**",
+      "node_modules/sqlite-vec-windows-x64/**",
+      "node_modules/sqlite-vec-linux-x64/**"
     ],
     "targets": [
       "node24-linux-x64",
@@ -58,8 +60,8 @@
     "discord.js": "14.23.2",
     "drizzle-orm": "^0.45.2",
     "handlebars": "^4.7.8",
-    "jsdom": "^29.1.1",
     "json5": "^2.2.3",
+    "linkedom": "^0.18.12",
     "ollama": "^0.6.0",
     "parcel": "^2.15.4",
     "sharp": "^0.34.2",
@@ -70,7 +72,6 @@
     "@babel/preset-typescript": "^7.27.1",
     "@jest/globals": "^30.2.0",
     "@types/better-sqlite3": "^7.6.13",
-    "@types/jsdom": "^28.0.3",
     "@vuepress/bundler-vite": "^2.0.0-rc.26",
     "@vuepress/plugin-search": "^2.0.0-rc.125",
     "@vuepress/theme-default": "^2.0.0-rc.125",

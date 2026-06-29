@@ -1,5 +1,5 @@
 import { Readability } from '@mozilla/readability';
-import { JSDOM } from 'jsdom';
+import { parseHTML } from 'linkedom';
 
 import { ILogger } from '../../../../ILogger.js';
 
@@ -46,8 +46,8 @@ export class WebContentService {
             }
 
             const html = await response.text();
-            const dom = new JSDOM(html, { url });
-            const reader = new Readability(dom.window.document);
+            const { document } = parseHTML(html);
+            const reader = new Readability(document);
             const article = reader.parse();
 
             if (article === null) {
