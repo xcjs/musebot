@@ -10,6 +10,7 @@ export default defineUserConfig({
   description: 'Generative AI for Discord',
   theme: defaultTheme({
     logo: '/images/musebot.jpg',
+    repo: 'xcjs/musebot',
     navbar: [
       {
         text: 'Introduction',
