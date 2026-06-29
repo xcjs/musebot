@@ -25,7 +25,7 @@
   "pkg": {
     "assets": [
       "node_modules/@img/**/**",
-      "node_modules/@exodus/bytes/**",
+      "node_modules/@exodus/bytes/**/**",
       "node_modules/drizzle-orm/**"
     ],
     "targets": [
