@@ -9,7 +9,8 @@ generative AI systems. It transforms your Discord server into an interactive
 platform for two distinct modes of creativity:
 
 * **Chat Function** leverages local large language models (via Ollama) for
-  context-aware conversations
+  context-aware conversations, with optional **long-term memory**, **vision
+  image interpretation**, and **web link content extraction**.
 * **Media Function** connects to SwarmUI or ComfyUI to generate images, video,
   music, and other media from text or image prompts.
 
@@ -39,7 +40,7 @@ running:
   Download a model, for example:
 
     ```bash
-    ollama pull mistral-nemo
+    ollama pull gemma4:12b
     ```
 
     Your Ollama instance should be running on `http://localhost:11434/` (or a
@@ -104,7 +105,17 @@ Set `mode` to `"chat"` for LLM chat or `"media"` for media generation.
     ```jsonc
     "ollama": {
       "hosts": ["http://localhost:11434"],
-      "models": ["mistral-nemo"]
+      "models": ["gemma4:12b"]
+    }
+    ```
+
+    For optional **long-term memory**, add an embedding model:
+
+    ```jsonc
+    "ollama": {
+      "hosts": ["http://localhost:11434"],
+      "models": ["gemma4:12b"],
+      "embeddingModel": "nomic-embed-text"
     }
     ```
 
