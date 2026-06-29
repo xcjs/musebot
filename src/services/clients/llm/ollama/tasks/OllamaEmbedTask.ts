@@ -3,7 +3,9 @@ import { IFeatureService } from '../../../../features/IFeatureService.js';
 import { IBotServiceContainer } from '../../../../IBotServiceContainer.js';
 import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { IMemoryService } from '../../services/IMemoryService.js';
+import { WebContentService } from '../../services/web/WebContentService.js';
 import { LlmChatMessage } from '../models/LlmChatMessage.js';
+import { LlmChatMessageAttachment } from '../models/LlmChatMessageAttachment.js';
 import { OllamaBaseTask } from './OllamaBaseTask.js';
 
 export class OllamaEmbedTask extends OllamaBaseTask<void> {
@@ -20,6 +22,7 @@ export class OllamaEmbedTask extends OllamaBaseTask<void> {
     readonly #ownerUserId: string | undefined;
     readonly #memoryService: IMemoryService;
     readonly #featureService: IFeatureService;
+    readonly #webContentService: WebContentService;
 
     #onSuccess: () => void = () => { };
     #onFailure: (error: Error) => void = () => { };
@@ -32,6 +35,7 @@ export class OllamaEmbedTask extends OllamaBaseTask<void> {
         this.#ownerUserId = ownerUserId;
         this.#memoryService = services.getMemoryService();
         this.#featureService = services.featureService;
+        this.#webContentService = services.webContentService;
     }
 
     override async process(): Promise<void> {
@@ -56,20 +60,40 @@ export class OllamaEmbedTask extends OllamaBaseTask<void> {
             return;
         }
 
-        if (!this.#featureService.hasFeature(SupportedFeature.Vision)) {
-            return;
-        }
-
         const needsInterpretation = attachments.some(a => a.interpretation.length === 0);
         if (!needsInterpretation) {
             return;
         }
 
+        await this.#interpretWebAttachments(attachments);
+
+        if (this.#featureService.hasFeature(SupportedFeature.Vision)) {
+            await this.#interpretImageAttachments(attachments);
+        }
+    }
+
+    async #interpretWebAttachments(attachments: LlmChatMessageAttachment[]): Promise<void> {
+        for (const attachment of attachments) {
+            if (attachment.type !== 'web' || attachment.interpretation.length > 0) {
+                continue;
+            }
+
+            try {
+                const result = await this.#webContentService.fetchContent(attachment.url);
+                attachment.interpretation = result?.content ?? '';
+                this.logger.info(`Fetched web content for '${attachment.url}' (${attachment.interpretation.length} chars).`);
+            } catch (error) {
+                this.logger.error(`Failed to fetch web content for '${attachment.url}':`, error);
+            }
+        }
+    }
+
+    async #interpretImageAttachments(attachments: LlmChatMessageAttachment[]): Promise<void> {
         const contextPrompt = `The user posted: "${this.#llmChatMessage.message}"`;
         const client = this.#services.ollamaClient;
 
         for (const attachment of attachments) {
-            if (attachment.interpretation.length > 0) {
+            if (attachment.type !== 'image' || attachment.interpretation.length > 0) {
                 continue;
             }
 

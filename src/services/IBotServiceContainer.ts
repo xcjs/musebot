@@ -26,6 +26,7 @@ import { IContextMessageFactory } from './clients/llm/services/IContextMessageFa
 import { IContextService } from './clients/llm/services/IContextService.js';
 import { ILlmChatMessageFactory } from './clients/llm/services/ILlmChatMessageFactory.js';
 import { IMemoryService } from './clients/llm/services/IMemoryService.js';
+import { WebContentService } from './clients/llm/services/web/WebContentService.js';
 import { ComfyUiClient } from './clients/media/comfy-ui/ComfyUiClient.js';
 import { IWorkflow } from './clients/media/comfy-ui/models/IWorkflow.js';
 import { IWorkflowService } from './clients/media/comfy-ui/services/IWorkflowService.js';
@@ -54,6 +55,7 @@ export interface IBotServiceContainer {
     helpService: IHelpService;
     workflowService: IWorkflowService;
     parallelizationStrategy: IParallelizationStrategy;
+    webContentService: WebContentService;
 
     getWorkflowMutator(interactionType: BotInteraction, workflow: IWorkflow): IWorkflowMutator;
 

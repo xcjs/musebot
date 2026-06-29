@@ -73,6 +73,7 @@ function createMockServices(
         generativeChatClient: null as never,
         helpService: null as never,
         workflowService,
+        webContentService: null as never,
         parallelizationStrategy: { getTaskChannel: jest.fn(() => 'test') } as unknown as IParallelizationStrategy,
         getLogger: jest.fn(() => logger),
         getTaskChannelPostProcessor: (() => null as never) as unknown as () => ITaskChannelPostProcessor,

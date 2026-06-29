@@ -55,6 +55,7 @@ import { IContextMessageFactory } from './clients/llm/services/IContextMessageFa
 import { IContextService } from './clients/llm/services/IContextService.js';
 import { ILlmChatMessageFactory } from './clients/llm/services/ILlmChatMessageFactory.js';
 import { IMemoryService } from './clients/llm/services/IMemoryService.js';
+import { WebContentService } from './clients/llm/services/web/WebContentService.js';
 import { ComfyUiClient } from './clients/media/comfy-ui/ComfyUiClient.js';
 import { IWorkflow } from './clients/media/comfy-ui/models/IWorkflow.js';
 import { IWorkflowService } from './clients/media/comfy-ui/services/IWorkflowService.js';
@@ -145,6 +146,11 @@ export class BotServiceContainer implements IBotServiceContainer {
     readonly #workflowService: IWorkflowService;
     get workflowService(): IWorkflowService {
         return this.#workflowService;
+    }
+
+    readonly #webContentService: WebContentService;
+    get webContentService(): WebContentService {
+        return this.#webContentService;
     }
 
     // Transients -------------------------------------------------------------/
@@ -367,6 +373,7 @@ export class BotServiceContainer implements IBotServiceContainer {
         this.#globalServiceContainer = globalContainer;
         this.#configurationService = new ConfigurationService(botConfig);
         this.#workflowService = new WorkflowService(this.getLogger('WorkflowService'), botConfig.botId);
+        this.#webContentService = new WebContentService(this.getLogger('WebContentService'));
         this.#featureService = new FeatureService(this);
         this.#typingService = new DiscordTypingService(this);
 

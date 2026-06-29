@@ -208,6 +208,7 @@ export function createMockServiceContainer(config?: MockServiceContainerConfig):
 
         // Expose mocks for test access
         workflowService: null as never,
+        webContentService: null as never,
         _logger: logger,
         _postProcessor: postProcessor,
     };
