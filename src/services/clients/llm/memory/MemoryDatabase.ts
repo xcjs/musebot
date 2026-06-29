@@ -1,10 +1,11 @@
-import { existsSync, mkdirSync } from 'node:fs';
-import { dirname } from 'node:path';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, extname, join } from 'node:path';
 
 import Database from 'better-sqlite3';
 import { eq } from 'drizzle-orm';
 import { BetterSQLite3Database, drizzle } from 'drizzle-orm/better-sqlite3';
-import { load } from 'sqlite-vec';
+import { getLoadablePath } from 'sqlite-vec';
 
 import { ILogger } from '../../../ILogger.js';
 import { LlmChatMessageRecord, UserConsent } from './schema.js';
@@ -32,11 +33,25 @@ export class MemoryDatabase {
         }
 
         this.#db = new Database(databasePath);
-        load(this.#db);
+        this.#loadVecExtension();
 
         this.#drizzle = drizzle(this.#db, { schema: { UserConsent, LlmChatMessageRecord } });
 
         this.#initialize();
+    }
+
+    #loadVecExtension(): void {
+        const loadablePath = getLoadablePath();
+
+        if (!('pkg' in process) || !(process as { pkg?: unknown }).pkg) {
+            this.#db.loadExtension(loadablePath);
+            return;
+        }
+
+        const tempPath = join(tmpdir(), `vec0${extname(loadablePath)}`);
+        writeFileSync(tempPath, readFileSync(loadablePath));
+        (this.#db as unknown as { loadExtension(path: string, entryPoint: string): void })
+            .loadExtension(tempPath, 'sqlite3_vec_init');
     }
 
     #initialize(): void {
