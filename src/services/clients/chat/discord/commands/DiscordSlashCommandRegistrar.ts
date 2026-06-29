@@ -22,7 +22,7 @@ export class DiscordSlashCommandRegistrar {
             .addSubcommand((subcommand) =>
                 subcommand
                     .setName('remember')
-                    .setDescription('Opt in to long-term memory. The bot will backfill recent messages.'))
+                    .setDescription('Opt in to long-term memory. The bot will backfill all accessible messages.'))
             .addSubcommand((subcommand) =>
                 subcommand
                     .setName('forget')
