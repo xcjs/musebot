@@ -12,6 +12,16 @@
   "bin": "build/parcel/musebot.cjs",
   "main": "build/parcel/musebot.cjs",
   "type": "module",
+  "allowScripts": {
+    "@parcel/watcher": true,
+    "@swc/core": true,
+    "better-sqlite3": true,
+    "esbuild": true,
+    "lmdb": true,
+    "msgpackr-extract": true,
+    "sharp": true,
+    "unrs-resolver": true
+  },
   "pkg": {
     "assets": [
       "node_modules/@img/**/**",
