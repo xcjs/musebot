@@ -14,7 +14,9 @@
   "type": "module",
   "pkg": {
     "assets": [
-      "node_modules/@img/**/**"
+      "node_modules/@img/**/**",
+      "node_modules/drizzle-orm/better-sqlite3/**",
+      "node_modules/drizzle-orm/sqlite-core/**"
     ],
     "targets": [
       "node24-linux-x64",
