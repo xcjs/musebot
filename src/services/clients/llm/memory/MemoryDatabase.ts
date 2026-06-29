@@ -16,17 +16,17 @@ export interface MemoryRecord {
     distance: number;
 }
 
+let vecExtensionTempPath: string | null = null;
+
 export class MemoryDatabase {
     readonly #db: Database.Database;
     readonly #drizzle: BetterSQLite3Database<Record<string, unknown>>;
     readonly #logger: ILogger;
     readonly #embeddingDimensions: number;
-    readonly #databasePath: string;
 
     constructor(databasePath: string, embeddingDimensions: number, logger: ILogger) {
         this.#logger = logger;
         this.#embeddingDimensions = embeddingDimensions;
-        this.#databasePath = databasePath;
 
         const directory = dirname(databasePath);
         if (!existsSync(directory)) {
@@ -50,16 +50,19 @@ export class MemoryDatabase {
             return;
         }
 
-        const tempDir = join(tmpdir(), 'musebot');
-        if (!existsSync(tempDir)) {
-            mkdirSync(tempDir, { recursive: true });
+        if (vecExtensionTempPath === null) {
+            const tempDir = join(tmpdir(), 'musebot');
+            if (!existsSync(tempDir)) {
+                mkdirSync(tempDir, { recursive: true });
+            }
+
+            vecExtensionTempPath = join(tempDir, `vec0${extname(loadablePath)}`);
+            writeFileSync(vecExtensionTempPath, readFileSync(loadablePath));
+            this.#logger.info(`Wrote sqlite-vec extension to '${vecExtensionTempPath}'.`);
         }
 
-        const dbSlug = this.#databasePath.replace(/[^a-zA-Z0-9]/g, '_');
-        const tempPath = join(tempDir, `vec0_${dbSlug}${extname(loadablePath)}`);
-        writeFileSync(tempPath, readFileSync(loadablePath));
         (this.#db as unknown as { loadExtension(path: string, entryPoint: string): void })
-            .loadExtension(tempPath, 'sqlite3_vec_init');
+            .loadExtension(vecExtensionTempPath, 'sqlite3_vec_init');
     }
 
     #initialize(): void {
