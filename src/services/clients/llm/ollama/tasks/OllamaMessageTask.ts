@@ -14,7 +14,9 @@ import { DiscordAttachmentService } from '../../../chat/discord/services/Discord
 import { IInputChatMessageFilter } from '../../../chat/IInputChatMessageFilter.js';
 import { ILlmChatMessageFactory } from '../../../llm/services/ILlmChatMessageFactory.js';
 import { IMemoryService } from '../../../llm/services/IMemoryService.js';
+import { WebContentService } from '../../../llm/services/web/WebContentService.js';
 import { OLLAMA_TEMPERATURE_DEFAULT } from '../constants/OllamaConstants.js';
+import { OllamaRole } from '../enums/OllamaRole.js';
 import { LlmChatMessage } from '../models/LlmChatMessage.js';
 import { OllamaBaseTask } from './OllamaBaseTask.js';
 
@@ -28,6 +30,7 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
     readonly #llmChatMessageFactory: ILlmChatMessageFactory<DiscordMessage>;
     readonly #memoryService: IMemoryService;
     readonly #attachmentService: DiscordAttachmentService;
+    readonly #webContentService: WebContentService;
 
     readonly #message: DiscordMessage;
 
@@ -45,6 +48,7 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
         this.#llmChatMessageFactory = services.getLlmChatMessageFactory<DiscordMessage>();
         this.#memoryService = services.getMemoryService();
         this.#attachmentService = new DiscordAttachmentService();
+        this.#webContentService = services.webContentService;
 
         this.#message = message;
     }
@@ -58,6 +62,12 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
 
         for (const filter of this.#inputFilters) {
             context = await filter.process(llmChatMessage, this.#message, context);
+        }
+
+        const webContext = await this.#getWebContext(llmChatMessage.message);
+
+        if (webContext !== null) {
+            context = [...context, webContext];
         }
 
         const images = await this.#getImages();
@@ -194,6 +204,41 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
         } catch (error) {
             this.logger.error('Failed to fetch image attachments for vision request:', error);
             return [];
+        }
+    }
+
+    async #getWebContext(messageText: string): Promise<OllamaMessage | null> {
+        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
+            return null;
+        }
+
+        const urls = this.#webContentService.extractUrls(messageText);
+
+        if (urls.length === 0) {
+            return null;
+        }
+
+        try {
+            const results = await this.#webContentService.fetchAll(urls);
+
+            if (results.length === 0) {
+                return null;
+            }
+
+            const sections = results.map((result) =>
+                `## ${result.title}\nSource: ${result.url}\n\n${result.content}`);
+            const content = `The user's message references the following web pages.`
+                + ` Use this content to inform your response:\n\n${sections.join('\n\n---\n\n')}`;
+
+            this.logger.info(`Fetched ${results.length} web page(s) for context: ${results.map(r => r.url).join(', ')}`);
+
+            return {
+                role: OllamaRole.System,
+                content
+            };
+        } catch (error) {
+            this.logger.error('Failed to fetch web content for context:', error);
+            return null;
         }
     }
 
