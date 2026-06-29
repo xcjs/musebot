@@ -66,7 +66,6 @@ Create a new `config.jsonc` file in your project root. You can use `config.json`
       "comfyUi": {
         "hosts": []
       },
-      "comfyUiGuidanceScaleInterval": 0.5,
       "multiModal": {
         "randomPrompts": []
       }
@@ -110,7 +109,6 @@ Create a new `config.jsonc` file in your project root. You can use `config.json`
       "comfyUi": {
         "hosts": ["http://localhost:8188"]
       },
-      "comfyUiGuidanceScaleInterval": 0.5,
       "multiModal": {
         "randomPrompts": []
       }
@@ -136,7 +134,7 @@ Create a new `config.jsonc` file in your project root. You can use `config.json`
 | `MUSEBOT_OLLAMA_SYSTEM_PROMPT` | `bots[].ollama.systemPrompt` | string or string[] | No |
 | `MUSEBOT_OLLAMA_STREAMS_RESPONSE` | `bots[].ollama.streamsResponse` | boolean | No |
 | `MUSEBOT_STABLE_DIFFUSION_HOSTS` | `bots[].comfyUi.hosts` | string[] | Yes (media mode) |
-| `MUSEBOT_STABLE_DIFFUSION_GUIDANCE_SCALE_INTERVAL` | `bots[].comfyUiGuidanceScaleInterval` | number | No |
+| `MUSEBOT_STABLE_DIFFUSION_GUIDANCE_SCALE_INTERVAL` | `bots[].comfyUi.guidanceScaleInterval` | number | No |
 | `MUSEBOT_STABLE_DIFFUSION_OLLAMA_PROMPTS` | `bots[].multiModal.randomPrompts` | string[] | No |
 | `MUSEBOT_MAX_TASK_ATTEMPTS` | `global.taskQueue.numAttempts` / `bots[].taskQueue.numAttempts` | number | No |
 | `MUSEBOT_TASK_RETRY_DELAY_MILLISECONDS` | `global.taskQueue.retryDelayMs` / `bots[].taskQueue.retryDelayMs` | number | No |

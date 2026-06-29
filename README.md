@@ -11,6 +11,9 @@ running on your own hardware, no external APIs required.
 
 - **Chat Mode** — Context-aware LLM conversations via Ollama, with streaming
   support, multi-model selection, and custom system prompts
+- **Long-Term Memory** — Optional vector-based memory that stores past
+  conversations and retrieves relevant context to augment the LLM's prompt
+  (requires an Ollama embedding model)
 - **Media Mode** — Generate images, video, audio, and music from text or image
   prompts via ComfyUI/SwarmUI workflows
 - **Multi-Instance** — Run multiple bot instances (chat, media, or both) from a
@@ -170,6 +173,7 @@ Full end-user documentation is available online at [musebot.docs.xcjs.com](https
 
 - [Configuration Reference](docs/musebot/02-configuration.md)
 - [Ollama Integration](docs/chat/01-ollama.md)
+- [Long-Term Memory](docs/chat/02-long-term-memory.md)
 - [ComfyUI/SwarmUI Integration](docs/media/01-swarm-ui.md)
 - [Migration from .env to config.jsonc](docs/musebot/03-migration-from-env-to-jsonc.md)
 

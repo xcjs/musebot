@@ -1,9 +1,9 @@
 import { splitText } from '../../../../../utilities/string-utilities.js';
 import { IChatMessage } from '../../IChatMessage.js';
-import { IChatMessageFilter } from '../../IChatMessageFilter.js';
+import { IOutputChatMessageFilter } from '../../IOutputChatMessageFilter.js';
 import { DiscordConstants } from '../enums/DiscordConstants.js';
 
-export class DiscordMessageSplitFilter implements IChatMessageFilter {
+export class DiscordMessageSplitFilter implements IOutputChatMessageFilter {
     process(messages: IChatMessage[]): Promise<IChatMessage[]> {
         const combined = messages.map(m => m.content).join('');
         const chunks = splitText(combined, DiscordConstants.ContentMaxLength);

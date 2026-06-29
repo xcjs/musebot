@@ -137,6 +137,27 @@ variables, you need to migrate to JSON configuration. See [Migration Guide](./03
 * **Default:** `false`
 * **Values:** `true`, `false`
 
+#### `ollama.embeddingModel`
+
+* **Description:** The name of an Ollama model to use for generating text
+  embeddings. When set, long-term memory (LTM) is enabled — Musebot will store
+  conversation messages as vector embeddings and retrieve relevant context from
+  past conversations to augment the LLM's prompt. See
+  [Long-Term Memory](../chat/02-long-term-memory.md) for details.
+* **Required:** No
+* **Type:** `String`
+* **Default:** *(unset — LTM disabled)*
+
+#### `ollama.topK`
+
+* **Description:** The number of similar memories to retrieve from the vector
+  store when augmenting the LLM prompt. Only applies when
+  `ollama.embeddingModel` is set. Higher values provide more context at the cost
+  of prompt length and latency.
+* **Required:** No
+* **Type:** `Integer`
+* **Default:** `5`
+
 ### **Media Mode (ComfyUI/SwarmUI) Settings**
 
 *Required if `mode=media`*
@@ -159,7 +180,7 @@ variables, you need to migrate to JSON configuration. See [Migration Guide](./03
 * **Type:** `Number`
 * **Default:** `30`
 
-#### `comfyUiGuidanceScaleInterval`
+#### `comfyUi.guidanceScaleInterval`
 
 * **Description:** The interval step used when adjusting the guidance scale via
   the +/− buttons in the media generation interface.

@@ -1,9 +1,9 @@
 import { IChatMessage } from '../../IChatMessage.js';
-import { IChatMessageFilter } from '../../IChatMessageFilter.js';
+import { IOutputChatMessageFilter } from '../../IOutputChatMessageFilter.js';
 
 const MAX_ATTACHMENTS = 10;
 
-export class DiscordAttachmentFilter implements IChatMessageFilter {
+export class DiscordAttachmentFilter implements IOutputChatMessageFilter {
     process(messages: IChatMessage[]): Promise<IChatMessage[]> {
         if (messages.length === 0) {
             return Promise.resolve(messages);

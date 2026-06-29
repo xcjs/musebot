@@ -1,19 +1,21 @@
-﻿import { Attachment, ButtonInteraction, Message as DiscordMessage, MessageReaction } from 'discord.js';
+﻿import { Message as DiscordMessage } from 'discord.js';
 import { Message as OllamaMessage } from 'ollama';
 
 import { IBotServiceContainer } from "../../../../IBotServiceContainer.js"
 import { OllamaRole } from '../../../llm/ollama/enums/OllamaRole.js';
 import { ContextMessage } from '../../../llm/ollama/models/ContextMessage.js';
 import { IContextMessageFactory } from '../../../llm/services/IContextMessageFactory.js';
-import { IReplyService } from '../../IReplyService.js';
-
-type DiscordReplyService = IReplyService<DiscordMessage, MessageReaction, Attachment, DiscordMessage | ButtonInteraction>;
+import { ILlmChatMessageFactory } from '../../../llm/services/ILlmChatMessageFactory.js';
 
 export class DiscordOllamaContextMessageFactory implements IContextMessageFactory<DiscordMessage, OllamaMessage> {
-    #replyService: DiscordReplyService;
+    #llmChatMessageFactory: ILlmChatMessageFactory<DiscordMessage>;
 
     constructor(services: IBotServiceContainer) {
-        this.#replyService = services.getReplyService();
+        this.#llmChatMessageFactory = services.getLlmChatMessageFactory();
+    }
+
+    formatChatMessage(chatMessage: DiscordMessage): string {
+        return JSON.stringify(this.#llmChatMessageFactory.create(chatMessage));
     }
 
     fromSystemPrompt(prompt: string, channelId: string | null, isReadOnly = true): ContextMessage<DiscordMessage, OllamaMessage> {
@@ -40,7 +42,7 @@ export class DiscordOllamaContextMessageFactory implements IContextMessageFactor
     fromChatMessage(chatMessage: DiscordMessage): ContextMessage<DiscordMessage, OllamaMessage> {
         const ollamaMessage: OllamaMessage = {
             role: OllamaRole.User,
-            content: `${chatMessage.author.displayName}: ${this.#replyService.getMessageWithoutBotMentions(chatMessage)}`
+            content: this.formatChatMessage(chatMessage)
         }
 
         return {
@@ -48,7 +50,7 @@ export class DiscordOllamaContextMessageFactory implements IContextMessageFactor
             channelId: chatMessage.channelId,
             serverId: chatMessage.guildId,
             userId: chatMessage.author.id,
-            timestamp: new Date(),
+            timestamp: chatMessage.createdAt,
             chatMessage,
             llmMessage: ollamaMessage,
             isReadOnly: false,

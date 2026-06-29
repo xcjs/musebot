@@ -1,15 +1,15 @@
-﻿import { Message } from 'discord.js';
+import { Message } from 'discord.js';
 
 import { IBotServiceContainer } from '../../../../IBotServiceContainer.js';
 import { ILogger } from '../../../../ILogger.js';
 import { IChatMessage } from '../../IChatMessage.js';
 import { IChatMessageFactory } from '../../IChatMessageFactory.js';
-import { IChatMessageFilter } from '../../IChatMessageFilter.js';
+import { IOutputChatMessageFilter } from '../../IOutputChatMessageFilter.js';
 
 export class OllamaStreamingReplyService {
     readonly #services: IBotServiceContainer;
     readonly #logger: ILogger;
-    readonly #filters: IChatMessageFilter[];
+    readonly #filters: IOutputChatMessageFilter[];
     readonly #factory: IChatMessageFactory<Message>;
 
     #replies: Message[] = [];

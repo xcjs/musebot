@@ -125,6 +125,14 @@
         // Default:  30
         // Type:     Number
         "timeoutMinutes": 30,
+
+        // The interval used when adjusting the guidance scale (CFG) via the
+        // guidance scale +/- buttons on generated media. Each click increases
+        // or decreases the CFG by this amount.
+        // Required: Optional
+        // Default:  0.5
+        // Type:     Number
+        "guidanceScaleInterval": 0.5,
       },
 
       // Ollama configuration for large language model chat. Required when mode is "chat".
@@ -157,11 +165,24 @@
         // Required: Optional
         // Default:  false
         // Type:     Boolean
-        "streamsResponse": false
-      },
+        "streamsResponse": false,
 
-      // ComfyUI advanced settings. Optional overrides.
-      "comfyUiGuidanceScaleInterval": 0.5,
+        // The name of an Ollama embedding model to use for long-term memory (LTM).
+        // When set, LTM is enabled — Musebot stores conversation messages as
+        // vector embeddings and retrieves relevant context from past conversations.
+        // See the Long-Term Memory documentation for details.
+        // Required: Optional
+        // Default:  (unset — LTM disabled)
+        // Type:     String
+        // "embeddingModel": "nomic-embed-text",
+
+        // The number of similar memories to retrieve from the vector store when
+        // augmenting the LLM prompt. Only applies when embeddingModel is set.
+        // Required: Optional
+        // Default:  5
+        // Type:     Integer
+        // "topK": 5
+      },
 
       // Multi-modal settings for cross-capable features.
       "multiModal": {

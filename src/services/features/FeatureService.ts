@@ -8,6 +8,7 @@ import { IFeatureService } from './IFeatureService.js';
 export class FeatureService implements IFeatureService {
     readonly #configurationService: IConfigurationService;
     readonly #workflowService: IWorkflowService;
+    readonly #services: IBotServiceContainer;
 
     readonly #logger: ILogger;
 
@@ -20,6 +21,7 @@ export class FeatureService implements IFeatureService {
     constructor(services: IBotServiceContainer) {
         this.#configurationService = services.configurationService;
         this.#workflowService = services.workflowService;
+        this.#services = services;
 
         this.#logger = services.getLogger('FeatureService');
     }
@@ -35,6 +37,14 @@ export class FeatureService implements IFeatureService {
             && this.#configurationService.ollamaModels.length > 0) {
                 this.#logger.info(`${SupportedFeature.Txt2Txt} supported.`);
                 this.#supportedFeatures.push(SupportedFeature.Txt2Txt);
+
+                await this.#probeVisionCapability();
+        }
+
+        if (this.#configurationService.ollamaHosts.length > 0
+            && this.#configurationService.ollamaEmbeddingModel !== null) {
+                this.#logger.info(`${SupportedFeature.LongTermMemory} supported.`);
+                this.#supportedFeatures.push(SupportedFeature.LongTermMemory);
         }
 
         if (!this.#workflowService.hasWorkflows) {
@@ -49,5 +59,26 @@ export class FeatureService implements IFeatureService {
                 }
             }
         }
+    }
+
+    async #probeVisionCapability(): Promise<void> {
+        const models = this.#configurationService.ollamaModels;
+
+        for (const model of models) {
+            try {
+                const client = this.#services.ollamaClient;
+                const hasVision = await client.hasVisionCapability(model);
+
+                if (hasVision) {
+                    this.#logger.info(`${SupportedFeature.Vision} supported (model '${model}' on host '${client.host}').`);
+                    this.#supportedFeatures.push(SupportedFeature.Vision);
+                    return;
+                }
+            } catch (error) {
+                this.#logger.warn(`Failed to probe vision capability for model '${model}':`, error);
+            }
+        }
+
+        this.#logger.info(`${SupportedFeature.Vision} not supported by any configured model.`);
     }
 }

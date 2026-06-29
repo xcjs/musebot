@@ -32,6 +32,8 @@ export interface IConfigurationService {
     ollamaModels: string[];
     ollamaSystemPrompt: string;
     ollamaStreamsResponse: boolean;
+    ollamaEmbeddingModel: string | null;
+    ollamaTopK: number;
 
     applicationName: string;
     isProduction: boolean;

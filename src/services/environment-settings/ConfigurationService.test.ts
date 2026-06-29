@@ -337,7 +337,10 @@ describe('ConfigurationService', () => {
         it('should have correct guidanceScaleInterval from config', () => {
             const configWithCustomInterval = {
                 ...validChatBotConfig,
-                comfyUiGuidanceScaleInterval: 0.7
+                comfyUi: {
+                    ...validChatBotConfig.comfyUi,
+                    guidanceScaleInterval: 0.7
+                }
             };
 
             (ConfigLoader.load as jest.Mock).mockReturnValue({

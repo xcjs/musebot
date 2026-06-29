@@ -102,7 +102,7 @@ export class ConfigurationService implements IConfigurationService {
     }
 
     get comfyUiGuidanceScaleInterval(): number {
-        return this.#botConfig.comfyUiGuidanceScaleInterval ?? 0.5;
+        return this.#botConfig.comfyUi?.guidanceScaleInterval ?? 0.5;
     }
 
     get randomPrompts(): string[] {
@@ -131,6 +131,16 @@ export class ConfigurationService implements IConfigurationService {
     get ollamaStreamsResponse(): boolean {
         return this.#botConfig.ollama?.streamsResponse
             ?? false;
+    }
+
+    get ollamaEmbeddingModel(): string | null {
+        return this.#botConfig.ollama?.embeddingModel
+            ?? null;
+    }
+
+    get ollamaTopK(): number {
+        return this.#botConfig.ollama?.topK
+            ?? 5;
     }
 
     get applicationName(): string {
@@ -210,12 +220,14 @@ Detected environment variables: ${envVarList}`);
 
         this.#log.info(`bots[].comfyUi.hosts: ${this.comfyUiHosts.join(', ')}`);
         this.#log.info(`bots[].comfyUi.timeoutMinutes: ${this.comfyUiTimeoutMinutes}`);
-        this.#log.info(`bots[].comfyUiGuidanceScaleInterval: ${this.comfyUiGuidanceScaleInterval}`);
+        this.#log.info(`bots[].comfyUi.guidanceScaleInterval: ${this.comfyUiGuidanceScaleInterval}`);
 
         this.#log.info(`bots[].ollama.hosts: ${this.ollamaHosts.join(', ')}`);
         this.#log.info(`bots[].ollama.models: ${this.ollamaModels.join(', ')}`);
         this.#log.info(`bots[].ollama.systemPrompt: ${this.ollamaSystemPrompt}`);
         this.#log.info(`bots[].ollama.streamsResponse: ${this.ollamaStreamsResponse}`);
+        this.#log.info(`bots[].ollama.embeddingModel: ${this.ollamaEmbeddingModel ?? '(not set)'}`);
+        this.#log.info(`bots[].ollama.topK: ${this.ollamaTopK}`);
 
         this.#log.info(`bots[].multiModal.randomPrompts: ${this.randomPrompts.join(' | ')}`);
 

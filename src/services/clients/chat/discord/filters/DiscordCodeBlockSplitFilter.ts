@@ -1,9 +1,9 @@
 import { splitText } from '../../../../../utilities/string-utilities.js';
 import { IChatMessage } from '../../IChatMessage.js';
-import { IChatMessageFilter } from '../../IChatMessageFilter.js';
+import { IOutputChatMessageFilter } from '../../IOutputChatMessageFilter.js';
 import { DiscordConstants } from '../enums/DiscordConstants.js';
 
-export class DiscordCodeBlockSplitFilter implements IChatMessageFilter {
+export class DiscordCodeBlockSplitFilter implements IOutputChatMessageFilter {
     readonly #codeFence = '```';
     readonly #codeFenceLength = 3;
 

@@ -22,6 +22,7 @@ export interface IBotConfig {
     comfyUi: {
         hosts: string[];
         timeoutMinutes?: number;
+        guidanceScaleInterval?: number;
     };
 
     ollama: {
@@ -29,9 +30,9 @@ export interface IBotConfig {
         models: string[];
         systemPrompt: string | string[];
         streamsResponse: boolean;
+        embeddingModel?: string;
+        topK?: number;
     };
-
-    comfyUiGuidanceScaleInterval: number;
 
     multiModal?: {
         randomPrompts: string[];

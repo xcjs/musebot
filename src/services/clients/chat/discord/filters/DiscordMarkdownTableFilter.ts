@@ -1,6 +1,6 @@
 import { splitText } from '../../../../../utilities/string-utilities.js';
 import { IChatMessage } from '../../IChatMessage.js';
-import { IChatMessageFilter } from '../../IChatMessageFilter.js';
+import { IOutputChatMessageFilter } from '../../IOutputChatMessageFilter.js';
 
 const CODE_FENCE = '```';
 const MAX_COLUMN_WIDTH = 18;
@@ -11,7 +11,7 @@ interface ParsedRow {
     isSeparator: boolean;
 }
 
-export class DiscordMarkdownTableFilter implements IChatMessageFilter {
+export class DiscordMarkdownTableFilter implements IOutputChatMessageFilter {
     process(messages: IChatMessage[]): Promise<IChatMessage[]> {
         if (messages.length === 0) {
             return Promise.resolve(messages);

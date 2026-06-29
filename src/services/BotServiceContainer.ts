@@ -1,4 +1,4 @@
-﻿import {
+import {
     ButtonInteraction,
     Client as DiscordClient,
     GatewayIntentBits,
@@ -22,24 +22,30 @@ import { DiscordAttachmentFilter } from './clients/chat/discord/filters/DiscordA
 import { DiscordCodeBlockExtractFilter } from './clients/chat/discord/filters/DiscordCodeBlockExtractFilter.js';
 import { DiscordCodeBlockSplitFilter } from './clients/chat/discord/filters/DiscordCodeBlockSplitFilter.js';
 import { DiscordMarkdownTableFilter } from './clients/chat/discord/filters/DiscordMarkdownTableFilter.js';
+import { DiscordMemoryInputFilter } from './clients/chat/discord/filters/DiscordMemoryInputFilter.js';
 import { DiscordMessageSplitFilter } from './clients/chat/discord/filters/DiscordMessageSplitFilter.js';
 import { GenerativeChatClient } from './clients/chat/discord/GenerativeChatClient.js';
 import { GenerativeMediaChatClient } from './clients/chat/discord/GenerativeMediaChatClient.js';
 import { DiscordChatMessageFactory } from './clients/chat/discord/ollama/DiscordChatMessageFactory.js';
+import { DiscordLlmChatMessageFactory } from './clients/chat/discord/ollama/DiscordLlmChatMessageFactory.js';
 import { DiscordOllamaContextMessageFactory } from './clients/chat/discord/ollama/DiscordOllamaContextMessageFactory.js';
 import { OllamaReplyService } from './clients/chat/discord/ollama/OllamaReplyService.js';
 import { OllamaStreamingReplyService } from './clients/chat/discord/ollama/OllamaStreamingReplyService.js';
 import { DiscordReplyService } from './clients/chat/discord/services/DiscordReplyService.js';
 import { DiscordTypingService } from './clients/chat/discord/services/DiscordTypingService.js';
 import { IChatMessageFactory } from './clients/chat/IChatMessageFactory.js';
-import { IChatMessageFilter } from './clients/chat/IChatMessageFilter.js';
 import { IGenerativeChatClient } from './clients/chat/IGenerativeChatClient.js';
+import { IInputChatMessageFilter } from './clients/chat/IInputChatMessageFilter.js';
+import { IOutputChatMessageFilter } from './clients/chat/IOutputChatMessageFilter.js';
 import { IReplyService } from './clients/chat/IReplyService.js';
 import { ITypingService } from './clients/chat/ITypingService.js';
 import { ShowHelpTask } from './clients/internal/tasks/ShowHelpTask.js';
 import { ChatHelpService } from './clients/llm/help/ChatHelpService.js';
+import { MemoryService } from './clients/llm/memory/MemoryService.js';
 import { IStructuredRequestData } from './clients/llm/ollama/models/IStructuredRequestData.js';
+import { LlmChatMessage } from './clients/llm/ollama/models/LlmChatMessage.js';
 import { OllamaClient } from './clients/llm/ollama/OllamaClient.js';
+import { OllamaEmbedTask } from './clients/llm/ollama/tasks/OllamaEmbedTask.js';
 import { OllamaEmojiReactionTask } from './clients/llm/ollama/tasks/OllamaEmojiReactionTask.js';
 import { OllamaGenerateStructuredTask } from './clients/llm/ollama/tasks/OllamaGenerateStructuredTask.js';
 import { OllamaGenerateTask } from './clients/llm/ollama/tasks/OllamaGenerateTask.js';
@@ -47,6 +53,8 @@ import { OllamaMessageTask } from './clients/llm/ollama/tasks/OllamaMessageTask.
 import { ContextService } from './clients/llm/services/ContextService.js';
 import { IContextMessageFactory } from './clients/llm/services/IContextMessageFactory.js';
 import { IContextService } from './clients/llm/services/IContextService.js';
+import { ILlmChatMessageFactory } from './clients/llm/services/ILlmChatMessageFactory.js';
+import { IMemoryService } from './clients/llm/services/IMemoryService.js';
 import { ComfyUiClient } from './clients/media/comfy-ui/ComfyUiClient.js';
 import { IWorkflow } from './clients/media/comfy-ui/models/IWorkflow.js';
 import { IWorkflowService } from './clients/media/comfy-ui/services/IWorkflowService.js';
@@ -209,7 +217,7 @@ export class BotServiceContainer implements IBotServiceContainer {
         return new Logger(prefix, this.#configurationService.botId);
     }
 
-    getChatMessageFilters(): IChatMessageFilter[] {
+    getChatMessageFilters(): IOutputChatMessageFilter[] {
         return [
             new DiscordCodeBlockExtractFilter(this),
             new DiscordMarkdownTableFilter(),
@@ -219,8 +227,34 @@ export class BotServiceContainer implements IBotServiceContainer {
         ];
     }
 
+    getInputChatMessageFilters<ChatMessageType>(): IInputChatMessageFilter<ChatMessageType>[] {
+        if (!this.featureService.hasFeature(SupportedFeature.LongTermMemory)) {
+            return [];
+        }
+
+        return [new DiscordMemoryInputFilter(this) as IInputChatMessageFilter<ChatMessageType>];
+    }
+
     getChatMessageFactory<MessageType>(): IChatMessageFactory<MessageType> {
         return new DiscordChatMessageFactory(this) as unknown as IChatMessageFactory<MessageType>;
+    }
+
+    #llmChatMessageFactory: ILlmChatMessageFactory<unknown> | null = null;
+    getLlmChatMessageFactory<ChatMessageType>(): ILlmChatMessageFactory<ChatMessageType> {
+        if(this.#llmChatMessageFactory === null) {
+            this.#llmChatMessageFactory = new DiscordLlmChatMessageFactory(this);
+        }
+
+        return this.#llmChatMessageFactory as ILlmChatMessageFactory<ChatMessageType>;
+    }
+
+    #memoryService: IMemoryService | null = null;
+    getMemoryService(): IMemoryService {
+        if(this.#memoryService === null) {
+            this.#memoryService = new MemoryService(this);
+        }
+
+        return this.#memoryService;
     }
 
     #contextMessageFactory: IContextMessageFactory<unknown, unknown> | null = null;
@@ -255,6 +289,10 @@ export class BotServiceContainer implements IBotServiceContainer {
         }
 
         return new OllamaGenerateStructuredTask<T>(this, prompt, structuredRequestData) as BaseTask<IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, T>>;
+    }
+
+    getEmbedTask(llmChatMessage: LlmChatMessage, ownerUserId?: string): BaseTask<void> {
+        return new OllamaEmbedTask(this, llmChatMessage, ownerUserId) as BaseTask<void>;
     }
 
     getEmojiReactionTask(reaction: MessageReaction, user: User): BaseTask<unknown> {
