@@ -7,13 +7,6 @@ Discord. It connects to **Ollama** for LLM-powered conversation and
 **ComfyUI/SwarmUI** for media generation (images, video, audio, music) — all
 running on your own hardware, no external APIs required.
 
-<p>
-  <a href="https://github.com/xcjs/musebot">
-    <img src="docs/images/github-mark.svg" alt="GitHub" width="24" height="24" valign="middle">
-  </a>
-  &nbsp;<a href="https://github.com/xcjs/musebot"><strong>xcjs/musebot</strong></a>
-</p>
-
 ## Features
 
 - **Chat Mode** — Context-aware LLM conversations via Ollama, with streaming

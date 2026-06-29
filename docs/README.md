@@ -31,9 +31,3 @@ features:
 
 footer: Copyright 2026 XCJS, LLC
 ---
-
-<p align="center">
-  <a href="https://github.com/xcjs/musebot">
-    <img src="/images/github-mark.svg" alt="GitHub" width="32" height="32">
-  </a>
-</p>
