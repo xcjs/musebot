@@ -81,6 +81,7 @@ function createMockServices(config: IConfigurationService, logger: jest.Mocked<I
         generativeChatClient: { name: 'TestBot' } as never,
         helpService: null as never,
         workflowService: null as never,
+        webContentService: null as never,
         parallelizationStrategy: null as never,
         getLogger: jest.fn(() => logger),
         getTaskChannelPostProcessor: () => null as never,

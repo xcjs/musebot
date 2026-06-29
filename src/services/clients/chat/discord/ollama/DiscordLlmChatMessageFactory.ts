@@ -5,6 +5,7 @@ import { IFeatureService } from '../../../../features/IFeatureService.js';
 import { LlmChatMessage } from '../../../llm/ollama/models/LlmChatMessage.js';
 import { LlmChatMessageAttachment } from '../../../llm/ollama/models/LlmChatMessageAttachment.js';
 import { ILlmChatMessageFactory } from '../../../llm/services/ILlmChatMessageFactory.js';
+import { WebContentService } from '../../../llm/services/web/WebContentService.js';
 import { IReplyService } from '../../IReplyService.js';
 import { DiscordAttachmentService } from '../services/DiscordAttachmentService.js';
 
@@ -14,11 +15,13 @@ export class DiscordLlmChatMessageFactory implements ILlmChatMessageFactory<Disc
     readonly #replyService: DiscordReplyService;
     readonly #featureService: IFeatureService;
     readonly #attachmentService: DiscordAttachmentService;
+    readonly #webContentService: WebContentService;
 
-    constructor(services: { getReplyService(): DiscordReplyService; featureService: IFeatureService }) {
+    constructor(services: { getReplyService(): DiscordReplyService; featureService: IFeatureService; webContentService: WebContentService }) {
         this.#replyService = services.getReplyService();
         this.#featureService = services.featureService;
         this.#attachmentService = new DiscordAttachmentService();
+        this.#webContentService = services.webContentService;
     }
 
     create(chatMessage: DiscordMessage): LlmChatMessage {
@@ -117,16 +120,35 @@ export class DiscordLlmChatMessageFactory implements ILlmChatMessageFactory<Disc
     }
 
     #extractAttachments(chatMessage: DiscordMessage): LlmChatMessageAttachment[] {
-        if (!this.#featureService.hasFeature(SupportedFeature.Vision)) {
-            return [];
+        const attachments: LlmChatMessageAttachment[] = [];
+
+        if (this.#featureService.hasFeature(SupportedFeature.Vision)) {
+            const imageAttachments = this.#attachmentService.getImageAttachments(chatMessage);
+
+            for (const attachment of imageAttachments) {
+                attachments.push({
+                    filename: attachment.name,
+                    url: attachment.url,
+                    type: 'image',
+                    interpretation: ''
+                });
+            }
         }
 
-        const imageAttachments = this.#attachmentService.getImageAttachments(chatMessage);
+        if (this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
+            const messageText = this.#replyService.getMessageWithoutBotMentions(chatMessage);
+            const urls = this.#webContentService.extractUrls(messageText);
 
-        return imageAttachments.map((attachment) => ({
-            filename: attachment.name,
-            url: attachment.url,
-            interpretation: ''
-        }));
+            for (const url of urls) {
+                attachments.push({
+                    filename: url,
+                    url,
+                    type: 'web',
+                    interpretation: ''
+                });
+            }
+        }
+
+        return attachments;
     }
 }

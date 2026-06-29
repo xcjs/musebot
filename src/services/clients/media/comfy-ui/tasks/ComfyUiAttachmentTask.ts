@@ -161,6 +161,7 @@ export class ComfyUiAttachmentTask extends ComfyUiBaseTask {
             attachments.push({
                 filename: `generated-${i}.png`,
                 url: '',
+                type: 'image',
                 interpretation
             });
         }

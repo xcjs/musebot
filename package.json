@@ -39,12 +39,14 @@
     "test": "jest --silent"
   },
   "dependencies": {
+    "@mozilla/readability": "^0.6.0",
     "better-sqlite3": "^12.11.1",
     "comfy-ui-client": "^0.1.2",
     "cross-env": "^10.1.0",
     "discord.js": "14.23.2",
     "drizzle-orm": "^0.45.2",
     "handlebars": "^4.7.8",
+    "jsdom": "^29.1.1",
     "json5": "^2.2.3",
     "ollama": "^0.6.0",
     "parcel": "^2.15.4",
@@ -56,6 +58,7 @@
     "@babel/preset-typescript": "^7.27.1",
     "@jest/globals": "^30.2.0",
     "@types/better-sqlite3": "^7.6.13",
+    "@types/jsdom": "^28.0.3",
     "@vuepress/bundler-vite": "^2.0.0-rc.26",
     "@vuepress/plugin-search": "^2.0.0-rc.125",
     "@vuepress/theme-default": "^2.0.0-rc.125",
