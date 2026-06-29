@@ -21,10 +21,12 @@ export class MemoryDatabase {
     readonly #drizzle: BetterSQLite3Database<Record<string, unknown>>;
     readonly #logger: ILogger;
     readonly #embeddingDimensions: number;
+    readonly #databasePath: string;
 
     constructor(databasePath: string, embeddingDimensions: number, logger: ILogger) {
         this.#logger = logger;
         this.#embeddingDimensions = embeddingDimensions;
+        this.#databasePath = databasePath;
 
         const directory = dirname(databasePath);
         if (!existsSync(directory)) {
@@ -48,7 +50,13 @@ export class MemoryDatabase {
             return;
         }
 
-        const tempPath = join(tmpdir(), `vec0${extname(loadablePath)}`);
+        const tempDir = join(tmpdir(), 'musebot');
+        if (!existsSync(tempDir)) {
+            mkdirSync(tempDir, { recursive: true });
+        }
+
+        const dbSlug = this.#databasePath.replace(/[^a-zA-Z0-9]/g, '_');
+        const tempPath = join(tempDir, `vec0_${dbSlug}${extname(loadablePath)}`);
         writeFileSync(tempPath, readFileSync(loadablePath));
         (this.#db as unknown as { loadExtension(path: string, entryPoint: string): void })
             .loadExtension(tempPath, 'sqlite3_vec_init');
