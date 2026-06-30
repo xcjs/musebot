@@ -2,6 +2,39 @@
 
 All notable changes to Musebot are documented in this file.
 
+## [9.3.0] — 2026-06-30
+
+### Added
+
+- Optional long-term memory (LTM) for chat-mode bots via SQLite + sqlite-vec vector embeddings — memories are stored as `LlmChatMessage` objects with embeddings from a configurable `ollama.embeddingModel`, retrieved as the top-K most similar server-scoped memories and injected as system messages before each response
+- Opt-in per-user consent for LTM with `/memory remember` (opts in and backfills message history from all accessible text channels across all servers) and `/memory forget` (permanently deletes all stored memories globally) slash commands, gated on `LongTermMemory` feature detection
+- Passive listening stores messages from opted-in users across all channels (even where the bot does not respond), with bot responses attributed to the triggering user for consent and deletion
+- Backfill resume, startup catch-up, and message deduplication — interrupted backfills resume on restart, missed messages are caught up by timestamp, and a unique `discordMessageId` index prevents duplicate storage
+- Embedding model tracked per memory with automatic re-embedding on model change to prevent cross-model vector space mismatch
+- Embedding calls routed through the task queue via `OllamaEmbedTask` to avoid VRAM contention with Ollama LLM tasks on the same host
+- Vision capability auto-detected from configured models; image attachments passed to vision-capable models during chat, and image interpretations stored in long-term memory
+- Web link content extraction — URLs in messages are fetched via Readability and injected as context before replying; extracted text stored as `web` attachments in LTM
+- Long-term memory section in the in-bot chat help article, describing LTM and the `/memory` slash commands
+- Long-Term Memory documentation page (`docs/chat/02-long-term-memory.md`) wired into the VuePress sidebar
+- ADR 004: Long-Term Memory via Vector Embeddings
+- GitHub repo link, vision, and web link features highlighted in README; model examples updated to `gemma4:12b`
+
+### Changed
+
+- LLM context now sends structured `LlmChatMessage` JSON (username, display name, user ID, bot flag, message, datetime, roles, channel/thread/server info, mentions) instead of a plain `displayName: message` string; `ContextMessage.timestamp` uses the Discord message `createdAt` rather than processing time
+- `guidanceScaleInterval` moved from top-level `IBotConfig` to `comfyUi.guidanceScaleInterval` (optional, defaults to `0.5`)
+- `WebContentService` replaced jsdom with linkedom for pkg binary compatibility, removing 45 transitive packages
+- `IChatMessageFilter` split into `IOutputChatMessageFilter` and new `IInputChatMessageFilter` for pre-LLM prompt augmentation
+
+### Fixed
+
+- sqlite-vec extension loading in pkg binary — the `vec0` native library is extracted to a temp file and loaded with an explicit `sqlite3_vec_init` entry point since SQLite's `loadExtension` cannot read from pkg's virtual snapshot filesystem
+- Per-process singleton temp path for the sqlite-vec extension to avoid multi-instance collisions
+- sqlite-vec KNN query: removed `LIMIT` clause conflicting with the `k=?` constraint; relational `rowid` captured before `vec` insert to avoid `last_insert_rowid` returning the `vec0` table's rowid
+- Memory database path scoped per bot instance (`workflows/{botId}/txt2txt/memory.db`)
+- Vision interpretation skipped for already-stored messages to prevent backfill stalls
+- pkg snapshot missing `drizzle-orm` submodules; `allowScripts` added for native addon packages
+
 ## [9.2.1] — 2026-06-27
 
 ### Added
