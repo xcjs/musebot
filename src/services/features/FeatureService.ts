@@ -1,4 +1,5 @@
-﻿import { IWorkflowService } from '../clients/media/comfy-ui/services/IWorkflowService.js';
+﻿import { BotMode } from '../../enums/BotMode.js';
+import { IWorkflowService } from '../clients/media/comfy-ui/services/IWorkflowService.js';
 import { IConfigurationService } from '../environment-settings/IConfigurationService.js';
 import { IBotServiceContainer } from '../IBotServiceContainer.js';
 import { ILogger } from '../ILogger.js';
@@ -41,7 +42,8 @@ export class FeatureService implements IFeatureService {
                 await this.#probeVisionCapability();
         }
 
-        if (this.#configurationService.ollamaHosts.length > 0
+        if (this.#configurationService.botFunction === BotMode.Chat
+            && this.#configurationService.ollamaHosts.length > 0
             && this.#configurationService.ollamaEmbeddingModel !== null) {
                 this.#logger.info(`${SupportedFeature.LongTermMemory} supported.`);
                 this.#supportedFeatures.push(SupportedFeature.LongTermMemory);
