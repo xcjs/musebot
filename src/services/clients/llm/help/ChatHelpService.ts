@@ -72,6 +72,6 @@ export class ChatHelpService extends BaseHelpService implements IHelpService {
             + ' and catch-up continue automatically on startup.\n\n'
             + '* **`/memory forget`** — Opts you out of long-term memory. All of your stored'
             + ' memories are **permanently deleted** across all servers, and your consent record'
-            + ' is removed. This cannot be undone.\n\n';
+            + ' is removed. This cannot be undone, but you can opt-in again at any time.\n\n';
     }
 }
