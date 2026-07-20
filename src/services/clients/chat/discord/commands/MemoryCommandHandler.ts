@@ -336,13 +336,13 @@ export class MemoryCommandHandler {
                 }
             }
 
-            const lastMessage = sortedMessages[sortedMessages.length - 1];
+            const oldestMessage = sortedMessages[0];
 
-            if (lastMessage === undefined) {
+            if (oldestMessage === undefined) {
                 break;
             }
 
-            beforeId = lastMessage.id;
+            beforeId = oldestMessage.id;
 
             if (messages.size < FETCH_PAGE_SIZE) {
                 break;
