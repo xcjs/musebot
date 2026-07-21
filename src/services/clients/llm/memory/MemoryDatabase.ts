@@ -232,7 +232,7 @@ export class MemoryDatabase {
         return rowid;
     }
 
-    queryMemories(embedding: number[], serverId: string, embeddingModel: string, topK: number): MemoryRecord[] {
+    queryMemories(embedding: number[], serverId: string, userId: string, embeddingModel: string, topK: number): MemoryRecord[] {
         const vecTable = `LlmChatMessage_vec_${this.#embeddingDimensions}`;
         const stmt = this.#db.prepare(`
             SELECT vec.rowid, vec.distance, msg.content
@@ -241,11 +241,12 @@ export class MemoryDatabase {
             WHERE vec.embedding MATCH ?
               AND vec.k = ?
               AND msg.serverId = ?
+              AND msg.userId = ?
               AND msg.embeddingModel = ?
             ORDER BY vec.distance
         `);
 
-        return stmt.all(JSON.stringify(embedding), topK, serverId, embeddingModel) as MemoryRecord[];
+        return stmt.all(JSON.stringify(embedding), topK, serverId, userId, embeddingModel) as MemoryRecord[];
     }
 
     #deleteMemoriesByUser(userId: string): void {

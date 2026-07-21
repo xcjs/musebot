@@ -14,5 +14,5 @@ export interface IMemoryService {
     getLatestMemoryTimestamp(userId: string): Promise<string | null>;
     hasMessage(discordMessageId: string): Promise<boolean>;
     store(llmChatMessage: LlmChatMessage, ownerUserId?: string): Promise<void>;
-    retrieve(llmChatMessage: LlmChatMessage): Promise<OllamaMessage[]>;
+    retrieve(userId: string, llmChatMessage: LlmChatMessage): Promise<OllamaMessage[]>;
 }

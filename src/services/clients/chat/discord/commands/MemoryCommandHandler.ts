@@ -303,8 +303,9 @@ export class MemoryCommandHandler {
                 break;
             }
 
+            // Sort newest-first so recent messages get embedded before older ones.
             const sortedMessages = [...messages.values()].sort(
-                (a: DiscordMessage, b: DiscordMessage) => a.createdTimestamp - b.createdTimestamp);
+                (a: DiscordMessage, b: DiscordMessage) => b.createdTimestamp - a.createdTimestamp);
 
             for (const message of sortedMessages) {
                 if (message.author.id !== userId && message.author.id !== botId) {
@@ -336,7 +337,8 @@ export class MemoryCommandHandler {
                 }
             }
 
-            const oldestMessage = sortedMessages[0];
+            // Oldest message is last after newest-first sort — still the pagination cursor.
+            const oldestMessage = sortedMessages[sortedMessages.length - 1];
 
             if (oldestMessage === undefined) {
                 break;

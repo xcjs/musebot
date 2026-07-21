@@ -18,7 +18,7 @@ export class DiscordMemoryInputFilter implements IInputChatMessageFilter<Discord
             return context;
         }
 
-        const memories = await this.#memoryService.retrieve(llmChatMessage);
+        const memories = await this.#memoryService.retrieve(llmChatMessage.userId, llmChatMessage);
 
         if (memories.length === 0) {
             return context;

@@ -164,7 +164,7 @@ export class MemoryService implements IMemoryService {
         }
     }
 
-    async retrieve(llmChatMessage: LlmChatMessage): Promise<OllamaMessage[]> {
+    async retrieve(userId: string, llmChatMessage: LlmChatMessage): Promise<OllamaMessage[]> {
         if (!this.isEnabled) {
             return [];
         }
@@ -180,7 +180,7 @@ export class MemoryService implements IMemoryService {
             const topK = this.#configurationService.ollamaTopK;
             const embeddingModel = this.#getEmbeddingModel();
             const database = await this.#getDatabase();
-            const records = database.queryMemories(embedding, serverId, embeddingModel, topK);
+            const records = database.queryMemories(embedding, serverId, userId, embeddingModel, topK);
 
             if (records.length === 0) {
                 return [];
