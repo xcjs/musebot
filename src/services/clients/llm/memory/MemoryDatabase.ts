@@ -298,8 +298,9 @@ export class MemoryDatabase {
 
     updateMemoryEmbeddingModel(id: number, embeddingModel: string, embedding: number[]): void {
         const vecTable = `LlmChatMessage_vec_${this.#embeddingDimensions}`;
+        // vec0 virtual tables are strict about integer types — cast at SQL level to avoid better-sqlite3 float64 binding
         this.#db.prepare(`DELETE FROM ${vecTable} WHERE rowid = ?`).run(id);
-        this.#db.prepare(`INSERT INTO ${vecTable}(rowid, embedding) VALUES (?, ?)`)
+        this.#db.prepare(`INSERT INTO ${vecTable}(rowid, embedding) VALUES (CAST(? AS INTEGER), ?)`)
             .run(id, JSON.stringify(embedding));
         this.#db.prepare('UPDATE LlmChatMessage SET embeddingModel = ? WHERE id = ?')
             .run(embeddingModel, id);

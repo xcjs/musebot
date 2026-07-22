@@ -169,7 +169,7 @@ export class MemoryService implements IMemoryService {
             return [];
         }
 
-        const serverId = llmChatMessage.server.id;
+        const serverId = llmChatMessage.server?.id;
 
         if (serverId === null) {
             return [];
