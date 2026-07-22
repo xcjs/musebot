@@ -151,6 +151,20 @@ Slash commands are registered globally when the bot starts up. It may take a
 few minutes for Discord to propagate new commands to all servers.
 :::
 
+## Crash Resilience & Data Integrity
+
+The memory database uses **Write-Ahead Logging (WAL)** mode and atomic transactions to ensure data safety:
+
+- **WAL journaling** — All writes are logged before being applied to the main database, allowing fast commits and safe recovery after unexpected shutdowns.
+- **Atomic inserts** — Storing a message creates both a relational record and its vector embedding in a single transaction. If Musebot crashes between these writes (which shouldn't happen), the database stays consistent with no orphaned rows.  
+- **Idempotent deduplication** — Messages are tracked by their Discord message ID. If two copies of the same message somehow arrive (e.g. during backfill resume or a rapid reconnect), only one row is inserted.
+
+These guarantees mean you can restart Musebot at any time without worrying about corrupting the memory database.
+
+::: warning
+For best results, allow Musebot to shut down cleanly via SIGINT/SIGTERM (Ctrl+C). While WAL protects against most crashes, an abrupt power loss during heavy backfill may result in a few messages being missed — they'll be caught on next startup.
+:::
+
 ## Startup Catch-Up
 
 When Musebot starts up, it automatically:

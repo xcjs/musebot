@@ -32,6 +32,13 @@ export default defineUserConfig({
         ]
       },
       {
+        text: 'User Guide',
+        prefix: 'user-guide',
+        children: [
+          '01-interactions.md'
+        ]
+      },
+      {
         text: 'Media',
         prefix: 'media',
         children: [

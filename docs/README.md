@@ -7,6 +7,9 @@ actions:
   - text: Download
     link: https://discord.com/servers/xcjs-198965819978416128
     type: primary
+  - text: User Guide
+    link: /user-guide/01-interactions.md
+    type: secondary
   - text: Introduction
     link: /introduction.md
     type: secondary
