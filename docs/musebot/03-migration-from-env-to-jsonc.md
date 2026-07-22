@@ -5,7 +5,7 @@ This guide will help you migrate from using environment variables (`.env` file) 
 ## Overview
 
 **What's changing:**
-- All configuration is now via `config.json` (preferred) or `config.jsonc` (with comments support)
+- All configuration is now via `config.jsonc` (preferred) or `config.json`
 - `.env` file support has been removed from the codebase
 - Configuration is validated at startup with clear error messages
 

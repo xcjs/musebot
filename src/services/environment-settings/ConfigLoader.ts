@@ -12,9 +12,10 @@ export interface IAppConfig {
 
 export class ConfigLoader {
     static load(): IAppConfig {
-        const configPath = fs.existsSync('./config.json')
-            ? './config.json'
-            : './config.jsonc';
+        // Prefer config.jsonc (supports comments); fall back to plain config.json.
+        const configPath = fs.existsSync('./config.jsonc')
+            ? './config.jsonc'
+            : './config.json';
 
         if(!fs.existsSync(configPath)) {
             const errorMessage = `${configPath} could not be found or accessed.`;

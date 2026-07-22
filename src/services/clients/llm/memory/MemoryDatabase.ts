@@ -37,6 +37,9 @@ export class MemoryDatabase {
         this.#db = new Database(databasePath);
         this.#loadVecExtension();
 
+        this.#db.pragma('journal_mode = WAL');
+        this.#logger.info('Memory database journal mode set to WAL.');
+
         this.#drizzle = drizzle(this.#db, { schema: { UserConsent, LlmChatMessageRecord } });
 
         this.#initialize();
@@ -195,37 +198,60 @@ export class MemoryDatabase {
         embedding: number[]): number | null {
         this.#logger.debug(`storeMemory() called: discordMessageId=${discordMessageId}, userId=${userId}, isBot=${isBot}.`);
 
-        if (discordMessageId !== null) {
-            const existing = this.#db.prepare(
-                'SELECT id FROM LlmChatMessage WHERE discordMessageId = ?'
-            ).get(discordMessageId) as { id: number } | undefined;
-
-            if (existing !== undefined) {
-                this.#logger.debug(`storeMemory() deduped: discordMessageId=${discordMessageId} matched existing row id=${existing.id}.`);
-                return null;
-            }
-        }
-
-        const createdAt = new Date().toISOString();
-        this.#drizzle.insert(LlmChatMessageRecord)
-            .values({
-                userId,
-                serverId,
-                content: llmChatMessageJson,
-                messageText,
-                isBot,
-                embeddingModel,
-                discordMessageId,
-                createdAt
-            })
-            .run();
-
-        const rowidRow = this.#db.prepare('SELECT last_insert_rowid() AS rowid').get() as { rowid: number };
-        const rowid = rowidRow.rowid;
-
         const vecTable = `LlmChatMessage_vec_${this.#embeddingDimensions}`;
-        this.#db.prepare(`INSERT INTO ${vecTable}(rowid, embedding) VALUES ((SELECT last_insert_rowid()), ?)`)
-            .run(JSON.stringify(embedding));
+        const createdAt = new Date().toISOString();
+
+        // Wrap dedup check, main insert, and vec0 insert in a single transaction so crash
+        // between the two writes never leaves orphan rows in either table.
+        const tx = this.#db.transaction((llmJson: string, msgText: string, uid: string, srvId: string | null, botFlag: boolean, embModel: string, dMsgId: string | null, embData: string) => {
+            // Dedup inside the transaction to avoid TOCTOU between check and insert.
+            if (dMsgId !== null) {
+                const existing = this.#db.prepare(
+                    'SELECT id FROM LlmChatMessage WHERE discordMessageId = ?'
+                ).get(dMsgId) as { id: number } | undefined;
+
+                if (existing !== undefined) {
+                    this.#logger.debug(`storeMemory() deduped inside tx: discordMessageId=${dMsgId} matched existing row id=${existing.id}.`);
+                    return -1; // sentinel: deduped, no insert
+                }
+            }
+
+            this.#drizzle.insert(LlmChatMessageRecord)
+                .values({
+                    userId: uid,
+                    serverId: srvId,
+                    content: llmJson,
+                    messageText: msgText,
+                    isBot: botFlag,
+                    embeddingModel: embModel,
+                    discordMessageId: dMsgId,
+                    createdAt
+                })
+                .run();
+
+            const rowidRow = this.#db.prepare('SELECT last_insert_rowid() AS rowid').get() as { rowid: number };
+            const rowid = rowidRow.rowid;
+
+            this.#db.prepare(`INSERT INTO ${vecTable}(rowid, embedding) VALUES ((SELECT last_insert_rowid()), ?)`)
+                .run(embData);
+
+            return rowid;
+        });
+
+        const rowid = tx(
+            llmChatMessageJson,
+            messageText,
+            userId,
+            serverId,
+            isBot,
+            embeddingModel,
+            discordMessageId,
+            JSON.stringify(embedding)
+        );
+
+        if (rowid === -1) {
+            return null;
+        }
 
         this.#logger.debug(`storeMemory() inserted row id=${rowid} for discordMessageId=${discordMessageId}.`);
 
