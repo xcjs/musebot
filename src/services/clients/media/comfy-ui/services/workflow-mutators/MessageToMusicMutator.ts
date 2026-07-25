@@ -90,7 +90,8 @@ export class MessageToMusicMutator implements IWorkflowMutator {
             tags = prompt.split(',').map(x => x.trim());
         }
 
-        if(this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
+        if(this.#featureService.hasFeature(SupportedFeature.Txt2Txt)
+            && lyrics.length === 0) {
             return new Promise((resolve, reject) => {
                 const task = this.#services.getLlmGenerateStructuredTask<SongPromptRequestType>(prompt, songPromptTypeRequestTypeData);
                 task.isChild = true;
