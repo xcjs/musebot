@@ -7,6 +7,7 @@ export const songPromptMetadataRequestData: IStructuredRequestData = {
     systemPrompt: 'You assist with building a song from a prompt, which may already include descriptive tags and/or lyrics. '
         + 'You generate musical tags, lyrics, and metadata. '
         + 'Unless explicitly told the song is instrumental, always write and include lyrics. '
+        + 'Section labels in the lyrics MUST be enclosed in square brackets (e.g. [Verse], [Chorus]) - never use "Verse 1:" or other colon-prefixed labels. '
         + 'Return only valid JSON.',
     schema: {
         type: 'object',
@@ -31,9 +32,12 @@ export const songPromptMetadataRequestData: IStructuredRequestData = {
             lyrics: {
                 type: 'string',
                 description: 'Song lyrics with structure and performance tags. '
-                    + 'Mark each section with structure tags enclosed in square brackets: [Intro], [Verse], [Pre-Chorus], [Chorus], [Bridge], [Outro], '
+                    + 'IMPORTANT: Section labels MUST use square brackets, e.g. [Verse] and [Chorus]. '
+                    + 'NEVER write "Verse 1:", "Chorus:", or any colon-prefixed label - the ACE Step model only recognizes [bracket] tags. '
+                    + 'Correct: "[Verse]\\nThe sun rises\\n\\n[Chorus]\\nHere we go". '
+                    + 'Wrong: "Verse 1:\\nThe sun rises\\n\\nChorus:\\nHere we go". '
+                    + 'Mark each section with structure tags: [Intro], [Verse], [Pre-Chorus], [Chorus], [Bridge], [Outro], '
                     + 'or instrumental tags like [Guitar Solo], [Piano Interlude], [Instrumental]. '
-                    + 'Do not use "Verse 1:" or similar colon-prefixed labels - always use square bracket tags. '
                     + 'Tags may be combined with a hyphen for performance style, e.g. [Chorus - anthemic] or [Bridge - whispered]. '
                     + 'Do not stack more than one modifier per tag. '
                     + 'Optional vocal/energy tags within sections: [raspy vocal], [whispered], [falsetto], [powerful belting], '
