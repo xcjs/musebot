@@ -1,12 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-
 import { SupportedFeature } from '../../../features/enum/SupportedFeature.js';
+import { IBotServiceContainer } from '../../../IBotServiceContainer.js';
+import { ILogger } from '../../../ILogger.js';
+import { LlmChatMessage } from '../ollama/models/LlmChatMessage.js';
 import { MemoryService } from './MemoryService.js';
 
-function mockLogger() {
+function mockLogger(): ILogger {
     return {
         debug: jest.fn(),
         info: jest.fn(),
@@ -18,6 +18,10 @@ function mockLogger() {
 }
 
 const TEST_EMBEDDING = [0.1, 0.2, 0.3];
+
+interface TestContainerOptions {
+    enabled?: boolean;
+}
 
 describe('MemoryService', () => {
     const TEST_BOT_ID = `musebot-test-${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -32,11 +36,11 @@ describe('MemoryService', () => {
         jest.clearAllMocks();
     });
 
-    function createTestContainer(options: { enabled?: boolean } = {}): any {
+    function createTestContainer(options: TestContainerOptions = {}): IBotServiceContainer {
         const mockLoggerInstance = mockLogger();
         return {
             featureService: {
-                hasFeature: jest.fn((feature: string) => {
+                hasFeature: jest.fn((feature: SupportedFeature) => {
                     if (feature === SupportedFeature.LongTermMemory) return options.enabled ?? true;
                     return false;
                 }),
@@ -48,21 +52,27 @@ describe('MemoryService', () => {
             },
             getLogger: jest.fn(() => mockLoggerInstance),
             ollamaClient: {
-                embed: jest.fn(async () => TEST_EMBEDDING),
+                embed: jest.fn<() => Promise<number[]>>().mockResolvedValue(TEST_EMBEDDING),
             },
             getMemoryService: jest.fn(),
-        };
+        } as unknown as IBotServiceContainer;
     }
 
-    function createLlmChatMessage(overrides: Partial<any> = {}): any {
+    function createLlmChatMessage(overrides: Partial<LlmChatMessage> = {}): LlmChatMessage {
         return {
-            userId: 'test-user-1',
             messageId: `msg-${Math.random().toString(36).slice(2)}`,
-            server: { id: 'server-1' },
-            channel: { id: 'channel-1' },
-            message: 'test message content',
+            username: 'tester',
+            displayName: 'Tester',
+            userId: 'test-user-1',
             isBot: false,
-            createdAt: new Date(),
+            message: 'test message content',
+            datetime: new Date().toISOString(),
+            roles: [],
+            channel: { id: 'channel-1', name: 'test-channel', topic: null },
+            thread: null,
+            server: { id: 'server-1', name: 'test-server' },
+            mentions: { users: [], roles: [], everyone: false },
+            attachments: [],
             ...overrides,
         };
     }
@@ -215,7 +225,6 @@ describe('MemoryService', () => {
         it('should skip storing if user has not consented', async () => {
             const container = createTestContainer();
             const service = new MemoryService(container);
-            // Should not throw, just skip
             const llmChatMessage = createLlmChatMessage();
             await expect(service.store(llmChatMessage)).resolves.not.toThrow();
         });
@@ -255,16 +264,12 @@ describe('MemoryService', () => {
             const service = new MemoryService(container);
             await service.setConsent('test-user-1');
 
-            // Mock embed to throw AFTER consent is set so #getDatabase() can initialize
-            container.ollamaClient.embed = jest.fn(async () => {
-                throw new Error('embedding failed');
-            });
+            container.ollamaClient.embed = jest.fn<() => Promise<number[]>>().mockRejectedValue(new Error('embedding failed'));
 
             const llmChatMessage = createLlmChatMessage();
             await expect(service.store(llmChatMessage)).resolves.not.toThrow();
-            // getLogger returns the logger instance directly — check error was called on it
-            const mockLogger = container.getLogger();
-            expect(mockLogger.error).toHaveBeenCalled();
+            const logger = container.getLogger('MemoryService') as unknown as ILogger;
+            expect(logger.error).toHaveBeenCalled();
         });
     });
 
@@ -285,7 +290,7 @@ describe('MemoryService', () => {
             await service.setConsent('user-1');
 
             const llmChatMessage = createLlmChatMessage({
-                server: null,
+                server: { id: null, name: null },
             });
             expect(await service.retrieve('user-1', llmChatMessage)).toEqual([]);
         });
@@ -305,7 +310,7 @@ describe('MemoryService', () => {
 
             const llmChatMessage = createLlmChatMessage({
                 message: 'memory test message',
-                server: { id: 'server-1' },
+                server: { id: 'server-1', name: 'test-server' },
             });
 
             await service.store(llmChatMessage);
@@ -322,12 +327,12 @@ describe('MemoryService', () => {
             const msgAlpha = createLlmChatMessage({
                 userId: 'user-alpha',
                 message: 'alpha memory',
-                server: { id: 'shared-server' },
+                server: { id: 'shared-server', name: 'shared' },
             });
             const msgBeta = createLlmChatMessage({
                 userId: 'user-beta',
                 message: 'beta memory',
-                server: { id: 'shared-server' },
+                server: { id: 'shared-server', name: 'shared' },
             });
 
             await service.store(msgAlpha);

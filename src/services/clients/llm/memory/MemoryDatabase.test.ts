@@ -1,11 +1,12 @@
-import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
-
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
+
+import { ILogger } from '../../../ILogger.js';
 import { MemoryDatabase } from './MemoryDatabase.js';
 
-function mockLogger() {
+function mockLogger(): ILogger {
     return {
         debug: jest.fn(),
         info: jest.fn(),
@@ -274,7 +275,7 @@ describe('MemoryDatabase', () => {
             const rowid = store(db, 'to delete', 'user-1', 'server-1', false, 'all-minilm', 'msg-del-vec');
             expect(rowid).toBeGreaterThan(0);
 
-            db.deleteVectorsByRowids([rowid!]);
+            db.deleteVectorsByRowids([rowid]);
             // Should not throw
         });
 
@@ -286,7 +287,7 @@ describe('MemoryDatabase', () => {
             const rowid = store(db, 'update me', 'user-1', 'server-1', false, 'old-model', 'msg-update');
             expect(rowid).toBeGreaterThan(0);
 
-            db.updateMemoryEmbeddingModel(rowid!, 'new-model', fakeEmbedding(99));
+            db.updateMemoryEmbeddingModel(rowid, 'new-model', fakeEmbedding(99));
 
             // Verify the model was updated
             expect(db.getMemoryCountByModel('new-model')).toBe(1);
