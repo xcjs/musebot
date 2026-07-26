@@ -4,14 +4,15 @@ import { SongPromptType } from './SongPromptType.js';
 export const songPromptTypeRequestTypeData: IStructuredRequestData = {
     systemPrompt: 'Your job is to determine what kind of song prompt is provided,'
         + ' if the song prompt contains a comma separated list of descriptive tags,'
-        + ' and if the prompt contains any lyrics.',
+        + ' and if the prompt contains any lyrics. '
+        + 'Default to lyrical unless the prompt explicitly requests an instrumental.',
     schema: {
         type: 'object',
         properties: {
             songPromptType: {
                 enum: Object.values(SongPromptType),
-                description: 'Whether the requested song should contain lyrics or not (lyrical or instrumental). ' +
-                    'Default to lyrical unless an instrumental is specifically requested.'
+                description: 'Whether the requested song should contain lyrics or not (lyrical or instrumental). '
+                    + 'Default to lyrical unless the prompt explicitly requests an instrumental song.'
             },
             promptHasTags: {
                 type: 'boolean',

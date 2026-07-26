@@ -6,7 +6,8 @@ import { TimeSignature } from './TimeSignature.js';
 export const songPromptMetadataRequestData: IStructuredRequestData = {
     systemPrompt: 'Your job is to assist with building a song based on the prompt you are given. '
         + 'The description may or may not already include a comma separated list of descriptive song tags and/or lyrics. '
-        + 'You will write lyrics if they are missing. Songs tags should only relate to musical terminology or concepts.',
+        + 'You will write lyrics if they are missing. Songs tags should only relate to musical terminology or concepts. '
+        + 'Unless explicitly told the song is instrumental, always write and include lyrics.',
     schema: {
         type: 'object',
         properties: {
