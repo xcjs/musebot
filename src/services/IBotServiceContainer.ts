@@ -1,9 +1,9 @@
 import {
-    ButtonInteraction,
-    Client as DiscordClient,
-    Message as DiscordMessage,
-    MessageReaction,
-    User} from 'discord.js';
+  ButtonInteraction,
+  Client as DiscordClient,
+  Message as DiscordMessage,
+  MessageReaction,
+  User} from 'discord.js';
 import { GenerateRequest, GenerateResponse } from 'ollama';
 
 import { BotInteraction } from '../enums/BotInteraction.js';
@@ -45,54 +45,54 @@ import { BaseTask } from './tasks/models/BaseTask.js';
  * Bot-specific service container - one instance per bot
  */
 export interface IBotServiceContainer {
-    // Singletons -------------------------------------------------------------/
-    configurationService: IConfigurationService;
-    featureService: IFeatureService;
-    taskQueue: ITaskQueue;
-    typingService: ITypingService;
-    discordClient: DiscordClient;
-    generativeChatClient: IGenerativeChatClient;
-    helpService: IHelpService;
-    workflowService: IWorkflowService;
-    parallelizationStrategy: IParallelizationStrategy;
-    webContentService: WebContentService;
+  // Singletons -------------------------------------------------------------/
+  configurationService: IConfigurationService;
+  featureService: IFeatureService;
+  taskQueue: ITaskQueue;
+  typingService: ITypingService;
+  discordClient: DiscordClient;
+  generativeChatClient: IGenerativeChatClient;
+  helpService: IHelpService;
+  workflowService: IWorkflowService;
+  parallelizationStrategy: IParallelizationStrategy;
+  webContentService: WebContentService;
 
-    getWorkflowMutator(interactionType: BotInteraction, workflow: IWorkflow): IWorkflowMutator;
+  getWorkflowMutator(interactionType: BotInteraction, workflow: IWorkflow): IWorkflowMutator;
 
-    // Transients -------------------------------------------------------------/
-    contentTypeService: IContentTypeService;
-    comfyUiClient: ComfyUiClient;
-    comfyUiReplyService: ComfyUiReplyService;
-    ollamaClient: OllamaClient;
-    ollamaReplyService: OllamaReplyService;
-    ollamaStreamingReplyService: OllamaStreamingReplyService;
-    actionRowBuilderFactory: IActionRowBuilderFactory;
+  // Transients -------------------------------------------------------------/
+  contentTypeService: IContentTypeService;
+  comfyUiClient: ComfyUiClient;
+  comfyUiReplyService: ComfyUiReplyService;
+  ollamaClient: OllamaClient;
+  ollamaReplyService: OllamaReplyService;
+  ollamaStreamingReplyService: OllamaStreamingReplyService;
+  actionRowBuilderFactory: IActionRowBuilderFactory;
 
-    // Factories --------------------------------------------------------------/
-    getLogger(prefix: string): ILogger;
+  // Factories --------------------------------------------------------------/
+  getLogger(prefix: string): ILogger;
 
-    getChatMessageFilters(): IOutputChatMessageFilter[];
-    getInputChatMessageFilters<ChatMessageType>(): IInputChatMessageFilter<ChatMessageType>[];
-    getChatMessageFactory<MessageType>(): IChatMessageFactory<MessageType>;
+  getChatMessageFilters(): IOutputChatMessageFilter[];
+  getInputChatMessageFilters<ChatMessageType>(): IInputChatMessageFilter<ChatMessageType>[];
+  getChatMessageFactory<MessageType>(): IChatMessageFactory<MessageType>;
 
-    getLlmChatMessageFactory<ChatMessageType>(): ILlmChatMessageFactory<ChatMessageType>;
+  getLlmChatMessageFactory<ChatMessageType>(): ILlmChatMessageFactory<ChatMessageType>;
 
-    getMemoryService(): IMemoryService;
+  getMemoryService(): IMemoryService;
 
-    getContextMessageFactory<ChatMessageType, LlmMessageType>(): IContextMessageFactory<ChatMessageType, LlmMessageType>;
-    getContextService<ChatMessageType, LlmMessageType>(): IContextService<ChatMessageType, LlmMessageType>
-    getLlmGenerateTask(prompt: string, temperature: number | undefined): BaseTask<IHttpExchange<GenerateRequest, GenerateResponse>>;
-    getLlmGenerateStructuredTask<T>(prompt: string, structuredRequestData: IStructuredRequestData | undefined)
-        : BaseTask<IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, T>>;
-    getEmbedTask(llmChatMessage: LlmChatMessage, ownerUserId?: string): BaseTask<void>;
-    getEmojiReactionTask(reaction: MessageReaction, user: User): BaseTask<unknown>;
+  getContextMessageFactory<ChatMessageType, LlmMessageType>(): IContextMessageFactory<ChatMessageType, LlmMessageType>;
+  getContextService<ChatMessageType, LlmMessageType>(): IContextService<ChatMessageType, LlmMessageType>
+  getLlmGenerateTask(prompt: string, temperature: number | undefined): BaseTask<IHttpExchange<GenerateRequest, GenerateResponse>>;
+  getLlmGenerateStructuredTask<T>(prompt: string, structuredRequestData: IStructuredRequestData | undefined)
+    : BaseTask<IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, T>>;
+  getEmbedTask(llmChatMessage: LlmChatMessage, ownerUserId?: string): BaseTask<void>;
+  getEmojiReactionTask(reaction: MessageReaction, user: User): BaseTask<unknown>;
 
-    getMessageTask(message: DiscordMessage): BaseTask<unknown>;
-    getInteractionTask(interaction: ButtonInteraction): BaseTask<unknown>;
-    getAttachmentTask(message: DiscordMessage, prompt: string): BaseTask<unknown>;
-    getCustomInteractionTask(interaction: ButtonInteraction, workflow: IWorkflow): BaseTask<unknown>;
+  getMessageTask(message: DiscordMessage): BaseTask<unknown>;
+  getInteractionTask(interaction: ButtonInteraction): BaseTask<unknown>;
+  getAttachmentTask(message: DiscordMessage, prompt: string): BaseTask<unknown>;
+  getCustomInteractionTask(interaction: ButtonInteraction, workflow: IWorkflow): BaseTask<unknown>;
 
-    getTaskChannelPostProcessor(channelName: string): ITaskChannelPostProcessor;
+  getTaskChannelPostProcessor(channelName: string): ITaskChannelPostProcessor;
 
-    getReplyService<MessageType, ReactionType, AttachmentType, InteractionType>(): IReplyService<MessageType, ReactionType, AttachmentType, InteractionType>;
+  getReplyService<MessageType, ReactionType, AttachmentType, InteractionType>(): IReplyService<MessageType, ReactionType, AttachmentType, InteractionType>;
 }

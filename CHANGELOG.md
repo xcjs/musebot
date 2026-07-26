@@ -2,6 +2,29 @@
 
 All notable changes to Musebot are documented in this file.
 
+## [9.4.0] — 2026-07-26
+
+### Added
+
+- Two-stage LLM-driven song prompt generation for `MessageToMusicMutator`: the prompt type (lyrical vs. instrumental) is determined first and fed into the metadata generation step, ensuring lyrics are produced when the song is lyrical
+- ACE Step v1.5 prompt guide distilled into the `SongPromptTypeRequestType` and `SongPromptMetadataRequestType` structured request schemas — tag dimensions (genre, emotion, instruments, timbre, vocal characteristics, production style, era), bracket-only section labels, performance/vocal/energy tags, BPM/key/time-signature guidance
+- `.editorconfig` enforcing UTF-8, LF line endings, 2-space indentation, trailing newline, and trimmed whitespace across the codebase
+- `.gitattributes` normalizing line endings to LF on commit
+- `Manage Messages` permission and `applications.commands` slash-command scope documented in `docs/musebot/01-discord.md`
+- Unit tests for `MessageToMusicMutator` (32 tests), `JsonMutator` (17 tests), `ComfyUiMessageTask` (18 tests), and `ComfyUiInteractionTask` (12 tests)
+
+### Changed
+
+- Repository files converted from CRLF to LF line endings and 4-space to 2-space indentation (TS/JS/JSON/JSONC); Markdown files converted to LF only, preserving trailing whitespace
+- `MessageToMusicMutator` only invokes the LLM for song prompt type when the user prompt lacks tags or lyrics
+- `SongPromptType` enum and structured request schemas strengthened to default to lyrical output unless an instrumental is explicitly requested
+
+### Fixed
+
+- `IWorkflowMutator.mutate()` return type widened to `Promise<SerializableRenderRequest | null>` and `JsonMutator.mutate()` return type annotation updated to match, resolving a type error where `JsonMutator` returns `null` on JSON parse failure
+- `ComfyUiMessageTask` null-check ordering: `mutate()` result is now checked for `null` before dereferencing `renderRequest.workflow`, preventing a crash when `JsonMutator` rejects invalid JSON
+- `ComfyUiInteractionTask` missing null check: added `if (renderRequest === null) continue;` before dereferencing the mutator result, preventing a crash on null mutation results
+
 ## [9.3.0] — 2026-06-30
 
 ### Added

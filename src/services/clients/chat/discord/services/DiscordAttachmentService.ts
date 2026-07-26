@@ -5,99 +5,99 @@ import { BufferEncoding } from '../../../../../enums/BufferEncoding.js';
 import { ContentType } from '../../../../../enums/ContentType.js';
 
 export class DiscordAttachmentService {
-    getAttachments(interaction: Message | ButtonInteraction): Attachment[] {
-        return this.getAttachmentsByType(interaction, []);
+  getAttachments(interaction: Message | ButtonInteraction): Attachment[] {
+    return this.getAttachmentsByType(interaction, []);
+  }
+
+  getAttachmentsByType(
+    interaction: Message | ButtonInteraction,
+    contentTypes: ContentType[] | undefined
+  ): Attachment[] {
+    let attachments: Attachment[] = [];
+
+    if (interaction instanceof Message) {
+      attachments = Array.from(interaction.attachments, ([name, value]) => ({ name, value })).map(x => x.value);
+    } else if (interaction instanceof ButtonInteraction) {
+      attachments = Array.from(interaction.message.attachments, ([name, value]) => ({ name, value })).map(x => x.value);
     }
 
-    getAttachmentsByType(
-        interaction: Message | ButtonInteraction,
-        contentTypes: ContentType[] | undefined
-    ): Attachment[] {
-        let attachments: Attachment[] = [];
+    let matchingAttachments: Attachment[] = attachments;
 
-        if (interaction instanceof Message) {
-            attachments = Array.from(interaction.attachments, ([name, value]) => ({ name, value })).map(x => x.value);
-        } else if (interaction instanceof ButtonInteraction) {
-            attachments = Array.from(interaction.message.attachments, ([name, value]) => ({ name, value })).map(x => x.value);
-        }
-
-        let matchingAttachments: Attachment[] = attachments;
-
-        if(contentTypes && contentTypes.length > 0) {
-            matchingAttachments = attachments.filter(attachment =>
-                contentTypes.includes(Object.values(ContentType)
-                    .find(contentTypeValue => contentTypeValue.toString() === attachment.contentType)));
-        }
-
-        return matchingAttachments;
+    if(contentTypes && contentTypes.length > 0) {
+      matchingAttachments = attachments.filter(attachment =>
+        contentTypes.includes(Object.values(ContentType)
+          .find(contentTypeValue => contentTypeValue.toString() === attachment.contentType)));
     }
 
-    getAudioAttachments(interaction: Message | ButtonInteraction): Attachment[] {
-        const audioTypes = [
-            ContentType.Mp3
-        ];
+    return matchingAttachments;
+  }
 
-        return this.getAttachmentsByType(interaction, audioTypes);
+  getAudioAttachments(interaction: Message | ButtonInteraction): Attachment[] {
+    const audioTypes = [
+      ContentType.Mp3
+    ];
+
+    return this.getAttachmentsByType(interaction, audioTypes);
+  }
+
+  getImageAttachments(interaction: Message | ButtonInteraction): Attachment[] {
+    const imageTypes = [
+      ContentType.Jpeg,
+      ContentType.Jpg,
+      ContentType.Png,
+      ContentType.WebP
+    ];
+
+    return this.getAttachmentsByType(interaction, imageTypes);
+  }
+
+  getMediaAttachments(interaction: Message | ButtonInteraction): Attachment[] {
+    const mediaTypes = [
+      ContentType.Jpeg,
+      ContentType.Jpg,
+      ContentType.Png,
+      ContentType.WebP,
+      ContentType.Mp3,
+      ContentType.Mp4
+    ];
+
+    return this.getAttachmentsByType(interaction, mediaTypes);
+  }
+
+  getJsonAttachments(interaction: Message | ButtonInteraction): Attachment[] {
+    return this.getAttachmentsByType(interaction, [ContentType.Json]);
+  }
+
+  getAttachmentsByName(interaction: Message | ButtonInteraction, name: string): Attachment[] {
+    let attachments: Attachment[] = [];
+
+    if (interaction instanceof Message) {
+      attachments = Array.from(interaction.attachments, ([, value]) => value);
+    } else if (interaction instanceof ButtonInteraction) {
+      attachments = Array.from(interaction.message.attachments, ([, value]) => value);
     }
 
-    getImageAttachments(interaction: Message | ButtonInteraction): Attachment[] {
-        const imageTypes = [
-            ContentType.Jpeg,
-            ContentType.Jpg,
-            ContentType.Png,
-            ContentType.WebP
-        ];
+    return attachments.filter(attachment => attachment.name === name);
+  }
 
-        return this.getAttachmentsByType(interaction, imageTypes);
+  async getAttachedImagesAsBase64(interaction: Message | ButtonInteraction): Promise<string[]> {
+    const imageAttachments = this.getImageAttachments(interaction);
+    const imagesAsBase64: string[] = [];
+
+    if(imageAttachments.length === 0) {
+      return imagesAsBase64;
     }
 
-    getMediaAttachments(interaction: Message | ButtonInteraction): Attachment[] {
-        const mediaTypes = [
-            ContentType.Jpeg,
-            ContentType.Jpg,
-            ContentType.Png,
-            ContentType.WebP,
-            ContentType.Mp3,
-            ContentType.Mp4
-        ];
+    for (const attachment of imageAttachments) {
+      const imageResponse = await fetch(attachment.url);
+      let imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
 
-        return this.getAttachmentsByType(interaction, mediaTypes);
+      const sharpImage = sharp(imageBuffer);
+      imageBuffer = await sharpImage.toBuffer() as Buffer<ArrayBuffer>;
+
+      imagesAsBase64.push(imageBuffer.toString(BufferEncoding.Base64));
     }
 
-    getJsonAttachments(interaction: Message | ButtonInteraction): Attachment[] {
-        return this.getAttachmentsByType(interaction, [ContentType.Json]);
-    }
-
-    getAttachmentsByName(interaction: Message | ButtonInteraction, name: string): Attachment[] {
-        let attachments: Attachment[] = [];
-
-        if (interaction instanceof Message) {
-            attachments = Array.from(interaction.attachments, ([, value]) => value);
-        } else if (interaction instanceof ButtonInteraction) {
-            attachments = Array.from(interaction.message.attachments, ([, value]) => value);
-        }
-
-        return attachments.filter(attachment => attachment.name === name);
-    }
-
-    async getAttachedImagesAsBase64(interaction: Message | ButtonInteraction): Promise<string[]> {
-        const imageAttachments = this.getImageAttachments(interaction);
-        const imagesAsBase64: string[] = [];
-
-        if(imageAttachments.length === 0) {
-            return imagesAsBase64;
-        }
-
-        for (const attachment of imageAttachments) {
-            const imageResponse = await fetch(attachment.url);
-            let imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
-
-            const sharpImage = sharp(imageBuffer);
-            imageBuffer = await sharpImage.toBuffer() as Buffer<ArrayBuffer>;
-
-            imagesAsBase64.push(imageBuffer.toString(BufferEncoding.Base64));
-        }
-
-        return imagesAsBase64;
-    }
+    return imagesAsBase64;
+  }
 }

@@ -23,163 +23,163 @@ import { StatelessImageGenerationActionRow } from '../components/buttonRows/Stat
 import { DiscordConstants } from '../enums/DiscordConstants.js';
 
 export class ComfyUiReplyService {
-    readonly #services: IBotServiceContainer;
+  readonly #services: IBotServiceContainer;
 
-    readonly #configurationService: IConfigurationService;
-    readonly #comfyUiClient: ComfyUiClient;
-    readonly #contentTypeService: IContentTypeService;
-    readonly #featureService: IFeatureService;
-    readonly #replyService: IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
+  readonly #configurationService: IConfigurationService;
+  readonly #comfyUiClient: ComfyUiClient;
+  readonly #contentTypeService: IContentTypeService;
+  readonly #featureService: IFeatureService;
+  readonly #replyService: IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
 
-    readonly #logger: ILogger;
+  readonly #logger: ILogger;
 
-    get host(): URL {
-        return this.#comfyUiClient.host;
+  get host(): URL {
+    return this.#comfyUiClient.host;
+  }
+
+  constructor(services: IBotServiceContainer) {
+    this.#services = services;
+
+    this.#configurationService = services.configurationService;
+    this.#comfyUiClient = services.comfyUiClient;
+    this.#contentTypeService = services.contentTypeService;
+    this.#featureService = services.featureService;
+    this.#replyService = services.getReplyService();
+
+    this.#logger = services.getLogger('ComfyUiReplyService');
+  }
+
+  async reply(interaction: Message | ButtonInteraction,
+    reply: BaseMessageOptions,
+    isEdit: boolean,
+    renderExchange: IHttpExchange<SerializableRenderRequest[], MediaCollectionResponse>): Promise<void> {
+
+    reply.content ??= '';
+    reply.files ??= [];
+
+    if (Object.values(renderExchange.response).length === 0) {
+      this.#logger.error('A reply was created with no attachments.');
+      return await this.#replyService.replyWithError(interaction);
     }
 
-    constructor(services: IBotServiceContainer) {
-        this.#services = services;
+    const fileAttachments: AttachmentBuilder[] = [];
+    let components: ActionRowBuilder<ButtonBuilder>[] = [];
 
-        this.#configurationService = services.configurationService;
-        this.#comfyUiClient = services.comfyUiClient;
-        this.#contentTypeService = services.contentTypeService;
-        this.#featureService = services.featureService;
-        this.#replyService = services.getReplyService();
+    for (const mediaContainerCollection of Object.values(renderExchange.response)) {
+      this.#logger.info(`Attaching render(s):`, mediaContainerCollection);
+      let i = 0;
 
-        this.#logger = services.getLogger('ComfyUiReplyService');
+      for (const mediaContainer of mediaContainerCollection) {
+        let extension = '';
+
+        const file = Buffer.from(await mediaContainer.blob.arrayBuffer());
+
+        if (mediaContainer.media.filename !== undefined) {
+          extension = mediaContainer.media.filename.substring(
+            mediaContainer.media.filename.lastIndexOf('.'),
+            mediaContainer.media.filename.length);
+        } else if (mediaContainer.blob.type === undefined) {
+          extension = '.octet';
+        } else {
+          const contentType = mediaContainer.blob.type;
+          extension = `.${contentType.substring(contentType.lastIndexOf('/') + 1, contentType.length)}`;
+        }
+
+        // Allow the action bar to be set from the first piece of media content.
+        if(components.length === 0 && renderExchange.request !== null) {
+          components = await this.#buildActionRows(mediaContainer, renderExchange.request);
+        }
+
+        const filename = this.getFileNameFromPrompt(renderExchange.request[i]
+          || renderExchange.request[0]);
+
+        fileAttachments.push(new AttachmentBuilder(
+          file, {
+          name: `${filename}${extension}`
+          }
+        ));
+
+        i++;
+      }
     }
 
-    async reply(interaction: Message | ButtonInteraction,
-        reply: BaseMessageOptions,
-        isEdit: boolean,
-        renderExchange: IHttpExchange<SerializableRenderRequest[], MediaCollectionResponse>): Promise<void> {
+    // Enforce max media attachments, reserving one slot for the state JSON file.
+    const maxMediaAttachments = DiscordConstants.MaxMediaAttachmentsPerMessage - 1;
+    if (fileAttachments.length > maxMediaAttachments) {
+      this.#logger.warn('The maximum media attachment count has been exceeded:',
+        fileAttachments.length,
+        maxMediaAttachments);
 
-        reply.content ??= '';
-        reply.files ??= [];
-
-        if (Object.values(renderExchange.response).length === 0) {
-            this.#logger.error('A reply was created with no attachments.');
-            return await this.#replyService.replyWithError(interaction);
-        }
-
-        const fileAttachments: AttachmentBuilder[] = [];
-        let components: ActionRowBuilder<ButtonBuilder>[] = [];
-
-        for (const mediaContainerCollection of Object.values(renderExchange.response)) {
-            this.#logger.info(`Attaching render(s):`, mediaContainerCollection);
-            let i = 0;
-
-            for (const mediaContainer of mediaContainerCollection) {
-                let extension = '';
-
-                const file = Buffer.from(await mediaContainer.blob.arrayBuffer());
-
-                if (mediaContainer.media.filename !== undefined) {
-                    extension = mediaContainer.media.filename.substring(
-                        mediaContainer.media.filename.lastIndexOf('.'),
-                        mediaContainer.media.filename.length);
-                } else if (mediaContainer.blob.type === undefined) {
-                    extension = '.octet';
-                } else {
-                    const contentType = mediaContainer.blob.type;
-                    extension = `.${contentType.substring(contentType.lastIndexOf('/') + 1, contentType.length)}`;
-                }
-
-                // Allow the action bar to be set from the first piece of media content.
-                if(components.length === 0 && renderExchange.request !== null) {
-                    components = await this.#buildActionRows(mediaContainer, renderExchange.request);
-                }
-
-                const filename = this.getFileNameFromPrompt(renderExchange.request[i]
-                    || renderExchange.request[0]);
-
-                fileAttachments.push(new AttachmentBuilder(
-                    file, {
-                    name: `${filename}${extension}`
-                    }
-                ));
-
-                i++;
-            }
-        }
-
-        // Enforce max media attachments, reserving one slot for the state JSON file.
-        const maxMediaAttachments = DiscordConstants.MaxMediaAttachmentsPerMessage - 1;
-        if (fileAttachments.length > maxMediaAttachments) {
-            this.#logger.warn('The maximum media attachment count has been exceeded:',
-                fileAttachments.length,
-                maxMediaAttachments);
-
-            fileAttachments.length = maxMediaAttachments;
-        }
-
-        // Attach the serializable render request state as a JSON file.
-        if (this.#configurationService.botFunction !== BotMode.Chat
-            && renderExchange.request !== null && renderExchange.request.length > 0) {
-            const stateJson = JSON.stringify(renderExchange.request);
-            const stateBuffer = Buffer.from(stateJson, 'utf-8');
-            fileAttachments.push(new AttachmentBuilder(stateBuffer, {
-                name: DiscordConstants.StateFileName
-            }));
-        }
-
-        reply.files = reply.files.concat(fileAttachments);
-        reply.components = components;
-
-        await this.#replyService.reply(interaction, reply, isEdit);
+      fileAttachments.length = maxMediaAttachments;
     }
 
-    async replyWithImageActionRows(interaction: Message | ButtonInteraction,
-        imageAttachments: Attachment[]): Promise<void>
-    {
-        if(imageAttachments.length === 0) {
-            return;
-        }
-
-        let actionRows = new StatelessImageGenerationActionRow(this.#services).build();
-
-        if(this.#featureService.hasFeature(SupportedFeature.Img2Img)) {
-            actionRows = actionRows.concat(await new Img2ImgActionRow(this.#services).buildAsync());
-        }
-
-        await this.#replyService.reply(interaction, {
-            files: imageAttachments,
-            components: actionRows
-        }, false);
+    // Attach the serializable render request state as a JSON file.
+    if (this.#configurationService.botFunction !== BotMode.Chat
+      && renderExchange.request !== null && renderExchange.request.length > 0) {
+      const stateJson = JSON.stringify(renderExchange.request);
+      const stateBuffer = Buffer.from(stateJson, 'utf-8');
+      fileAttachments.push(new AttachmentBuilder(stateBuffer, {
+        name: DiscordConstants.StateFileName
+      }));
     }
 
-    getFileNameFromPrompt(renderRequest: SerializableRenderRequest | null): string {
-        if(renderRequest === null) {
-            return `${this.#configurationService.applicationName}_${Date.now()}_stateless`;
-        }
+    reply.files = reply.files.concat(fileAttachments);
+    reply.components = components;
 
-        return `${this.#configurationService.applicationName}_${renderRequest.seed}_${renderRequest.prompt}`.substring(0, MAX_FILE_NAME_LENGTH);
+    await this.#replyService.reply(interaction, reply, isEdit);
+  }
+
+  async replyWithImageActionRows(interaction: Message | ButtonInteraction,
+    imageAttachments: Attachment[]): Promise<void>
+  {
+    if(imageAttachments.length === 0) {
+      return;
     }
 
-    async #buildActionRows(mediaContainer: MediaContainer, requests: SerializableRenderRequest[]): Promise<ActionRowBuilder<ButtonBuilder>[]> {
-        if (mediaContainer === null) {
-            return [];
-        }
+    let actionRows = new StatelessImageGenerationActionRow(this.#services).build();
 
-        const contentType = mediaContainer.blob.type as ContentType;
-        const contentTypeCategory = this.#contentTypeService.getContentTypeCategoryFromContentType(contentType);
-
-        const isStatefulResponse = requests.every(request => request !== null);
-
-        switch(contentTypeCategory) {
-            case ContentTypeCategory.Audio:
-                return isStatefulResponse
-                    ? new StatefulAudioGenerationActionRow(this.#services, requests[0]).build()
-                    : new StatelessAudioGenerationActionRow(this.#services).build();
-            case ContentTypeCategory.Image:
-            case ContentTypeCategory.Video:
-                return isStatefulResponse ?
-                    new StatefulImageGenerationActionRows(this.#services, requests[0]).build()
-                        .concat(await new Img2ImgActionRow(this.#services).buildAsync()) :
-                    new StatelessImageGenerationActionRow(this.#services).build()
-                        .concat(await new Img2ImgActionRow(this.#services).buildAsync());
-            default:
-                return [];
-        }
+    if(this.#featureService.hasFeature(SupportedFeature.Img2Img)) {
+      actionRows = actionRows.concat(await new Img2ImgActionRow(this.#services).buildAsync());
     }
+
+    await this.#replyService.reply(interaction, {
+      files: imageAttachments,
+      components: actionRows
+    }, false);
+  }
+
+  getFileNameFromPrompt(renderRequest: SerializableRenderRequest | null): string {
+    if(renderRequest === null) {
+      return `${this.#configurationService.applicationName}_${Date.now()}_stateless`;
+    }
+
+    return `${this.#configurationService.applicationName}_${renderRequest.seed}_${renderRequest.prompt}`.substring(0, MAX_FILE_NAME_LENGTH);
+  }
+
+  async #buildActionRows(mediaContainer: MediaContainer, requests: SerializableRenderRequest[]): Promise<ActionRowBuilder<ButtonBuilder>[]> {
+    if (mediaContainer === null) {
+      return [];
+    }
+
+    const contentType = mediaContainer.blob.type as ContentType;
+    const contentTypeCategory = this.#contentTypeService.getContentTypeCategoryFromContentType(contentType);
+
+    const isStatefulResponse = requests.every(request => request !== null);
+
+    switch(contentTypeCategory) {
+      case ContentTypeCategory.Audio:
+        return isStatefulResponse
+          ? new StatefulAudioGenerationActionRow(this.#services, requests[0]).build()
+          : new StatelessAudioGenerationActionRow(this.#services).build();
+      case ContentTypeCategory.Image:
+      case ContentTypeCategory.Video:
+        return isStatefulResponse ?
+          new StatefulImageGenerationActionRows(this.#services, requests[0]).build()
+            .concat(await new Img2ImgActionRow(this.#services).buildAsync()) :
+          new StatelessImageGenerationActionRow(this.#services).build()
+            .concat(await new Img2ImgActionRow(this.#services).buildAsync());
+      default:
+        return [];
+    }
+  }
 }

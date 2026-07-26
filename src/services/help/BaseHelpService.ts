@@ -7,28 +7,28 @@ import { IBotServiceContainer } from '../IBotServiceContainer.js';
 type DiscordReplyService = IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
 
 export abstract class BaseHelpService {
-    protected discordClient: Client;
-    protected replyService: DiscordReplyService;
+  protected discordClient: Client;
+  protected replyService: DiscordReplyService;
 
-    constructor(services: IBotServiceContainer) {
-        this.discordClient = services.discordClient;
-        this.replyService = services.getReplyService();
+  constructor(services: IBotServiceContainer) {
+    this.discordClient = services.discordClient;
+    this.replyService = services.getReplyService();
+  }
+
+  protected async buildHelpArticleFromActionRows(actionRows: IActionRows): Promise<string> {
+    let helpArticle = '';
+
+    if(!actionRows.isAsync) {
+      actionRows.build();
+    } else {
+      await actionRows.buildAsync();
     }
 
-    protected async buildHelpArticleFromActionRows(actionRows: IActionRows): Promise<string> {
-        let helpArticle = '';
+    actionRows.buttons.forEach(button => {
+      helpArticle += `* **\`${button.label}\` ${button.title}**`;
+      helpArticle += ` - ${button.helpText}\n\n`;
+    });
 
-        if(!actionRows.isAsync) {
-            actionRows.build();
-        } else {
-            await actionRows.buildAsync();
-        }
-
-        actionRows.buttons.forEach(button => {
-            helpArticle += `* **\`${button.label}\` ${button.title}**`;
-            helpArticle += ` - ${button.helpText}\n\n`;
-        });
-
-        return helpArticle;
-    }
+    return helpArticle;
+  }
 }

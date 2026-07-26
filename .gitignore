@@ -23,3 +23,6 @@ coverage/
 # Testing Workflows
 # workflows/examples should be included.
 workflows/
+
+# Opencode
+.opencode/goals/*

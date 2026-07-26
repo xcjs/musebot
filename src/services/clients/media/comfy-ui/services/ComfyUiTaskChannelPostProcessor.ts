@@ -9,14 +9,14 @@ export class ComfyUiTaskChannelPostProcessor implements ITaskChannelPostProcesso
   readonly #logger: ILogger;
 
   constructor(services: IBotServiceContainer) {
-    this.#comfyUiClient = services.comfyUiClient;
+  this.#comfyUiClient = services.comfyUiClient;
 
-    this.#logger = services.getLogger('ComfyUiTaskChannelPostProcessor');
+  this.#logger = services.getLogger('ComfyUiTaskChannelPostProcessor');
   }
 
   async postProcess(): Promise<void> {
-    this.#logger.info('Freeing ComfyUI memory.');
+  this.#logger.info('Freeing ComfyUI memory.');
 
-    await this.#comfyUiClient.free();
+  await this.#comfyUiClient.free();
   }
 }

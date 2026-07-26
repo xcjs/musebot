@@ -14,92 +14,92 @@ type DiscordReplyService = IReplyService<Message, MessageReaction, Attachment, M
 import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
 
 export class ShowDescriptionTask extends BaseTask<void> {
-    readonly #comfyUiReplyService: ComfyUiReplyService;
-    readonly #replyService: DiscordReplyService;
+  readonly #comfyUiReplyService: ComfyUiReplyService;
+  readonly #replyService: DiscordReplyService;
 
-    readonly #interaction: ButtonInteraction;
+  readonly #interaction: ButtonInteraction;
 
-    override get taskChannel(): string {
-        return this.parallelizationStrategy.getTaskChannel(ResourceType.Chat, this.isChild, null);
+  override get taskChannel(): string {
+    return this.parallelizationStrategy.getTaskChannel(ResourceType.Chat, this.isChild, null);
+  }
+
+  constructor(services: IBotServiceContainer, interaction: ButtonInteraction) {
+    super(services);
+    this.logger = services.getLogger('ShowDescriptionTask');
+
+    this.#comfyUiReplyService = services.comfyUiReplyService;
+    this.#replyService = services.getReplyService();
+
+    this.#interaction = interaction;
+  }
+
+  override async process(): Promise<void> {
+    await super.process();
+
+    const renderRequests = await this.#readRenderRequests();
+    let messageContent = '';
+    const jsonAttachments: AttachmentBuilder[] = [];
+
+    for (const renderRequest of renderRequests) {
+      const jsonRequest = renderRequest.toString();
+
+      const jsonBuffer = Buffer.from(jsonRequest, BufferEncoding.UTF8);
+      jsonAttachments.push(new AttachmentBuilder(jsonBuffer, {
+        name: `${this.#comfyUiReplyService.getFileNameFromPrompt(renderRequest)}.json`
+      }));
+
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
+      messageContent = `${this.#interaction.member?.user.toString() || 'You'} wanted to see the request message for \`${renderRequest.prompt}\``;
     }
 
-    constructor(services: IBotServiceContainer, interaction: ButtonInteraction) {
-        super(services);
-        this.logger = services.getLogger('ShowDescriptionTask');
+    const reply = {
+      content: messageContent,
+      files: jsonAttachments
+    };
 
-        this.#comfyUiReplyService = services.comfyUiReplyService;
-        this.#replyService = services.getReplyService();
+    await this.#interaction.message.reply(reply);
+  }
 
-        this.#interaction = interaction;
+  async #readRenderRequests(): Promise<SerializableRenderRequest[]> {
+    // Prefer the dedicated state JSON file attachment.
+    const stateAttachments = this.#replyService.getAttachmentsByName(this.#interaction, DiscordConstants.StateFileName);
+
+    if (stateAttachments.length > 0) {
+      const stateAttachment = stateAttachments[0];
+      const response = await fetch(stateAttachment.url);
+      const buffer = Buffer.from(await response.arrayBuffer());
+      const json = buffer.toString('utf-8');
+      const parsed = JSON.parse(json) as SerializableRenderRequest[];
+
+      return parsed.map(item => SerializableRenderRequest.fromSerializableRenderRequest(item));
     }
 
-    override async process(): Promise<void> {
-        await super.process();
+    // Legacy fallback: read SerializableRenderRequest from media attachment descriptions.
+    const imageAttachments = this.#replyService.getMediaAttachments(this.#interaction);
+    const renderRequests: SerializableRenderRequest[] = [];
 
-        const renderRequests = await this.#readRenderRequests();
-        let messageContent = '';
-        const jsonAttachments: AttachmentBuilder[] = [];
+    for (const imageAttachment of imageAttachments) {
+      const jsonRequest = imageAttachment.description;
 
-        for (const renderRequest of renderRequests) {
-            const jsonRequest = renderRequest.toString();
+      if (jsonRequest === null) {
+        continue;
+      }
 
-            const jsonBuffer = Buffer.from(jsonRequest, BufferEncoding.UTF8);
-            jsonAttachments.push(new AttachmentBuilder(jsonBuffer, {
-                name: `${this.#comfyUiReplyService.getFileNameFromPrompt(renderRequest)}.json`
-            }));
-
-            // eslint-disable-next-line @typescript-eslint/no-base-to-string
-            messageContent = `${this.#interaction.member?.user.toString() || 'You'} wanted to see the request message for \`${renderRequest.prompt}\``;
-        }
-
-        const reply = {
-            content: messageContent,
-            files: jsonAttachments
-        };
-
-        await this.#interaction.message.reply(reply);
+      renderRequests.push(SerializableRenderRequest.fromJson(jsonRequest));
     }
 
-    async #readRenderRequests(): Promise<SerializableRenderRequest[]> {
-        // Prefer the dedicated state JSON file attachment.
-        const stateAttachments = this.#replyService.getAttachmentsByName(this.#interaction, DiscordConstants.StateFileName);
-
-        if (stateAttachments.length > 0) {
-            const stateAttachment = stateAttachments[0];
-            const response = await fetch(stateAttachment.url);
-            const buffer = Buffer.from(await response.arrayBuffer());
-            const json = buffer.toString('utf-8');
-            const parsed = JSON.parse(json) as SerializableRenderRequest[];
-
-            return parsed.map(item => SerializableRenderRequest.fromSerializableRenderRequest(item));
-        }
-
-        // Legacy fallback: read SerializableRenderRequest from media attachment descriptions.
-        const imageAttachments = this.#replyService.getMediaAttachments(this.#interaction);
-        const renderRequests: SerializableRenderRequest[] = [];
-
-        for (const imageAttachment of imageAttachments) {
-            const jsonRequest = imageAttachment.description;
-
-            if (jsonRequest === null) {
-                continue;
-            }
-
-            renderRequests.push(SerializableRenderRequest.fromJson(jsonRequest));
-        }
-
-        if (renderRequests.length === 0) {
-            throw new Error('JSON request could not be read from state file or attachment descriptions.');
-        }
-
-        return renderRequests;
+    if (renderRequests.length === 0) {
+      throw new Error('JSON request could not be read from state file or attachment descriptions.');
     }
 
-    override async postProcess(): Promise<void> {
-        await super.postProcess();
+    return renderRequests;
+  }
 
-        if (this.taskStatus === TaskStatus.Dead) {
-            await this.#replyService.replyWithError(this.#interaction);
-        }
+  override async postProcess(): Promise<void> {
+    await super.postProcess();
+
+    if (this.taskStatus === TaskStatus.Dead) {
+      await this.#replyService.replyWithError(this.#interaction);
     }
+  }
 }

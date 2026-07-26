@@ -1,4 +1,4 @@
 export interface IChannelTypingIndicator {
-    channelId: string;
-    typingInterval: NodeJS.Timeout | null;
+  channelId: string;
+  typingInterval: NodeJS.Timeout | null;
 }

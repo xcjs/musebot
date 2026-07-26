@@ -1,96 +1,96 @@
 {
   "$musebotDefaults": {
-    "label": "🎥",
-    "title": "Animate",
-    "helpText": "Animate the image into a 5 second video using an image to video model.",
-    "maxWidth": 832,
-    "maxHeight": 480,
-    "prompt": "",
-    "promptNegative": "",
-    "model": "",
-    "seed": -1,
-    "width": 0,
-    "height": 0,
-    "sampler": "euler",
-    "scheduler": "simple",
-    "cfgScale": 6,
-    "steps": 20,
-    "num": 1
+  "label": "🎥",
+  "title": "Animate",
+  "helpText": "Animate the image into a 5 second video using an image to video model.",
+  "maxWidth": 832,
+  "maxHeight": 480,
+  "prompt": "",
+  "promptNegative": "",
+  "model": "",
+  "seed": -1,
+  "width": 0,
+  "height": 0,
+  "sampler": "euler",
+  "scheduler": "simple",
+  "cfgScale": 6,
+  "steps": 20,
+  "num": 1
   },
   "101": {
-    "inputs": {
+  "inputs": {
       "upscale_method": "lanczos",
       "width": "{{{ width }}}",
       "height": "{{{ height }}}",
       "crop": "disabled",
       "image": ["111", 0]
-    },
-    "class_type": "ImageScale",
-    "_meta": {
+  },
+  "class_type": "ImageScale",
+  "_meta": {
       "title": "Upscale Image"
-    }
+  }
   },
   "102": {
-    "inputs": {
+  "inputs": {
       "unet_name": "Wan/img2vid/wan2.1-i2v-14b-480p-Q4_K_S.gguf"
-    },
-    "class_type": "UnetLoaderGGUF",
-    "_meta": {
+  },
+  "class_type": "UnetLoaderGGUF",
+  "_meta": {
       "title": "Unet Loader (GGUF)"
-    }
+  }
   },
   "103": {
-    "inputs": {
+  "inputs": {
       "clip_name": "umt5_xxl_fp8_e4m3fn_scaled.safetensors",
       "type": "wan",
       "device": "default"
-    },
-    "class_type": "CLIPLoader",
-    "_meta": {
+  },
+  "class_type": "CLIPLoader",
+  "_meta": {
       "title": "Load CLIP"
-    }
+  }
   },
   "104": {
-    "inputs": {
+  "inputs": {
       "vae_name": "Wan/wan_2.1_vae.safetensors"
-    },
-    "class_type": "VAELoader",
-    "_meta": {
+  },
+  "class_type": "VAELoader",
+  "_meta": {
       "title": "Load VAE"
-    }
+  }
   },
   "105": {
-    "inputs": {
+  "inputs": {
       "text": "{{{ prompt }}}",
       "clip": ["103", 0]
-    },
-    "class_type": "CLIPTextEncode",
-    "_meta": {
+  },
+  "class_type": "CLIPTextEncode",
+  "_meta": {
       "title": "CLIP Text Encode (Prompt)"
-    }
+  }
   },
   "106": {
-    "inputs": {
+  "inputs": {
       "clip_name": "clip_vision_h.safetensors"
-    },
-    "class_type": "CLIPVisionLoader",
-    "_meta": {
+  },
+  "class_type": "CLIPVisionLoader",
+  "_meta": {
       "title": "Load CLIP Vision"
-    }
+  }
   },
   "107": {
-    "inputs": {
+  "inputs": {
       "crop": "none",
       "clip_vision": ["106", 0],
       "image": ["101", 0]
-    },
-    "class_type": "CLIPVisionEncode",
-    "_meta": {
+  },
+  "class_type": "CLIPVisionEncode",
+  "_meta": {
       "title": "CLIP Vision Encode"
-    }
+  }
   },
   "108": {
-    "inputs": {
+  "inputs": {
       "width": "{{{ width }}}",
       "height": "{{{ height }}}",
       "length": 81,
@@ -100,14 +100,14 @@
       "vae": ["104", 0],
       "clip_vision_output": ["107", 0],
       "start_image": ["101", 0]
-    },
-    "class_type": "WanImageToVideo",
-    "_meta": {
+  },
+  "class_type": "WanImageToVideo",
+  "_meta": {
       "title": "WanImageToVideo"
-    }
+  }
   },
   "109": {
-    "inputs": {
+  "inputs": {
       "noise_seed": "{{{ seed }}}",
       "steps": "{{{ steps }}}",
       "cfg": "{{{ cfgScale }}}",
@@ -129,53 +129,53 @@
       "positive": ["108", 0],
       "negative": ["108", 1],
       "latent_image": ["108", 2]
-    },
-    "class_type": "SwarmKSampler",
-    "_meta": {
+  },
+  "class_type": "SwarmKSampler",
+  "_meta": {
       "title": "SwarmKSampler"
-    }
+  }
   },
   "110": {
-    "inputs": {
+  "inputs": {
       "samples": ["109", 0],
       "vae": ["104", 0]
-    },
-    "class_type": "VAEDecode",
-    "_meta": {
+  },
+  "class_type": "VAEDecode",
+  "_meta": {
       "title": "VAE Decode"
-    }
+  }
   },
   "111": {
-    "inputs": {
+  "inputs": {
       "image": "{{{ image }}}"
-    },
-    "class_type": "ETN_LoadImageBase64",
-    "_meta": {
+  },
+  "class_type": "ETN_LoadImageBase64",
+  "_meta": {
       "title": "Load Image (Base64)"
-    }
+  }
   },
   "117": {
-    "inputs": {
+  "inputs": {
       "filename_prefix": "Musebot_Wan",
       "fps": 16,
       "lossless": false,
       "quality": 85,
       "method": "default",
       "images": ["110", 0]
-    },
-    "class_type": "SaveAnimatedWEBP",
-    "_meta": {
+  },
+  "class_type": "SaveAnimatedWEBP",
+  "_meta": {
       "title": "SaveAnimatedWEBP"
-    }
+  }
   },
   "118": {
-    "inputs": {
+  "inputs": {
       "text": "色调艳丽，过曝，静态，细节模糊不清，字幕，风格，作品，画作，画面，静止，整体发灰，最差质量，低质量，JPEG压缩残留，丑陋的，残缺的，多余的手指，画得不好的手部，画得不好的脸部，畸形的，毁容的，形态畸形的肢体，手指融合，静止不动的画面，杂乱的背景，三条腿，背景人很多，倒着走, {{{ promptNegative }}}",
       "clip": ["103", 0]
-    },
-    "class_type": "CLIPTextEncode",
-    "_meta": {
+  },
+  "class_type": "CLIPTextEncode",
+  "_meta": {
       "title": "CLIP Text Encode (Prompt)"
-    }
+  }
   }
 }

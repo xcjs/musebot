@@ -18,83 +18,83 @@ import { SerializableRenderRequest } from '../../models/SerializableRenderReques
 import { IWorkflowMutator } from './IWorkflowMutator.js';
 
 export class RandomPromptMutator implements IWorkflowMutator {
-    get interactions(): BotInteraction[] {
-        return [BotInteraction.Randomize];
-    }
+  get interactions(): BotInteraction[] {
+    return [BotInteraction.Randomize];
+  }
 
-    get types(): SupportedFeature[] {
-        return [
-            SupportedFeature.Txt2Audio,
-            SupportedFeature.Txt2Img,
-            SupportedFeature.Txt2Vid
-        ];
-    }
+  get types(): SupportedFeature[] {
+    return [
+      SupportedFeature.Txt2Audio,
+      SupportedFeature.Txt2Img,
+      SupportedFeature.Txt2Vid
+    ];
+  }
 
-    get contentMessage(): string {
-        return this.#contentMessage;
-    }
+  get contentMessage(): string {
+    return this.#contentMessage;
+  }
 
-    get additionalAttachments(): AttachmentBuilder[] {
-        return this.#additionalAttachments;
-    }
+  get additionalAttachments(): AttachmentBuilder[] {
+    return this.#additionalAttachments;
+  }
 
-    readonly #services: IBotServiceContainer;
+  readonly #services: IBotServiceContainer;
 
-    readonly #configurationService: IConfigurationService;
-    readonly #taskQueue: ITaskQueue;
+  readonly #configurationService: IConfigurationService;
+  readonly #taskQueue: ITaskQueue;
 
-    #contentMessage = '';
-    readonly #additionalAttachments: AttachmentBuilder[] = [];
+  #contentMessage = '';
+  readonly #additionalAttachments: AttachmentBuilder[] = [];
 
-    constructor(services: IBotServiceContainer) {
-        this.#services = services;
+  constructor(services: IBotServiceContainer) {
+    this.#services = services;
 
-        this.#configurationService = services.configurationService;
-        this.#taskQueue = services.taskQueue;
-    }
+    this.#configurationService = services.configurationService;
+    this.#taskQueue = services.taskQueue;
+  }
 
-    async mutate(renderRequest: SerializableRenderRequest,
-        interaction: ButtonInteraction,
-        workflow: IWorkflow): Promise<SerializableRenderRequest> {
-        const mutatedRequest = SerializableRenderRequest.fromSerializableRenderRequest(renderRequest);
-        mutatedRequest.workflow = workflow.name;
-        mutatedRequest.prompt = (await this.#getRandomPrompt()).trim();
+  async mutate(renderRequest: SerializableRenderRequest,
+    interaction: ButtonInteraction,
+    workflow: IWorkflow): Promise<SerializableRenderRequest> {
+    const mutatedRequest = SerializableRenderRequest.fromSerializableRenderRequest(renderRequest);
+    mutatedRequest.workflow = workflow.name;
+    mutatedRequest.prompt = (await this.#getRandomPrompt()).trim();
 
-        mutatedRequest.refreshSeed();
-        mutatedRequest.refreshDuration();
+    mutatedRequest.refreshSeed();
+    mutatedRequest.refreshDuration();
 
-        this.#contentMessage = `Two AIs whisper to each other over the the ancient \`TCP/IP\` protocol.` +
-            // eslint-disable-next-line @typescript-eslint/no-base-to-string
-            ` They present ${interaction.member?.user.toString() || 'you'} with this.`;
+    this.#contentMessage = `Two AIs whisper to each other over the the ancient \`TCP/IP\` protocol.` +
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
+      ` They present ${interaction.member?.user.toString() || 'you'} with this.`;
 
-        return await Promise.resolve(mutatedRequest);
-    }
+    return await Promise.resolve(mutatedRequest);
+  }
 
-    async #getRandomPrompt(): Promise<string> {
-        return new Promise((resolve, reject) => {
-            const prompt = getRandomArrayEntry(this.#configurationService.randomPrompts) || '';
-            const task = this.#services.getLlmGenerateTask(prompt, OLLAMA_TEMPERATURE_MAX);
-            task.isChild = true;
+  async #getRandomPrompt(): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const prompt = getRandomArrayEntry(this.#configurationService.randomPrompts) || '';
+      const task = this.#services.getLlmGenerateTask(prompt, OLLAMA_TEMPERATURE_MAX);
+      task.isChild = true;
 
-            const callback = (payload: IHttpExchange<GenerateRequest, GenerateResponse>): void => {
-                this.additionalAttachments.push(
-                    this.#packageExpandedPromptAsMarkdown(payload.response.response));
+      const callback = (payload: IHttpExchange<GenerateRequest, GenerateResponse>): void => {
+        this.additionalAttachments.push(
+          this.#packageExpandedPromptAsMarkdown(payload.response.response));
 
-                resolve(payload.response.response);
-            };
+        resolve(payload.response.response);
+      };
 
-            task.onSuccess = callback;
-            task.onFailure = reject;
-            this.#taskQueue.add(task as BaseTask<unknown>);
-        });
-    }
+      task.onSuccess = callback;
+      task.onFailure = reject;
+      this.#taskQueue.add(task as BaseTask<unknown>);
+    });
+  }
 
-    #packageExpandedPromptAsMarkdown(prompt: string): AttachmentBuilder {
-        const promptBuffer = Buffer.from(wrapText(prompt, MAX_TEXT_LINE_LENGTH).trim(),
-            BufferEncoding.UTF8);
+  #packageExpandedPromptAsMarkdown(prompt: string): AttachmentBuilder {
+    const promptBuffer = Buffer.from(wrapText(prompt, MAX_TEXT_LINE_LENGTH).trim(),
+      BufferEncoding.UTF8);
 
-        return new AttachmentBuilder(promptBuffer, {
-            name: `${prompt.substring(0, MAX_FILE_NAME_LENGTH)}.md`
-        });
-    }
+    return new AttachmentBuilder(promptBuffer, {
+      name: `${prompt.substring(0, MAX_FILE_NAME_LENGTH)}.md`
+    });
+  }
 }

@@ -8,216 +8,216 @@ import { SupportedFeature } from './enum/SupportedFeature.js';
 import { FeatureService } from './FeatureService.js';
 
 function createMockConfigurationService(overrides: Partial<IConfigurationService> = {}): IConfigurationService {
-    return {
-        packageName: 'musebot',
-        version: '1.0.0',
-        nodeEnvironment: 'test' as never,
-        botId: 'test-bot',
-        botFunction: 'chat' as never,
-        discordToken: 'test-token',
-        discordChannels: [],
-        discordChannelsDisallowed: [],
-        botRequiresMention: false,
-        botResponseRate: 100,
-        botPrivateMessageUsers: [],
-        errorMessage: 'error',
-        maxTaskAttempts: 3,
-        taskRetryDelayMilliseconds: 100,
-        taskQueueStrategy: 'serial' as never,
-        taskQueueForceSerialAcrossHosts: false,
-        comfyUiHosts: [],
-        comfyUiTimeoutMinutes: 30,
-        comfyUiGuidanceScaleInterval: 0.5,
-        randomPrompts: [],
-        ollamaHosts: [],
-        ollamaModels: [],
-        ollamaSystemPrompt: '',
-        ollamaStreamsResponse: false,
-        ollamaEmbeddingModel: null,
-        ollamaTopK: 5,
-        applicationName: 'Musebot',
-        isProduction: false,
-        ...overrides,
-    };
+  return {
+    packageName: 'musebot',
+    version: '1.0.0',
+    nodeEnvironment: 'test' as never,
+    botId: 'test-bot',
+    botFunction: 'chat' as never,
+    discordToken: 'test-token',
+    discordChannels: [],
+    discordChannelsDisallowed: [],
+    botRequiresMention: false,
+    botResponseRate: 100,
+    botPrivateMessageUsers: [],
+    errorMessage: 'error',
+    maxTaskAttempts: 3,
+    taskRetryDelayMilliseconds: 100,
+    taskQueueStrategy: 'serial' as never,
+    taskQueueForceSerialAcrossHosts: false,
+    comfyUiHosts: [],
+    comfyUiTimeoutMinutes: 30,
+    comfyUiGuidanceScaleInterval: 0.5,
+    randomPrompts: [],
+    ollamaHosts: [],
+    ollamaModels: [],
+    ollamaSystemPrompt: '',
+    ollamaStreamsResponse: false,
+    ollamaEmbeddingModel: null,
+    ollamaTopK: 5,
+    applicationName: 'Musebot',
+    isProduction: false,
+    ...overrides,
+  };
 }
 
 describe('FeatureService', () => {
-    let mockConfigurationService: IConfigurationService;
-    let mockLoadWorkflows: jest.Mock<() => Promise<void>>;
-    let mockHasWorkflowType: jest.Mock<(feature: SupportedFeature) => boolean>;
-    let mockWorkflowService: IWorkflowService;
-    let mockContainer: IBotServiceContainer;
-    let service: FeatureService;
+  let mockConfigurationService: IConfigurationService;
+  let mockLoadWorkflows: jest.Mock<() => Promise<void>>;
+  let mockHasWorkflowType: jest.Mock<(feature: SupportedFeature) => boolean>;
+  let mockWorkflowService: IWorkflowService;
+  let mockContainer: IBotServiceContainer;
+  let service: FeatureService;
 
-    beforeEach((): void => {
-        mockConfigurationService = createMockConfigurationService();
+  beforeEach((): void => {
+    mockConfigurationService = createMockConfigurationService();
 
-        mockLoadWorkflows = jest.fn((): Promise<void> => Promise.resolve());
-        mockHasWorkflowType = jest.fn((): boolean => false);
+    mockLoadWorkflows = jest.fn((): Promise<void> => Promise.resolve());
+    mockHasWorkflowType = jest.fn((): boolean => false);
 
-        mockWorkflowService = {
-            loadWorkflows: mockLoadWorkflows,
-            hasWorkflows: false,
-            hasWorkflowType: mockHasWorkflowType,
-        } as unknown as IWorkflowService;
+    mockWorkflowService = {
+      loadWorkflows: mockLoadWorkflows,
+      hasWorkflows: false,
+      hasWorkflowType: mockHasWorkflowType,
+    } as unknown as IWorkflowService;
 
-        mockContainer = {
-            ...createMockServiceContainer(),
-            configurationService: mockConfigurationService,
-            workflowService: mockWorkflowService,
-        };
+    mockContainer = {
+      ...createMockServiceContainer(),
+      configurationService: mockConfigurationService,
+      workflowService: mockWorkflowService,
+    };
 
-        service = new FeatureService(mockContainer);
+    service = new FeatureService(mockContainer);
+  });
+
+  describe('constructor', () => {
+    it('should initialize with empty supported features', (): void => {
+      expect(service.supportedFeatures).toEqual([]);
+    });
+  });
+
+  describe('hasFeature()', () => {
+    it('should return false when feature is not supported', (): void => {
+      expect(service.hasFeature(SupportedFeature.Txt2Img)).toBe(false);
     });
 
-    describe('constructor', () => {
-        it('should initialize with empty supported features', (): void => {
-            expect(service.supportedFeatures).toEqual([]);
-        });
+    it('should return true when feature is supported', async (): Promise<void> => {
+      mockConfigurationService.ollamaHosts = [new URL('http://localhost:11434')];
+      mockConfigurationService.ollamaModels = ['llama3'];
+
+      await service.loadFeatures();
+
+      expect(service.hasFeature(SupportedFeature.Txt2Txt)).toBe(true);
+    });
+  });
+
+  describe('loadFeatures()', () => {
+    it('should call workflowService.loadWorkflows', async function (this: void): Promise<void> {
+      await service.loadFeatures();
+
+      expect(mockLoadWorkflows).toHaveBeenCalledTimes(1);
     });
 
-    describe('hasFeature()', () => {
-        it('should return false when feature is not supported', (): void => {
-            expect(service.hasFeature(SupportedFeature.Txt2Img)).toBe(false);
-        });
+    it('should add Txt2Txt when ollamaHosts and ollamaModels are configured', async function (this: void): Promise<void> {
+      mockConfigurationService.ollamaHosts = [new URL('http://localhost:11434')];
+      mockConfigurationService.ollamaModels = ['llama3'];
 
-        it('should return true when feature is supported', async (): Promise<void> => {
-            mockConfigurationService.ollamaHosts = [new URL('http://localhost:11434')];
-            mockConfigurationService.ollamaModels = ['llama3'];
+      await service.loadFeatures();
 
-            await service.loadFeatures();
-
-            expect(service.hasFeature(SupportedFeature.Txt2Txt)).toBe(true);
-        });
+      expect(service.supportedFeatures).toContain(SupportedFeature.Txt2Txt);
     });
 
-    describe('loadFeatures()', () => {
-        it('should call workflowService.loadWorkflows', async function (this: void): Promise<void> {
-            await service.loadFeatures();
+    it('should not add Txt2Txt when ollamaHosts is empty', async function (this: void): Promise<void> {
+      mockConfigurationService.ollamaHosts = [];
+      mockConfigurationService.ollamaModels = ['llama3'];
 
-            expect(mockLoadWorkflows).toHaveBeenCalledTimes(1);
-        });
+      await service.loadFeatures();
 
-        it('should add Txt2Txt when ollamaHosts and ollamaModels are configured', async function (this: void): Promise<void> {
-            mockConfigurationService.ollamaHosts = [new URL('http://localhost:11434')];
-            mockConfigurationService.ollamaModels = ['llama3'];
+      expect(service.supportedFeatures).not.toContain(SupportedFeature.Txt2Txt);
+    });
 
-            await service.loadFeatures();
+    it('should not add Txt2Txt when ollamaModels is empty', async function (this: void): Promise<void> {
+      mockConfigurationService.ollamaHosts = [new URL('http://localhost:11434')];
+      mockConfigurationService.ollamaModels = [];
 
-            expect(service.supportedFeatures).toContain(SupportedFeature.Txt2Txt);
-        });
+      await service.loadFeatures();
 
-        it('should not add Txt2Txt when ollamaHosts is empty', async function (this: void): Promise<void> {
-            mockConfigurationService.ollamaHosts = [];
-            mockConfigurationService.ollamaModels = ['llama3'];
+      expect(service.supportedFeatures).not.toContain(SupportedFeature.Txt2Txt);
+    });
 
-            await service.loadFeatures();
+    it('should return early when workflowService has no workflows', async function (this: void): Promise<void> {
+      mockConfigurationService.ollamaHosts = [new URL('http://localhost:11434')];
+      mockConfigurationService.ollamaModels = ['llama3'];
+      mockWorkflowService.hasWorkflows = false;
 
-            expect(service.supportedFeatures).not.toContain(SupportedFeature.Txt2Txt);
-        });
+      await service.loadFeatures();
 
-        it('should not add Txt2Txt when ollamaModels is empty', async function (this: void): Promise<void> {
-            mockConfigurationService.ollamaHosts = [new URL('http://localhost:11434')];
-            mockConfigurationService.ollamaModels = [];
+      expect(mockConfigurationService.comfyUiHosts).toEqual([]);
+      expect(mockHasWorkflowType).not.toHaveBeenCalled();
+    });
 
-            await service.loadFeatures();
+    it('should add workflow features when comfyUiHosts and workflows are configured', async function (this: void): Promise<void> {
+      mockConfigurationService.comfyUiHosts = [new URL('http://localhost:8188')];
+      mockWorkflowService.hasWorkflows = true;
+      mockHasWorkflowType.mockImplementation((feature: SupportedFeature): boolean => {
+        return feature === SupportedFeature.Txt2Img || feature === SupportedFeature.Txt2Vid;
+      });
 
-            expect(service.supportedFeatures).not.toContain(SupportedFeature.Txt2Txt);
-        });
+      await service.loadFeatures();
 
-        it('should return early when workflowService has no workflows', async function (this: void): Promise<void> {
-            mockConfigurationService.ollamaHosts = [new URL('http://localhost:11434')];
-            mockConfigurationService.ollamaModels = ['llama3'];
-            mockWorkflowService.hasWorkflows = false;
+      expect(service.supportedFeatures).toContain(SupportedFeature.Txt2Img);
+      expect(service.supportedFeatures).toContain(SupportedFeature.Txt2Vid);
+      expect(service.supportedFeatures).not.toContain(SupportedFeature.Txt2Music);
+    });
 
-            await service.loadFeatures();
+    it('should not add workflow features when comfyUiHosts is empty', async function (this: void): Promise<void> {
+      mockConfigurationService.comfyUiHosts = [];
+      mockWorkflowService.hasWorkflows = true;
 
-            expect(mockConfigurationService.comfyUiHosts).toEqual([]);
-            expect(mockHasWorkflowType).not.toHaveBeenCalled();
-        });
+      await service.loadFeatures();
 
-        it('should add workflow features when comfyUiHosts and workflows are configured', async function (this: void): Promise<void> {
-            mockConfigurationService.comfyUiHosts = [new URL('http://localhost:8188')];
-            mockWorkflowService.hasWorkflows = true;
-            mockHasWorkflowType.mockImplementation((feature: SupportedFeature): boolean => {
-                return feature === SupportedFeature.Txt2Img || feature === SupportedFeature.Txt2Vid;
-            });
+      expect(mockHasWorkflowType).not.toHaveBeenCalled();
+    });
 
-            await service.loadFeatures();
+    it('should add both Txt2Txt and workflow features together', async function (this: void): Promise<void> {
+      mockConfigurationService.ollamaHosts = [new URL('http://localhost:11434')];
+      mockConfigurationService.ollamaModels = ['llama3'];
+      mockConfigurationService.comfyUiHosts = [new URL('http://localhost:8188')];
+      mockWorkflowService.hasWorkflows = true;
+      mockHasWorkflowType.mockImplementation((feature: SupportedFeature): boolean => {
+        return feature === SupportedFeature.Txt2Img;
+      });
 
-            expect(service.supportedFeatures).toContain(SupportedFeature.Txt2Img);
-            expect(service.supportedFeatures).toContain(SupportedFeature.Txt2Vid);
-            expect(service.supportedFeatures).not.toContain(SupportedFeature.Txt2Music);
-        });
+      await service.loadFeatures();
 
-        it('should not add workflow features when comfyUiHosts is empty', async function (this: void): Promise<void> {
-            mockConfigurationService.comfyUiHosts = [];
-            mockWorkflowService.hasWorkflows = true;
+      expect(service.supportedFeatures).toContain(SupportedFeature.Txt2Txt);
+      expect(service.supportedFeatures).toContain(SupportedFeature.Txt2Img);
+      expect(service.supportedFeatures.length).toBe(2);
+    });
 
-            await service.loadFeatures();
+    it('should add no features when nothing is configured', async function (this: void): Promise<void> {
+      await service.loadFeatures();
 
-            expect(mockHasWorkflowType).not.toHaveBeenCalled();
-        });
+      expect(service.supportedFeatures).toEqual([]);
+    });
 
-        it('should add both Txt2Txt and workflow features together', async function (this: void): Promise<void> {
-            mockConfigurationService.ollamaHosts = [new URL('http://localhost:11434')];
-            mockConfigurationService.ollamaModels = ['llama3'];
-            mockConfigurationService.comfyUiHosts = [new URL('http://localhost:8188')];
-            mockWorkflowService.hasWorkflows = true;
-            mockHasWorkflowType.mockImplementation((feature: SupportedFeature): boolean => {
-                return feature === SupportedFeature.Txt2Img;
-            });
+    it('should log info for Txt2Txt when supported', async function (this: void): Promise<void> {
+      const logger = createMockLogger();
+      mockContainer = {
+        ...createMockServiceContainer({ logger }),
+        configurationService: mockConfigurationService,
+        workflowService: mockWorkflowService,
+      };
+      service = new FeatureService(mockContainer);
 
-            await service.loadFeatures();
+      mockConfigurationService.ollamaHosts = [new URL('http://localhost:11434')];
+      mockConfigurationService.ollamaModels = ['llama3'];
 
-            expect(service.supportedFeatures).toContain(SupportedFeature.Txt2Txt);
-            expect(service.supportedFeatures).toContain(SupportedFeature.Txt2Img);
-            expect(service.supportedFeatures.length).toBe(2);
-        });
-
-        it('should add no features when nothing is configured', async function (this: void): Promise<void> {
-            await service.loadFeatures();
-
-            expect(service.supportedFeatures).toEqual([]);
-        });
-
-        it('should log info for Txt2Txt when supported', async function (this: void): Promise<void> {
-            const logger = createMockLogger();
-            mockContainer = {
-                ...createMockServiceContainer({ logger }),
-                configurationService: mockConfigurationService,
-                workflowService: mockWorkflowService,
-            };
-            service = new FeatureService(mockContainer);
-
-            mockConfigurationService.ollamaHosts = [new URL('http://localhost:11434')];
-            mockConfigurationService.ollamaModels = ['llama3'];
-
-            await service.loadFeatures();
+      await service.loadFeatures();
 
              
-            expect(logger.info).toHaveBeenCalledWith(`${SupportedFeature.Txt2Txt} supported.`);
-        });
+      expect(logger.info).toHaveBeenCalledWith(`${SupportedFeature.Txt2Txt} supported.`);
+    });
 
-        it('should log info for each supported workflow feature', async function (this: void): Promise<void> {
-            const logger = createMockLogger();
-            mockContainer = {
-                ...createMockServiceContainer({ logger }),
-                configurationService: mockConfigurationService,
-                workflowService: mockWorkflowService,
-            };
-            service = new FeatureService(mockContainer);
+    it('should log info for each supported workflow feature', async function (this: void): Promise<void> {
+      const logger = createMockLogger();
+      mockContainer = {
+        ...createMockServiceContainer({ logger }),
+        configurationService: mockConfigurationService,
+        workflowService: mockWorkflowService,
+      };
+      service = new FeatureService(mockContainer);
 
-            mockConfigurationService.comfyUiHosts = [new URL('http://localhost:8188')];
-            mockWorkflowService.hasWorkflows = true;
-            mockHasWorkflowType.mockImplementation((feature: SupportedFeature): boolean => {
-                return feature === SupportedFeature.Txt2Img;
-            });
+      mockConfigurationService.comfyUiHosts = [new URL('http://localhost:8188')];
+      mockWorkflowService.hasWorkflows = true;
+      mockHasWorkflowType.mockImplementation((feature: SupportedFeature): boolean => {
+        return feature === SupportedFeature.Txt2Img;
+      });
 
-            await service.loadFeatures();
+      await service.loadFeatures();
 
              
-            expect(logger.info).toHaveBeenCalledWith(`${SupportedFeature.Txt2Img} supported.`);
-        });
+      expect(logger.info).toHaveBeenCalledWith(`${SupportedFeature.Txt2Img} supported.`);
     });
+  });
 });

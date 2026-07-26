@@ -7,105 +7,105 @@ import { ResourceType } from '../../parallelization/ResourceType.js';
 import { TaskStatus } from '../enums/TaskStatus.js';
 
 export abstract class BaseTask<T> {
-    get id(): UUID {
-        return this.#id;
-    }
+  get id(): UUID {
+    return this.#id;
+  }
 
-    get taskStatus(): TaskStatus {
-        return this.#taskStatus;
-    }
+  get taskStatus(): TaskStatus {
+    return this.#taskStatus;
+  }
 
-    set taskStatus(taskStatus: TaskStatus) {
-        if (taskStatus === TaskStatus.Failed) {
-            if (this.taskStatus !== TaskStatus.Failed) {
-                this.#numAttempts++;
+  set taskStatus(taskStatus: TaskStatus) {
+    if (taskStatus === TaskStatus.Failed) {
+      if (this.taskStatus !== TaskStatus.Failed) {
+        this.#numAttempts++;
 
-                if (this.#numAttempts >= this.#maxAttempts) {
-                    this.#taskStatus = TaskStatus.Dead;
-                }
-            }
-        } else {
-            this.#taskStatus = taskStatus;
+        if (this.#numAttempts >= this.#maxAttempts) {
+          this.#taskStatus = TaskStatus.Dead;
         }
-
-        this.logger.info(`Setting taskStatus of task ${this.id} to ${taskStatus}.`);
+      }
+    } else {
+      this.#taskStatus = taskStatus;
     }
 
-    abstract get taskChannel(): string;
+    this.logger.info(`Setting taskStatus of task ${this.id} to ${taskStatus}.`);
+  }
 
-    get numAttempts(): number {
-        return this.#numAttempts;
-    }
+  abstract get taskChannel(): string;
 
-    get createdTime(): Date {
-        return this.#createdTime;
-    }
+  get numAttempts(): number {
+    return this.#numAttempts;
+  }
 
-    get startedTime(): Date | null {
-        return this.#startedTime;
-    }
+  get createdTime(): Date {
+    return this.#createdTime;
+  }
 
-    get resourceType(): ResourceType {
-        return ResourceType.None;
-    }
+  get startedTime(): Date | null {
+    return this.#startedTime;
+  }
 
-    #isChild = false;
-    get isChild(): boolean {
-        return this.#isChild;
-    }
+  get resourceType(): ResourceType {
+    return ResourceType.None;
+  }
 
-    set isChild(isChild: boolean) {
-        this.#isChild = isChild;
-    }
+  #isChild = false;
+  get isChild(): boolean {
+    return this.#isChild;
+  }
 
-    set onSuccess(callback: (payload: T) => void) { }
+  set isChild(isChild: boolean) {
+    this.#isChild = isChild;
+  }
 
-    set onFailure(callback: (error: Error) => void) { }
+  set onSuccess(callback: (payload: T) => void) { }
 
-    get lastError(): Error | null {
-        return this.#lastError;
-    }
+  set onFailure(callback: (error: Error) => void) { }
 
-    set lastError(error: Error) {
-        this.#lastError = error;
-    }
+  get lastError(): Error | null {
+    return this.#lastError;
+  }
 
-    protected services: IBotServiceContainer;
-    parallelizationStrategy: IParallelizationStrategy;
-    logger: ILogger;
+  set lastError(error: Error) {
+    this.#lastError = error;
+  }
 
-    readonly #id: UUID;
-    #taskStatus: TaskStatus = TaskStatus.Idle;
-    #numAttempts: number = 0;
-    readonly #maxAttempts: number = 0;
-    readonly #createdTime: Date;
-    #startedTime: Date | null = null;
-    #lastError: Error | null = null;
+  protected services: IBotServiceContainer;
+  parallelizationStrategy: IParallelizationStrategy;
+  logger: ILogger;
 
-    constructor(services: IBotServiceContainer) {
-        this.services = services;
-        this.parallelizationStrategy = services.parallelizationStrategy;
+  readonly #id: UUID;
+  #taskStatus: TaskStatus = TaskStatus.Idle;
+  #numAttempts: number = 0;
+  readonly #maxAttempts: number = 0;
+  readonly #createdTime: Date;
+  #startedTime: Date | null = null;
+  #lastError: Error | null = null;
 
-        this.logger = services.getLogger('BaseTask');
+  constructor(services: IBotServiceContainer) {
+    this.services = services;
+    this.parallelizationStrategy = services.parallelizationStrategy;
 
-        this.#id = randomUUID();
-        this.#createdTime = new Date();
-        this.#maxAttempts = services.configurationService.maxTaskAttempts;
-    }
+    this.logger = services.getLogger('BaseTask');
 
-    async preProcess(): Promise<void> {
-        this.logger.info(`Pre-processing task ${this.#id}.`);
-        await Promise.resolve();
-    }
+    this.#id = randomUUID();
+    this.#createdTime = new Date();
+    this.#maxAttempts = services.configurationService.maxTaskAttempts;
+  }
 
-    async process(): Promise<void> {
-        this.#startedTime = new Date();
-        this.logger.info(`Processing task ${this.#id}.`);
-        await Promise.resolve();
-    }
+  async preProcess(): Promise<void> {
+    this.logger.info(`Pre-processing task ${this.#id}.`);
+    await Promise.resolve();
+  }
 
-    async postProcess(): Promise<void> {
-        this.logger.info(`Post-processing task ${this.#id}.`);
-        await Promise.resolve();
-    }
+  async process(): Promise<void> {
+    this.#startedTime = new Date();
+    this.logger.info(`Processing task ${this.#id}.`);
+    await Promise.resolve();
+  }
+
+  async postProcess(): Promise<void> {
+    this.logger.info(`Post-processing task ${this.#id}.`);
+    await Promise.resolve();
+  }
 }

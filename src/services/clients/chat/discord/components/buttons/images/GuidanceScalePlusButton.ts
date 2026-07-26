@@ -9,55 +9,55 @@ import { guidanceScaleMax } from '../../../../../media/stable-diffusion/constant
 import { BaseComponent } from '../../BaseComponent.js';
 
 export class GuidanceScalePlusButton extends BaseComponent<ButtonBuilder> {
-    override get label(): string {
-        return '➕';
+  override get label(): string {
+    return '➕';
+  }
+
+  override get isSupported(): boolean {
+    let isSupported = true;
+
+    isSupported = this.featureService.hasFeature(SupportedFeature.Txt2Audio)
+      || this.featureService.hasFeature(SupportedFeature.Txt2Img)
+      || this.featureService.hasFeature(SupportedFeature.Txt2Music)
+      || this.featureService.hasFeature(SupportedFeature.Txt2Vid);
+
+    if (this.#renderRequest === null) {
+      return false;
     }
 
-    override get isSupported(): boolean {
-        let isSupported = true;
+    isSupported = isSupported
+      && this.#renderRequest.cfgScale - this.#configurationService.comfyUiGuidanceScaleInterval
+        <= guidanceScaleMax;
 
-        isSupported = this.featureService.hasFeature(SupportedFeature.Txt2Audio)
-            || this.featureService.hasFeature(SupportedFeature.Txt2Img)
-            || this.featureService.hasFeature(SupportedFeature.Txt2Music)
-            || this.featureService.hasFeature(SupportedFeature.Txt2Vid);
+    return isSupported;
+  }
 
-        if (this.#renderRequest === null) {
-            return false;
-        }
+  override get title(): string {
+    return 'Increase Guidance Scale';
+  }
 
-        isSupported = isSupported
-            && this.#renderRequest.cfgScale - this.#configurationService.comfyUiGuidanceScaleInterval
-                <= guidanceScaleMax;
+  override get helpText(): string {
+    return 'Increases the guidance scale of your prompt.'
+      + ' A higher guidance scale forces the bot to more strictly follow your prompt.';
+  }
 
-        return isSupported;
-    }
+  #configurationService: IConfigurationService;
+  #renderRequest: SerializableRenderRequest | null;
 
-    override get title(): string {
-        return 'Increase Guidance Scale';
-    }
+  constructor(services: IBotServiceContainer, renderRequest: SerializableRenderRequest | null) {
+    super(services);
+    this.#configurationService = services.configurationService;
+    this.#renderRequest = renderRequest;
+  }
 
-    override get helpText(): string {
-        return 'Increases the guidance scale of your prompt.'
-            + ' A higher guidance scale forces the bot to more strictly follow your prompt.';
-    }
+  override build(): ButtonBuilder {
+    return new ButtonBuilder()
+      .setCustomId(BotInteraction.GuidanceScalePlus)
+      .setLabel(this.label)
+      .setStyle(ButtonStyle.Secondary);
+  }
 
-    #configurationService: IConfigurationService;
-    #renderRequest: SerializableRenderRequest | null;
-
-    constructor(services: IBotServiceContainer, renderRequest: SerializableRenderRequest | null) {
-        super(services);
-        this.#configurationService = services.configurationService;
-        this.#renderRequest = renderRequest;
-    }
-
-    override build(): ButtonBuilder {
-        return new ButtonBuilder()
-            .setCustomId(BotInteraction.GuidanceScalePlus)
-            .setLabel(this.label)
-            .setStyle(ButtonStyle.Secondary);
-    }
-
-    override buildAsync(): Promise<ButtonBuilder> {
-        throw new Error('Method not implemented.');
-    }
+  override buildAsync(): Promise<ButtonBuilder> {
+    throw new Error('Method not implemented.');
+  }
 }

@@ -8,25 +8,25 @@ import { IReplyService } from '../../chat/IReplyService.js';
 type DiscordReplyService = IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
 
 export class ShowHelpTask extends BaseTask<void> {
-    get taskChannel(): string {
-        return 'Discord';
-    }
+  get taskChannel(): string {
+    return 'Discord';
+  }
 
-    #helpService: IHelpService;
-    #replyService: DiscordReplyService;
+  #helpService: IHelpService;
+  #replyService: DiscordReplyService;
 
-    #interaction: ButtonInteraction;
+  #interaction: ButtonInteraction;
 
-    constructor(services: IBotServiceContainer, interaction: ButtonInteraction) {
-        super(services);
+  constructor(services: IBotServiceContainer, interaction: ButtonInteraction) {
+    super(services);
 
-        this.#helpService = services.helpService;
-        this.#replyService = services.getReplyService();
+    this.#helpService = services.helpService;
+    this.#replyService = services.getReplyService();
 
-        this.#interaction = interaction;
-    }
+    this.#interaction = interaction;
+  }
 
-    async process(): Promise<void> {
-        await this.#replyService.reply(this.#interaction, { content: await this.#helpService.buildHelpArticle(this.#interaction) }, false);
-    }
+  async process(): Promise<void> {
+    await this.#replyService.reply(this.#interaction, { content: await this.#helpService.buildHelpArticle(this.#interaction) }, false);
+  }
 }

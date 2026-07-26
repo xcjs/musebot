@@ -15,111 +15,111 @@ import type { ITaskChannelPostProcessor } from '../services/parallelization/ITas
  * Creates a mock logger for testing
  */
 export function createMockLogger(): jest.Mocked<ILogger> {
-    return {
-        debug: jest.fn(),
-        info: jest.fn(),
-        success: jest.fn(),
-        warn: jest.fn(),
-        error: jest.fn(),
-        fatal: jest.fn(),
-    };
+  return {
+    debug: jest.fn(),
+    info: jest.fn(),
+    success: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+    fatal: jest.fn(),
+  };
 }
 
 /**
  * Creates a mock task channel post processor for testing
  */
 export function createMockPostProcessor(): jest.Mocked<ITaskChannelPostProcessor> {
-    return {
-        postProcess: jest.fn(() => Promise.resolve()),
-    };
+  return {
+    postProcess: jest.fn(() => Promise.resolve()),
+  };
 }
 
 /**
  * A typed container for testing that exposes the mocks
  */
 export interface MockContainer extends IBotServiceContainer {
-    _logger: jest.Mocked<ILogger>;
-    _postProcessor: jest.Mocked<ITaskChannelPostProcessor>;
+  _logger: jest.Mocked<ILogger>;
+  _postProcessor: jest.Mocked<ITaskChannelPostProcessor>;
 }
 
 /**
  * Configuration options for the mock service container
  */
 export interface MockServiceContainerConfig {
-    logger?: jest.Mocked<ILogger>;
-    postProcessor?: jest.Mocked<ITaskChannelPostProcessor>;
-    configurationService?: IConfigurationService;
-    globalConfiguration?: IGlobalConfiguration;
+  logger?: jest.Mocked<ILogger>;
+  postProcessor?: jest.Mocked<ITaskChannelPostProcessor>;
+  configurationService?: IConfigurationService;
+  globalConfiguration?: IGlobalConfiguration;
 }
 
 /**
  * A typed container for testing global services (IGlobalServiceContainer)
  */
 export interface MockGlobalContainer extends IGlobalServiceContainer {
-    globalConfiguration: IGlobalConfiguration;
-    configurationService: IConfigurationService;
-    _logger: jest.Mocked<ILogger>;
-    _postProcessor: jest.Mocked<ITaskChannelPostProcessor>;
+  globalConfiguration: IGlobalConfiguration;
+  configurationService: IConfigurationService;
+  _logger: jest.Mocked<ILogger>;
+  _postProcessor: jest.Mocked<ITaskChannelPostProcessor>;
 }
 
 /**
  * Creates a minimal mock global service container for testing TaskQueue and other IGlobalServiceContainer consumers.
  */
 export function createMockGlobalContainer(config?: MockServiceContainerConfig): MockGlobalContainer {
-    const logger = config?.logger ?? createMockLogger();
-    const postProcessor = config?.postProcessor ?? createMockPostProcessor();
+  const logger = config?.logger ?? createMockLogger();
+  const postProcessor = config?.postProcessor ?? createMockPostProcessor();
 
-    return {
-        globalConfiguration: {
-            taskQueue: {
-                numAttempts: 3,
-                retryDelayMs: 100,
-                strategy: TaskQueueStrategy.Serial,
-                forceSerialAcrossHosts: false
-            }
-        },
-        configurationService: {
-            packageName: 'musebot',
-            version: '8.7.1',
-            nodeEnvironment: NodeEnvironment.Test,
-            botId: 'bot-1',
-            botFunction: BotMode.Chat,
-            maxTaskAttempts: 3,
-            taskRetryDelayMilliseconds: 100,
-            taskQueueStrategy: TaskQueueStrategy.Serial,
-            taskQueueForceSerialAcrossHosts: false,
-            discordToken: 'test-token',
-            discordChannels: [],
-            discordChannelsDisallowed: [],
-            botRequiresMention: true,
-            botResponseRate: 100,
-            botPrivateMessageUsers: [],
-            errorMessage: 'An error occurred',
-            comfyUiHosts: [],
-            comfyUiTimeoutMinutes: 30,
-            comfyUiGuidanceScaleInterval: 0.5,
-            randomPrompts: [],
-            ollamaHosts: [],
-            ollamaModels: [],
-            ollamaSystemPrompt: '',
-            ollamaStreamsResponse: false,
-            ollamaEmbeddingModel: null,
-            ollamaTopK: 5,
-            applicationName: 'Musebot',
-            isProduction: false
-        },
-        taskQueue: null as never,
-        parallelizationStrategy: {
-            getTaskChannel: () => 'test_channel',
-        },
+  return {
+    globalConfiguration: {
+      taskQueue: {
+        numAttempts: 3,
+        retryDelayMs: 100,
+        strategy: TaskQueueStrategy.Serial,
+        forceSerialAcrossHosts: false
+      }
+    },
+    configurationService: {
+      packageName: 'musebot',
+      version: '8.7.1',
+      nodeEnvironment: NodeEnvironment.Test,
+      botId: 'bot-1',
+      botFunction: BotMode.Chat,
+      maxTaskAttempts: 3,
+      taskRetryDelayMilliseconds: 100,
+      taskQueueStrategy: TaskQueueStrategy.Serial,
+      taskQueueForceSerialAcrossHosts: false,
+      discordToken: 'test-token',
+      discordChannels: [],
+      discordChannelsDisallowed: [],
+      botRequiresMention: true,
+      botResponseRate: 100,
+      botPrivateMessageUsers: [],
+      errorMessage: 'An error occurred',
+      comfyUiHosts: [],
+      comfyUiTimeoutMinutes: 30,
+      comfyUiGuidanceScaleInterval: 0.5,
+      randomPrompts: [],
+      ollamaHosts: [],
+      ollamaModels: [],
+      ollamaSystemPrompt: '',
+      ollamaStreamsResponse: false,
+      ollamaEmbeddingModel: null,
+      ollamaTopK: 5,
+      applicationName: 'Musebot',
+      isProduction: false
+    },
+    taskQueue: null as never,
+    parallelizationStrategy: {
+      getTaskChannel: () => 'test_channel',
+    },
 
-        getLogger: jest.fn(() => logger),
-        getTaskChannelPostProcessor: jest.fn((_services, _channelName) => postProcessor),
+    getLogger: jest.fn(() => logger),
+    getTaskChannelPostProcessor: jest.fn((_services, _channelName) => postProcessor),
 
-        // Expose mocks for test access
-        _logger: logger,
-        _postProcessor: postProcessor,
-    };
+    // Expose mocks for test access
+    _logger: logger,
+    _postProcessor: postProcessor,
+  };
 }
 
 /**
@@ -127,89 +127,89 @@ export function createMockGlobalContainer(config?: MockServiceContainerConfig): 
  * This provides only the services needed by BaseTask, TaskQueue, and TaskChannel.
  */
 export function createMockServiceContainer(config?: MockServiceContainerConfig): MockContainer {
-    const logger = config?.logger ?? createMockLogger();
-    const postProcessor = config?.postProcessor ?? createMockPostProcessor();
-    const configurationService = config?.configurationService ?? {
-        packageName: 'musebot',
-        version: '8.7.1',
-        nodeEnvironment: NodeEnvironment.Test,
-        botId: 'bot-1',
-        botFunction: BotMode.Chat,
-        maxTaskAttempts: 3,
-        taskRetryDelayMilliseconds: 100,
-        taskQueueStrategy: TaskQueueStrategy.Serial,
-        taskQueueForceSerialAcrossHosts: false,
-        discordToken: 'test-token',
-        discordChannels: [],
-        discordChannelsDisallowed: [],
-        botRequiresMention: true,
-        botResponseRate: 100,
-        botPrivateMessageUsers: [],
-        errorMessage: 'An error occurred',
-        comfyUiHosts: [],
-        comfyUiTimeoutMinutes: 30,
-        comfyUiGuidanceScaleInterval: 0.5,
-        randomPrompts: [],
-        ollamaHosts: [],
-        ollamaModels: [],
-        ollamaSystemPrompt: '',
-        ollamaStreamsResponse: false,
-        ollamaEmbeddingModel: null,
-        ollamaTopK: 5,
-        applicationName: 'Musebot',
-        isProduction: false
-    };
-    const parallelizationStrategy = {
-        getTaskChannel: () => 'test_channel',
-    } as IParallelizationStrategy;
+  const logger = config?.logger ?? createMockLogger();
+  const postProcessor = config?.postProcessor ?? createMockPostProcessor();
+  const configurationService = config?.configurationService ?? {
+    packageName: 'musebot',
+    version: '8.7.1',
+    nodeEnvironment: NodeEnvironment.Test,
+    botId: 'bot-1',
+    botFunction: BotMode.Chat,
+    maxTaskAttempts: 3,
+    taskRetryDelayMilliseconds: 100,
+    taskQueueStrategy: TaskQueueStrategy.Serial,
+    taskQueueForceSerialAcrossHosts: false,
+    discordToken: 'test-token',
+    discordChannels: [],
+    discordChannelsDisallowed: [],
+    botRequiresMention: true,
+    botResponseRate: 100,
+    botPrivateMessageUsers: [],
+    errorMessage: 'An error occurred',
+    comfyUiHosts: [],
+    comfyUiTimeoutMinutes: 30,
+    comfyUiGuidanceScaleInterval: 0.5,
+    randomPrompts: [],
+    ollamaHosts: [],
+    ollamaModels: [],
+    ollamaSystemPrompt: '',
+    ollamaStreamsResponse: false,
+    ollamaEmbeddingModel: null,
+    ollamaTopK: 5,
+    applicationName: 'Musebot',
+    isProduction: false
+  };
+  const parallelizationStrategy = {
+    getTaskChannel: () => 'test_channel',
+  } as IParallelizationStrategy;
 
-    // Return a properly typed mock container
-    return {
-        // Global settings
-        configurationService: configurationService,
-        // Singletons
-        featureService: null as never,
-        taskQueue: null as never,
-        typingService: null as never,
-        discordClient: null as never,
-        generativeChatClient: null as never,
-        helpService: null as never,
-        parallelizationStrategy: parallelizationStrategy,
+  // Return a properly typed mock container
+  return {
+    // Global settings
+    configurationService: configurationService,
+    // Singletons
+    featureService: null as never,
+    taskQueue: null as never,
+    typingService: null as never,
+    discordClient: null as never,
+    generativeChatClient: null as never,
+    helpService: null as never,
+    parallelizationStrategy: parallelizationStrategy,
 
-        // Transients
-        contentTypeService: null as never,
-        comfyUiClient: null as never,
-        comfyUiReplyService: null as never,
-        ollamaClient: null as never,
-        ollamaReplyService: null as never,
-        ollamaStreamingReplyService: null as never,
-        actionRowBuilderFactory: null as never,
+    // Transients
+    contentTypeService: null as never,
+    comfyUiClient: null as never,
+    comfyUiReplyService: null as never,
+    ollamaClient: null as never,
+    ollamaReplyService: null as never,
+    ollamaStreamingReplyService: null as never,
+    actionRowBuilderFactory: null as never,
 
-        // Factories
-        getLogger: jest.fn(() => logger),
-        getTaskChannelPostProcessor: jest.fn(() => postProcessor),
-        getChatMessageFilters: jest.fn(() => []),
-        getInputChatMessageFilters: jest.fn(() => []),
-        getChatMessageFactory: jest.fn(() => null as never),
-        getLlmChatMessageFactory: () => null as never,
-        getMemoryService: () => null as never,
-        getContextMessageFactory: () => null as never,
-        getContextService: () => null as never,
-        getLlmGenerateTask: () => null as never,
-        getLlmGenerateStructuredTask: () => null as never,
-        getEmojiReactionTask: () => null as never,
-        getEmbedTask: () => null as never,
-        getMessageTask: () => null as never,
-        getInteractionTask: () => null as never,
-        getAttachmentTask: () => null as never,
-        getCustomInteractionTask: () => null as never,
-        getWorkflowMutator: () => null as never,
-        getReplyService: () => null as never,
+    // Factories
+    getLogger: jest.fn(() => logger),
+    getTaskChannelPostProcessor: jest.fn(() => postProcessor),
+    getChatMessageFilters: jest.fn(() => []),
+    getInputChatMessageFilters: jest.fn(() => []),
+    getChatMessageFactory: jest.fn(() => null as never),
+    getLlmChatMessageFactory: () => null as never,
+    getMemoryService: () => null as never,
+    getContextMessageFactory: () => null as never,
+    getContextService: () => null as never,
+    getLlmGenerateTask: () => null as never,
+    getLlmGenerateStructuredTask: () => null as never,
+    getEmojiReactionTask: () => null as never,
+    getEmbedTask: () => null as never,
+    getMessageTask: () => null as never,
+    getInteractionTask: () => null as never,
+    getAttachmentTask: () => null as never,
+    getCustomInteractionTask: () => null as never,
+    getWorkflowMutator: () => null as never,
+    getReplyService: () => null as never,
 
-        // Expose mocks for test access
-        workflowService: null as never,
-        webContentService: null as never,
-        _logger: logger,
-        _postProcessor: postProcessor,
-    };
+    // Expose mocks for test access
+    workflowService: null as never,
+    webContentService: null as never,
+    _logger: logger,
+    _postProcessor: postProcessor,
+  };
 }

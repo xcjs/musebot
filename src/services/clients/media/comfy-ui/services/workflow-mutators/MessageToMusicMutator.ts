@@ -21,136 +21,142 @@ import { SerializableRenderRequest } from '../../models/SerializableRenderReques
 import { IWorkflowMutator } from './IWorkflowMutator.js';
 
 export class MessageToMusicMutator implements IWorkflowMutator {
-    get interactions(): BotInteraction[] {
-        return [BotInteraction.Message];
+  get interactions(): BotInteraction[] {
+    return [BotInteraction.Message];
+  }
+
+  get types(): SupportedFeature[] {
+    return [SupportedFeature.Txt2Music];
+  }
+
+  get contentMessage(): string {
+    return '';
+  }
+
+  get additionalAttachments(): AttachmentBuilder[] {
+    return [];
+  }
+
+  readonly #services: IBotServiceContainer;
+  readonly #featureService: IFeatureService;
+  readonly #taskQueue: ITaskQueue;
+  readonly #replyService: IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
+
+  constructor(services: IBotServiceContainer) {
+    this.#services = services;
+    this.#featureService = services.featureService;
+    this.#taskQueue = services.taskQueue;
+    this.#replyService = services.getReplyService();
+  }
+
+  async mutate(renderRequest: SerializableRenderRequest, interaction: Message, workflow: IWorkflow): Promise<SerializableRenderRequest> {
+    const prompt = this.#replyService.getMessageWithoutBotMentions(interaction);
+
+    const mutatedRequest = SerializableRenderRequest.fromSerializableRenderRequest(renderRequest);
+
+    const songRequestType = await this.#getSongPromptType(prompt);
+    const songPromptMetadata = await this.#getSongPromptMetadata(prompt, songRequestType);
+
+    mutatedRequest.prompt = songPromptMetadata.tags.join(', ');
+    mutatedRequest.prompt2 = songPromptMetadata.lyrics;
+
+    mutatedRequest.bpm = songPromptMetadata.bpm;
+    mutatedRequest.keyScale = songPromptMetadata.keyScale;
+    mutatedRequest.timeSignature = songPromptMetadata.timeSignature;
+
+    if (mutatedRequest.durationMin !== undefined
+      && mutatedRequest.durationMax !== undefined) {
+      mutatedRequest.duration = getRandomInt(mutatedRequest.durationMin, mutatedRequest.durationMax);
     }
 
-    get types(): SupportedFeature[] {
-        return [SupportedFeature.Txt2Music];
+    mutatedRequest.workflow = workflow.name;
+    mutatedRequest.refreshSeed();
+
+    return await Promise.resolve(mutatedRequest);
+  }
+
+  async #getSongPromptType(prompt: string): Promise<SongPromptRequestType & { tags: string[], lyrics: string }> {
+    // Music models can contain up to two prompts - one for music
+    // genre/style and one for lyrics.
+    const promptSeparator = '\n\n';
+    let tags: string[] = []
+    let lyrics = '';
+
+    let promptHasTags = false;
+    let promptHasLyrics = false;
+
+    if (prompt.indexOf(promptSeparator) > 0) {
+      tags = prompt.split(promptSeparator)[0].split(',').map(x => x.trim());
+      lyrics = prompt.substring(
+        prompt.indexOf(promptSeparator), prompt.length).trim();
+    } else {
+      tags = prompt.split(',').map(x => x.trim());
     }
 
-    get contentMessage(): string {
-        return '';
+    promptHasTags = tags.length > 0;
+    promptHasLyrics = lyrics.length > 0;
+
+
+    if(this.#featureService.hasFeature(SupportedFeature.Txt2Txt)
+      && (!promptHasTags || !promptHasLyrics)) {
+      return new Promise((resolve, reject) => {
+        const task = this.#services.getLlmGenerateStructuredTask<SongPromptRequestType>(prompt, songPromptTypeRequestTypeData);
+        task.isChild = true;
+
+        const callback = (payload: IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, SongPromptRequestType>): void => {
+          resolve({
+            ...payload.data,
+            tags,
+            lyrics
+          });
+        };
+
+        task.onSuccess = callback;
+        task.onFailure = reject;
+        this.#taskQueue.add(task as BaseTask<unknown>);
+      });
+    } else {
+      return {
+        songPromptType: promptHasLyrics ? SongPromptType.Lyrical : SongPromptType.Instrumental,
+        promptHasTags: tags.length > 0,
+        promptHasLyrics,
+        tags,
+        lyrics
+      };
     }
+  }
 
-    get additionalAttachments(): AttachmentBuilder[] {
-        return [];
+  async #getSongPromptMetadata(prompt: string, songPromptRequestType: SongPromptRequestType & { tags: string[], lyrics: string }): Promise<SongPromptMetadata> {
+    if(this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
+      return new Promise((resolve, reject) => {
+        const metadataPrompt = `The song should be ${songPromptRequestType.songPromptType === SongPromptType.Lyrical ? 'lyrical (with lyrics)' : 'instrumental (no lyrics)'}.\n${prompt}`;
+        const task = this.#services.getLlmGenerateStructuredTask<SongPromptMetadata>(metadataPrompt, songPromptMetadataRequestData);
+        task.isChild = true;
+
+        const callback = (payload: IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, SongPromptMetadata>): void => {
+          // If user-provided lyrics are present, prioritize those over what
+          // the LLM generates. This allows "weird" lyrical prompts to
+          // function as expected.
+          if (songPromptRequestType.promptHasLyrics
+            && songPromptRequestType.lyrics !== payload.data.lyrics) {
+            payload.data.lyrics = songPromptRequestType.lyrics;
+          }
+
+          resolve(payload.data);
+        };
+
+        task.onSuccess = callback;
+        task.onFailure = reject;
+        this.#taskQueue.add(task as BaseTask<unknown>);
+      });
+    } else {
+      return {
+        timeSignature: getRandomArrayEntry(Object.values(TimeSignature)) as TimeSignature,
+        bpm: getRandomInt(BpmConstants.min, BpmConstants.max),
+        keyScale: getRandomArrayEntry(Object.values(KeyScale)) || KeyScale.EMajor,
+        tags: songPromptRequestType.tags,
+        lyrics: songPromptRequestType.lyrics
+      };
     }
-
-    readonly #services: IBotServiceContainer;
-    readonly #featureService: IFeatureService;
-    readonly #taskQueue: ITaskQueue;
-    readonly #replyService: IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
-
-    constructor(services: IBotServiceContainer) {
-        this.#services = services;
-        this.#featureService = services.featureService;
-        this.#taskQueue = services.taskQueue;
-        this.#replyService = services.getReplyService();
-    }
-
-    async mutate(renderRequest: SerializableRenderRequest, interaction: Message, workflow: IWorkflow): Promise<SerializableRenderRequest> {
-        const prompt = this.#replyService.getMessageWithoutBotMentions(interaction);
-
-        const mutatedRequest = SerializableRenderRequest.fromSerializableRenderRequest(renderRequest);
-
-        const songRequestType = await this.#getSongPromptType(prompt);
-        const songPromptMetadata = await this.#getSongPromptMetadata(prompt, songRequestType);
-
-        mutatedRequest.prompt = songPromptMetadata.tags.join(', ');
-        mutatedRequest.prompt2 = songPromptMetadata.lyrics;
-
-        mutatedRequest.bpm = songPromptMetadata.bpm;
-        mutatedRequest.keyScale = songPromptMetadata.keyScale;
-        mutatedRequest.timeSignature = songPromptMetadata.timeSignature;
-
-        if (mutatedRequest.durationMin !== undefined
-            && mutatedRequest.durationMax !== undefined) {
-            mutatedRequest.duration = getRandomInt(mutatedRequest.durationMin, mutatedRequest.durationMax);
-        }
-
-        mutatedRequest.workflow = workflow.name;
-        mutatedRequest.refreshSeed();
-
-        return await Promise.resolve(mutatedRequest);
-    }
-
-    async #getSongPromptType(prompt: string): Promise<SongPromptRequestType & { tags: string[], lyrics: string }> {
-        // Music models can contain up to two prompts - one for music
-        // genre/style and one for lyrics.
-        const promptSeparator = '\n\n';
-        let tags: string[] = []
-        let lyrics = '';
-
-        if (prompt.indexOf(promptSeparator) > 0) {
-            tags = prompt.split(promptSeparator)[0].split(',').map(x => x.trim());
-            lyrics = prompt.substring(
-                prompt.indexOf(promptSeparator), prompt.length).trim();
-        } else {
-            tags = prompt.split(',').map(x => x.trim());
-        }
-
-        if(this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
-            return new Promise((resolve, reject) => {
-                const task = this.#services.getLlmGenerateStructuredTask<SongPromptRequestType>(prompt, songPromptTypeRequestTypeData);
-                task.isChild = true;
-
-                const callback = (payload: IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, SongPromptRequestType>): void => {
-                    resolve({
-                        ...payload.data,
-                        tags,
-                        lyrics
-                    });
-                };
-
-                task.onSuccess = callback;
-                task.onFailure = reject;
-                this.#taskQueue.add(task as BaseTask<unknown>);
-            });
-        } else {
-            const promptHasLyrics = lyrics.length > 0;
-
-            return {
-                songPromptType: promptHasLyrics ? SongPromptType.Lyrical : SongPromptType.Instrumental,
-                promptHasTags: tags.length > 0,
-                promptHasLyrics,
-                tags,
-                lyrics
-            };
-        }
-    }
-
-    async #getSongPromptMetadata(prompt: string, songPromptRequestType: SongPromptRequestType & { tags: string[], lyrics: string }): Promise<SongPromptMetadata> {
-        if(this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
-            return new Promise((resolve, reject) => {
-                const task = this.#services.getLlmGenerateStructuredTask<SongPromptMetadata>(prompt, songPromptMetadataRequestData);
-                task.isChild = true;
-
-                const callback = (payload: IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, SongPromptMetadata>): void => {
-                    // If user-provided lyrics are present, prioritize those over what
-                    // the LLM generates. This allows "weird" lyrical prompts to
-                    // function as expected.
-                    if (songPromptRequestType.promptHasLyrics
-                        && songPromptRequestType.lyrics !== payload.data.lyrics
-                    ) {
-                        payload.data.lyrics = songPromptRequestType.lyrics
-                    }
-
-                    resolve(payload.data);
-                };
-
-                task.onSuccess = callback;
-                task.onFailure = reject;
-                this.#taskQueue.add(task as BaseTask<unknown>);
-            });
-        } else {
-            return {
-                timeSignature: getRandomArrayEntry(Object.values(TimeSignature)) as TimeSignature,
-                bpm: getRandomInt(BpmConstants.min, BpmConstants.max),
-                keyScale: getRandomArrayEntry(Object.values(KeyScale)) || KeyScale.EMajor,
-                tags: songPromptRequestType.tags,
-                lyrics: songPromptRequestType.lyrics
-            };
-        }
-    }
+  }
 }
