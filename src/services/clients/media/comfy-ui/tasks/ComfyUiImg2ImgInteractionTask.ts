@@ -19,100 +19,100 @@ import { IWorkflowService } from '../services/IWorkflowService.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 
 export class ComfyUiImg2ImgInteractionTask extends ComfyUiBaseTask {
-    readonly #workflowService: IWorkflowService;
-    readonly #comfyUiClient: ComfyUiClient;
-    readonly #comfyUiReplyService: ComfyUiReplyService;
-    readonly #replyService: DiscordReplyService;
+  readonly #workflowService: IWorkflowService;
+  readonly #comfyUiClient: ComfyUiClient;
+  readonly #comfyUiReplyService: ComfyUiReplyService;
+  readonly #replyService: DiscordReplyService;
 
-    readonly #interaction: ButtonInteraction;
-    readonly #workflow: IWorkflow;
+  readonly #interaction: ButtonInteraction;
+  readonly #workflow: IWorkflow;
 
-    constructor(services: IBotServiceContainer, interaction: ButtonInteraction, workflow: IWorkflow) {
-        super(services);
-        this.logger = services.getLogger('ComfyUiImg2ImgInteractionTask');
+  constructor(services: IBotServiceContainer, interaction: ButtonInteraction, workflow: IWorkflow) {
+    super(services);
+    this.logger = services.getLogger('ComfyUiImg2ImgInteractionTask');
 
-        this.#workflowService = services.workflowService;
-        this.#comfyUiClient = services.comfyUiClient;
-        this.#comfyUiReplyService = services.comfyUiReplyService;
-        this.#replyService = services.getReplyService();
+    this.#workflowService = services.workflowService;
+    this.#comfyUiClient = services.comfyUiClient;
+    this.#comfyUiReplyService = services.comfyUiReplyService;
+    this.#replyService = services.getReplyService();
 
-        this.#interaction = interaction;
-        this.#workflow = workflow;
+    this.#interaction = interaction;
+    this.#workflow = workflow;
+  }
+
+  override async process(): Promise<void> {
+    await super.process();
+
+    const imageAttachments = this.#replyService.getImageAttachments(this.#interaction);
+    const prompts: Prompt[] = [];
+
+    if (imageAttachments.length === 0) {
+      await this.#replyService.replyWithError(this.#interaction);
     }
 
-    override async process(): Promise<void> {
-        await super.process();
+    const imagesAsBase64 = await this.#replyService.getAttachedImagesAsBase64(this.#interaction);
+    const renderRequest = this.#workflowService.getWorkflowDefaults(this.#workflow);
 
-        const imageAttachments = this.#replyService.getImageAttachments(this.#interaction);
-        const prompts: Prompt[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-base-to-string
+    const content = `${this.#interaction.member?.user.toString() || 'You'} ran a custom workflow: \`${renderRequest.label}\``;
 
-        if (imageAttachments.length === 0) {
-            await this.#replyService.replyWithError(this.#interaction);
+    const renderRequests: Array<SerializableRenderRequest> = [];
+
+    for (const imageAsBase64 of imagesAsBase64) {
+      const defaults = this.#workflowService.getWorkflowDefaults(this.#workflow);
+      const renderRequest = SerializableRenderRequest.fromSerializableRenderRequest(defaults);
+
+      const image = sharp(Buffer.from(imageAsBase64, BufferEncoding.Base64));
+      const imageMetadata = await image.metadata();
+
+      renderRequest.refreshSeed();
+      renderRequest.image = imageAsBase64;
+      renderRequest.width = imageMetadata.width;
+      renderRequest.height = imageMetadata.height;
+
+      if(renderRequest.maxWidth !== undefined && renderRequest.maxHeight !== undefined) {
+        const maxWidth = renderRequest.maxWidth;
+        const maxHeight = renderRequest.maxHeight;
+        let width = imageMetadata.width;
+        let height = imageMetadata.height;
+
+        if(width > maxWidth ) {
+          const ratio = maxWidth / width;
+          width = maxWidth;
+          height = Math.ceil(height * ratio);
         }
 
-        const imagesAsBase64 = await this.#replyService.getAttachedImagesAsBase64(this.#interaction);
-        const renderRequest = this.#workflowService.getWorkflowDefaults(this.#workflow);
-
-        // eslint-disable-next-line @typescript-eslint/no-base-to-string
-        const content = `${this.#interaction.member?.user.toString() || 'You'} ran a custom workflow: \`${renderRequest.label}\``;
-
-        const renderRequests: Array<SerializableRenderRequest> = [];
-
-        for (const imageAsBase64 of imagesAsBase64) {
-            const defaults = this.#workflowService.getWorkflowDefaults(this.#workflow);
-            const renderRequest = SerializableRenderRequest.fromSerializableRenderRequest(defaults);
-
-            const image = sharp(Buffer.from(imageAsBase64, BufferEncoding.Base64));
-            const imageMetadata = await image.metadata();
-
-            renderRequest.refreshSeed();
-            renderRequest.image = imageAsBase64;
-            renderRequest.width = imageMetadata.width;
-            renderRequest.height = imageMetadata.height;
-
-            if(renderRequest.maxWidth !== undefined && renderRequest.maxHeight !== undefined) {
-                const maxWidth = renderRequest.maxWidth;
-                const maxHeight = renderRequest.maxHeight;
-                let width = imageMetadata.width;
-                let height = imageMetadata.height;
-
-                if(width > maxWidth ) {
-                    const ratio = maxWidth / width;
-                    width = maxWidth;
-                    height = Math.ceil(height * ratio);
-                }
-
-                if(height > maxHeight) {
-                    const ratio = maxHeight / height;
-                    width = Math.ceil(width * ratio);
-                    height = maxHeight;
-                }
-
-                renderRequest.width = width;
-                renderRequest.height = height;
-            }
-
-            renderRequests.push(renderRequest);
-
-            prompts.push(this.#workflowService.renderWorkflow(this.#workflow, renderRequest));
+        if(height > maxHeight) {
+          const ratio = maxHeight / height;
+          width = Math.ceil(width * ratio);
+          height = maxHeight;
         }
 
-        const imagesResponse = await this.#comfyUiClient.render(prompts);
+        renderRequest.width = width;
+        renderRequest.height = height;
+      }
 
-        const reply: BaseMessageOptions = { content };
-        const exchange: IHttpExchange<SerializableRenderRequest[], MediaCollectionResponse> = {
-            request: renderRequests,
-            response: imagesResponse
-        };
+      renderRequests.push(renderRequest);
 
-        await this.#comfyUiReplyService.reply(this.#interaction, reply, false, exchange);
+      prompts.push(this.#workflowService.renderWorkflow(this.#workflow, renderRequest));
     }
 
-    override async postProcess(): Promise<void> {
-        await super.postProcess();
+    const imagesResponse = await this.#comfyUiClient.render(prompts);
 
-        if (this.taskStatus === TaskStatus.Dead) {
-            await this.#replyService.replyWithError(this.#interaction);
-        }
+    const reply: BaseMessageOptions = { content };
+    const exchange: IHttpExchange<SerializableRenderRequest[], MediaCollectionResponse> = {
+      request: renderRequests,
+      response: imagesResponse
+    };
+
+    await this.#comfyUiReplyService.reply(this.#interaction, reply, false, exchange);
+  }
+
+  override async postProcess(): Promise<void> {
+    await super.postProcess();
+
+    if (this.taskStatus === TaskStatus.Dead) {
+      await this.#replyService.replyWithError(this.#interaction);
     }
+  }
 }

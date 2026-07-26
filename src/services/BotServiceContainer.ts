@@ -1,11 +1,11 @@
 import {
-    ButtonInteraction,
-    Client as DiscordClient,
-    GatewayIntentBits,
-    Message as DiscordMessage,
-    MessageReaction,
-    Partials,
-    User
+  ButtonInteraction,
+  Client as DiscordClient,
+  GatewayIntentBits,
+  Message as DiscordMessage,
+  MessageReaction,
+  Partials,
+  User
 } from 'discord.js';
 import { GenerateRequest, GenerateResponse } from 'ollama';
 
@@ -95,317 +95,317 @@ import { ITaskQueue } from './tasks/ITaskQueue.js';
 import { BaseTask } from './tasks/models/BaseTask.js';
 
 export class BotServiceContainer implements IBotServiceContainer {
-    readonly #taskNotConfiguredError = new Error('The task you are attempting to instantiate is not supported by your current configuration.');
+  readonly #taskNotConfiguredError = new Error('The task you are attempting to instantiate is not supported by your current configuration.');
 
-    readonly #globalServiceContainer: GlobalServiceContainer;
+  readonly #globalServiceContainer: GlobalServiceContainer;
 
-    get globalContainer(): IGlobalServiceContainer  {
-        return this.#globalServiceContainer;
+  get globalContainer(): IGlobalServiceContainer  {
+    return this.#globalServiceContainer;
+  }
+
+  readonly #configurationService: IConfigurationService;
+  get configurationService(): IConfigurationService {
+    return this.#configurationService;
+  }
+
+  get taskQueue(): ITaskQueue {
+    return this.#globalServiceContainer.taskQueue;
+  }
+
+  get parallelizationStrategy(): IParallelizationStrategy {
+    return this.#globalServiceContainer.parallelizationStrategy;
+  }
+
+  // Singletons -------------------------------------------------------------/
+
+  readonly #featureService: IFeatureService;
+  get featureService(): IFeatureService {
+    return this.#featureService;
+  }
+
+  readonly #typingService: ITypingService;
+  get typingService(): ITypingService {
+    return this.#typingService;
+  }
+
+  readonly #discordClient: DiscordClient;
+  get discordClient(): DiscordClient {
+    return this.#discordClient;
+  }
+
+  readonly #generativeChatClient: IGenerativeChatClient;
+  get generativeChatClient(): IGenerativeChatClient {
+    return this.#generativeChatClient;
+  }
+
+  readonly #helpService: IHelpService;
+  get helpService(): IHelpService {
+    return this.#helpService;
+  }
+
+  readonly #workflowService: IWorkflowService;
+  get workflowService(): IWorkflowService {
+    return this.#workflowService;
+  }
+
+  readonly #webContentService: WebContentService;
+  get webContentService(): WebContentService {
+    return this.#webContentService;
+  }
+
+  // Transients -------------------------------------------------------------/
+
+  get contentTypeService(): IContentTypeService {
+    return new ContentTypeService();
+  }
+
+  getReplyService<MessageType, ReactionType, AttachmentType, InteractionType>(): IReplyService<MessageType, ReactionType, AttachmentType, InteractionType> {
+    return new DiscordReplyService(this) as unknown as IReplyService<MessageType, ReactionType, AttachmentType, InteractionType>;
+  }
+
+  getWorkflowMutator(interactionType: BotInteraction, workflow: IWorkflow): IWorkflowMutator {
+    const mutators: IWorkflowMutator[] = [
+      new ContextualMediaMutator(this),
+      new GuidanceScaleMutator(this),
+      new JsonMutator(this),
+      new MessageToMediaMutator(this),
+      new MessageToMusicMutator(this),
+      new ExpandPromptMutator(this),
+      new RandomPromptMutator(this),
+      new RetryMutator(this)
+    ];
+
+    const supportedMutators = mutators.filter(
+      mutator => mutator.interactions.includes(interactionType)
+        && mutator.types.includes(workflow.type));
+
+    if(supportedMutators.length === 1) {
+      return supportedMutators[0];
+    } else if(supportedMutators.length > 1) {
+      const mutator = getRandomArrayEntry(supportedMutators);
+
+      if(mutator === null) {
+        throw new Error('A supported mutator could not be found.');
+      }
+
+      return mutator;
+    } else {
+      throw new Error('The task you are attempting to instantiate is not supported by your current configuration.');
+    }
+  }
+
+  get comfyUiClient(): ComfyUiClient {
+    return new ComfyUiClient(this);
+  }
+
+  get comfyUiReplyService(): ComfyUiReplyService {
+    return new ComfyUiReplyService(this);
+  }
+
+  get ollamaClient(): OllamaClient {
+    return new OllamaClient(this);
+  }
+
+  get ollamaReplyService(): OllamaReplyService {
+    return new OllamaReplyService(this);
+  }
+
+  get ollamaStreamingReplyService(): OllamaStreamingReplyService {
+    return new OllamaStreamingReplyService(this);
+  }
+
+  get actionRowBuilderFactory(): IActionRowBuilderFactory {
+    return new ActionRowBuilderFactory();
+  }
+
+  // Factories --------------------------------------------------------------/
+  getLogger(prefix: string): ILogger {
+    return new Logger(prefix, this.#configurationService.botId);
+  }
+
+  getChatMessageFilters(): IOutputChatMessageFilter[] {
+    return [
+      new DiscordCodeBlockExtractFilter(this),
+      new DiscordMarkdownTableFilter(),
+      new DiscordMessageSplitFilter(),
+      new DiscordCodeBlockSplitFilter(),
+      new DiscordAttachmentFilter()
+    ];
+  }
+
+  getInputChatMessageFilters<ChatMessageType>(): IInputChatMessageFilter<ChatMessageType>[] {
+    if (!this.featureService.hasFeature(SupportedFeature.LongTermMemory)) {
+      return [];
     }
 
-    readonly #configurationService: IConfigurationService;
-    get configurationService(): IConfigurationService {
-        return this.#configurationService;
+    return [new DiscordMemoryInputFilter(this) as IInputChatMessageFilter<ChatMessageType>];
+  }
+
+  getChatMessageFactory<MessageType>(): IChatMessageFactory<MessageType> {
+    return new DiscordChatMessageFactory(this) as unknown as IChatMessageFactory<MessageType>;
+  }
+
+  #llmChatMessageFactory: ILlmChatMessageFactory<unknown> | null = null;
+  getLlmChatMessageFactory<ChatMessageType>(): ILlmChatMessageFactory<ChatMessageType> {
+    if(this.#llmChatMessageFactory === null) {
+      this.#llmChatMessageFactory = new DiscordLlmChatMessageFactory(this);
     }
 
-    get taskQueue(): ITaskQueue {
-        return this.#globalServiceContainer.taskQueue;
+    return this.#llmChatMessageFactory as ILlmChatMessageFactory<ChatMessageType>;
+  }
+
+  #memoryService: IMemoryService | null = null;
+  getMemoryService(): IMemoryService {
+    if(this.#memoryService === null) {
+      this.#memoryService = new MemoryService(this);
     }
 
-    get parallelizationStrategy(): IParallelizationStrategy {
-        return this.#globalServiceContainer.parallelizationStrategy;
+    return this.#memoryService;
+  }
+
+  #contextMessageFactory: IContextMessageFactory<unknown, unknown> | null = null;
+  getContextMessageFactory<ChatMessageType, LlmMessageType>(): IContextMessageFactory<ChatMessageType, LlmMessageType> {
+    if(this.#contextMessageFactory === null) {
+      this.#contextMessageFactory = new DiscordOllamaContextMessageFactory(this);
     }
 
-    // Singletons -------------------------------------------------------------/
+    return this.#contextMessageFactory as IContextMessageFactory<ChatMessageType, LlmMessageType>;
+  }
 
-    readonly #featureService: IFeatureService;
-    get featureService(): IFeatureService {
-        return this.#featureService;
+  #contextService: IContextService<unknown, unknown> | null = null;
+  getContextService<ChatMessageType, LlmMessageType>(): IContextService<ChatMessageType, LlmMessageType> {
+    if(this.#contextService === null) {
+      this.#contextService = new ContextService<ChatMessageType, LlmMessageType>(this);
     }
 
-    readonly #typingService: ITypingService;
-    get typingService(): ITypingService {
-        return this.#typingService;
+    return this.#contextService as IContextService<ChatMessageType, LlmMessageType>;
+  }
+
+  getLlmGenerateTask(prompt: string, temperature: number | undefined): BaseTask<IHttpExchange<GenerateRequest, GenerateResponse>> {
+    if(!this.featureService.hasFeature(SupportedFeature.Txt2Txt)) {
+      throw this.#taskNotConfiguredError;
     }
 
-    readonly #discordClient: DiscordClient;
-    get discordClient(): DiscordClient {
-        return this.#discordClient;
+    return new OllamaGenerateTask(this, prompt, temperature) as BaseTask<IHttpExchange<GenerateRequest, GenerateResponse>>;
+  }
+
+  getLlmGenerateStructuredTask<T>(prompt: string, structuredRequestData: IStructuredRequestData): BaseTask<IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, T>> {
+    if (!this.featureService.hasFeature(SupportedFeature.Txt2Txt)) {
+      throw this.#taskNotConfiguredError;
     }
 
-    readonly #generativeChatClient: IGenerativeChatClient;
-    get generativeChatClient(): IGenerativeChatClient {
-        return this.#generativeChatClient;
+    return new OllamaGenerateStructuredTask<T>(this, prompt, structuredRequestData) as BaseTask<IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, T>>;
+  }
+
+  getEmbedTask(llmChatMessage: LlmChatMessage, ownerUserId?: string): BaseTask<void> {
+    return new OllamaEmbedTask(this, llmChatMessage, ownerUserId) as BaseTask<void>;
+  }
+
+  getEmojiReactionTask(reaction: MessageReaction, user: User): BaseTask<unknown> {
+    switch (this.configurationService.botFunction) {
+      case BotMode.Chat:
+        return new OllamaEmojiReactionTask(this, reaction, user) as BaseTask<unknown>;
+      default:
+        throw this.#taskNotConfiguredError;
     }
+  }
 
-    readonly #helpService: IHelpService;
-    get helpService(): IHelpService {
-        return this.#helpService;
+  getMessageTask(message: DiscordMessage): BaseTask<unknown> {
+    switch(this.configurationService.botFunction) {
+      case BotMode.Chat:
+        return new OllamaMessageTask(this, message) as BaseTask<unknown>;
+      case BotMode.Media:
+        return new ComfyUiMessageTask(this, message) as BaseTask<unknown>;
+      default:
+        throw this.#taskNotConfiguredError;
     }
+  }
 
-    readonly #workflowService: IWorkflowService;
-    get workflowService(): IWorkflowService {
-        return this.#workflowService;
-    }
-
-    readonly #webContentService: WebContentService;
-    get webContentService(): WebContentService {
-        return this.#webContentService;
-    }
-
-    // Transients -------------------------------------------------------------/
-
-    get contentTypeService(): IContentTypeService {
-        return new ContentTypeService();
-    }
-
-    getReplyService<MessageType, ReactionType, AttachmentType, InteractionType>(): IReplyService<MessageType, ReactionType, AttachmentType, InteractionType> {
-        return new DiscordReplyService(this) as unknown as IReplyService<MessageType, ReactionType, AttachmentType, InteractionType>;
-    }
-
-    getWorkflowMutator(interactionType: BotInteraction, workflow: IWorkflow): IWorkflowMutator {
-        const mutators: IWorkflowMutator[] = [
-            new ContextualMediaMutator(this),
-            new GuidanceScaleMutator(this),
-            new JsonMutator(this),
-            new MessageToMediaMutator(this),
-            new MessageToMusicMutator(this),
-            new ExpandPromptMutator(this),
-            new RandomPromptMutator(this),
-            new RetryMutator(this)
-        ];
-
-        const supportedMutators = mutators.filter(
-            mutator => mutator.interactions.includes(interactionType)
-                && mutator.types.includes(workflow.type));
-
-        if(supportedMutators.length === 1) {
-            return supportedMutators[0];
-        } else if(supportedMutators.length > 1) {
-            const mutator = getRandomArrayEntry(supportedMutators);
-
-            if(mutator === null) {
-                throw new Error('A supported mutator could not be found.');
-            }
-
-            return mutator;
-        } else {
-            throw new Error('The task you are attempting to instantiate is not supported by your current configuration.');
-        }
-    }
-
-    get comfyUiClient(): ComfyUiClient {
-        return new ComfyUiClient(this);
-    }
-
-    get comfyUiReplyService(): ComfyUiReplyService {
-        return new ComfyUiReplyService(this);
-    }
-
-    get ollamaClient(): OllamaClient {
-        return new OllamaClient(this);
-    }
-
-    get ollamaReplyService(): OllamaReplyService {
-        return new OllamaReplyService(this);
-    }
-
-    get ollamaStreamingReplyService(): OllamaStreamingReplyService {
-        return new OllamaStreamingReplyService(this);
-    }
-
-    get actionRowBuilderFactory(): IActionRowBuilderFactory {
-        return new ActionRowBuilderFactory();
-    }
-
-    // Factories --------------------------------------------------------------/
-    getLogger(prefix: string): ILogger {
-        return new Logger(prefix, this.#configurationService.botId);
-    }
-
-    getChatMessageFilters(): IOutputChatMessageFilter[] {
-        return [
-            new DiscordCodeBlockExtractFilter(this),
-            new DiscordMarkdownTableFilter(),
-            new DiscordMessageSplitFilter(),
-            new DiscordCodeBlockSplitFilter(),
-            new DiscordAttachmentFilter()
-        ];
-    }
-
-    getInputChatMessageFilters<ChatMessageType>(): IInputChatMessageFilter<ChatMessageType>[] {
-        if (!this.featureService.hasFeature(SupportedFeature.LongTermMemory)) {
-            return [];
-        }
-
-        return [new DiscordMemoryInputFilter(this) as IInputChatMessageFilter<ChatMessageType>];
-    }
-
-    getChatMessageFactory<MessageType>(): IChatMessageFactory<MessageType> {
-        return new DiscordChatMessageFactory(this) as unknown as IChatMessageFactory<MessageType>;
-    }
-
-    #llmChatMessageFactory: ILlmChatMessageFactory<unknown> | null = null;
-    getLlmChatMessageFactory<ChatMessageType>(): ILlmChatMessageFactory<ChatMessageType> {
-        if(this.#llmChatMessageFactory === null) {
-            this.#llmChatMessageFactory = new DiscordLlmChatMessageFactory(this);
-        }
-
-        return this.#llmChatMessageFactory as ILlmChatMessageFactory<ChatMessageType>;
-    }
-
-    #memoryService: IMemoryService | null = null;
-    getMemoryService(): IMemoryService {
-        if(this.#memoryService === null) {
-            this.#memoryService = new MemoryService(this);
-        }
-
-        return this.#memoryService;
-    }
-
-    #contextMessageFactory: IContextMessageFactory<unknown, unknown> | null = null;
-    getContextMessageFactory<ChatMessageType, LlmMessageType>(): IContextMessageFactory<ChatMessageType, LlmMessageType> {
-        if(this.#contextMessageFactory === null) {
-            this.#contextMessageFactory = new DiscordOllamaContextMessageFactory(this);
-        }
-
-        return this.#contextMessageFactory as IContextMessageFactory<ChatMessageType, LlmMessageType>;
-    }
-
-    #contextService: IContextService<unknown, unknown> | null = null;
-    getContextService<ChatMessageType, LlmMessageType>(): IContextService<ChatMessageType, LlmMessageType> {
-        if(this.#contextService === null) {
-            this.#contextService = new ContextService<ChatMessageType, LlmMessageType>(this);
-        }
-
-        return this.#contextService as IContextService<ChatMessageType, LlmMessageType>;
-    }
-
-    getLlmGenerateTask(prompt: string, temperature: number | undefined): BaseTask<IHttpExchange<GenerateRequest, GenerateResponse>> {
-        if(!this.featureService.hasFeature(SupportedFeature.Txt2Txt)) {
+  getInteractionTask(interaction: ButtonInteraction): BaseTask<unknown> {
+    switch(this.configurationService.botFunction) {
+      case BotMode.Chat:
+        switch (interaction.customId as BotInteraction) {
+          case BotInteraction.Help:
+            return new ShowHelpTask(this, interaction) as BaseTask<unknown>;
+          default:
             throw this.#taskNotConfiguredError;
         }
-
-        return new OllamaGenerateTask(this, prompt, temperature) as BaseTask<IHttpExchange<GenerateRequest, GenerateResponse>>;
-    }
-
-    getLlmGenerateStructuredTask<T>(prompt: string, structuredRequestData: IStructuredRequestData): BaseTask<IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, T>> {
-        if (!this.featureService.hasFeature(SupportedFeature.Txt2Txt)) {
+      case BotMode.Media:
+        switch(interaction.customId as BotInteraction) {
+          case BotInteraction.Retry:
+          case BotInteraction.GuidanceScaleMinus:
+          case BotInteraction.GuidanceScalePlus:
+          case BotInteraction.ExpandPrompt:
+          case BotInteraction.Randomize:
+            return new ComfyUiInteractionTask(this, interaction) as BaseTask<unknown>;
+          case BotInteraction.ShowSource:
+            return new ShowDescriptionTask(this, interaction) as BaseTask<unknown>;
+          case BotInteraction.Help:
+            return new ShowHelpTask(this, interaction) as BaseTask<unknown>;
+          default:
             throw this.#taskNotConfiguredError;
         }
-
-        return new OllamaGenerateStructuredTask<T>(this, prompt, structuredRequestData) as BaseTask<IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, T>>;
+      default:
+        throw this.#taskNotConfiguredError;
     }
+  }
 
-    getEmbedTask(llmChatMessage: LlmChatMessage, ownerUserId?: string): BaseTask<void> {
-        return new OllamaEmbedTask(this, llmChatMessage, ownerUserId) as BaseTask<void>;
+  getAttachmentTask(
+    message: DiscordMessage,
+    prompt: string): BaseTask<unknown> {
+    return new ComfyUiAttachmentTask(this, message, prompt) as BaseTask<unknown>;
+  }
+
+  getCustomInteractionTask(interaction: ButtonInteraction, workflow: IWorkflow): BaseTask<unknown> {
+    switch (workflow.type) {
+      case SupportedFeature.Img2Img:
+        return new ComfyUiImg2ImgInteractionTask(this, interaction, workflow) as BaseTask<unknown>;
+      default:
+        throw this.#taskNotConfiguredError;
     }
+  }
 
-    getEmojiReactionTask(reaction: MessageReaction, user: User): BaseTask<unknown> {
-        switch (this.configurationService.botFunction) {
-            case BotMode.Chat:
-                return new OllamaEmojiReactionTask(this, reaction, user) as BaseTask<unknown>;
-            default:
-                throw this.#taskNotConfiguredError;
-        }
+  getTaskChannelPostProcessor(channelName: string): ITaskChannelPostProcessor {
+    return this.#globalServiceContainer.getTaskChannelPostProcessor(this, channelName);
+  }
+
+  constructor(globalContainer: GlobalServiceContainer, botConfig: IBotConfig) {
+    this.#globalServiceContainer = globalContainer;
+    this.#configurationService = new ConfigurationService(botConfig);
+    this.#workflowService = new WorkflowService(this.getLogger('WorkflowService'), botConfig.botId);
+    this.#webContentService = new WebContentService(this.getLogger('WebContentService'));
+    this.#featureService = new FeatureService(this);
+    this.#typingService = new DiscordTypingService(this);
+
+    this.#discordClient = new DiscordClient({
+      intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.GuildMessageReactions,
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.DirectMessages,
+        GatewayIntentBits.MessageContent
+      ],
+      allowedMentions: { users: [], roles: [], repliedUser: false },
+      partials: [
+        Partials.Message,
+        Partials.Channel,
+        Partials.Reaction
+      ],
+      shards: DiscordConstants.ShardCountAuto
+    });
+
+    switch (this.configurationService.botFunction) {
+      case BotMode.Chat:
+        this.#helpService = new ChatHelpService(this);
+        this.#generativeChatClient = new GenerativeChatClient(this);
+        break;
+      case BotMode.Media:
+        this.#helpService = new MediaHelpService(this);
+        this.#generativeChatClient = new GenerativeMediaChatClient(this);
+        break;
+      default:
+        throw new Error('An invalid BotMode was selected.');
     }
-
-    getMessageTask(message: DiscordMessage): BaseTask<unknown> {
-        switch(this.configurationService.botFunction) {
-            case BotMode.Chat:
-                return new OllamaMessageTask(this, message) as BaseTask<unknown>;
-            case BotMode.Media:
-                return new ComfyUiMessageTask(this, message) as BaseTask<unknown>;
-            default:
-                throw this.#taskNotConfiguredError;
-        }
-    }
-
-    getInteractionTask(interaction: ButtonInteraction): BaseTask<unknown> {
-        switch(this.configurationService.botFunction) {
-            case BotMode.Chat:
-                switch (interaction.customId as BotInteraction) {
-                    case BotInteraction.Help:
-                        return new ShowHelpTask(this, interaction) as BaseTask<unknown>;
-                    default:
-                        throw this.#taskNotConfiguredError;
-                }
-            case BotMode.Media:
-                switch(interaction.customId as BotInteraction) {
-                    case BotInteraction.Retry:
-                    case BotInteraction.GuidanceScaleMinus:
-                    case BotInteraction.GuidanceScalePlus:
-                    case BotInteraction.ExpandPrompt:
-                    case BotInteraction.Randomize:
-                        return new ComfyUiInteractionTask(this, interaction) as BaseTask<unknown>;
-                    case BotInteraction.ShowSource:
-                        return new ShowDescriptionTask(this, interaction) as BaseTask<unknown>;
-                    case BotInteraction.Help:
-                        return new ShowHelpTask(this, interaction) as BaseTask<unknown>;
-                    default:
-                        throw this.#taskNotConfiguredError;
-                }
-            default:
-                throw this.#taskNotConfiguredError;
-        }
-    }
-
-    getAttachmentTask(
-        message: DiscordMessage,
-        prompt: string): BaseTask<unknown> {
-        return new ComfyUiAttachmentTask(this, message, prompt) as BaseTask<unknown>;
-    }
-
-    getCustomInteractionTask(interaction: ButtonInteraction, workflow: IWorkflow): BaseTask<unknown> {
-        switch (workflow.type) {
-            case SupportedFeature.Img2Img:
-                return new ComfyUiImg2ImgInteractionTask(this, interaction, workflow) as BaseTask<unknown>;
-            default:
-                throw this.#taskNotConfiguredError;
-        }
-    }
-
-    getTaskChannelPostProcessor(channelName: string): ITaskChannelPostProcessor {
-        return this.#globalServiceContainer.getTaskChannelPostProcessor(this, channelName);
-    }
-
-    constructor(globalContainer: GlobalServiceContainer, botConfig: IBotConfig) {
-        this.#globalServiceContainer = globalContainer;
-        this.#configurationService = new ConfigurationService(botConfig);
-        this.#workflowService = new WorkflowService(this.getLogger('WorkflowService'), botConfig.botId);
-        this.#webContentService = new WebContentService(this.getLogger('WebContentService'));
-        this.#featureService = new FeatureService(this);
-        this.#typingService = new DiscordTypingService(this);
-
-        this.#discordClient = new DiscordClient({
-            intents: [
-                GatewayIntentBits.Guilds,
-                GatewayIntentBits.GuildMessages,
-                GatewayIntentBits.GuildMessageReactions,
-                GatewayIntentBits.GuildMembers,
-                GatewayIntentBits.DirectMessages,
-                GatewayIntentBits.MessageContent
-            ],
-            allowedMentions: { users: [], roles: [], repliedUser: false },
-            partials: [
-                Partials.Message,
-                Partials.Channel,
-                Partials.Reaction
-            ],
-            shards: DiscordConstants.ShardCountAuto
-        });
-
-        switch (this.configurationService.botFunction) {
-            case BotMode.Chat:
-                this.#helpService = new ChatHelpService(this);
-                this.#generativeChatClient = new GenerativeChatClient(this);
-                break;
-            case BotMode.Media:
-                this.#helpService = new MediaHelpService(this);
-                this.#generativeChatClient = new GenerativeMediaChatClient(this);
-                break;
-            default:
-                throw new Error('An invalid BotMode was selected.');
-        }
-    }
+  }
 }

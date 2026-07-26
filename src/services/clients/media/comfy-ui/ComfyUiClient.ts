@@ -10,133 +10,133 @@ import { ExtendedComfyUIClient } from './extensions/ExtendedComfyUIClient.js';
 import { MediaCollectionResponse } from './extensions/MediaResponse.js';
 
 export class ComfyUiClient {
-    get host(): URL {
-        return this.#host;
+  get host(): URL {
+    return this.#host;
+  }
+
+  readonly #configurationService: IConfigurationService;
+  readonly #chatClient: IGenerativeChatClient;
+
+  readonly #logger: ILogger;
+
+  readonly #host: URL;
+  readonly #client: ExtendedComfyUIClient;
+
+  constructor(services: IBotServiceContainer) {
+    this.#configurationService = services.configurationService;
+    this.#chatClient = services.generativeChatClient;
+
+    this.#logger = services.getLogger('ComfyUiClient');
+
+    const host = getRandomArrayEntry(this.#configurationService.comfyUiHosts);
+
+    if (!host) {
+      throw new Error('No ComfyUI hosts configured in environment settings.');
     }
 
-    readonly #configurationService: IConfigurationService;
-    readonly #chatClient: IGenerativeChatClient;
+    this.#host = host;
 
-    readonly #logger: ILogger;
+    let comfyHost = `${this.#host.host}${this.#host.pathname}`;
 
-    readonly #host: URL;
-    readonly #client: ExtendedComfyUIClient;
+    if(comfyHost.endsWith('/')) {
+      comfyHost = comfyHost.substring(0, comfyHost.length - 1);
+    }
 
-    constructor(services: IBotServiceContainer) {
-        this.#configurationService = services.configurationService;
-        this.#chatClient = services.generativeChatClient;
+    this.#client = new ExtendedComfyUIClient(comfyHost,
+      `${this.#configurationService.applicationName}_${this.#chatClient.name}`);
 
-        this.#logger = services.getLogger('ComfyUiClient');
+    this.#logger.info(`Selected host: ${this.#host}`);
+  }
 
-        const host = getRandomArrayEntry(this.#configurationService.comfyUiHosts);
+  async render(prompts: Prompt[]): Promise<MediaCollectionResponse> {
+    await this.#client.connect();
 
-        if (!host) {
-            throw new Error('No ComfyUI hosts configured in environment settings.');
+    const timeoutMs = this.#configurationService.comfyUiTimeoutMinutes * 60 * 1000;
+
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => {
+        reject(new Error(`ComfyUI render timed out after ${this.#configurationService.comfyUiTimeoutMinutes} minute(s).`));
+      }, timeoutMs);
+    });
+
+    const mediaCollectionResponsePromises: Promise<MediaCollectionResponse>[] = [];
+    const mediaCollectionResponses: MediaCollectionResponse[] = [];
+
+    prompts.forEach((prompt) => {
+      this.#logger.info('Sending workflow to ComfyUI:', prompt);
+      delete prompt.$musebotDefaults;
+      mediaCollectionResponsePromises.push(this.#client.getMultiMedia(prompt));
+    });
+
+    const renderPromise = Promise.allSettled(mediaCollectionResponsePromises).then(async (results) => {
+      await this.#client.disconnect();
+
+      results.forEach(result => {
+        if (result.status === PromisedSettledResultStatus.Fulfilled.toString()) {
+          mediaCollectionResponses.push((result as PromiseFulfilledResult<MediaCollectionResponse>).value);
+        } else {
+          this.#logger.error('Error rendering prompt:', prompts, result);
         }
+      });
 
-        this.#host = host;
+      const multiMediaResponse = this.#flattenMultipleMediaResponses(mediaCollectionResponses);
 
-        let comfyHost = `${this.#host.host}${this.#host.pathname}`;
+      if (Object.keys(multiMediaResponse).length === 0) {
+        throw new Error('The render failed but was not reported as a failure by the Comfy UI client.');
+      }
 
-        if(comfyHost.endsWith('/')) {
-            comfyHost = comfyHost.substring(0, comfyHost.length - 1);
-        }
+      return multiMediaResponse;
+    });
 
-        this.#client = new ExtendedComfyUIClient(comfyHost,
-            `${this.#configurationService.applicationName}_${this.#chatClient.name}`);
+    try {
+      return await Promise.race([renderPromise, timeoutPromise]);
+    } catch (error) {
+      this.#logger.error('Aborting ComfyUI render due to error or timeout:', error);
+      await this.disconnect();
+      throw error;
+    }
+  }
 
-        this.#logger.info(`Selected host: ${this.#host}`);
+  async free(): Promise<boolean> {
+    try {
+      const ok = await this.#client.free();
+      if (!ok) {
+        this.#logger.error('ComfyUI /free request failed.');
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      this.#logger.error('Failed to free ComfyUI resources:', error);
+      return false;
+    }
+  }
+
+  async getSystemStats(): Promise<SystemStatsResponse> {
+    return this.#client.getSystemStats();
+  }
+
+  async disconnect(): Promise<void> {
+    try {
+      await this.#client.interrupt();
+    } catch {
+
+    } finally {
+      await this.#client.disconnect();
+    }
+  }
+
+  #flattenMultipleMediaResponses(multiMediaResponses: MediaCollectionResponse[]): MediaCollectionResponse {
+    const responseDictionary: MediaCollectionResponse = {};
+
+    for (const multiMediaResponse of multiMediaResponses) {
+      for (const [key, value] of Object.entries(multiMediaResponse)) {
+        responseDictionary[key] ??= [];
+        responseDictionary[key] = responseDictionary[key].concat(value);
+      }
     }
 
-    async render(prompts: Prompt[]): Promise<MediaCollectionResponse> {
-        await this.#client.connect();
-
-        const timeoutMs = this.#configurationService.comfyUiTimeoutMinutes * 60 * 1000;
-
-        const timeoutPromise = new Promise<never>((_, reject) => {
-            setTimeout(() => {
-                reject(new Error(`ComfyUI render timed out after ${this.#configurationService.comfyUiTimeoutMinutes} minute(s).`));
-            }, timeoutMs);
-        });
-
-        const mediaCollectionResponsePromises: Promise<MediaCollectionResponse>[] = [];
-        const mediaCollectionResponses: MediaCollectionResponse[] = [];
-
-        prompts.forEach((prompt) => {
-            this.#logger.info('Sending workflow to ComfyUI:', prompt);
-            delete prompt.$musebotDefaults;
-            mediaCollectionResponsePromises.push(this.#client.getMultiMedia(prompt));
-        });
-
-        const renderPromise = Promise.allSettled(mediaCollectionResponsePromises).then(async (results) => {
-            await this.#client.disconnect();
-
-            results.forEach(result => {
-                if (result.status === PromisedSettledResultStatus.Fulfilled.toString()) {
-                    mediaCollectionResponses.push((result as PromiseFulfilledResult<MediaCollectionResponse>).value);
-                } else {
-                    this.#logger.error('Error rendering prompt:', prompts, result);
-                }
-            });
-
-            const multiMediaResponse = this.#flattenMultipleMediaResponses(mediaCollectionResponses);
-
-            if (Object.keys(multiMediaResponse).length === 0) {
-                throw new Error('The render failed but was not reported as a failure by the Comfy UI client.');
-            }
-
-            return multiMediaResponse;
-        });
-
-        try {
-            return await Promise.race([renderPromise, timeoutPromise]);
-        } catch (error) {
-            this.#logger.error('Aborting ComfyUI render due to error or timeout:', error);
-            await this.disconnect();
-            throw error;
-        }
-    }
-
-    async free(): Promise<boolean> {
-        try {
-            const ok = await this.#client.free();
-            if (!ok) {
-                this.#logger.error('ComfyUI /free request failed.');
-                return false;
-            }
-
-            return true;
-        } catch (error) {
-            this.#logger.error('Failed to free ComfyUI resources:', error);
-            return false;
-        }
-    }
-
-    async getSystemStats(): Promise<SystemStatsResponse> {
-        return this.#client.getSystemStats();
-    }
-
-    async disconnect(): Promise<void> {
-        try {
-            await this.#client.interrupt();
-        } catch {
-
-        } finally {
-            await this.#client.disconnect();
-        }
-    }
-
-    #flattenMultipleMediaResponses(multiMediaResponses: MediaCollectionResponse[]): MediaCollectionResponse {
-        const responseDictionary: MediaCollectionResponse = {};
-
-        for (const multiMediaResponse of multiMediaResponses) {
-            for (const [key, value] of Object.entries(multiMediaResponse)) {
-                responseDictionary[key] ??= [];
-                responseDictionary[key] = responseDictionary[key].concat(value);
-            }
-        }
-
-        return responseDictionary;
-    }
+    return responseDictionary;
+  }
 
 }

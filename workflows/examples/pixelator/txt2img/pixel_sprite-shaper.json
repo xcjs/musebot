@@ -1,69 +1,69 @@
 {
   "$musebotDefaults": {
-    "prompt": "",
-    "promptNegative": "",
-    "model": "",
-    "seed": -1,
-    "width": 1024,
-    "height": 1024,
-    "sampler": "euler",
-    "scheduler": "sgm_uniform",
-    "cfgScale": 6,
-    "steps": 30,
-    "num": 1
+  "prompt": "",
+  "promptNegative": "",
+  "model": "",
+  "seed": -1,
+  "width": 1024,
+  "height": 1024,
+  "sampler": "euler",
+  "scheduler": "sgm_uniform",
+  "cfgScale": 6,
+  "steps": 30,
+  "num": 1
   },
   "4": {
-    "inputs": {
+  "inputs": {
       "ckpt_name": "SDXL/Pixel/pixelArtDiffusionXL_spriteShaper.safetensors"
-    },
-    "class_type": "CheckpointLoaderSimple",
-    "_meta": {
+  },
+  "class_type": "CheckpointLoaderSimple",
+  "_meta": {
       "title": "Load Checkpoint"
-    }
+  }
   },
   "5": {
-    "inputs": {
+  "inputs": {
       "width": "{{{ width }}}",
       "height": "{{{ height }}}",
       "batch_size": "{{{ num }}}"
-    },
-    "class_type": "EmptyLatentImage",
-    "_meta": {
+  },
+  "class_type": "EmptyLatentImage",
+  "_meta": {
       "title": "Empty Latent Image"
-    }
+  }
   },
   "6": {
-    "inputs": {
+  "inputs": {
       "text": "pixel art, {{{ prompt }}}",
       "clip": ["4", 1]
-    },
-    "class_type": "CLIPTextEncode",
-    "_meta": {
+  },
+  "class_type": "CLIPTextEncode",
+  "_meta": {
       "title": "CLIP Text Encode (Prompt)"
-    }
+  }
   },
   "7": {
-    "inputs": {
+  "inputs": {
       "text": "bad quality, bad anatomy, worst quality, low quality, low resolution, extra fingers, blur, blurry, ugly, wrong proportions, watermark, image artifacts, lowres, jpeg artifacts, deformed, noisy image, deformation, corrupt image, {{{ promptNegative }}}",
       "clip": ["4", 1]
-    },
-    "class_type": "CLIPTextEncode",
-    "_meta": {
+  },
+  "class_type": "CLIPTextEncode",
+  "_meta": {
       "title": "CLIP Text Encode (Prompt)"
-    }
+  }
   },
   "8": {
-    "inputs": {
+  "inputs": {
       "samples": ["10", 0],
       "vae": ["4", 2]
-    },
-    "class_type": "VAEDecode",
-    "_meta": {
+  },
+  "class_type": "VAEDecode",
+  "_meta": {
       "title": "VAE Decode"
-    }
+  }
   },
   "10": {
-    "inputs": {
+  "inputs": {
       "noise_seed": "{{{ seed }}}",
       "steps": "{{{ steps }}}",
       "cfg": "{{{ cfgScale }}}",
@@ -85,29 +85,29 @@
       "positive": ["6", 0],
       "negative": ["100", 0],
       "latent_image": ["5", 0]
-    },
-    "class_type": "SwarmKSampler",
-    "_meta": {
+  },
+  "class_type": "SwarmKSampler",
+  "_meta": {
       "title": "SwarmKSampler"
-    }
+  }
   },
   "100": {
-    "inputs": {
+  "inputs": {
       "conditioning": ["7", 0]
-    },
-    "class_type": "ConditioningZeroOut",
-    "_meta": {
+  },
+  "class_type": "ConditioningZeroOut",
+  "_meta": {
       "title": "ConditioningZeroOut"
-    }
+  }
   },
   "101": {
-    "inputs": {
+  "inputs": {
       "filename_prefix": "Musebot_Pixelator_SpriteShaper",
       "images": ["8", 0]
-    },
-    "class_type": "SaveImage",
-    "_meta": {
+  },
+  "class_type": "SaveImage",
+  "_meta": {
       "title": "Save Image"
-    }
+  }
   }
 }

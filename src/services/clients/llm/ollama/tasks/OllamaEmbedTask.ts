@@ -9,117 +9,117 @@ import { LlmChatMessageAttachment } from '../models/LlmChatMessageAttachment.js'
 import { OllamaBaseTask } from './OllamaBaseTask.js';
 
 export class OllamaEmbedTask extends OllamaBaseTask<void> {
-    override set onSuccess(callback: () => void) {
-        this.#onSuccess = callback;
+  override set onSuccess(callback: () => void) {
+    this.#onSuccess = callback;
+  }
+
+  override set onFailure(callback: (error: Error) => void) {
+    this.#onFailure = callback;
+  }
+
+  readonly #services: IBotServiceContainer;
+  readonly #llmChatMessage: LlmChatMessage;
+  readonly #ownerUserId: string | undefined;
+  readonly #memoryService: IMemoryService;
+  readonly #featureService: IFeatureService;
+  readonly #webContentService: WebContentService;
+
+  #onSuccess: () => void = () => { };
+  #onFailure: (error: Error) => void = () => { };
+
+  constructor(services: IBotServiceContainer, llmChatMessage: LlmChatMessage, ownerUserId?: string) {
+    super(services);
+    this.logger = services.getLogger('OllamaEmbedTask');
+    this.#services = services;
+    this.#llmChatMessage = llmChatMessage;
+    this.#ownerUserId = ownerUserId;
+    this.#memoryService = services.getMemoryService();
+    this.#featureService = services.featureService;
+    this.#webContentService = services.webContentService;
+  }
+
+  override async process(): Promise<void> {
+    this.logger.debug(`process() starting for messageId=${this.#llmChatMessage.messageId} (attachments=${this.#llmChatMessage.attachments.length}).`);
+
+    if (this.#llmChatMessage.messageId !== null
+      && await this.#memoryService.hasMessage(this.#llmChatMessage.messageId)) {
+      this.logger.debug(`process() skipping: messageId=${this.#llmChatMessage.messageId} already stored.`);
+      return;
     }
 
-    override set onFailure(callback: (error: Error) => void) {
-        this.#onFailure = callback;
+    await this.#interpretAttachments();
+    this.logger.debug(`process() calling memoryService.store() for messageId=${this.#llmChatMessage.messageId}.`);
+    await this.#memoryService.store(this.#llmChatMessage, this.#ownerUserId);
+    this.logger.debug(`process() completed for messageId=${this.#llmChatMessage.messageId}.`);
+  }
+
+  async #interpretAttachments(): Promise<void> {
+    const attachments = this.#llmChatMessage.attachments;
+
+    if (attachments.length === 0) {
+      return;
     }
 
-    readonly #services: IBotServiceContainer;
-    readonly #llmChatMessage: LlmChatMessage;
-    readonly #ownerUserId: string | undefined;
-    readonly #memoryService: IMemoryService;
-    readonly #featureService: IFeatureService;
-    readonly #webContentService: WebContentService;
-
-    #onSuccess: () => void = () => { };
-    #onFailure: (error: Error) => void = () => { };
-
-    constructor(services: IBotServiceContainer, llmChatMessage: LlmChatMessage, ownerUserId?: string) {
-        super(services);
-        this.logger = services.getLogger('OllamaEmbedTask');
-        this.#services = services;
-        this.#llmChatMessage = llmChatMessage;
-        this.#ownerUserId = ownerUserId;
-        this.#memoryService = services.getMemoryService();
-        this.#featureService = services.featureService;
-        this.#webContentService = services.webContentService;
+    const needsInterpretation = attachments.some(a => a.interpretation.length === 0);
+    if (!needsInterpretation) {
+      return;
     }
 
-    override async process(): Promise<void> {
-        this.logger.debug(`process() starting for messageId=${this.#llmChatMessage.messageId} (attachments=${this.#llmChatMessage.attachments.length}).`);
+    await this.#interpretWebAttachments(attachments);
 
-        if (this.#llmChatMessage.messageId !== null
-            && await this.#memoryService.hasMessage(this.#llmChatMessage.messageId)) {
-            this.logger.debug(`process() skipping: messageId=${this.#llmChatMessage.messageId} already stored.`);
-            return;
-        }
-
-        await this.#interpretAttachments();
-        this.logger.debug(`process() calling memoryService.store() for messageId=${this.#llmChatMessage.messageId}.`);
-        await this.#memoryService.store(this.#llmChatMessage, this.#ownerUserId);
-        this.logger.debug(`process() completed for messageId=${this.#llmChatMessage.messageId}.`);
+    if (this.#featureService.hasFeature(SupportedFeature.Vision)) {
+      await this.#interpretImageAttachments(attachments);
     }
+  }
 
-    async #interpretAttachments(): Promise<void> {
-        const attachments = this.#llmChatMessage.attachments;
+  async #interpretWebAttachments(attachments: LlmChatMessageAttachment[]): Promise<void> {
+    for (const attachment of attachments) {
+      if (attachment.type !== 'web' || attachment.interpretation.length > 0) {
+        continue;
+      }
 
-        if (attachments.length === 0) {
-            return;
-        }
-
-        const needsInterpretation = attachments.some(a => a.interpretation.length === 0);
-        if (!needsInterpretation) {
-            return;
-        }
-
-        await this.#interpretWebAttachments(attachments);
-
-        if (this.#featureService.hasFeature(SupportedFeature.Vision)) {
-            await this.#interpretImageAttachments(attachments);
-        }
+      try {
+        const result = await this.#webContentService.fetchContent(attachment.url);
+        attachment.interpretation = result?.content ?? '';
+        this.logger.info(`Fetched web content for '${attachment.url}' (${attachment.interpretation.length} chars).`);
+      } catch (error) {
+        this.logger.error(`Failed to fetch web content for '${attachment.url}':`, error);
+      }
     }
+  }
 
-    async #interpretWebAttachments(attachments: LlmChatMessageAttachment[]): Promise<void> {
-        for (const attachment of attachments) {
-            if (attachment.type !== 'web' || attachment.interpretation.length > 0) {
-                continue;
-            }
+  async #interpretImageAttachments(attachments: LlmChatMessageAttachment[]): Promise<void> {
+    const contextPrompt = `The user posted: "${this.#llmChatMessage.message}"`;
+    const client = this.#services.ollamaClient;
 
-            try {
-                const result = await this.#webContentService.fetchContent(attachment.url);
-                attachment.interpretation = result?.content ?? '';
-                this.logger.info(`Fetched web content for '${attachment.url}' (${attachment.interpretation.length} chars).`);
-            } catch (error) {
-                this.logger.error(`Failed to fetch web content for '${attachment.url}':`, error);
-            }
-        }
+    for (const attachment of attachments) {
+      if (attachment.type !== 'image' || attachment.interpretation.length > 0) {
+        continue;
+      }
+
+      try {
+        const response = await fetch(attachment.url);
+        const buffer = Buffer.from(await response.arrayBuffer());
+        const base64 = buffer.toString('base64');
+
+        attachment.interpretation = await client.interpretImages([base64], contextPrompt);
+        this.logger.info(`Interpreted attachment '${attachment.filename}'.`);
+      } catch (error) {
+        this.logger.error(`Failed to interpret attachment '${attachment.filename}':`, error);
+      }
     }
+  }
 
-    async #interpretImageAttachments(attachments: LlmChatMessageAttachment[]): Promise<void> {
-        const contextPrompt = `The user posted: "${this.#llmChatMessage.message}"`;
-        const client = this.#services.ollamaClient;
+  override async postProcess(): Promise<void> {
+    await super.postProcess();
 
-        for (const attachment of attachments) {
-            if (attachment.type !== 'image' || attachment.interpretation.length > 0) {
-                continue;
-            }
-
-            try {
-                const response = await fetch(attachment.url);
-                const buffer = Buffer.from(await response.arrayBuffer());
-                const base64 = buffer.toString('base64');
-
-                attachment.interpretation = await client.interpretImages([base64], contextPrompt);
-                this.logger.info(`Interpreted attachment '${attachment.filename}'.`);
-            } catch (error) {
-                this.logger.error(`Failed to interpret attachment '${attachment.filename}':`, error);
-            }
-        }
+    switch (this.taskStatus) {
+      case TaskStatus.Successful:
+        this.#onSuccess();
+        break;
+      case TaskStatus.Dead:
+        this.#onFailure(this.lastError ?? new Error('Embed task died without a captured error.'));
+        break;
     }
-
-    override async postProcess(): Promise<void> {
-        await super.postProcess();
-
-        switch (this.taskStatus) {
-            case TaskStatus.Successful:
-                this.#onSuccess();
-                break;
-            case TaskStatus.Dead:
-                this.#onFailure(this.lastError ?? new Error('Embed task died without a captured error.'));
-                break;
-        }
-    }
+  }
 }

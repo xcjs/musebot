@@ -1,39 +1,39 @@
 {
   "$musebotDefaults": {
-    "prompt": "",
-    "promptNegative": "",
-    "model": "",
-    "seed": -1,
-    "width": 768,
-    "height": 1712,
-    "sampler": "euler",
-    "scheduler": "simple",
-    "cfgScale": 3.5,
-    "steps": 20,
-    "num": 1
+  "prompt": "",
+  "promptNegative": "",
+  "model": "",
+  "seed": -1,
+  "width": 768,
+  "height": 1712,
+  "sampler": "euler",
+  "scheduler": "simple",
+  "cfgScale": 3.5,
+  "steps": 20,
+  "num": 1
   },
   "4": {
-    "inputs": {
+  "inputs": {
       "unet_name": "Flux.1/Dev/fluxKreaGGUF_q8.gguf"
-    },
-    "class_type": "UnetLoaderGGUF",
-    "_meta": {
+  },
+  "class_type": "UnetLoaderGGUF",
+  "_meta": {
       "title": "Unet Loader (GGUF)"
-    }
+  }
   },
   "5": {
-    "inputs": {
+  "inputs": {
       "width": "{{{ width }}}",
       "height": "{{{ height }}}",
       "batch_size": "{{{ num }}}"
-    },
-    "class_type": "EmptySD3LatentImage",
-    "_meta": {
+  },
+  "class_type": "EmptySD3LatentImage",
+  "_meta": {
       "title": "EmptySD3LatentImage"
-    }
+  }
   },
   "6": {
-    "inputs": {
+  "inputs": {
       "steps": "{{{ steps }}}",
       "prompt": "{{{ prompt }}}",
       "width": "{{{ width }}}",
@@ -43,14 +43,14 @@
       "guidance": "{{{ cfgScale }}}",
       "llama_template": "",
       "clip": ["100", 0]
-    },
-    "class_type": "SwarmClipTextEncodeAdvanced",
-    "_meta": {
+  },
+  "class_type": "SwarmClipTextEncodeAdvanced",
+  "_meta": {
       "title": "SwarmClipTextEncodeAdvanced"
-    }
+  }
   },
   "7": {
-    "inputs": {
+  "inputs": {
       "steps": "{{{ steps }}}",
       "prompt": "{{{ promptNegative }}}",
       "width": "{{{ width }}}",
@@ -60,24 +60,24 @@
       "guidance": "{{{ cfgScale }}}",
       "llama_template": "",
       "clip": ["100", 0]
-    },
-    "class_type": "SwarmClipTextEncodeAdvanced",
-    "_meta": {
+  },
+  "class_type": "SwarmClipTextEncodeAdvanced",
+  "_meta": {
       "title": "SwarmClipTextEncodeAdvanced"
-    }
+  }
   },
   "8": {
-    "inputs": {
+  "inputs": {
       "samples": ["10", 0],
       "vae": ["101", 0]
-    },
-    "class_type": "VAEDecode",
-    "_meta": {
+  },
+  "class_type": "VAEDecode",
+  "_meta": {
       "title": "VAE Decode"
-    }
+  }
   },
   "10": {
-    "inputs": {
+  "inputs": {
       "noise_seed": "{{{ seed }}}",
       "steps": "{{{ steps }}}",
       "cfg": 1,
@@ -99,64 +99,64 @@
       "positive": ["6", 0],
       "negative": ["7", 0],
       "latent_image": ["5", 0]
-    },
-    "class_type": "SwarmKSampler",
-    "_meta": {
+  },
+  "class_type": "SwarmKSampler",
+  "_meta": {
       "title": "SwarmKSampler"
-    }
+  }
   },
   "100": {
-    "inputs": {
+  "inputs": {
       "clip_name1": "t5xxl_enconly.safetensors",
       "clip_name2": "clip_l.safetensors",
       "type": "flux",
       "device": "default"
-    },
-    "class_type": "DualCLIPLoader",
-    "_meta": {
+  },
+  "class_type": "DualCLIPLoader",
+  "_meta": {
       "title": "DualCLIPLoader"
-    }
+  }
   },
   "101": {
-    "inputs": {
+  "inputs": {
       "vae_name": "Flux/ae.safetensors"
-    },
-    "class_type": "VAELoader",
-    "_meta": {
+  },
+  "class_type": "VAELoader",
+  "_meta": {
       "title": "Load VAE"
-    }
+  }
   },
   "103": {
-    "inputs": {
+  "inputs": {
       "filename_prefix": "Musebot_Tallpaperer_9x20",
       "images": ["120", 0]
-    },
-    "class_type": "SaveImage",
-    "_meta": {
+  },
+  "class_type": "SaveImage",
+  "_meta": {
       "title": "Save Image"
-    }
+  }
   },
   "104": {
-    "inputs": {
+  "inputs": {
       "upscale_model": ["105", 0],
       "image": ["8", 0]
-    },
-    "class_type": "ImageUpscaleWithModel",
-    "_meta": {
+  },
+  "class_type": "ImageUpscaleWithModel",
+  "_meta": {
       "title": "Upscale Image (using Model)"
-    }
+  }
   },
   "105": {
-    "inputs": {
+  "inputs": {
       "model_name": "SwinIR_4x.pth"
-    },
-    "class_type": "UpscaleModelLoader",
-    "_meta": {
+  },
+  "class_type": "UpscaleModelLoader",
+  "_meta": {
       "title": "Load Upscale Model"
-    }
+  }
   },
   "106": {
-    "inputs": {
+  "inputs": {
       "width": 1080,
       "height": 2400,
       "upscale_method": "lanczos",
@@ -164,38 +164,38 @@
       "divisible_by": 8,
       "crop": "disabled",
       "image": ["104", 0]
-    },
-    "class_type": "ImageResizeKJ",
-    "_meta": {
+  },
+  "class_type": "ImageResizeKJ",
+  "_meta": {
       "title": "Resize Image"
-    }
+  }
   },
   "116": {
-    "inputs": {
+  "inputs": {
       "pixels": ["106", 0],
       "vae": ["101", 0]
-    },
-    "class_type": "VAEEncode",
-    "_meta": {
+  },
+  "class_type": "VAEEncode",
+  "_meta": {
       "title": "VAE Encode"
-    }
+  }
   },
   "120": {
-    "inputs": {
+  "inputs": {
       "tile_size": 1024,
       "overlap": 64,
       "temporal_size": 64,
       "temporal_overlap": 8,
       "samples": ["122", 0],
       "vae": ["101", 0]
-    },
-    "class_type": "VAEDecodeTiled",
-    "_meta": {
+  },
+  "class_type": "VAEDecodeTiled",
+  "_meta": {
       "title": "VAE Decode (Tiled)"
-    }
+  }
   },
   "122": {
-    "inputs": {
+  "inputs": {
       "seed": "{{{ seed }}}",
       "steps": "{{{ steps }}}",
       "cfg": 1,
@@ -206,10 +206,10 @@
       "positive": ["6", 0],
       "negative": ["7", 0],
       "latent_image": ["116", 0]
-    },
-    "class_type": "KSampler",
-    "_meta": {
+  },
+  "class_type": "KSampler",
+  "_meta": {
       "title": "KSampler"
-    }
+  }
   }
 }

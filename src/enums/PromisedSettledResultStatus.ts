@@ -1,4 +1,4 @@
 export enum PromisedSettledResultStatus {
-    Fulfilled = 'fulfilled',
-    Rejected = 'rejected'
+  Fulfilled = 'fulfilled',
+  Rejected = 'rejected'
 }

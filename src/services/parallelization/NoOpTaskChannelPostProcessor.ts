@@ -6,6 +6,6 @@ export class NoOpTaskChannelPostProcessor implements ITaskChannelPostProcessor {
   }
 
   async postProcess(): Promise<void> {
-    return await Promise.resolve();
+  return await Promise.resolve();
   }
 }

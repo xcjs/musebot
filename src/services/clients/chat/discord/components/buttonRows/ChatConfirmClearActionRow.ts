@@ -8,36 +8,36 @@ import { IActionRowBuilderFactory } from '../IActionRowBuilderFactory.js';
 import { IActionRows } from './IActionRows.js';
 
 export class ChatConfirmClearActionRow extends BaseComponent<ActionRowBuilder<ButtonBuilder>[]> implements IActionRows {
-    #buttons: BaseComponent<ButtonBuilder>[] = [];
-    get buttons(): BaseComponent<ButtonBuilder>[] {
-        return this.#buttons;
-    }
+  #buttons: BaseComponent<ButtonBuilder>[] = [];
+  get buttons(): BaseComponent<ButtonBuilder>[] {
+    return this.#buttons;
+  }
 
-    get isAsync(): boolean {
-        return false;
-    }
+  get isAsync(): boolean {
+    return false;
+  }
 
-    #services: IBotServiceContainer;
+  #services: IBotServiceContainer;
 
-    #actionRowBuilderFactory: IActionRowBuilderFactory;
+  #actionRowBuilderFactory: IActionRowBuilderFactory;
 
-    constructor(services: IBotServiceContainer) {
-        super(services);
+  constructor(services: IBotServiceContainer) {
+    super(services);
 
-        this.#services = services;
-        this.#actionRowBuilderFactory = services.actionRowBuilderFactory;
-    }
+    this.#services = services;
+    this.#actionRowBuilderFactory = services.actionRowBuilderFactory;
+  }
 
-    override build(): ActionRowBuilder<ButtonBuilder>[] {
-        this.#buttons = [
-            new ClearContextCancelButton(this.#services),
-            new ClearContextConfirmButton(this.#services)
-        ];
+  override build(): ActionRowBuilder<ButtonBuilder>[] {
+    this.#buttons = [
+      new ClearContextCancelButton(this.#services),
+      new ClearContextConfirmButton(this.#services)
+    ];
 
-        return this.#actionRowBuilderFactory.buildActionRows(this.#buttons);
-    }
+    return this.#actionRowBuilderFactory.buildActionRows(this.#buttons);
+  }
 
-    override buildAsync(): Promise<ActionRowBuilder<ButtonBuilder>[]> {
-        throw new Error('Method not implemented.');
-    }
+  override buildAsync(): Promise<ActionRowBuilder<ButtonBuilder>[]> {
+    throw new Error('Method not implemented.');
+  }
 }

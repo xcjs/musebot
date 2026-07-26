@@ -3,38 +3,38 @@ import { NodeEnvironment } from '../../enums/NodeEnvironment.js';
 import { TaskQueueStrategy } from '../../enums/TaskQueueStrategy.js';
 
 export interface IConfigurationService {
-    packageName: string;
-    version: string;
+  packageName: string;
+  version: string;
 
-    nodeEnvironment: NodeEnvironment;
-    botId: string;
-    botFunction: BotMode;
+  nodeEnvironment: NodeEnvironment;
+  botId: string;
+  botFunction: BotMode;
 
-    discordToken: string;
-    discordChannels: string[];
-    discordChannelsDisallowed: string[];
-    botRequiresMention: boolean;
-    botResponseRate: number;
-    botPrivateMessageUsers: string[];
-    errorMessage: string;
+  discordToken: string;
+  discordChannels: string[];
+  discordChannelsDisallowed: string[];
+  botRequiresMention: boolean;
+  botResponseRate: number;
+  botPrivateMessageUsers: string[];
+  errorMessage: string;
 
-    maxTaskAttempts: number;
-    taskRetryDelayMilliseconds: number;
-    taskQueueStrategy: TaskQueueStrategy;
-    taskQueueForceSerialAcrossHosts: boolean;
+  maxTaskAttempts: number;
+  taskRetryDelayMilliseconds: number;
+  taskQueueStrategy: TaskQueueStrategy;
+  taskQueueForceSerialAcrossHosts: boolean;
 
-    comfyUiHosts: URL[];
-    comfyUiGuidanceScaleInterval: number;
-    comfyUiTimeoutMinutes: number;
-    randomPrompts: string[];
+  comfyUiHosts: URL[];
+  comfyUiGuidanceScaleInterval: number;
+  comfyUiTimeoutMinutes: number;
+  randomPrompts: string[];
 
-    ollamaHosts: URL[];
-    ollamaModels: string[];
-    ollamaSystemPrompt: string;
-    ollamaStreamsResponse: boolean;
-    ollamaEmbeddingModel: string | null;
-    ollamaTopK: number;
+  ollamaHosts: URL[];
+  ollamaModels: string[];
+  ollamaSystemPrompt: string;
+  ollamaStreamsResponse: boolean;
+  ollamaEmbeddingModel: string | null;
+  ollamaTopK: number;
 
-    applicationName: string;
-    isProduction: boolean;
+  applicationName: string;
+  isProduction: boolean;
 }

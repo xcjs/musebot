@@ -7,23 +7,23 @@ import { IMemoryService } from '../../../llm/services/IMemoryService.js';
 import { IInputChatMessageFilter } from '../../IInputChatMessageFilter.js';
 
 export class DiscordMemoryInputFilter implements IInputChatMessageFilter<DiscordMessage> {
-    readonly #memoryService: IMemoryService;
+  readonly #memoryService: IMemoryService;
 
-    constructor(services: IBotServiceContainer) {
-        this.#memoryService = services.getMemoryService();
+  constructor(services: IBotServiceContainer) {
+    this.#memoryService = services.getMemoryService();
+  }
+
+  async process(llmChatMessage: LlmChatMessage, chatMessage: DiscordMessage, context: OllamaMessage[]): Promise<OllamaMessage[]> {
+    if (!this.#memoryService.isEnabled) {
+      return context;
     }
 
-    async process(llmChatMessage: LlmChatMessage, chatMessage: DiscordMessage, context: OllamaMessage[]): Promise<OllamaMessage[]> {
-        if (!this.#memoryService.isEnabled) {
-            return context;
-        }
+    const memories = await this.#memoryService.retrieve(llmChatMessage.userId, llmChatMessage);
 
-        const memories = await this.#memoryService.retrieve(llmChatMessage.userId, llmChatMessage);
-
-        if (memories.length === 0) {
-            return context;
-        }
-
-        return [...memories, ...context];
+    if (memories.length === 0) {
+      return context;
     }
+
+    return [...memories, ...context];
+  }
 }

@@ -13,166 +13,166 @@ import { SerializableRenderRequest } from '../models/SerializableRenderRequest.j
 import { IWorkflowService } from './IWorkflowService.js';
 
 export class WorkflowService implements IWorkflowService {
-    get hasWorkflows(): boolean {
-        return this.#workflows.length > 0;
+  get hasWorkflows(): boolean {
+    return this.#workflows.length > 0;
+  }
+
+  get workflows(): IWorkflow[] {
+    return this.#workflows;
+  }
+
+  readonly #logger: ILogger;
+  readonly #botId: string | null;
+
+  #workflows: IWorkflow[] = [];
+
+  public constructor(logger: ILogger, botId: string | null = null) {
+    this.#logger = logger;
+    this.#botId = botId;
+  }
+
+  async loadWorkflows(): Promise<void> {
+    this.#logger.info('Loading ComfyUI workflows...');
+
+    if(this.#workflows.length > 0) {
+      this.#workflows = [];
     }
 
-    get workflows(): IWorkflow[] {
-        return this.#workflows;
-    }
+    const workflowPathBase = this.#botId ? `./workflows/${this.#botId}` : './workflows';
+    const workflowTypes = Object.values(SupportedFeature);
 
-    readonly #logger: ILogger;
-    readonly #botId: string | null;
+    try {
+      for (const workflowType of workflowTypes) {
+        this.#logger.info(`Checking if the ${workflowType} directory exists...`);
 
-    #workflows: IWorkflow[] = [];
-
-    public constructor(logger: ILogger, botId: string | null = null) {
-        this.#logger = logger;
-        this.#botId = botId;
-    }
-
-    async loadWorkflows(): Promise<void> {
-        this.#logger.info('Loading ComfyUI workflows...');
-
-        if(this.#workflows.length > 0) {
-            this.#workflows = [];
-        }
-
-        const workflowPathBase = this.#botId ? `./workflows/${this.#botId}` : './workflows';
-        const workflowTypes = Object.values(SupportedFeature);
+        const workflowDir = path.join(workflowPathBase, workflowType);
 
         try {
-            for (const workflowType of workflowTypes) {
-                this.#logger.info(`Checking if the ${workflowType} directory exists...`);
+          await fs.access(workflowDir);
+        } catch {
+          this.#logger.warn(`Could not access ${workflowDir}.`
+            + ` This is fine if if you don't need ${workflowType} workflows.`);
+          continue;
+        }
 
-                const workflowDir = path.join(workflowPathBase, workflowType);
+        this.#logger.info(`Reading the directory contents of ${workflowType}...`);
+        const directoryContents = await fs.readdir(workflowDir, { withFileTypes: true });
 
-                try {
-                    await fs.access(workflowDir);
-                } catch {
-                    this.#logger.warn(`Could not access ${workflowDir}.`
-                        + ` This is fine if if you don't need ${workflowType} workflows.`);
-                    continue;
-                }
+        for(const fsItem of directoryContents) {
+          if(fsItem.isFile() && fsItem.name.endsWith('.json')) {
+            const templatePath = path.join(workflowDir, fsItem.name);
 
-                this.#logger.info(`Reading the directory contents of ${workflowType}...`);
-                const directoryContents = await fs.readdir(workflowDir, { withFileTypes: true });
+            this.#logger.info(`Reading the contents of ${templatePath} as a workflow template...`);
 
-                for(const fsItem of directoryContents) {
-                    if(fsItem.isFile() && fsItem.name.endsWith('.json')) {
-                        const templatePath = path.join(workflowDir, fsItem.name);
+            const fileContents = await fs.readFile(templatePath, BufferEncoding.UTF8);
 
-                        this.#logger.info(`Reading the contents of ${templatePath} as a workflow template...`);
+            this.#workflows.push({
+              // Windows hosts need the double backslash replaced.
+              name: templatePath.replaceAll('\\', '/'),
+              type: workflowType,
+              workflowString: fileContents
+            });
+          }
+        }
+      }
 
-                        const fileContents = await fs.readFile(templatePath, BufferEncoding.UTF8);
-
-                        this.#workflows.push({
-                            // Windows hosts need the double backslash replaced.
-                            name: templatePath.replaceAll('\\', '/'),
-                            type: workflowType,
-                            workflowString: fileContents
-                        });
-                    }
-                }
-            }
-
-            if(this.#workflows.length === 0 && this.#botId !== null) {
-                throw new Error('No workflows found in bot workflow directory.');
-            }
-        } catch(error) {
-            if(this.#workflows.length === 0 && this.#botId !== null) {
-                this.#logger.error('No workflows found in bot workflow directory.', error);
-            } else {
-                this.#logger.error('Failed to load workflow templates.'
+      if(this.#workflows.length === 0 && this.#botId !== null) {
+        throw new Error('No workflows found in bot workflow directory.');
+      }
+    } catch(error) {
+      if(this.#workflows.length === 0 && this.#botId !== null) {
+        this.#logger.error('No workflows found in bot workflow directory.', error);
+      } else {
+        this.#logger.error('Failed to load workflow templates.'
                      + ' Check if Musebot can read and write from ./workflows/ and that it contains workflows.', error);
-            }
-        }
+      }
+    }
+  }
+
+  hasWorkflowType(workflowType: SupportedFeature): boolean {
+    return this.#workflows.some(workflow => workflow.type === workflowType);
+  }
+
+  getWorkflowDefaults(workflow: IWorkflow): SerializableRenderRequest {
+    try {
+      const renderRequestObj = (JSON.parse(workflow.workflowString) as IWorkflowDefaults).$musebotDefaults;
+
+      // Not every template will contain defaults.
+      if(renderRequestObj !== null && renderRequestObj !== undefined) {
+        return SerializableRenderRequest.fromSerializableRenderRequest(renderRequestObj);
+      } else {
+        return new SerializableRenderRequest();
+      }
+    } catch (error) {
+      this.#logger.error(
+        `Failed to fetch the workflow defaults for ${workflow.name}.`
+        + ` Does the $musebotSerializableRenderRequest property exist, or does it match the documented schema?`
+        , error);
+
+      return new SerializableRenderRequest();
+    }
+  }
+
+  renderWorkflow(workflow: IWorkflow, renderRequest: SerializableRenderRequest): Prompt {
+    this.#logger.info(`Rendering workflow template ${workflow.name}`);
+
+    const destructiveRenderRequest = SerializableRenderRequest.fromSerializableRenderRequest(renderRequest);
+
+    // Filter characters that will break the JSON encoding.
+    if(destructiveRenderRequest.prompt?.length || 0 > 0) {
+      destructiveRenderRequest.prompt = JSON.stringify(destructiveRenderRequest.prompt);
+      destructiveRenderRequest.prompt = destructiveRenderRequest.prompt
+        .substring(1, destructiveRenderRequest.prompt.length - 1);
     }
 
-    hasWorkflowType(workflowType: SupportedFeature): boolean {
-        return this.#workflows.some(workflow => workflow.type === workflowType);
+    if (destructiveRenderRequest.prompt2?.length || 0 > 0) {
+      destructiveRenderRequest.prompt2 = JSON.stringify(destructiveRenderRequest.prompt2);
+      destructiveRenderRequest.prompt2 = destructiveRenderRequest.prompt2
+        .substring(1, destructiveRenderRequest.prompt2.length - 1);
     }
 
-    getWorkflowDefaults(workflow: IWorkflow): SerializableRenderRequest {
-        try {
-            const renderRequestObj = (JSON.parse(workflow.workflowString) as IWorkflowDefaults).$musebotDefaults;
-
-            // Not every template will contain defaults.
-            if(renderRequestObj !== null && renderRequestObj !== undefined) {
-                return SerializableRenderRequest.fromSerializableRenderRequest(renderRequestObj);
-            } else {
-                return new SerializableRenderRequest();
-            }
-        } catch (error) {
-            this.#logger.error(
-                `Failed to fetch the workflow defaults for ${workflow.name}.`
-                + ` Does the $musebotSerializableRenderRequest property exist, or does it match the documented schema?`
-                , error);
-
-            return new SerializableRenderRequest();
-        }
+    if(destructiveRenderRequest.promptNegative?.length || 0 > 0) {
+      destructiveRenderRequest.promptNegative = JSON.stringify(destructiveRenderRequest.promptNegative);
+      destructiveRenderRequest.promptNegative = destructiveRenderRequest.promptNegative
+        .substring(1, destructiveRenderRequest.promptNegative.length - 1);
     }
 
-    renderWorkflow(workflow: IWorkflow, renderRequest: SerializableRenderRequest): Prompt {
-        this.#logger.info(`Rendering workflow template ${workflow.name}`);
+    const template = Handlebars.compile(workflow.workflowString);
+    const templateString = template(destructiveRenderRequest);
 
-        const destructiveRenderRequest = SerializableRenderRequest.fromSerializableRenderRequest(renderRequest);
+    const parsedWorkflow = JSON.parse(templateString) as object;
 
-        // Filter characters that will break the JSON encoding.
-        if(destructiveRenderRequest.prompt?.length || 0 > 0) {
-            destructiveRenderRequest.prompt = JSON.stringify(destructiveRenderRequest.prompt);
-            destructiveRenderRequest.prompt = destructiveRenderRequest.prompt
-                .substring(1, destructiveRenderRequest.prompt.length - 1);
-        }
+    return this.#convertNumericStrings(parsedWorkflow);
+  }
 
-        if (destructiveRenderRequest.prompt2?.length || 0 > 0) {
-            destructiveRenderRequest.prompt2 = JSON.stringify(destructiveRenderRequest.prompt2);
-            destructiveRenderRequest.prompt2 = destructiveRenderRequest.prompt2
-                .substring(1, destructiveRenderRequest.prompt2.length - 1);
-        }
+  #convertNumericStrings(objectifiedPrompt: object): Prompt {
+    return this.#convertNumericStringsRecursive(objectifiedPrompt) as Prompt;
+  }
 
-        if(destructiveRenderRequest.promptNegative?.length || 0 > 0) {
-            destructiveRenderRequest.promptNegative = JSON.stringify(destructiveRenderRequest.promptNegative);
-            destructiveRenderRequest.promptNegative = destructiveRenderRequest.promptNegative
-                .substring(1, destructiveRenderRequest.promptNegative.length - 1);
-        }
+  #convertNumericStringsRecursive(value: unknown, key?: string): unknown {
+    const blacklistKeys = new Set([
+      'text'
+    ]);
 
-        const template = Handlebars.compile(workflow.workflowString);
-        const templateString = template(destructiveRenderRequest);
-
-        const parsedWorkflow = JSON.parse(templateString) as object;
-
-        return this.#convertNumericStrings(parsedWorkflow);
+    if (typeof value === 'string'
+      && value.length > 0
+      && !Number.isNaN(Number(value))
+      && !blacklistKeys.has(key || '')) {
+      return Number(value);
     }
 
-    #convertNumericStrings(objectifiedPrompt: object): Prompt {
-        return this.#convertNumericStringsRecursive(objectifiedPrompt) as Prompt;
-    }
+    if (typeof value === 'object' && value !== null) {
+      const result = Array.isArray(value)
+        ? value // ComfyUI arrays oftentimes refer to nodes by index as string, and should not be converted.
+        : { ...value };
 
-    #convertNumericStringsRecursive(value: unknown, key?: string): unknown {
-        const blacklistKeys = new Set([
-            'text'
-        ]);
-
-        if (typeof value === 'string'
-            && value.length > 0
-            && !Number.isNaN(Number(value))
-            && !blacklistKeys.has(key || '')) {
-            return Number(value);
+      if (!Array.isArray(value)) {
+        for (const k in result) {
+          (result as Record<string, unknown>)[k] = this.#convertNumericStringsRecursive((result as Record<string, unknown>)[k], k);
         }
-
-        if (typeof value === 'object' && value !== null) {
-            const result = Array.isArray(value)
-                ? value // ComfyUI arrays oftentimes refer to nodes by index as string, and should not be converted.
-                : { ...value };
-
-            if (!Array.isArray(value)) {
-                for (const k in result) {
-                    (result as Record<string, unknown>)[k] = this.#convertNumericStringsRecursive((result as Record<string, unknown>)[k], k);
-                }
-            }
-            return result;
-        }
-        return value;
+      }
+      return result;
     }
+    return value;
+  }
 }

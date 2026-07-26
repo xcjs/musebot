@@ -18,135 +18,140 @@ import { WorkflowNotFoundError } from '../WorkflowNotFoundError.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
 
 export class ComfyUiInteractionTask extends ComfyUiBaseTask {
-    readonly #services: IBotServiceContainer;
+  readonly #services: IBotServiceContainer;
 
-    readonly #replyService: DiscordReplyService;
+  readonly #replyService: DiscordReplyService;
 
-    readonly #interaction: ButtonInteraction;
+  readonly #interaction: ButtonInteraction;
 
-    constructor(services: IBotServiceContainer, interaction: ButtonInteraction) {
-        super(services);
-        this.logger = services.getLogger('ComfyUiInteractionTask');
+  constructor(services: IBotServiceContainer, interaction: ButtonInteraction) {
+    super(services);
+    this.logger = services.getLogger('ComfyUiInteractionTask');
 
-        this.#services = services;
+    this.#services = services;
 
-        this.#replyService = services.getReplyService();
+    this.#replyService = services.getReplyService();
 
-        this.#interaction = interaction;
+    this.#interaction = interaction;
+  }
+
+  override async process(): Promise<void> {
+    await super.process();
+
+    const inputRenderRequests = await this.#readRenderRequests();
+    const outputRenderRequests: SerializableRenderRequest[] = [];
+
+    const workflows = inputRenderRequests.map(renderRequest => this.workflowService.workflows
+      .find(workflow => workflow.name === renderRequest.workflow))
+      .filter(workflow => workflow !== undefined);
+
+    if(workflows.length === 0) {
+      // Some interactions do not require an existing SerializableRenderRequest.
+      // If we've made it this far, assume the interaction creates a novel
+      // piece of media and provide it a workflow and render request to work from.
+      const newMediaWorkflow = getRandomArrayEntry(this.workflowService.workflows.filter(x =>
+        x.type.startsWith('txt2')
+        && x.type !== SupportedFeature.Txt2Txt));
+
+      if(newMediaWorkflow === null) {
+        throw WorkflowNotFoundError;
+      }
+
+      const newMediaRenderRequest = this.workflowService.getWorkflowDefaults(newMediaWorkflow);
+      newMediaRenderRequest.workflow = newMediaWorkflow.name;
+
+      workflows.push(newMediaWorkflow);
+      inputRenderRequests.push(newMediaRenderRequest);
     }
 
-    override async process(): Promise<void> {
-        await super.process();
+    let i = 0;
+    const prompts: Prompt[] = [];
+    let content: string = '';
+    let additionalAttachments: AttachmentBuilder[] = [];
 
-        const inputRenderRequests = await this.#readRenderRequests();
-        const outputRenderRequests: SerializableRenderRequest[] = [];
+    for (const workflow of workflows) {
+      if (i >= inputRenderRequests.length) {
+        break;
+      }
 
-        const workflows = inputRenderRequests.map(renderRequest => this.workflowService.workflows
-            .find(workflow => workflow.name === renderRequest.workflow))
-            .filter(workflow => workflow !== undefined);
+      const mutator = this.#services.getWorkflowMutator(this.#interaction.customId as BotInteraction, workflow);
 
-        if(workflows.length === 0) {
-            // Some interactions do not require an existing SerializableRenderRequest.
-            // If we've made it this far, assume the interaction creates a novel
-            // piece of media and provide it a workflow and render request to work from.
-            const newMediaWorkflow = getRandomArrayEntry(this.workflowService.workflows.filter(x =>
-                x.type.startsWith('txt2')
-                && x.type !== SupportedFeature.Txt2Txt));
+      const renderRequest = await mutator.mutate(inputRenderRequests[i], this.#interaction, workflow);
 
-            if(newMediaWorkflow === null) {
-                throw WorkflowNotFoundError;
-            }
+      if (renderRequest === null) {
+        continue;
+      }
 
-            const newMediaRenderRequest = this.workflowService.getWorkflowDefaults(newMediaWorkflow);
-            newMediaRenderRequest.workflow = newMediaWorkflow.name;
+      let mutatedWorkflow = workflow;
 
-            workflows.push(newMediaWorkflow);
-            inputRenderRequests.push(newMediaRenderRequest);
+      // Some mutators can select a new workflow. TODO: This should probably be handled within the mutator.
+      if (renderRequest.workflow !== workflow.name) {
+        const potentialWorkflow = this.workflowService.workflows.find(x => x.name === renderRequest.workflow);
+
+        if (potentialWorkflow === undefined) {
+          throw WorkflowNotFoundError;
         }
 
-        let i = 0;
-        const prompts: Prompt[] = [];
-        let content: string = '';
-        let additionalAttachments: AttachmentBuilder[] = [];
+        mutatedWorkflow = potentialWorkflow;
+      }
 
-        for (const workflow of workflows) {
-            if (i >= inputRenderRequests.length) {
-                break;
-            }
+      const prompt = this.workflowService.renderWorkflow(mutatedWorkflow, renderRequest);
 
-            const mutator = this.#services.getWorkflowMutator(this.#interaction.customId as BotInteraction, workflow);
+      content = mutator.contentMessage;
+      additionalAttachments = additionalAttachments.concat(mutator.additionalAttachments);
 
-            const renderRequest = await mutator.mutate(inputRenderRequests[i], this.#interaction, workflow);
-            let mutatedWorkflow = workflow;
-
-            // Some mutators can select a new workflow. TODO: This should probably be handled within the mutator.
-            if (renderRequest.workflow !== workflow.name) {
-                const potentialWorkflow = this.workflowService.workflows.find(x => x.name === renderRequest.workflow);
-
-                if (potentialWorkflow === undefined) {
-                    throw WorkflowNotFoundError;
-                }
-
-                mutatedWorkflow = potentialWorkflow;
-            }
-
-            const prompt = this.workflowService.renderWorkflow(mutatedWorkflow, renderRequest);
-
-            content = mutator.contentMessage;
-            additionalAttachments = additionalAttachments.concat(mutator.additionalAttachments);
-
-            prompts.push(prompt);
-            outputRenderRequests.push(renderRequest);
-            i++;
-        }
-
-        const mediaCollectionResponse = await this.comfyUiClient.render(prompts);
-        const exchange: IHttpExchange<SerializableRenderRequest[], MediaCollectionResponse> = {
-            request: outputRenderRequests,
-            response: mediaCollectionResponse
-        };
-
-        if (additionalAttachments.length > DiscordConstants.MaxMediaAttachmentsPerMessage - 1) {
-            this.logger.warn('The maximum media attachment count has been exceeded:',
-                additionalAttachments.length,
-                DiscordConstants.MaxMediaAttachmentsPerMessage - 1);
-
-            additionalAttachments.length = DiscordConstants.MaxMediaAttachmentsPerMessage - 1;
-        }
-
-        await this.comfyUiReplyService.reply(this.#interaction, {
-            content,
-            files: additionalAttachments
-        }, false, exchange);
+      prompts.push(prompt);
+      outputRenderRequests.push(renderRequest);
+      i++;
     }
 
-    async #readRenderRequests(): Promise<SerializableRenderRequest[]> {
-        // Prefer the dedicated state JSON file attachment.
-        const stateAttachments = this.#replyService.getAttachmentsByName(this.#interaction, DiscordConstants.StateFileName);
+    const mediaCollectionResponse = await this.comfyUiClient.render(prompts);
+    const exchange: IHttpExchange<SerializableRenderRequest[], MediaCollectionResponse> = {
+      request: outputRenderRequests,
+      response: mediaCollectionResponse
+    };
 
-        if (stateAttachments.length > 0) {
-            const stateAttachment = stateAttachments[0];
-            const response = await fetch(stateAttachment.url);
-            const buffer = Buffer.from(await response.arrayBuffer());
-            const json = buffer.toString('utf-8');
-            const parsed = JSON.parse(json) as SerializableRenderRequest[];
+    if (additionalAttachments.length > DiscordConstants.MaxMediaAttachmentsPerMessage - 1) {
+      this.logger.warn('The maximum media attachment count has been exceeded:',
+        additionalAttachments.length,
+        DiscordConstants.MaxMediaAttachmentsPerMessage - 1);
 
-            return parsed.map(item => SerializableRenderRequest.fromSerializableRenderRequest(item));
-        }
-
-        // Legacy fallback: read SerializableRenderRequest from attachment descriptions.
-        const attachmentsWithRenderRequests = this.#replyService.getAttachments(this.#interaction)
-            .filter(attachment => attachment.description?.length || 0 > 0);
-
-        return attachmentsWithRenderRequests
-            .map(attachment => SerializableRenderRequest.fromJson(attachment.description || ''));
+      additionalAttachments.length = DiscordConstants.MaxMediaAttachmentsPerMessage - 1;
     }
 
-    override async postProcess(): Promise<void> {
-        await super.postProcess();
+    await this.comfyUiReplyService.reply(this.#interaction, {
+      content,
+      files: additionalAttachments
+    }, false, exchange);
+  }
 
-        if (this.taskStatus === TaskStatus.Dead) {
-            await this.replyService.replyWithError(this.#interaction);
-        }
+  async #readRenderRequests(): Promise<SerializableRenderRequest[]> {
+    // Prefer the dedicated state JSON file attachment.
+    const stateAttachments = this.#replyService.getAttachmentsByName(this.#interaction, DiscordConstants.StateFileName);
+
+    if (stateAttachments.length > 0) {
+      const stateAttachment = stateAttachments[0];
+      const response = await fetch(stateAttachment.url);
+      const buffer = Buffer.from(await response.arrayBuffer());
+      const json = buffer.toString('utf-8');
+      const parsed = JSON.parse(json) as SerializableRenderRequest[];
+
+      return parsed.map(item => SerializableRenderRequest.fromSerializableRenderRequest(item));
     }
+
+    // Legacy fallback: read SerializableRenderRequest from attachment descriptions.
+    const attachmentsWithRenderRequests = this.#replyService.getAttachments(this.#interaction)
+      .filter(attachment => attachment.description?.length || 0 > 0);
+
+    return attachmentsWithRenderRequests
+      .map(attachment => SerializableRenderRequest.fromJson(attachment.description || ''));
+  }
+
+  override async postProcess(): Promise<void> {
+    await super.postProcess();
+
+    if (this.taskStatus === TaskStatus.Dead) {
+      await this.replyService.replyWithError(this.#interaction);
+    }
+  }
 }

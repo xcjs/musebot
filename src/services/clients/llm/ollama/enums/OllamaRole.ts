@@ -1,5 +1,5 @@
 export enum OllamaRole {
-    User = 'user',
-    System = 'system',
-    Assistant = 'assistant'
+  User = 'user',
+  System = 'system',
+  Assistant = 'assistant'
 }

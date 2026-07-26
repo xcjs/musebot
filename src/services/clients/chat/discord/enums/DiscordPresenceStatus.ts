@@ -1,3 +1,3 @@
 export enum DiscordPresenceStatus {
-    Online = 'online'
+  Online = 'online'
 }

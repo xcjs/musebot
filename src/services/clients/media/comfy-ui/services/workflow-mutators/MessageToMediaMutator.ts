@@ -9,54 +9,54 @@ import { SerializableRenderRequest } from '../../models/SerializableRenderReques
 import { IWorkflowMutator } from './IWorkflowMutator.js';
 
 export class MessageToMediaMutator implements IWorkflowMutator {
-    get interactions(): BotInteraction[] {
-        return [BotInteraction.Message, BotInteraction.Reply];
+  get interactions(): BotInteraction[] {
+    return [BotInteraction.Message, BotInteraction.Reply];
+  }
+
+  get types(): SupportedFeature[] {
+    return [
+      SupportedFeature.Txt2Audio,
+      SupportedFeature.Txt2Img,
+      SupportedFeature.Txt2Vid
+    ];
+  }
+
+  get contentMessage(): string {
+    return this.#contentMessage;
+  }
+
+  get additionalAttachments(): AttachmentBuilder[] {
+    return [];
+  }
+
+  readonly #replyService: IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
+
+  #contentMessage = '';
+
+  constructor(services: IBotServiceContainer) {
+    this.#replyService = services.getReplyService();
+  }
+
+  async mutate(renderRequest: SerializableRenderRequest, interaction: Message, workflow: IWorkflow): Promise<SerializableRenderRequest> {
+    let prompt = this.#replyService.getMessageWithoutBotMentions(interaction);
+    const userMention = `${interaction.member?.user.toString() || 'You'}`;
+    this.#contentMessage = `${userMention} generated \`${prompt}\``;
+
+    if(interaction.type === MessageType.Reply) {
+      const previousMessage = await this.#replyService.getPreviousMessage(interaction);
+
+      if(previousMessage !== null) {
+        const priorPrompt = this.#replyService.extractPrompt(previousMessage);
+        prompt = `${priorPrompt} ${interaction.content}`.trim();
+        this.#contentMessage = `${userMention} generated \`${priorPrompt}\` as \`${prompt}\``;
+      }
     }
 
-    get types(): SupportedFeature[] {
-        return [
-            SupportedFeature.Txt2Audio,
-            SupportedFeature.Txt2Img,
-            SupportedFeature.Txt2Vid
-        ];
-    }
+    renderRequest.workflow = workflow.name;
+    renderRequest.prompt = prompt;
+    renderRequest.num = 1;
+    renderRequest.refreshSeed();
 
-    get contentMessage(): string {
-        return this.#contentMessage;
-    }
-
-    get additionalAttachments(): AttachmentBuilder[] {
-        return [];
-    }
-
-    readonly #replyService: IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
-
-    #contentMessage = '';
-
-    constructor(services: IBotServiceContainer) {
-        this.#replyService = services.getReplyService();
-    }
-
-    async mutate(renderRequest: SerializableRenderRequest, interaction: Message, workflow: IWorkflow): Promise<SerializableRenderRequest> {
-        let prompt = this.#replyService.getMessageWithoutBotMentions(interaction);
-        const userMention = `${interaction.member?.user.toString() || 'You'}`;
-        this.#contentMessage = `${userMention} generated \`${prompt}\``;
-
-        if(interaction.type === MessageType.Reply) {
-            const previousMessage = await this.#replyService.getPreviousMessage(interaction);
-
-            if(previousMessage !== null) {
-                const priorPrompt = this.#replyService.extractPrompt(previousMessage);
-                prompt = `${priorPrompt} ${interaction.content}`.trim();
-                this.#contentMessage = `${userMention} generated \`${priorPrompt}\` as \`${prompt}\``;
-            }
-        }
-
-        renderRequest.workflow = workflow.name;
-        renderRequest.prompt = prompt;
-        renderRequest.num = 1;
-        renderRequest.refreshSeed();
-
-        return await Promise.resolve(renderRequest);
-    }
+    return await Promise.resolve(renderRequest);
+  }
 }

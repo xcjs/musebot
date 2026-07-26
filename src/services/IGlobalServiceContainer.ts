@@ -9,10 +9,10 @@ import { ITaskQueue } from './tasks/ITaskQueue.js';
  * Global service container - shared across all bot instances
  */
 export interface IGlobalServiceContainer {
-    globalConfiguration: IGlobalConfiguration;
-    taskQueue: ITaskQueue;
-    parallelizationStrategy: IParallelizationStrategy;
+  globalConfiguration: IGlobalConfiguration;
+  taskQueue: ITaskQueue;
+  parallelizationStrategy: IParallelizationStrategy;
 
-    getLogger(prefix: string): ILogger;
-    getTaskChannelPostProcessor(services: IBotServiceContainer, channelName: string): ITaskChannelPostProcessor;
+  getLogger(prefix: string): ILogger;
+  getTaskChannelPostProcessor(services: IBotServiceContainer, channelName: string): ITaskChannelPostProcessor;
 }
