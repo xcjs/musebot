@@ -77,6 +77,11 @@ export class ComfyUiInteractionTask extends ComfyUiBaseTask {
       const mutator = this.#services.getWorkflowMutator(this.#interaction.customId as BotInteraction, workflow);
 
       const renderRequest = await mutator.mutate(inputRenderRequests[i], this.#interaction, workflow);
+
+      if (renderRequest === null) {
+        continue;
+      }
+
       let mutatedWorkflow = workflow;
 
       // Some mutators can select a new workflow. TODO: This should probably be handled within the mutator.

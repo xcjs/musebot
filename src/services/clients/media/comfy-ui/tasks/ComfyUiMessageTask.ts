@@ -145,10 +145,14 @@ export class ComfyUiMessageTask extends ComfyUiBaseTask {
 
       const renderRequest = await mutator.mutate(defaultRenderRequest, this.#message, workflow);
 
+      if (renderRequest === null) {
+        continue;
+      }
+
       // Some mutators can select a different workflow.
       workflow = this.workflowService.workflows.find(x => x.name === renderRequest.workflow) || null;
 
-      if(renderRequest === null || workflow == null) {
+      if (workflow === null) {
         continue;
       }
 
