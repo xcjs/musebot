@@ -31,7 +31,7 @@ export class JsonMutator implements IWorkflowMutator {
     return [];
   }
 
-  #replyService: IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
+  readonly #replyService: IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
 
   constructor(services: IBotServiceContainer) {
     this.#replyService = services.getReplyService();
@@ -39,7 +39,7 @@ export class JsonMutator implements IWorkflowMutator {
 
   // The parameters are required by the interface.
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async mutate(renderRequest: SerializableRenderRequest, interaction: Message, workflow: IWorkflow): Promise<SerializableRenderRequest> {
+  async mutate(renderRequest: SerializableRenderRequest, interaction: Message, workflow: IWorkflow): Promise<SerializableRenderRequest | null> {
     const prompt = this.#replyService.getMessageWithoutBotMentions(interaction);
 
     let mutatedRequest: SerializableRenderRequest;
