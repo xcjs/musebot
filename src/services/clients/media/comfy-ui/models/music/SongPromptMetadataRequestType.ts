@@ -31,8 +31,9 @@ export const songPromptMetadataRequestData: IStructuredRequestData = {
             lyrics: {
                 type: 'string',
                 description: 'Song lyrics with structure and performance tags. '
-                    + 'Mark each section with structure tags: [Intro], [Verse], [Pre-Chorus], [Chorus], [Bridge], [Outro], '
+                    + 'Mark each section with structure tags enclosed in square brackets: [Intro], [Verse], [Pre-Chorus], [Chorus], [Bridge], [Outro], '
                     + 'or instrumental tags like [Guitar Solo], [Piano Interlude], [Instrumental]. '
+                    + 'Do not use "Verse 1:" or similar colon-prefixed labels - always use square bracket tags. '
                     + 'Tags may be combined with a hyphen for performance style, e.g. [Chorus - anthemic] or [Bridge - whispered]. '
                     + 'Do not stack more than one modifier per tag. '
                     + 'Optional vocal/energy tags within sections: [raspy vocal], [whispered], [falsetto], [powerful belting], '
