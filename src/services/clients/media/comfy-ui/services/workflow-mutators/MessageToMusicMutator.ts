@@ -129,21 +129,17 @@ export class MessageToMusicMutator implements IWorkflowMutator {
     async #getSongPromptMetadata(prompt: string, songPromptRequestType: SongPromptRequestType & { tags: string[], lyrics: string }): Promise<SongPromptMetadata> {
         if(this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
             return new Promise((resolve, reject) => {
-                const task = this.#services.getLlmGenerateStructuredTask<SongPromptMetadata>(prompt, songPromptMetadataRequestData);
+                const metadataPrompt = `The song should be ${songPromptRequestType.songPromptType === SongPromptType.Lyrical ? 'lyrical (with lyrics)' : 'instrumental (no lyrics)'}.\n${prompt}`;
+                const task = this.#services.getLlmGenerateStructuredTask<SongPromptMetadata>(metadataPrompt, songPromptMetadataRequestData);
                 task.isChild = true;
 
                 const callback = (payload: IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, SongPromptMetadata>): void => {
-                    // Favor user tags if they're presumably more detailed.
-                    if (!songPromptRequestType.promptHasTags
-                        || songPromptRequestType.tags.length > payload.data.tags.length) {
-                        payload.data.tags = songPromptRequestType.tags;
-                    }
-
-                    // Favor user lyrics if they're presumably more detailed.
-                    if (!songPromptRequestType.promptHasLyrics
-                        || songPromptRequestType.lyrics.length > payload.data.lyrics.length
-                    ) {
-                        payload.data.lyrics = songPromptRequestType.lyrics
+                    // If user-provided lyrics are present, prioritize those over what
+                    // the LLM generates. This allows "weird" lyrical prompts to
+                    // function as expected.
+                    if (songPromptRequestType.promptHasLyrics
+                        && songPromptRequestType.lyrics !== payload.data.lyrics) {
+                        payload.data.lyrics = songPromptRequestType.lyrics;
                     }
 
                     resolve(payload.data);

@@ -454,10 +454,6 @@ describe('MessageToMusicMutator', () => {
                 mutator = setupMutator(
                     {
                         exchange: { request: {} as GenerateRequest, response: {} as GenerateResponse },
-                        data: { songPromptType: SongPromptType.Lyrical, promptHasTags: true, promptHasLyrics: true }
-                    },
-                    {
-                        exchange: { request: {} as GenerateRequest, response: {} as GenerateResponse },
                         data: {
                             tags: ['rock'],
                             lyrics: '[verse] LLM generated lyrics',
@@ -485,10 +481,6 @@ describe('MessageToMusicMutator', () => {
             it('should use LLM-generated tags for the prompt', async (): Promise<void> => {
                 mockReplyService.getMessageWithoutBotMentions = jest.fn(() => 'user-tag-1, user-tag-2\n\nsome lyrics');
                 mutator = setupMutator(
-                    {
-                        exchange: { request: {} as GenerateRequest, response: {} as GenerateResponse },
-                        data: { songPromptType: SongPromptType.Lyrical, promptHasTags: true, promptHasLyrics: true }
-                    },
                     {
                         exchange: { request: {} as GenerateRequest, response: {} as GenerateResponse },
                         data: {
@@ -564,7 +556,7 @@ describe('MessageToMusicMutator', () => {
                 await mutator.mutate(createBaseRenderRequest(), interaction as never, workflow as never);
 
                 expect(mockGetLlmGenerateStructuredTask).toHaveBeenNthCalledWith(1, 'the prompt text', expect.any(Object));
-                expect(mockGetLlmGenerateStructuredTask).toHaveBeenNthCalledWith(2, 'the prompt text', expect.any(Object));
+                expect(mockGetLlmGenerateStructuredTask).toHaveBeenNthCalledWith(2, 'The song should be lyrical (with lyrics).\nthe prompt text', expect.any(Object));
             });
         });
     });
