@@ -1,5 +1,5 @@
 export interface IChatMessageAttachment {
-    readonly name: string;
-    readonly data: Buffer;
-    readonly description?: string;
+  readonly name: string;
+  readonly data: Buffer;
+  readonly description?: string;
 }

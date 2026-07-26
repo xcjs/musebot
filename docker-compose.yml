@@ -1,8 +1,8 @@
 services:
   musebot:
-    container_name: musebot
-    build: .
-    restart: unless-stopped
-    volumes:
+  container_name: musebot
+  build: .
+  restart: unless-stopped
+  volumes:
       - ./config.jsonc:/app/config.jsonc
       - ./workflows:/app/workflows

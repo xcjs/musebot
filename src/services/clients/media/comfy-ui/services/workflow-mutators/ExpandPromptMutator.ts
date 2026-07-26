@@ -13,71 +13,71 @@ import { SerializableRenderRequest } from '../../models/SerializableRenderReques
 import { IWorkflowMutator } from './IWorkflowMutator.js';
 
 export class ExpandPromptMutator implements IWorkflowMutator {
-    get interactions(): BotInteraction[] {
-        return [BotInteraction.ExpandPrompt];
+  get interactions(): BotInteraction[] {
+    return [BotInteraction.ExpandPrompt];
+  }
+
+  get types(): SupportedFeature[] {
+    return [
+      SupportedFeature.Txt2Audio,
+      SupportedFeature.Txt2Img,
+      SupportedFeature.Txt2Vid
+    ];
+  }
+
+  get contentMessage(): string {
+    return this.#contentMessage;
+  }
+
+  get additionalAttachments(): AttachmentBuilder[] {
+    return [];
+  }
+
+  readonly #services: IBotServiceContainer;
+
+  readonly #taskQueue: ITaskQueue;
+
+  #contentMessage = '';
+
+  constructor(services: IBotServiceContainer) {
+    this.#services = services;
+
+    this.#taskQueue = services.taskQueue;
+  }
+
+  async mutate(renderRequest: SerializableRenderRequest,
+    interaction: ButtonInteraction,
+    workflow: IWorkflow): Promise<SerializableRenderRequest> {
+    const mutatedRequest = SerializableRenderRequest.fromSerializableRenderRequest(renderRequest);
+    mutatedRequest.workflow = workflow.name;
+
+    if(mutatedRequest.prompt === null) {
+      throw new Error('The prompt could be expanded because no original prompt was found.');
     }
 
-    get types(): SupportedFeature[] {
-        return [
-            SupportedFeature.Txt2Audio,
-            SupportedFeature.Txt2Img,
-            SupportedFeature.Txt2Vid
-        ];
-    }
+    mutatedRequest.prompt = await this.#getExpandedPrompt(mutatedRequest.prompt, workflow.type);
 
-    get contentMessage(): string {
-        return this.#contentMessage;
-    }
+    // eslint-disable-next-line @typescript-eslint/no-base-to-string
+    this.#contentMessage = `${interaction.member?.user.toString() || 'You'} expanded the detail in \`${renderRequest.prompt }\``
 
-    get additionalAttachments(): AttachmentBuilder[] {
-        return [];
-    }
+    return await Promise.resolve(mutatedRequest);
+  }
 
-    readonly #services: IBotServiceContainer;
+  async #getExpandedPrompt(prompt: string, feature: SupportedFeature): Promise<string> {
+    return new Promise((resolve, reject) => {
+      prompt = `The following is a prompt used to generate a piece of media from ${feature} ` +
+        ` - expand it with meticulous detail to generate better results: ${prompt}`;
 
-    readonly #taskQueue: ITaskQueue;
+      const task = this.#services.getLlmGenerateTask(prompt, OLLAMA_TEMPERATURE_DEFAULT);
+      task.isChild = true;
 
-    #contentMessage = '';
+      const callback = (payload: IHttpExchange<GenerateRequest, GenerateResponse>): void => {
+        resolve(payload.response.response);
+      };
 
-    constructor(services: IBotServiceContainer) {
-        this.#services = services;
-
-        this.#taskQueue = services.taskQueue;
-    }
-
-    async mutate(renderRequest: SerializableRenderRequest,
-        interaction: ButtonInteraction,
-        workflow: IWorkflow): Promise<SerializableRenderRequest> {
-        const mutatedRequest = SerializableRenderRequest.fromSerializableRenderRequest(renderRequest);
-        mutatedRequest.workflow = workflow.name;
-
-        if(mutatedRequest.prompt === null) {
-            throw new Error('The prompt could be expanded because no original prompt was found.');
-        }
-
-        mutatedRequest.prompt = await this.#getExpandedPrompt(mutatedRequest.prompt, workflow.type);
-
-        // eslint-disable-next-line @typescript-eslint/no-base-to-string
-        this.#contentMessage = `${interaction.member?.user.toString() || 'You'} expanded the detail in \`${renderRequest.prompt }\``
-
-        return await Promise.resolve(mutatedRequest);
-    }
-
-    async #getExpandedPrompt(prompt: string, feature: SupportedFeature): Promise<string> {
-        return new Promise((resolve, reject) => {
-            prompt = `The following is a prompt used to generate a piece of media from ${feature} ` +
-                ` - expand it with meticulous detail to generate better results: ${prompt}`;
-
-            const task = this.#services.getLlmGenerateTask(prompt, OLLAMA_TEMPERATURE_DEFAULT);
-            task.isChild = true;
-
-            const callback = (payload: IHttpExchange<GenerateRequest, GenerateResponse>): void => {
-                resolve(payload.response.response);
-            };
-
-            task.onSuccess = callback;
-            task.onFailure = reject;
-            this.#taskQueue.add(task as BaseTask<unknown>);
-        });
-    }
+      task.onSuccess = callback;
+      task.onFailure = reject;
+      this.#taskQueue.add(task as BaseTask<unknown>);
+    });
+  }
 }

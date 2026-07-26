@@ -1,47 +1,47 @@
 {
   "$musebotDefaults": {
-    "label": "✂️",
-    "title": "Extract Subject",
-    "helpText": "Use machine learning to attempt extracting the subject of the image (with transparency)."
+  "label": "✂️",
+  "title": "Extract Subject",
+  "helpText": "Use machine learning to attempt extracting the subject of the image (with transparency)."
   },
   "114": {
-    "inputs": {},
-    "class_type": "BRIA_RMBG_ModelLoader_Zho",
-    "_meta": {
+  "inputs": {},
+  "class_type": "BRIA_RMBG_ModelLoader_Zho",
+  "_meta": {
       "title": "🧹BRIA_RMBG Model Loader"
-    }
+  }
   },
   "115": {
-    "inputs": {
+  "inputs": {
       "rmbgmodel": ["114", 0],
       "image": ["120", 0]
-    },
-    "class_type": "BRIA_RMBG_Zho",
-    "_meta": {
+  },
+  "class_type": "BRIA_RMBG_Zho",
+  "_meta": {
       "title": "🧹BRIA RMBG"
-    }
+  }
   },
   "118": {
-    "inputs": {
+  "inputs": {
       "filename_prefix": "ComfyUI",
       "fps": 0.01,
       "lossless": true,
       "quality": 100,
       "method": "default",
       "images": ["115", 0]
-    },
-    "class_type": "SaveAnimatedWEBP",
-    "_meta": {
+  },
+  "class_type": "SaveAnimatedWEBP",
+  "_meta": {
       "title": "SaveAnimatedWEBP"
-    }
+  }
   },
   "120": {
-    "inputs": {
+  "inputs": {
       "image": "{{{ image }}}"
-    },
-    "class_type": "ETN_LoadImageBase64",
-    "_meta": {
+  },
+  "class_type": "ETN_LoadImageBase64",
+  "_meta": {
       "title": "Load Image (Base64)"
-    }
+  }
   }
 }

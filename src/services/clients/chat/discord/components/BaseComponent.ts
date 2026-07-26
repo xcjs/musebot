@@ -2,29 +2,29 @@
 import { IBotServiceContainer } from "../../../../IBotServiceContainer.js"
 
 export abstract class BaseComponent<ComponentType> {
-    protected featureService: IFeatureService;
+  protected featureService: IFeatureService;
 
-    get label(): string {
-        return '';
-    }
+  get label(): string {
+    return '';
+  }
 
-    get isSupported(): boolean {
-        return false;
-    }
+  get isSupported(): boolean {
+    return false;
+  }
 
-    get title(): string {
-        return '';
-    }
+  get title(): string {
+    return '';
+  }
 
-    get helpText(): string {
-        return '';
-    }
+  get helpText(): string {
+    return '';
+  }
 
-    constructor(services: IBotServiceContainer) {
-        this.featureService = services.featureService;
-    }
+  constructor(services: IBotServiceContainer) {
+    this.featureService = services.featureService;
+  }
 
-    abstract build(): ComponentType;
+  abstract build(): ComponentType;
 
-    abstract buildAsync(): Promise<ComponentType>;
+  abstract buildAsync(): Promise<ComponentType>;
 }

@@ -9,14 +9,14 @@ export class OllamaTaskChannelPostProcessor implements ITaskChannelPostProcessor
   readonly #logger: ILogger;
 
   constructor(services: IBotServiceContainer) {
-    this.#ollamaClient = services.ollamaClient;
+  this.#ollamaClient = services.ollamaClient;
 
-    this.#logger = services.getLogger('OllamaTaskChannelPostProcessor');
+  this.#logger = services.getLogger('OllamaTaskChannelPostProcessor');
   }
 
   async postProcess(): Promise<void> {
-    this.#logger.info('Freeing Ollama memory.');
+  this.#logger.info('Freeing Ollama memory.');
 
-    await this.#ollamaClient.free();
+  await this.#ollamaClient.free();
   }
 }

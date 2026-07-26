@@ -5,10 +5,10 @@ import { IWorkflow } from '../models/IWorkflow.js';
 import { SerializableRenderRequest } from '../models/SerializableRenderRequest.js';
 
 export interface IWorkflowService {
-    hasWorkflows: boolean;
-    workflows: Array<IWorkflow>;
-    loadWorkflows(): Promise<void>;
-    hasWorkflowType(workflowType: SupportedFeature): boolean;
-    getWorkflowDefaults(workflow: IWorkflow): SerializableRenderRequest;
-    renderWorkflow(workflow: IWorkflow, renderRequest: SerializableRenderRequest): Prompt;
+  hasWorkflows: boolean;
+  workflows: Array<IWorkflow>;
+  loadWorkflows(): Promise<void>;
+  hasWorkflowType(workflowType: SupportedFeature): boolean;
+  getWorkflowDefaults(workflow: IWorkflow): SerializableRenderRequest;
+  renderWorkflow(workflow: IWorkflow, renderRequest: SerializableRenderRequest): Prompt;
 }

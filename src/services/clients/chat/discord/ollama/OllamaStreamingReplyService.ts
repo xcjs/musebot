@@ -7,45 +7,45 @@ import { IChatMessageFactory } from '../../IChatMessageFactory.js';
 import { IOutputChatMessageFilter } from '../../IOutputChatMessageFilter.js';
 
 export class OllamaStreamingReplyService {
-    readonly #services: IBotServiceContainer;
-    readonly #logger: ILogger;
-    readonly #filters: IOutputChatMessageFilter[];
-    readonly #factory: IChatMessageFactory<Message>;
+  readonly #services: IBotServiceContainer;
+  readonly #logger: ILogger;
+  readonly #filters: IOutputChatMessageFilter[];
+  readonly #factory: IChatMessageFactory<Message>;
 
-    #replies: Message[] = [];
-    #accumulatedContent = '';
+  #replies: Message[] = [];
+  #accumulatedContent = '';
 
-    constructor(services: IBotServiceContainer) {
-        this.#services = services;
-        this.#logger = services.getLogger('OllamaStreamingReplyService');
-        this.#filters = services.getChatMessageFilters();
-        this.#factory = services.getChatMessageFactory<Message>();
+  constructor(services: IBotServiceContainer) {
+    this.#services = services;
+    this.#logger = services.getLogger('OllamaStreamingReplyService');
+    this.#filters = services.getChatMessageFilters();
+    this.#factory = services.getChatMessageFactory<Message>();
+  }
+
+  async reply(
+    message: Message,
+    responseBatch: string,
+    done: boolean): Promise<Message[]> {
+    this.#accumulatedContent += responseBatch;
+
+    let chatMessages: IChatMessage[] = [{
+      content: this.#accumulatedContent,
+      attachments: []
+    }];
+
+    for (const filter of this.#filters) {
+      chatMessages = await filter.processStreaming(chatMessages, done);
     }
 
-    async reply(
-        message: Message,
-        responseBatch: string,
-        done: boolean): Promise<Message[]> {
-        this.#accumulatedContent += responseBatch;
+    this.#logger.info(`Processing ${chatMessages.length} messages.`);
 
-        let chatMessages: IChatMessage[] = [{
-            content: this.#accumulatedContent,
-            attachments: []
-        }];
+    this.#replies = await this.#factory.updateMessages(message, this.#replies, chatMessages);
 
-        for (const filter of this.#filters) {
-            chatMessages = await filter.processStreaming(chatMessages, done);
-        }
+    return this.#replies;
+  }
 
-        this.#logger.info(`Processing ${chatMessages.length} messages.`);
-
-        this.#replies = await this.#factory.updateMessages(message, this.#replies, chatMessages);
-
-        return this.#replies;
-    }
-
-    clearState(): void {
-        this.#replies = [];
-        this.#accumulatedContent = '';
-    }
+  clearState(): void {
+    this.#replies = [];
+    this.#accumulatedContent = '';
+  }
 }

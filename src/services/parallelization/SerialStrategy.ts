@@ -2,30 +2,30 @@ import { IParallelizationStrategy } from './IParallelizationStrategy.js';
 import { CHILD_TASK_CHANNEL_SUFFIX, ResourceType } from './ResourceType.js';
 
 export class SerialStrategy implements IParallelizationStrategy {
-    readonly #includeHostname: boolean;
+  readonly #includeHostname: boolean;
 
-    constructor(includeHostname: boolean = true) {
-        this.#includeHostname = includeHostname;
+  constructor(includeHostname: boolean = true) {
+    this.#includeHostname = includeHostname;
+  }
+
+  getTaskChannel(resourceType: ResourceType, isChild: boolean, resourceUrl: URL | null = null): string {
+    const parts: string[] = [];
+
+    if (resourceType === ResourceType.LargeLanguageModel
+      || resourceType === ResourceType.Media) {
+      resourceType = ResourceType.GenerativeAI;
     }
 
-    getTaskChannel(resourceType: ResourceType, isChild: boolean, resourceUrl: URL | null = null): string {
-        const parts: string[] = [];
+    parts.push(resourceType);
 
-        if (resourceType === ResourceType.LargeLanguageModel
-            || resourceType === ResourceType.Media) {
-            resourceType = ResourceType.GenerativeAI;
-        }
-
-        parts.push(resourceType);
-
-        if(isChild) {
-            parts.push(CHILD_TASK_CHANNEL_SUFFIX);
-        }
-
-        if (this.#includeHostname && resourceUrl !== null) {
-            parts.push(resourceUrl.hostname);
-        }
-
-        return parts.join('_');
+    if(isChild) {
+      parts.push(CHILD_TASK_CHANNEL_SUFFIX);
     }
+
+    if (this.#includeHostname && resourceUrl !== null) {
+      parts.push(resourceUrl.hostname);
+    }
+
+    return parts.join('_');
+  }
 }

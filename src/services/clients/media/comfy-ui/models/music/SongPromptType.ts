@@ -1,4 +1,4 @@
 export enum SongPromptType {
-    Instrumental = 'instrumental',
-    Lyrical = 'lyrical'
+  Instrumental = 'instrumental',
+  Lyrical = 'lyrical'
 }

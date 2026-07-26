@@ -1,5 +1,5 @@
 export interface IMessageExtractor<MessageType> {
-    extractPrompt(message: MessageType): string;
+  extractPrompt(message: MessageType): string;
 
-    getPreviousMessage(message: MessageType): Promise<MessageType | null>;
+  getPreviousMessage(message: MessageType): Promise<MessageType | null>;
 }

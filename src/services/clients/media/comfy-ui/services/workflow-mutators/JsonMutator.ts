@@ -10,58 +10,58 @@ import { SerializableRenderRequest } from '../../models/SerializableRenderReques
 import { IWorkflowMutator } from './IWorkflowMutator.js';
 
 export class JsonMutator implements IWorkflowMutator {
-    get interactions(): BotInteraction[] {
-        return [BotInteraction.JsonMessage];
+  get interactions(): BotInteraction[] {
+    return [BotInteraction.JsonMessage];
+  }
+
+  get types(): SupportedFeature[] {
+    return [
+      SupportedFeature.Txt2Audio,
+      SupportedFeature.Txt2Img,
+      SupportedFeature.Txt2Music,
+      SupportedFeature.Txt2Vid
+    ];
+  }
+
+  get contentMessage(): string {
+    return '';
+  }
+
+  get additionalAttachments(): AttachmentBuilder[] {
+    return [];
+  }
+
+  #replyService: IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
+
+  constructor(services: IBotServiceContainer) {
+    this.#replyService = services.getReplyService();
+  }
+
+  // The parameters are required by the interface.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async mutate(renderRequest: SerializableRenderRequest, interaction: Message, workflow: IWorkflow): Promise<SerializableRenderRequest> {
+    const prompt = this.#replyService.getMessageWithoutBotMentions(interaction);
+
+    let mutatedRequest: SerializableRenderRequest;
+
+    try {
+      mutatedRequest = SerializableRenderRequest.fromJson(prompt);
+    } catch {
+      await interaction.reply('You call that JSON? My grandmother could knit better JSON.');
+      return null;
     }
 
-    get types(): SupportedFeature[] {
-        return [
-            SupportedFeature.Txt2Audio,
-            SupportedFeature.Txt2Img,
-            SupportedFeature.Txt2Music,
-            SupportedFeature.Txt2Vid
-        ];
+    mutatedRequest.height = Math.ceil(mutatedRequest.height);
+    mutatedRequest.width = Math.ceil(mutatedRequest.width);
+
+    if (mutatedRequest.seed === -1) {
+      mutatedRequest.refreshSeed();
     }
 
-    get contentMessage(): string {
-        return '';
+    if (mutatedRequest.num > DiscordConstants.MaxMediaAttachmentsPerMessage - 1) {
+      mutatedRequest.num = DiscordConstants.MaxMediaAttachmentsPerMessage - 1;
     }
 
-    get additionalAttachments(): AttachmentBuilder[] {
-        return [];
-    }
-
-    #replyService: IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
-
-    constructor(services: IBotServiceContainer) {
-        this.#replyService = services.getReplyService();
-    }
-
-    // The parameters are required by the interface.
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    async mutate(renderRequest: SerializableRenderRequest, interaction: Message, workflow: IWorkflow): Promise<SerializableRenderRequest> {
-        const prompt = this.#replyService.getMessageWithoutBotMentions(interaction);
-
-        let mutatedRequest: SerializableRenderRequest;
-
-        try {
-            mutatedRequest = SerializableRenderRequest.fromJson(prompt);
-        } catch {
-            await interaction.reply('You call that JSON? My grandmother could knit better JSON.');
-            return null;
-        }
-
-        mutatedRequest.height = Math.ceil(mutatedRequest.height);
-        mutatedRequest.width = Math.ceil(mutatedRequest.width);
-
-        if (mutatedRequest.seed === -1) {
-            mutatedRequest.refreshSeed();
-        }
-
-        if (mutatedRequest.num > DiscordConstants.MaxMediaAttachmentsPerMessage - 1) {
-            mutatedRequest.num = DiscordConstants.MaxMediaAttachmentsPerMessage - 1;
-        }
-
-        return mutatedRequest;
-    }
+    return mutatedRequest;
+  }
 }

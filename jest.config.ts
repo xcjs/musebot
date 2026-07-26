@@ -23,10 +23,10 @@ const config: Config = {
 
   // An array of glob patterns indicating a set of files for which coverage information should be collected
   collectCoverageFrom: [
-    'src/**/*.ts',
-    '!src/**/*.test.ts',
-    '!src/**/*.d.ts',
-    '!src/polyfills.ts',
+  'src/**/*.ts',
+  '!src/**/*.test.ts',
+  '!src/**/*.d.ts',
+  '!src/polyfills.ts',
   ],
 
   // The directory where Jest should output its coverage files
@@ -96,7 +96,7 @@ const config: Config = {
 
   // A map from regular expressions to module names or to arrays of module names that allow to stub out resources with a single module
   moduleNameMapper: {
-    "^(\\.{1,2}/.*)\\.js$": "$1",
+  "^(\\.{1,2}/.*)\\.js$": "$1",
   },
 
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
@@ -169,8 +169,8 @@ const config: Config = {
 
   // An array of regexp pattern strings that are matched against all test paths, matched tests are skipped
   testPathIgnorePatterns: [
-    "\\\\node_modules\\\\",
-    "/build/"
+  "\\\\node_modules\\\\",
+  "/build/"
   ],
 
   // The regexp pattern or array of patterns that Jest uses to detect test files
@@ -184,7 +184,7 @@ const config: Config = {
 
   // A map from regular expressions to paths to transformers
   transform: {
-    "^.+.tsx?$": ["ts-jest", {}],
+  "^.+.tsx?$": ["ts-jest", {}],
   },
 
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation

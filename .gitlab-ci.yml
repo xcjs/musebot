@@ -12,210 +12,210 @@ Install Linux Dependencies:
   image: node:24
   needs: []
   tags:
-    - docker
+  - docker
   script:
-    - npm ci
-    - npm install --cpu=x64 --os=linux --libc=glibc sharp
-    - npm list
+  - npm ci
+  - npm install --cpu=x64 --os=linux --libc=glibc sharp
+  - npm list
   artifacts:
-    name: node_modules_linux
-    paths:
+  name: node_modules_linux
+  paths:
       - node_modules
-    expire_in: 1 week
+  expire_in: 1 week
 
 Install Windows Dependencies:
   stage: Setup
   image: node:24
   needs: []
   tags:
-    - docker
+  - docker
   script:
-    - npm ci
-    - npm install --cpu=x64 --os=win32 sharp
-    - npm list
+  - npm ci
+  - npm install --cpu=x64 --os=win32 sharp
+  - npm list
   artifacts:
-    name: node_modules_windows
-    paths:
+  name: node_modules_windows
+  paths:
       - node_modules
-    expire_in: 1 week
+  expire_in: 1 week
 
 Lint:
   stage: Lint
   image: node:24
   needs: ["Install Linux Dependencies"]
   tags:
-    - docker
+  - docker
   script:
-    - npm run lint
+  - npm run lint
 
 Test:
   stage: Test
   image: node:24
   needs: ["Install Linux Dependencies"]
   tags:
-    - docker
+  - docker
   script:
-    - npm test
+  - npm test
   artifacts:
-    name: coverage
-    paths:
+  name: coverage
+  paths:
       - coverage
-    expire_in: 1 week
+  expire_in: 1 week
 
 Build Musebot Docker Image:
   stage: Build
   image: docker:dind
   needs: ["Install Linux Dependencies", "Lint", "Test"]
   services:
-    - docker:dind
+  - docker:dind
   except:
-    - main
+  - main
   tags:
-    - docker
+  - docker
   script:
-    - docker build --rm -t $CI_REGISTRY/xcjs/musebot:build-$CI_JOB_ID .
+  - docker build --rm -t $CI_REGISTRY/xcjs/musebot:build-$CI_JOB_ID .
 
 Build Docs Docker Image:
   stage: Build
   image: docker:dind
   needs: ["Install Linux Dependencies", "Lint"]
   services:
-    - docker:dind
+  - docker:dind
   except:
-    - main
+  - main
   tags:
-    - docker
+  - docker
   script:
-    - docker build --rm -f Dockerfile.docs -t $CI_REGISTRY/xcjs/musebot/docs:build-$CI_JOB_ID .
+  - docker build --rm -f Dockerfile.docs -t $CI_REGISTRY/xcjs/musebot/docs:build-$CI_JOB_ID .
 
 Build Linux Distributable:
   stage: Build
   image: node:24
   needs: ["Install Linux Dependencies", "Lint", "Test"]
   tags:
-    - docker
+  - docker
   script:
-    - npm run build:bin
-    - rm build/pkg/musebot-win.exe
-    - mv build/pkg/musebot-linux build/pkg/musebot-linux-x86_64
-    - cp -f config.example.jsonc build/pkg/config.example.jsonc
-    - cp -rf docs/ build/pkg/docs/
-    - cp -rf workflows/examples build/pkg/workflows
-    - cp -f LICENSE build/pkg/LICENSE.txt
-    - cp -f CHANGELOG.md build/pkg/CHANGELOG.md
-    - cp -f logo.jpg build/pkg/musebot.jpg
-    - cp -f logo.png build/pkg/musebot.png
-    - cp -f musebot.ico build/pkg/musebot.ico
-    - cp -f Dockerfile.dist build/pkg/Dockerfile
-    - cp -f docker-compose.yml build/pkg/docker-compose.yml
-    - mkdir -p build/dist/linux
-    - mv build/pkg/* build/dist/linux/
+  - npm run build:bin
+  - rm build/pkg/musebot-win.exe
+  - mv build/pkg/musebot-linux build/pkg/musebot-linux-x86_64
+  - cp -f config.example.jsonc build/pkg/config.example.jsonc
+  - cp -rf docs/ build/pkg/docs/
+  - cp -rf workflows/examples build/pkg/workflows
+  - cp -f LICENSE build/pkg/LICENSE.txt
+  - cp -f CHANGELOG.md build/pkg/CHANGELOG.md
+  - cp -f logo.jpg build/pkg/musebot.jpg
+  - cp -f logo.png build/pkg/musebot.png
+  - cp -f musebot.ico build/pkg/musebot.ico
+  - cp -f Dockerfile.dist build/pkg/Dockerfile
+  - cp -f docker-compose.yml build/pkg/docker-compose.yml
+  - mkdir -p build/dist/linux
+  - mv build/pkg/* build/dist/linux/
   artifacts:
-    name: musebot-linux-x86_64
-    paths:
+  name: musebot-linux-x86_64
+  paths:
       - build/dist/
-    expire_in: 1 week
+  expire_in: 1 week
 
 Build Windows Distributable:
   stage: Build
   image: node:24
   needs: ["Install Windows Dependencies", "Lint", "Test"]
   tags:
-    - docker
+  - docker
   script:
-    - npm install @parcel/rust-linux-x64-gnu
-    - npm run build:bin
-    - mv build/pkg/musebot-win.exe build/pkg/musebot-win-x86_64.exe
-    - rm build/pkg/musebot-linux
-    - cp -f config.example.jsonc build/pkg/config.example.jsonc
-    - cp -rf docs/ build/pkg/docs/
-    - cp -rf workflows/examples build/pkg/workflows
-    - cp -f LICENSE build/pkg/LICENSE.txt
-    - cp -f CHANGELOG.md build/pkg/CHANGELOG.md
-    - cp -f logo.jpg build/pkg/musebot.jpg
-    - cp -f logo.png build/pkg/musebot.png
-    - cp -f musebot.ico build/pkg/musebot.ico
-    - mkdir -p build/dist/windows
-    - mv build/pkg/* build/dist/windows/
+  - npm install @parcel/rust-linux-x64-gnu
+  - npm run build:bin
+  - mv build/pkg/musebot-win.exe build/pkg/musebot-win-x86_64.exe
+  - rm build/pkg/musebot-linux
+  - cp -f config.example.jsonc build/pkg/config.example.jsonc
+  - cp -rf docs/ build/pkg/docs/
+  - cp -rf workflows/examples build/pkg/workflows
+  - cp -f LICENSE build/pkg/LICENSE.txt
+  - cp -f CHANGELOG.md build/pkg/CHANGELOG.md
+  - cp -f logo.jpg build/pkg/musebot.jpg
+  - cp -f logo.png build/pkg/musebot.png
+  - cp -f musebot.ico build/pkg/musebot.ico
+  - mkdir -p build/dist/windows
+  - mv build/pkg/* build/dist/windows/
   artifacts:
-    name: musebot-win-x86_64
-    paths:
+  name: musebot-win-x86_64
+  paths:
       - build/dist/
-    expire_in: 1 week
+  expire_in: 1 week
 
 Publish Musebot Docker Image:
   stage: Publish
   image: docker:dind
   needs: ["Install Linux Dependencies", "Lint", "Test"]
   services:
-    - docker:dind
+  - docker:dind
   only:
-    - main
+  - main
   tags:
-    - docker
+  - docker
   before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
-    - docker build -t $CI_REGISTRY/xcjs/musebot:latest .
-    - docker push $CI_REGISTRY/xcjs/musebot:latest
+  - docker build -t $CI_REGISTRY/xcjs/musebot:latest .
+  - docker push $CI_REGISTRY/xcjs/musebot:latest
 
 Publish Docs Docker Image:
   stage: Publish
   image: docker:dind
   needs: ["Install Linux Dependencies", "Lint"]
   services:
-    - docker:dind
+  - docker:dind
   only:
-    - main
+  - main
   tags:
-    - docker
+  - docker
   before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
-    - docker build -f Dockerfile.docs -t $CI_REGISTRY/xcjs/musebot/docs:latest .
-    - docker push $CI_REGISTRY/xcjs/musebot/docs:latest
+  - docker build -f Dockerfile.docs -t $CI_REGISTRY/xcjs/musebot/docs:latest .
+  - docker push $CI_REGISTRY/xcjs/musebot/docs:latest
 
 Release Musebot:
   stage: Release
   image: node:24
   needs:
-    - job: "Build Linux Distributable"
+  - job: "Build Linux Distributable"
       artifacts: true
-    - job: "Build Windows Distributable"
+  - job: "Build Windows Distributable"
       artifacts: true
   rules:
-    - if: $CI_COMMIT_TAG
+  - if: $CI_COMMIT_TAG
   tags:
-    - docker
+  - docker
   script:
-    - node .gitlab-ci/discord-release.mjs
+  - node .gitlab-ci/discord-release.mjs
 
 Review with gemma4:e4b:
   stage: Review
   image:
-    name: ollama/ollama:latest
-    entrypoint: [""]
+  name: ollama/ollama:latest
+  entrypoint: [""]
   script:
-    - .gitlab-ci/review.sh "gemma4:e4b"
+  - .gitlab-ci/review.sh "gemma4:e4b"
   needs: []
   when: manual
   tags:
-    - docker
+  - docker
   artifacts:
-    paths:
+  paths:
       - Code Review.md
 
 Review with gemma4:12b-it-qat:
   stage: Review
   image:
-    name: ollama/ollama:latest
-    entrypoint: [""]
+  name: ollama/ollama:latest
+  entrypoint: [""]
   script:
-    - .gitlab-ci/review.sh "gemma4:12b-it-qat"
+  - .gitlab-ci/review.sh "gemma4:12b-it-qat"
   needs: []
   when: manual
   tags:
-    - docker
+  - docker
   artifacts:
-    paths:
+  paths:
       - Code Review.md

@@ -1,13 +1,13 @@
 export enum ResourceType {
-    None = 'none',
+  None = 'none',
 
-    // Atomic Resource Types
-    Chat = 'Chat',
-    Media = 'Media',
-    LargeLanguageModel = 'LargeLanguageModel',
+  // Atomic Resource Types
+  Chat = 'Chat',
+  Media = 'Media',
+  LargeLanguageModel = 'LargeLanguageModel',
 
-    // Merged Resource Types
-    GenerativeAI = 'GenerativeAI'
+  // Merged Resource Types
+  GenerativeAI = 'GenerativeAI'
 }
 
 export const CHILD_TASK_CHANNEL_SUFFIX = 'Child';

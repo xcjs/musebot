@@ -1,24 +1,24 @@
 {
   "$musebotDefaults": {
-    "prompt": "",
-    "prompt2": "",
-    "promptNegative": "",
-    "workflow": "",
-    "seed": -1,
-    "sampler": "euler",
-    "scheduler": "simple",
-    "cfgScale": 2,
-    "steps": 8,
-    "num": 1,
-    "duration": null,
-    "durationMin": 150,
-    "durationMax": 390,
-    "bpm": -1,
-    "keyScale": "",
-    "timeSignature": ""
+  "prompt": "",
+  "prompt2": "",
+  "promptNegative": "",
+  "workflow": "",
+  "seed": -1,
+  "sampler": "euler",
+  "scheduler": "simple",
+  "cfgScale": 2,
+  "steps": 8,
+  "num": 1,
+  "duration": null,
+  "durationMin": 150,
+  "durationMax": 390,
+  "bpm": -1,
+  "keyScale": "",
+  "timeSignature": ""
   },
   "3": {
-    "inputs": {
+  "inputs": {
       "seed": "{{{ seed }}}",
       "steps": "{{{ steps }}}",
       "cfg": 1,
@@ -26,70 +26,70 @@
       "scheduler": "{{{ scheduler }}}",
       "denoise": 1,
       "model": [
-        "78",
-        0
+    "78",
+    0
       ],
       "positive": [
-        "94",
-        0
+    "94",
+    0
       ],
       "negative": [
-        "47",
-        0
+    "47",
+    0
       ],
       "latent_image": [
-        "98",
-        0
+    "98",
+    0
       ]
-    },
-    "class_type": "KSampler",
-    "_meta": {
+  },
+  "class_type": "KSampler",
+  "_meta": {
       "title": "KSampler"
-    }
+  }
   },
   "18": {
-    "inputs": {
+  "inputs": {
       "samples": [
-        "3",
-        0
+    "3",
+    0
       ],
       "vae": [
-        "106",
-        0
+    "106",
+    0
       ]
-    },
-    "class_type": "VAEDecodeAudio",
-    "_meta": {
+  },
+  "class_type": "VAEDecodeAudio",
+  "_meta": {
       "title": "VAE Decode Audio"
-    }
+  }
   },
   "47": {
-    "inputs": {
+  "inputs": {
       "conditioning": [
-        "94",
-        0
+    "94",
+    0
       ]
-    },
-    "class_type": "ConditioningZeroOut",
-    "_meta": {
+  },
+  "class_type": "ConditioningZeroOut",
+  "_meta": {
       "title": "ConditioningZeroOut"
-    }
+  }
   },
   "78": {
-    "inputs": {
+  "inputs": {
       "shift": 3,
       "model": [
-        "104",
-        0
+    "104",
+    0
       ]
-    },
-    "class_type": "ModelSamplingAuraFlow",
-    "_meta": {
+  },
+  "class_type": "ModelSamplingAuraFlow",
+  "_meta": {
       "title": "ModelSamplingAuraFlow"
-    }
+  }
   },
   "94": {
-    "inputs": {
+  "inputs": {
       "tags": "{{{ prompt }}}",
       "lyrics": "{{{ prompt2 }}}",
       "seed": "{{{ seed }}}",
@@ -105,69 +105,69 @@
       "top_k": 0,
       "min_p": 0,
       "clip": [
-        "105",
-        0
+    "105",
+    0
       ]
-    },
-    "class_type": "TextEncodeAceStepAudio1.5",
-    "_meta": {
+  },
+  "class_type": "TextEncodeAceStepAudio1.5",
+  "_meta": {
       "title": "TextEncodeAceStepAudio1.5"
-    }
+  }
   },
   "98": {
-    "inputs": {
+  "inputs": {
       "seconds": "{{{ duration }}}",
       "batch_size": "{{{ num }}}"
-    },
-    "class_type": "EmptyAceStep1.5LatentAudio",
-    "_meta": {
+  },
+  "class_type": "EmptyAceStep1.5LatentAudio",
+  "_meta": {
       "title": "Empty Ace Step 1.5 Latent Audio"
-    }
+  }
   },
   "104": {
-    "inputs": {
+  "inputs": {
       "unet_name": "ACE-Step/v1.5/acestep_v1.5_sft_xl.safetensors",
       "weight_dtype": "default"
-    },
-    "class_type": "UNETLoader",
-    "_meta": {
+  },
+  "class_type": "UNETLoader",
+  "_meta": {
       "title": "Load Diffusion Model"
-    }
+  }
   },
   "105": {
-    "inputs": {
+  "inputs": {
       "clip_name1": "ACE-Step/v1.5/qwen_0.6b_ace15.safetensors",
       "clip_name2": "ACE-Step/v1.5/acestep-5Hz-lm-4B.safetensors",
       "type": "ace",
       "device": "default"
-    },
-    "class_type": "DualCLIPLoader",
-    "_meta": {
+  },
+  "class_type": "DualCLIPLoader",
+  "_meta": {
       "title": "DualCLIPLoader"
-    }
+  }
   },
   "106": {
-    "inputs": {
+  "inputs": {
       "vae_name": "ACE-Step/v1.5/ace_1.5_vae.safetensors"
-    },
-    "class_type": "VAELoader",
-    "_meta": {
+  },
+  "class_type": "VAELoader",
+  "_meta": {
       "title": "Load VAE"
-    }
+  }
   },
   "107": {
-    "inputs": {
+  "inputs": {
       "filename_prefix": "audio/Musebot_Composer_",
       "quality": "V0",
       "audioUI": "",
       "audio": [
-        "18",
-        0
+    "18",
+    0
       ]
-    },
-    "class_type": "SaveAudioMP3",
-    "_meta": {
+  },
+  "class_type": "SaveAudioMP3",
+  "_meta": {
       "title": "Save Audio (MP3)"
-    }
+  }
   }
 }

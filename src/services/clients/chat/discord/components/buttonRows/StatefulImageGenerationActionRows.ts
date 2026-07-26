@@ -14,46 +14,46 @@ import { IActionRowBuilderFactory } from '../IActionRowBuilderFactory.js';
 import { IActionRows } from './IActionRows.js';
 
 export class StatefulImageGenerationActionRows extends BaseComponent<ActionRowBuilder<ButtonBuilder>[]> implements IActionRows {
-    #buttons: BaseComponent<ButtonBuilder>[] = [];
-    get buttons(): BaseComponent<ButtonBuilder>[] {
-        return this.#buttons;
-    }
+  #buttons: BaseComponent<ButtonBuilder>[] = [];
+  get buttons(): BaseComponent<ButtonBuilder>[] {
+    return this.#buttons;
+  }
 
-    get isAsync(): boolean {
-        return false;
-    }
+  get isAsync(): boolean {
+    return false;
+  }
 
-    #services: IBotServiceContainer;
+  #services: IBotServiceContainer;
 
-    #actionRowBuilderFactory: IActionRowBuilderFactory;
+  #actionRowBuilderFactory: IActionRowBuilderFactory;
 
-    #renderRequest: SerializableRenderRequest | null;
+  #renderRequest: SerializableRenderRequest | null;
 
-    constructor(services: IBotServiceContainer,
-        renderRequest: SerializableRenderRequest | null) {
-        super(services);
-        this.#services = services;
+  constructor(services: IBotServiceContainer,
+    renderRequest: SerializableRenderRequest | null) {
+    super(services);
+    this.#services = services;
 
-        this.#actionRowBuilderFactory = services.actionRowBuilderFactory;
+    this.#actionRowBuilderFactory = services.actionRowBuilderFactory;
 
-        this.#renderRequest = renderRequest;
-    }
+    this.#renderRequest = renderRequest;
+  }
 
-    override build(): ActionRowBuilder<ButtonBuilder>[] {
-        this.#buttons = [
-            new RetryButton(this.#services),
-            new GuidanceScaleMinusButton(this.#services, this.#renderRequest),
-            new GuidanceScalePlusButton(this.#services, this.#renderRequest),
-            new ShowSourceButton(this.#services, this.#renderRequest),
-            new HelpButton(this.#services),
-            new ExpandPromptButton(this.#services),
-            new RandomizeButton(this.#services)
-        ];
+  override build(): ActionRowBuilder<ButtonBuilder>[] {
+    this.#buttons = [
+      new RetryButton(this.#services),
+      new GuidanceScaleMinusButton(this.#services, this.#renderRequest),
+      new GuidanceScalePlusButton(this.#services, this.#renderRequest),
+      new ShowSourceButton(this.#services, this.#renderRequest),
+      new HelpButton(this.#services),
+      new ExpandPromptButton(this.#services),
+      new RandomizeButton(this.#services)
+    ];
 
-        return this.#actionRowBuilderFactory.buildActionRows(this.#buttons);
-    }
+    return this.#actionRowBuilderFactory.buildActionRows(this.#buttons);
+  }
 
-    override buildAsync(): Promise<ActionRowBuilder<ButtonBuilder>[]> {
-        throw new Error('Method not implemented.');
-    }
+  override buildAsync(): Promise<ActionRowBuilder<ButtonBuilder>[]> {
+    throw new Error('Method not implemented.');
+  }
 }

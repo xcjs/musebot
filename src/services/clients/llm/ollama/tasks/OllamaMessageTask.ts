@@ -21,260 +21,260 @@ import { LlmChatMessage } from '../models/LlmChatMessage.js';
 import { OllamaBaseTask } from './OllamaBaseTask.js';
 
 export class OllamaMessageTask extends OllamaBaseTask<void> {
-    readonly #services: IBotServiceContainer;
+  readonly #services: IBotServiceContainer;
 
-    readonly #featureService: IFeatureService;
-    readonly #taskQueue: ITaskQueue;
+  readonly #featureService: IFeatureService;
+  readonly #taskQueue: ITaskQueue;
 
-    readonly #inputFilters: IInputChatMessageFilter<DiscordMessage>[];
-    readonly #llmChatMessageFactory: ILlmChatMessageFactory<DiscordMessage>;
-    readonly #memoryService: IMemoryService;
-    readonly #attachmentService: DiscordAttachmentService;
-    readonly #webContentService: WebContentService;
+  readonly #inputFilters: IInputChatMessageFilter<DiscordMessage>[];
+  readonly #llmChatMessageFactory: ILlmChatMessageFactory<DiscordMessage>;
+  readonly #memoryService: IMemoryService;
+  readonly #attachmentService: DiscordAttachmentService;
+  readonly #webContentService: WebContentService;
 
-    readonly #message: DiscordMessage;
+  readonly #message: DiscordMessage;
 
-    constructor(
-        services: IBotServiceContainer,
-        message: DiscordMessage) {
-        super(services);
-        this.logger = services.getLogger('OllamaMessageTask');
+  constructor(
+    services: IBotServiceContainer,
+    message: DiscordMessage) {
+    super(services);
+    this.logger = services.getLogger('OllamaMessageTask');
 
-        this.#services = services;
+    this.#services = services;
 
-        this.#featureService = services.featureService;
-        this.#taskQueue = services.taskQueue;
-        this.#inputFilters = services.getInputChatMessageFilters<DiscordMessage>();
-        this.#llmChatMessageFactory = services.getLlmChatMessageFactory<DiscordMessage>();
-        this.#memoryService = services.getMemoryService();
-        this.#attachmentService = new DiscordAttachmentService();
-        this.#webContentService = services.webContentService;
+    this.#featureService = services.featureService;
+    this.#taskQueue = services.taskQueue;
+    this.#inputFilters = services.getInputChatMessageFilters<DiscordMessage>();
+    this.#llmChatMessageFactory = services.getLlmChatMessageFactory<DiscordMessage>();
+    this.#memoryService = services.getMemoryService();
+    this.#attachmentService = new DiscordAttachmentService();
+    this.#webContentService = services.webContentService;
 
-        this.#message = message;
+    this.#message = message;
+  }
+
+  override async process(): Promise<void> {
+    await super.process();
+
+    const llmChatMessage = this.#llmChatMessageFactory.create(this.#message);
+    const formattedMessage = JSON.stringify(llmChatMessage);
+    let context = this.contextService.getContextByChannelId(this.#message.channelId);
+
+    for (const filter of this.#inputFilters) {
+      context = await filter.process(llmChatMessage, this.#message, context);
     }
 
-    override async process(): Promise<void> {
-        await super.process();
+    const webContext = await this.#getWebContext(llmChatMessage.message);
 
-        const llmChatMessage = this.#llmChatMessageFactory.create(this.#message);
-        const formattedMessage = JSON.stringify(llmChatMessage);
-        let context = this.contextService.getContextByChannelId(this.#message.channelId);
+    if (webContext !== null) {
+      context = [...context, webContext];
+    }
 
-        for (const filter of this.#inputFilters) {
-            context = await filter.process(llmChatMessage, this.#message, context);
+    const images = await this.#getImages();
+
+    if (this.configurationService.ollamaStreamsResponse) {
+      await this.#processAsStream(formattedMessage, context, llmChatMessage, images);
+      return;
+    }
+
+    const exchange = await this.ollamaClient.sendMessage(formattedMessage, context, images);
+
+    this.contextService.addContext([this.contextMessageFactory.fromChatMessage(this.#message)]);
+    this.contextService.addContext([
+      this.contextMessageFactory.fromLlmMessage(exchange.exchange.response.message,
+        this.#message.id, this.#message.author.id, this.#message.channelId, this.#message.guildId)]);
+
+    await this.#storeMemories(llmChatMessage, exchange.exchange.response.message.content);
+
+    const replies = await this.ollamaReplyService.reply(this.#message, exchange.exchange);
+
+    if (this.#featureService.hasFeature(SupportedFeature.Txt2Img)
+      && replies.length > 0) {
+      this.#attachImage(exchange.exchange.response.message.content, replies);
+    }
+  }
+
+  override async postProcess(): Promise<void> {
+    await super.postProcess();
+
+    switch (this.taskStatus) {
+      case TaskStatus.Dead:
+        await this.replyService.replyWithError(this.#message);
+        break;
+    }
+
+    this.ollamaStreamingReplyService.clearState();
+  }
+
+  async #processAsStream(formattedMessage: string, context: OllamaMessage[], llmChatMessage: LlmChatMessage, images: string[]): Promise<void> {
+    const exchange = await this.ollamaClient.sendMessageAndGetStream(formattedMessage, context, images);
+
+    let averageResponseInMs = 0;
+    let endTime = performance.now();
+
+    let fullResponse = '';
+    let responseBatch = '';
+
+    if(!exchange?.exchange?.response) {
+      return;
+    }
+
+    for await (const response of exchange.exchange.response) {
+      const startTime = performance.now();
+      let replies: DiscordMessage[] = [];
+
+      fullResponse += response.message.content;
+      responseBatch += response.message.content;
+
+      if (!response.done) {
+        // Ensure we're not sending requests faster than Discord can
+        // allow or process them.
+        if (startTime - endTime <= (DiscordConstants.MaxRequestsPerSecond / 1000)
+          || startTime - endTime < averageResponseInMs
+        ) {
+          continue;
         }
 
-        const webContext = await this.#getWebContext(llmChatMessage.message);
-
-        if (webContext !== null) {
-            context = [...context, webContext];
+        // Discord automatically trims message edits that are only whitespace.
+        if (isOnlyWhitespace(responseBatch)) {
+          continue;
         }
 
-        const images = await this.#getImages();
-
-        if (this.configurationService.ollamaStreamsResponse) {
-            await this.#processAsStream(formattedMessage, context, llmChatMessage, images);
-            return;
+        // If the message is appended with whitespace the end, Discord will
+        // trim it, leading to an accumulation of formatting issues.
+        if (endsWithWhitespace(responseBatch)) {
+          continue;
         }
 
-        const exchange = await this.ollamaClient.sendMessage(formattedMessage, context, images);
+        // Messages that only contain a double asterisk are, under certain
+        // conditions, converted to a newline. This attempts to prevent that
+        // by delaying the batch until additional characters are included.
+        if (hasOnly(responseBatch, '*')) {
+          continue;
+        }
+      }
 
+      replies = await this.ollamaStreamingReplyService.reply(this.#message, responseBatch, response.done);
+      responseBatch = '';
+
+      if (response.done) {
         this.contextService.addContext([this.contextMessageFactory.fromChatMessage(this.#message)]);
         this.contextService.addContext([
-            this.contextMessageFactory.fromLlmMessage(exchange.exchange.response.message,
-                this.#message.id, this.#message.author.id, this.#message.channelId, this.#message.guildId)]);
+          this.contextMessageFactory.fromLlmMessage(response.message,
+            this.#message.author.id,
+            this.#message.guildId,
+            this.#message.channelId,
+            this.#message.guildId
+          )]);
 
-        await this.#storeMemories(llmChatMessage, exchange.exchange.response.message.content);
-
-        const replies = await this.ollamaReplyService.reply(this.#message, exchange.exchange);
+        await this.#storeMemories(llmChatMessage, fullResponse);
 
         if (this.#featureService.hasFeature(SupportedFeature.Txt2Img)
-            && replies.length > 0) {
-            this.#attachImage(exchange.exchange.response.message.content, replies);
+          && replies.length > 0) {
+          this.#attachImage(fullResponse, replies);
         }
+      }
+
+      endTime = performance.now();
+      averageResponseInMs = (averageResponseInMs + endTime - startTime) / 2;
+      this.logger.debug(`The average streaming response time is ${averageResponseInMs}ms.`);
+    }
+  }
+
+  async #storeMemories(llmChatMessage: LlmChatMessage, botResponseContent: string): Promise<void> {
+    if (!this.#memoryService.isEnabled) {
+      return;
     }
 
-    override async postProcess(): Promise<void> {
-        await super.postProcess();
+    try {
+      const botLlmChatMessage = this.#llmChatMessageFactory.createFromLlmResponse(botResponseContent, this.#message);
+      await this.#memoryService.store(botLlmChatMessage, llmChatMessage.userId);
+    } catch (error) {
+      this.logger.error('Failed to store memories:', error);
+    }
+  }
 
-        switch (this.taskStatus) {
-            case TaskStatus.Dead:
-                await this.replyService.replyWithError(this.#message);
-                break;
-        }
-
-        this.ollamaStreamingReplyService.clearState();
+  async #getImages(): Promise<string[]> {
+    if (!this.#featureService.hasFeature(SupportedFeature.Vision)) {
+      return [];
     }
 
-    async #processAsStream(formattedMessage: string, context: OllamaMessage[], llmChatMessage: LlmChatMessage, images: string[]): Promise<void> {
-        const exchange = await this.ollamaClient.sendMessageAndGetStream(formattedMessage, context, images);
+    try {
+      return await this.#attachmentService.getAttachedImagesAsBase64(this.#message);
+    } catch (error) {
+      this.logger.error('Failed to fetch image attachments for vision request:', error);
+      return [];
+    }
+  }
 
-        let averageResponseInMs = 0;
-        let endTime = performance.now();
-
-        let fullResponse = '';
-        let responseBatch = '';
-
-        if(!exchange?.exchange?.response) {
-            return;
-        }
-
-        for await (const response of exchange.exchange.response) {
-            const startTime = performance.now();
-            let replies: DiscordMessage[] = [];
-
-            fullResponse += response.message.content;
-            responseBatch += response.message.content;
-
-            if (!response.done) {
-                // Ensure we're not sending requests faster than Discord can
-                // allow or process them.
-                if (startTime - endTime <= (DiscordConstants.MaxRequestsPerSecond / 1000)
-                    || startTime - endTime < averageResponseInMs
-                ) {
-                    continue;
-                }
-
-                // Discord automatically trims message edits that are only whitespace.
-                if (isOnlyWhitespace(responseBatch)) {
-                    continue;
-                }
-
-                // If the message is appended with whitespace the end, Discord will
-                // trim it, leading to an accumulation of formatting issues.
-                if (endsWithWhitespace(responseBatch)) {
-                    continue;
-                }
-
-                // Messages that only contain a double asterisk are, under certain
-                // conditions, converted to a newline. This attempts to prevent that
-                // by delaying the batch until additional characters are included.
-                if (hasOnly(responseBatch, '*')) {
-                    continue;
-                }
-            }
-
-            replies = await this.ollamaStreamingReplyService.reply(this.#message, responseBatch, response.done);
-            responseBatch = '';
-
-            if (response.done) {
-                this.contextService.addContext([this.contextMessageFactory.fromChatMessage(this.#message)]);
-                this.contextService.addContext([
-                    this.contextMessageFactory.fromLlmMessage(response.message,
-                        this.#message.author.id,
-                        this.#message.guildId,
-                        this.#message.channelId,
-                        this.#message.guildId
-                    )]);
-
-                await this.#storeMemories(llmChatMessage, fullResponse);
-
-                if (this.#featureService.hasFeature(SupportedFeature.Txt2Img)
-                    && replies.length > 0) {
-                    this.#attachImage(fullResponse, replies);
-                }
-            }
-
-            endTime = performance.now();
-            averageResponseInMs = (averageResponseInMs + endTime - startTime) / 2;
-            this.logger.debug(`The average streaming response time is ${averageResponseInMs}ms.`);
-        }
+  async #getWebContext(messageText: string): Promise<OllamaMessage | null> {
+    if (!this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
+      return null;
     }
 
-    async #storeMemories(llmChatMessage: LlmChatMessage, botResponseContent: string): Promise<void> {
-        if (!this.#memoryService.isEnabled) {
-            return;
-        }
+    const urls = this.#webContentService.extractUrls(messageText);
 
-        try {
-            const botLlmChatMessage = this.#llmChatMessageFactory.createFromLlmResponse(botResponseContent, this.#message);
-            await this.#memoryService.store(botLlmChatMessage, llmChatMessage.userId);
-        } catch (error) {
-            this.logger.error('Failed to store memories:', error);
-        }
+    if (urls.length === 0) {
+      return null;
     }
 
-    async #getImages(): Promise<string[]> {
-        if (!this.#featureService.hasFeature(SupportedFeature.Vision)) {
-            return [];
-        }
+    try {
+      const results = await this.#webContentService.fetchAll(urls);
 
-        try {
-            return await this.#attachmentService.getAttachedImagesAsBase64(this.#message);
-        } catch (error) {
-            this.logger.error('Failed to fetch image attachments for vision request:', error);
-            return [];
-        }
+      if (results.length === 0) {
+        return null;
+      }
+
+      const sections = results.map((result) =>
+        `## ${result.title}\nSource: ${result.url}\n\n${result.content}`);
+      const content = `The user's message references the following web pages.`
+        + ` Use this content to inform your response:\n\n${sections.join('\n\n---\n\n')}`;
+
+      this.logger.info(`Fetched ${results.length} web page(s) for context: ${results.map(r => r.url).join(', ')}`);
+
+      return {
+        role: OllamaRole.System,
+        content
+      };
+    } catch (error) {
+      this.logger.error('Failed to fetch web content for context:', error);
+      return null;
+    }
+  }
+
+  #attachImage(prompt: string, replies: Array<DiscordMessage>): void {
+    this.logger.info('An image will be attached to the Ollama response.');
+
+    const lastReply = replies[replies.length - 1];
+
+    if (!this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
+      this.#enqueueAttachmentTask(lastReply, prompt);
+      return;
     }
 
-    async #getWebContext(messageText: string): Promise<OllamaMessage | null> {
-        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
-            return null;
-        }
+    const llmImagePrompt = 'The following prompt is a response to a message.'
+      + ' Describe an artistic or creative image to go with this response.'
+      + ' Keep in mind that the image generation model that will receive this prompt can only accurately include brief snippets of text 2-3 words in length.'
+      + ' If you do decide to include any text in the image, make sure to surround it with quotes and remain brief.'
+      + `\n\n\`\`\`text\n${prompt}\n\`\`\``;
 
-        const urls = this.#webContentService.extractUrls(messageText);
+    const generateTask = this.#services.getLlmGenerateTask(llmImagePrompt, OLLAMA_TEMPERATURE_DEFAULT);
+    generateTask.isChild = true;
 
-        if (urls.length === 0) {
-            return null;
-        }
+    generateTask.onSuccess = (payload: IHttpExchange<GenerateRequest, GenerateResponse>): void => {
+      this.#enqueueAttachmentTask(lastReply, payload.response.response);
+    };
 
-        try {
-            const results = await this.#webContentService.fetchAll(urls);
+    generateTask.onFailure = (error: Error): void => {
+      this.logger.error('Failed to generate an image for the prompt. Falling back to the original Ollama response to generate an image instead.', error);
+      this.#enqueueAttachmentTask(lastReply, prompt);
+    };
 
-            if (results.length === 0) {
-                return null;
-            }
+    this.#taskQueue.add(generateTask as BaseTask<unknown>);
+  }
 
-            const sections = results.map((result) =>
-                `## ${result.title}\nSource: ${result.url}\n\n${result.content}`);
-            const content = `The user's message references the following web pages.`
-                + ` Use this content to inform your response:\n\n${sections.join('\n\n---\n\n')}`;
-
-            this.logger.info(`Fetched ${results.length} web page(s) for context: ${results.map(r => r.url).join(', ')}`);
-
-            return {
-                role: OllamaRole.System,
-                content
-            };
-        } catch (error) {
-            this.logger.error('Failed to fetch web content for context:', error);
-            return null;
-        }
-    }
-
-    #attachImage(prompt: string, replies: Array<DiscordMessage>): void {
-        this.logger.info('An image will be attached to the Ollama response.');
-
-        const lastReply = replies[replies.length - 1];
-
-        if (!this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
-            this.#enqueueAttachmentTask(lastReply, prompt);
-            return;
-        }
-
-        const llmImagePrompt = 'The following prompt is a response to a message.'
-            + ' Describe an artistic or creative image to go with this response.'
-            + ' Keep in mind that the image generation model that will receive this prompt can only accurately include brief snippets of text 2-3 words in length.'
-            + ' If you do decide to include any text in the image, make sure to surround it with quotes and remain brief.'
-            + `\n\n\`\`\`text\n${prompt}\n\`\`\``;
-
-        const generateTask = this.#services.getLlmGenerateTask(llmImagePrompt, OLLAMA_TEMPERATURE_DEFAULT);
-        generateTask.isChild = true;
-
-        generateTask.onSuccess = (payload: IHttpExchange<GenerateRequest, GenerateResponse>): void => {
-            this.#enqueueAttachmentTask(lastReply, payload.response.response);
-        };
-
-        generateTask.onFailure = (error: Error): void => {
-            this.logger.error('Failed to generate an image for the prompt. Falling back to the original Ollama response to generate an image instead.', error);
-            this.#enqueueAttachmentTask(lastReply, prompt);
-        };
-
-        this.#taskQueue.add(generateTask as BaseTask<unknown>);
-    }
-
-    #enqueueAttachmentTask(message: DiscordMessage, prompt: string): void {
-        const attachTask = this.#services.getAttachmentTask(message, prompt) as BaseTask<void>;
-        this.#taskQueue.add(attachTask as BaseTask<unknown>);
-    }
+  #enqueueAttachmentTask(message: DiscordMessage, prompt: string): void {
+    const attachTask = this.#services.getAttachmentTask(message, prompt) as BaseTask<void>;
+    this.#taskQueue.add(attachTask as BaseTask<unknown>);
+  }
 }

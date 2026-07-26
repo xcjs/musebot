@@ -1,4 +1,4 @@
 export enum BotMode {
-    Chat = 'chat',
-    Media = 'media'
+  Chat = 'chat',
+  Media = 'media'
 }

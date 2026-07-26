@@ -8,120 +8,120 @@ import { IBotServiceContainer } from '../../../../IBotServiceContainer.js';
 import { ILogger } from '../../../../ILogger.js';
 
 export class DiscordReplyFilter {
-    #configurationService: IConfigurationService;
-    #discordClient: DiscordClient;
-    #featureService: IFeatureService;
-    #logger: ILogger;
+  #configurationService: IConfigurationService;
+  #discordClient: DiscordClient;
+  #featureService: IFeatureService;
+  #logger: ILogger;
 
-    constructor(services: IBotServiceContainer) {
-        this.#configurationService = services.configurationService;
-        this.#discordClient = services.discordClient;
-        this.#featureService = services.featureService;
+  constructor(services: IBotServiceContainer) {
+    this.#configurationService = services.configurationService;
+    this.#discordClient = services.discordClient;
+    this.#featureService = services.featureService;
 
-        this.#logger = services.getLogger('DiscordReplyFilter');
-    }
+    this.#logger = services.getLogger('DiscordReplyFilter');
+  }
 
-    shouldReply(message: Message, reaction: MessageReaction | null): boolean {
-        if(reaction !== null) {
-            if (message.author.id !== this.#discordClient.user?.id) {
-                this.#logger.info('Not replying to a reaction not on my message.');
-                return false;
-            }
+  shouldReply(message: Message, reaction: MessageReaction | null): boolean {
+    if(reaction !== null) {
+      if (message.author.id !== this.#discordClient.user?.id) {
+        this.#logger.info('Not replying to a reaction not on my message.');
+        return false;
+      }
 
-            if(reaction.me) {
-                this.#logger.info('Not replying to a reaction from myself.');
-                return false;
-            }
-        } else {
-            if (message.system) {
-                this.#logger.info('Not replying to a system message.');
-                return false;
-            }
+      if(reaction.me) {
+        this.#logger.info('Not replying to a reaction from myself.');
+        return false;
+      }
+    } else {
+      if (message.system) {
+        this.#logger.info('Not replying to a system message.');
+        return false;
+      }
 
-            if (!message.guild && !(this.#configurationService.botPrivateMessageUsers.includes(message.author.username))) {
-                this.#logger.info('Not replying to a non-guild message that\'s not from someone in a private messaging role.');
-                return false;
-            }
+      if (!message.guild && !(this.#configurationService.botPrivateMessageUsers.includes(message.author.username))) {
+        this.#logger.info('Not replying to a non-guild message that\'s not from someone in a private messaging role.');
+        return false;
+      }
 
-            if (message.type !== MessageType.Default
-                && message.type !== MessageType.Reply) {
-                this.#logger.info('Not replying to a non-default or non-reaction message.');
-                return false;
-            }
+      if (message.type !== MessageType.Default
+        && message.type !== MessageType.Reply) {
+        this.#logger.info('Not replying to a non-default or non-reaction message.');
+        return false;
+      }
 
-            if (!message.author.id) {
-                this.#logger.info('Not replying to a message without an author.');
-                return false;
-            }
+      if (!message.author.id) {
+        this.#logger.info('Not replying to a message without an author.');
+        return false;
+      }
 
-            if (message.author.id === this.#discordClient.user?.id) {
-                this.#logger.info('Not replying to myself.');
-                return false;
-            }
+      if (message.author.id === this.#discordClient.user?.id) {
+        this.#logger.info('Not replying to myself.');
+        return false;
+      }
 
-            if (message.author.bot) {
-                this.#logger.info('Not replying to any other bots/apps.');
-                return false;
-            }
+      if (message.author.bot) {
+        this.#logger.info('Not replying to any other bots/apps.');
+        return false;
+      }
 
-            if (message.guild !== null
-                && (this.#configurationService.botRequiresMention
-                    && !message.mentions.members?.find(x => x.id === this.#discordClient.user?.id))) {
-                const botRole = message.guild.members?.resolve(this.#discordClient.user).roles.botRole;
+      if (message.guild !== null
+        && (this.#configurationService.botRequiresMention
+          && !message.mentions.members?.find(x => x.id === this.#discordClient.user?.id))) {
+        const botRole = message.guild.members?.resolve(this.#discordClient.user).roles.botRole;
 
-                if (message.mentions.roles.find(x => x.id === botRole?.id) === undefined) {
-                    this.#logger.info('Not replying to a message that doesn\'t mention or react to this bot or its role.');
-                    return false;
-                }
-            }
-
-            const generatedResponseRate = getRandomInt(1, 100);
-
-            if ((!this.#configurationService.botRequiresMention
-                && generatedResponseRate > this.#configurationService.botResponseRate)
-                && !message.mentions.members?.find(x => x.id === this.#discordClient.user?.id)) {
-                this.#logger.info(`Not replying to a message outside the response rate` +
-                    ` (${generatedResponseRate} > ${this.#configurationService.botResponseRate}).`);
-                return false;
-            }
-
-            if (message.guild !== null
-                && this.#configurationService.discordChannels.length > 0
-                && !this.#configurationService.discordChannels.includes(message.channel.id)) {
-                this.#logger.info('Not replying to a message in a channel outside this bot\'s allowed channels.');
-                return false;
-            }
-
-            if (message.guild !== null
-                && this.#configurationService.discordChannelsDisallowed.length > 0
-                && this.#configurationService.discordChannelsDisallowed.includes(message.channel.id)) {
-                this.#logger.info('Not replying to a message in a disallowed channel.');
-                return false;
-            }
-
-            if (message.content.length === 0
-                && (this.#getImageAttachments(message).length === 0
-                    || (!this.#featureService.hasFeature(SupportedFeature.Img2Img)
-                        && !this.#featureService.hasFeature(SupportedFeature.Img2Vid)
-                        && !this.#featureService.hasFeature(SupportedFeature.ContextualImg2Img)))
-            ) {
-                this.#logger.info('Not replying to a message with no content.');
-                return false;
-            }
+        if (message.mentions.roles.find(x => x.id === botRole?.id) === undefined) {
+          this.#logger.info('Not replying to a message that doesn\'t mention or react to this bot or its role.');
+          return false;
         }
+      }
 
-        return true;
+      const generatedResponseRate = getRandomInt(1, 100);
+
+      if ((!this.#configurationService.botRequiresMention
+        && generatedResponseRate > this.#configurationService.botResponseRate)
+        && !message.mentions.members?.find(x => x.id === this.#discordClient.user?.id)) {
+        this.#logger.info(`Not replying to a message outside the response rate` +
+          ` (${generatedResponseRate} > ${this.#configurationService.botResponseRate}).`);
+        return false;
+      }
+
+      if (message.guild !== null
+        && this.#configurationService.discordChannels.length > 0
+        && !this.#configurationService.discordChannels.includes(message.channel.id)) {
+        this.#logger.info('Not replying to a message in a channel outside this bot\'s allowed channels.');
+        return false;
+      }
+
+      if (message.guild !== null
+        && this.#configurationService.discordChannelsDisallowed.length > 0
+        && this.#configurationService.discordChannelsDisallowed.includes(message.channel.id)) {
+        this.#logger.info('Not replying to a message in a disallowed channel.');
+        return false;
+      }
+
+      if (message.content.length === 0
+        && (this.#getImageAttachments(message).length === 0
+          || (!this.#featureService.hasFeature(SupportedFeature.Img2Img)
+            && !this.#featureService.hasFeature(SupportedFeature.Img2Vid)
+            && !this.#featureService.hasFeature(SupportedFeature.ContextualImg2Img)))
+      ) {
+        this.#logger.info('Not replying to a message with no content.');
+        return false;
+      }
     }
 
-    #getImageAttachments(message: Message): unknown[] {
-        const imageTypes = [
-            'image/jpeg',
-            'image/png',
-            'image/webp'
-        ];
+    return true;
+  }
 
-        const attachments = Array.from(message.attachments.values());
+  #getImageAttachments(message: Message): unknown[] {
+    const imageTypes = [
+      'image/jpeg',
+      'image/png',
+      'image/webp'
+    ];
 
-        return attachments.filter(attachment => imageTypes.includes(attachment.contentType));
-    }
+    const attachments = Array.from(message.attachments.values());
+
+    return attachments.filter(attachment => imageTypes.includes(attachment.contentType));
+  }
 }

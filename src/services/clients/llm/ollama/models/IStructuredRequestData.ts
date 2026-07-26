@@ -1,4 +1,4 @@
 export interface IStructuredRequestData  {
-    systemPrompt: string,
-    schema: object
+  systemPrompt: string,
+  schema: object
 }

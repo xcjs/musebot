@@ -1,4 +1,4 @@
 export enum TaskQueueStrategy {
-    Parallel = 'parallel',
-    Serial = 'serial'
+  Parallel = 'parallel',
+  Serial = 'serial'
 }

@@ -5,53 +5,53 @@ import { IBotServiceContainer } from "../../../../../IBotServiceContainer.js"
 import { BaseComponent } from '../BaseComponent.js';
 
 export class DynamicButton extends BaseComponent<ButtonBuilder> {
-    #label: string = '';
-    override get label(): string {
-        return this.#label;
-    }
+  #label: string = '';
+  override get label(): string {
+    return this.#label;
+  }
 
-    override get isSupported(): boolean {
-        // If a DynamicButton gets instantiated, it has already passed a feature detection check.
-        return true;
-    }
+  override get isSupported(): boolean {
+    // If a DynamicButton gets instantiated, it has already passed a feature detection check.
+    return true;
+  }
 
-    #title: string = '';
-    override get title(): string {
-        return this.#title;
-    }
+  #title: string = '';
+  override get title(): string {
+    return this.#title;
+  }
 
-    #helpText: string;
-    override get helpText(): string {
-        return this.#helpText;
-    }
+  #helpText: string;
+  override get helpText(): string {
+    return this.#helpText;
+  }
 
-    #configurationService: IConfigurationService;
+  #configurationService: IConfigurationService;
 
-    constructor(services: IBotServiceContainer,
-        label: string,
-        title: string | undefined,
-        helpText: string | undefined) {
-        super(services);
+  constructor(services: IBotServiceContainer,
+    label: string,
+    title: string | undefined,
+    helpText: string | undefined) {
+    super(services);
 
-        this.#label = label;
+    this.#label = label;
 
-        this.#title = title
-            || `Your ${this.#configurationService.applicationName} `
-                + `administrator has not provided a title for this workflow. Ask them to add one!`;
+    this.#title = title
+      || `Your ${this.#configurationService.applicationName} `
+        + `administrator has not provided a title for this workflow. Ask them to add one!`;
 
-        this.#helpText = helpText
-            || `Your ${this.#configurationService.applicationName} `
-                + `administrator has not provided help text explaining this workflow. Ask them to add some!`;
-    }
+    this.#helpText = helpText
+      || `Your ${this.#configurationService.applicationName} `
+        + `administrator has not provided help text explaining this workflow. Ask them to add some!`;
+  }
 
-    override build(): ButtonBuilder {
-        return new ButtonBuilder()
-            .setCustomId(this.#label)
-            .setLabel(this.#label)
-            .setStyle(ButtonStyle.Secondary);
-    }
+  override build(): ButtonBuilder {
+    return new ButtonBuilder()
+      .setCustomId(this.#label)
+      .setLabel(this.#label)
+      .setStyle(ButtonStyle.Secondary);
+  }
 
-    override buildAsync(): Promise<ButtonBuilder> {
-        throw new Error('Method not implemented.');
-    }
+  override buildAsync(): Promise<ButtonBuilder> {
+    throw new Error('Method not implemented.');
+  }
 }
