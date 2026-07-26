@@ -82,6 +82,9 @@ export class MessageToMusicMutator implements IWorkflowMutator {
         let tags: string[] = []
         let lyrics = '';
 
+        let promptHasTags = false;
+        let promptHasLyrics = false;
+
         if (prompt.indexOf(promptSeparator) > 0) {
             tags = prompt.split(promptSeparator)[0].split(',').map(x => x.trim());
             lyrics = prompt.substring(
@@ -90,8 +93,12 @@ export class MessageToMusicMutator implements IWorkflowMutator {
             tags = prompt.split(',').map(x => x.trim());
         }
 
+        promptHasTags = tags.length > 0;
+        promptHasLyrics = lyrics.length > 0;
+
+
         if(this.#featureService.hasFeature(SupportedFeature.Txt2Txt)
-            && lyrics.length === 0) {
+            && (!promptHasTags || !promptHasLyrics)) {
             return new Promise((resolve, reject) => {
                 const task = this.#services.getLlmGenerateStructuredTask<SongPromptRequestType>(prompt, songPromptTypeRequestTypeData);
                 task.isChild = true;
@@ -109,8 +116,6 @@ export class MessageToMusicMutator implements IWorkflowMutator {
                 this.#taskQueue.add(task as BaseTask<unknown>);
             });
         } else {
-            const promptHasLyrics = lyrics.length > 0;
-
             return {
                 songPromptType: promptHasLyrics ? SongPromptType.Lyrical : SongPromptType.Instrumental,
                 promptHasTags: tags.length > 0,
@@ -128,11 +133,15 @@ export class MessageToMusicMutator implements IWorkflowMutator {
                 task.isChild = true;
 
                 const callback = (payload: IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, SongPromptMetadata>): void => {
-                    // If user-provided lyrics are present, prioritize those over what
-                    // the LLM generates. This allows "weird" lyrical prompts to
-                    // function as expected.
-                    if (songPromptRequestType.promptHasLyrics
-                        && songPromptRequestType.lyrics !== payload.data.lyrics
+                    // Favor user tags if they're presumably more detailed.
+                    if (!songPromptRequestType.promptHasTags
+                        || songPromptRequestType.tags.length > payload.data.tags.length) {
+                        payload.data.tags = songPromptRequestType.tags;
+                    }
+
+                    // Favor user lyrics if they're presumably more detailed.
+                    if (!songPromptRequestType.promptHasLyrics
+                        || songPromptRequestType.lyrics.length > payload.data.lyrics.length
                     ) {
                         payload.data.lyrics = songPromptRequestType.lyrics
                     }

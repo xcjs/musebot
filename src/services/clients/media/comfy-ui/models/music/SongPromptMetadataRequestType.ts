@@ -24,8 +24,9 @@ export const songPromptMetadataRequestData: IStructuredRequestData = {
                 type: 'string',
                 description: 'Song lyrics with verses for the provided prompt. '
                     + 'Verses can be marked up with [intro], [verse], [bridge], [chorus], or [outro] tags before each verse. '
-                    + 'Instrument hints or song instructions can be included in parentheses, such as (guitar solo). '
-                    + 'Do not include lyrics in the song tags - they go here.'
+                    + 'Instrument hints or song instructions can be included in parentheses next to the aforementioned annotations, such as (guitar solo). '
+                    + 'Do not include lyrics in the song tags - they go here. Do not include song tags in the lyrics. '
+                    + 'Unless the prompt requests an instrumental, be sure to write and include lyrics.'
             },
             keyScale: {
                 enum: Object.values(KeyScale)

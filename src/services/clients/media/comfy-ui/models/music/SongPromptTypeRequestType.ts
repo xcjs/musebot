@@ -2,15 +2,16 @@ import { IStructuredRequestData } from '../../../../llm/ollama/models/IStructure
 import { SongPromptType } from './SongPromptType.js';
 
 export const songPromptTypeRequestTypeData: IStructuredRequestData = {
-    systemPrompt: 'Your job is to determine what kind of song prompt is provided, '
-        + 'if the song prompt contains a comma separated list of descriptive tags, '
-        + 'and if the prompt contains any lyrics.',
+    systemPrompt: 'Your job is to determine what kind of song prompt is provided,'
+        + ' if the song prompt contains a comma separated list of descriptive tags,'
+        + ' and if the prompt contains any lyrics.',
     schema: {
         type: 'object',
         properties: {
             songPromptType: {
                 enum: Object.values(SongPromptType),
-                description: 'Whether the requested song should contain lyrics or not (lyrical or instrumental).'
+                description: 'Whether the requested song should contain lyrics or not (lyrical or instrumental). ' +
+                    'Default to lyrical unless an instrumental is specifically requested.'
             },
             promptHasTags: {
                 type: 'boolean',
