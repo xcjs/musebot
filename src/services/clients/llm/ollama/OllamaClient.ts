@@ -55,7 +55,7 @@ export class OllamaClient {
       };
     }
 
-    this.#logger.info(`Calling Ollama API with the prompt: ${prompt}`);
+      this.#logger.info(`Calling Ollama API with the prompt: ${prompt}`);
 
     try {
       const response = await this.#client.generate({ ...request, stream: false });
@@ -66,7 +66,7 @@ export class OllamaClient {
       };
     } catch (error) {
       this.#logger.error('Failed to send Ollama a message:', error);
-      throw new Error(error as string);
+      throw new Error('Failed to generate a response from Ollama.', { cause: error });
     }
   }
 
@@ -96,7 +96,7 @@ export class OllamaClient {
       return await this.#client.show({ model });
     } catch (error) {
       this.#logger.error(`Failed to query Ollama for model details for '${model}':`, error);
-      throw new Error(error as string);
+      throw new Error(`Failed to query Ollama for model details for '${model}'.`, { cause: error });
     }
   }
 
@@ -158,7 +158,7 @@ export class OllamaClient {
       };
     } catch (error) {
       this.#logger.error('Failed to send Ollama a message:', error);
-      throw new Error(error as string);
+      throw new Error('Failed to send Ollama a structured request.', { cause: error });
     }
   }
 
@@ -202,7 +202,7 @@ export class OllamaClient {
       };
     } catch(error) {
       this.#logger.error('Failed to send Ollama a message:', error);
-      throw new Error(error as string);
+      throw new Error('Failed to send Ollama a message.', { cause: error });
     }
   }
 
@@ -245,7 +245,7 @@ export class OllamaClient {
       };
     } catch(error) {
       this.#logger.error('An error occurred while sending Ollama a message and retrieving a stream:', error);
-      throw new Error(error as string);
+      throw new Error('Failed to send Ollama a message and retrieve a stream.', { cause: error });
     }
   }
 
@@ -289,7 +289,7 @@ export class OllamaClient {
       return response.response.trim();
     } catch (error) {
       this.#logger.error('Failed to interpret image(s) via Ollama:', error);
-      throw new Error(error as string);
+      throw new Error('Failed to interpret image(s) via Ollama.', { cause: error });
     }
   }
 

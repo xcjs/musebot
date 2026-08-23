@@ -12,7 +12,9 @@ jest.mock('ollama', () => {
   const mockOllama = jest.fn().mockImplementation(() => ({
     generate: jest.fn(),
     ps: jest.fn(),
-    chat: jest.fn()
+    chat: jest.fn(),
+    show: jest.fn(),
+    embed: jest.fn()
   }));
   return { Ollama: mockOllama, __esModule: true };
 });
@@ -105,7 +107,13 @@ function createMockServices(config: IConfigurationService, logger: jest.Mocked<I
 describe('OllamaClient', () => {
   let mockConfig: IConfigurationService;
   let mockLogger: jest.Mocked<ILogger>;
-  let mockOllamaInstance: { generate: jest.Mock<() => Promise<unknown>>; ps: jest.Mock<() => Promise<{ models: Array<{ name: string; model?: string }> }>>; chat: jest.Mock<() => Promise<unknown>> };
+  let mockOllamaInstance: {
+    generate: jest.Mock<() => Promise<unknown>>;
+    ps: jest.Mock<() => Promise<{ models: Array<{ name: string; model?: string }> }>>;
+    chat: jest.Mock<() => Promise<unknown>>;
+    show: jest.Mock<() => Promise<unknown>>;
+    embed: jest.Mock<() => Promise<{ embeddings: number[][] }>>;
+  };
   let client: OllamaClient;
 
   beforeEach((): void => {
@@ -115,6 +123,8 @@ describe('OllamaClient', () => {
       generate: jest.fn<() => Promise<unknown>>(),
       ps: jest.fn<() => Promise<{ models: Array<{ name: string; model: string }> }>>(),
       chat: jest.fn<() => Promise<unknown>>(),
+      show: jest.fn<() => Promise<unknown>>(),
+      embed: jest.fn<() => Promise<{ embeddings: number[][] }>>()
     };
     (Ollama as unknown as jest.Mock).mockImplementation(() => mockOllamaInstance);
 
@@ -211,6 +221,83 @@ describe('OllamaClient', () => {
 
       expect(result).toBe(false);
       expect(mockLogger.error).toHaveBeenCalled();
+    });
+  });
+
+  describe('error handling', () => {
+    it('generate() should throw an Error with .cause preserving the original error', async (): Promise<void> => {
+      const originalError = new Error('ollama down');
+      mockOllamaInstance.generate.mockRejectedValue(originalError);
+
+      await expect(client.generate('prompt')).rejects.toThrow();
+
+      try {
+        await client.generate('prompt');
+      } catch (error) {
+        expect(error).toBeInstanceOf(Error);
+        expect((error as Error).cause).toBe(originalError);
+        expect((error as Error).message).not.toContain('[object Object]');
+      }
+    });
+
+    it('generateStructured() should throw an Error with .cause preserving the original error', async (): Promise<void> => {
+      const originalError = new Error('structured request failed');
+      mockOllamaInstance.generate.mockRejectedValue(originalError);
+
+      await expect(client.generateStructured('prompt', {
+        systemPrompt: '',
+        schema: {}
+      })).rejects.toThrow();
+
+      try {
+        await client.generateStructured('prompt', {
+          systemPrompt: '',
+          schema: {}
+        });
+      } catch (error) {
+        expect((error as Error).cause).toBe(originalError);
+      }
+    });
+
+    it('sendMessage() should throw an Error with .cause preserving the original error', async (): Promise<void> => {
+      const originalError = new Error('chat endpoint gone');
+      mockOllamaInstance.chat.mockRejectedValue(originalError);
+
+      await expect(client.sendMessage('prompt', [])).rejects.toThrow();
+
+      try {
+        await client.sendMessage('prompt', []);
+      } catch (error) {
+        expect((error as Error).cause).toBe(originalError);
+      }
+    });
+
+    it('show() should throw an Error with .cause preserving the original error', async (): Promise<void> => {
+      const originalError = new Error('show failed');
+      mockOllamaInstance.ps.mockResolvedValue({ models: [] });
+      mockOllamaInstance.generate.mockResolvedValue({});
+      (mockOllamaInstance as unknown as { show: jest.Mock }).show = jest.fn<() => Promise<unknown>>().mockRejectedValue(originalError);
+
+      await expect(client.show('test-model')).rejects.toThrow();
+
+      try {
+        await client.show('test-model');
+      } catch (error) {
+        expect((error as Error).cause).toBe(originalError);
+      }
+    });
+
+    it('interpretImages() should throw an Error with .cause preserving the original error', async (): Promise<void> => {
+      const originalError = new Error('vision endpoint failed');
+      mockOllamaInstance.generate.mockRejectedValue(originalError);
+
+      await expect(client.interpretImages(['base64data'])).rejects.toThrow();
+
+      try {
+        await client.interpretImages(['base64data']);
+      } catch (error) {
+        expect((error as Error).cause).toBe(originalError);
+      }
     });
   });
 });
