@@ -13,7 +13,6 @@ import { BotInteraction } from '../enums/BotInteraction.js';
 import { BotMode } from '../enums/BotMode.js';
 import { IHttpExchange } from '../models/IHttpExchange.js';
 import { IHttpExchangeWithAttachedData } from '../models/IHttpExchangeWithAttachedData.js';
-import { getRandomArrayEntry } from '../utilities/random-utilities.js';
 import { ComfyUiReplyService } from './clients/chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { ActionRowBuilderFactory } from './clients/chat/discord/components/ActionRowBuilderFactory.js';
 import { IActionRowBuilderFactory } from './clients/chat/discord/components/IActionRowBuilderFactory.js';
@@ -179,19 +178,20 @@ export class BotServiceContainer implements IBotServiceContainer {
       mutator => mutator.interactions.includes(interactionType)
         && mutator.types.includes(workflow.type));
 
-    if(supportedMutators.length === 1) {
+    if (supportedMutators.length === 1) {
       return supportedMutators[0];
-    } else if(supportedMutators.length > 1) {
-      const mutator = getRandomArrayEntry(supportedMutators);
-
-      if(mutator === null) {
-        throw new Error('A supported mutator could not be found.');
-      }
-
-      return mutator;
-    } else {
-      throw new Error('The task you are attempting to instantiate is not supported by your current configuration.');
     }
+
+    if (supportedMutators.length > 1) {
+      const names = supportedMutators.map(m => m.constructor.name).join(', ');
+      throw new Error(
+        `Ambiguous workflow mutator selection: ${supportedMutators.length} mutators match `
+        + `interaction '${interactionType}' and type '${workflow.type}': ${names}. `
+        + `Exactly one mutator must match.`
+      );
+    }
+
+    throw this.#taskNotConfiguredError;
   }
 
   get comfyUiClient(): ComfyUiClient {
