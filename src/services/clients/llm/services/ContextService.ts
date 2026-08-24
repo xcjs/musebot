@@ -50,4 +50,22 @@ export class ContextService<ChatMessageType, LlmMessageType> implements IContext
       x => x.isReadOnly
       || x.channelId !== channelId);
   }
+
+  getConversationMessages(channelId: string): ContextMessage<ChatMessageType, LlmMessageType>[] {
+    return this.#context.filter(
+      (message) => !message.isReadOnly && !message.isPrivate && message.channelId === channelId
+    );
+  }
+
+  replaceChannelContext(channelId: string, newMessages: ContextMessage<ChatMessageType, LlmMessageType>[]): void {
+    this.#context = this.#context.filter(
+      (message) => message.isReadOnly || message.isPrivate || message.channelId !== channelId
+    );
+
+    for (const message of newMessages) {
+      this.#context.push(message);
+    }
+
+    this.#logger.info(`Replaced context for channel ${channelId} with ${newMessages.length} message(s).`);
+  }
 }
