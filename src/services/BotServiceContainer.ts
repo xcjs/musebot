@@ -49,7 +49,9 @@ import { OllamaEmojiReactionTask } from './clients/llm/ollama/tasks/OllamaEmojiR
 import { OllamaGenerateStructuredTask } from './clients/llm/ollama/tasks/OllamaGenerateStructuredTask.js';
 import { OllamaGenerateTask } from './clients/llm/ollama/tasks/OllamaGenerateTask.js';
 import { OllamaMessageTask } from './clients/llm/ollama/tasks/OllamaMessageTask.js';
+import { ContextCompressionService } from './clients/llm/services/ContextCompressionService.js';
 import { ContextService } from './clients/llm/services/ContextService.js';
+import { IContextCompressionService } from './clients/llm/services/IContextCompressionService.js';
 import { IContextMessageFactory } from './clients/llm/services/IContextMessageFactory.js';
 import { IContextService } from './clients/llm/services/IContextService.js';
 import { ILlmChatMessageFactory } from './clients/llm/services/ILlmChatMessageFactory.js';
@@ -279,6 +281,14 @@ export class BotServiceContainer implements IBotServiceContainer {
     }
 
     return this.#contextService as IContextService<ChatMessageType, LlmMessageType>;
+  }
+
+  #contextCompressionService: IContextCompressionService | null = null;
+  getContextCompressionService<ChatMessageType, LlmMessageType extends { role: string; content: string }>(): IContextCompressionService {
+    if (this.#contextCompressionService === null) {
+      this.#contextCompressionService = new ContextCompressionService<ChatMessageType, LlmMessageType>(this);
+    }
+    return this.#contextCompressionService;
   }
 
   getLlmGenerateTask(prompt: string, temperature: number | undefined): BaseTask<IHttpExchange<GenerateRequest, GenerateResponse>> {

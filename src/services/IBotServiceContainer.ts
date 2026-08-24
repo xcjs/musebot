@@ -22,6 +22,7 @@ import { ITypingService } from './clients/chat/ITypingService.js';
 import { IStructuredRequestData } from './clients/llm/ollama/models/IStructuredRequestData.js';
 import { LlmChatMessage } from './clients/llm/ollama/models/LlmChatMessage.js';
 import { OllamaClient } from './clients/llm/ollama/OllamaClient.js';
+import { IContextCompressionService } from './clients/llm/services/IContextCompressionService.js';
 import { IContextMessageFactory } from './clients/llm/services/IContextMessageFactory.js';
 import { IContextService } from './clients/llm/services/IContextService.js';
 import { ILlmChatMessageFactory } from './clients/llm/services/ILlmChatMessageFactory.js';
@@ -81,6 +82,7 @@ export interface IBotServiceContainer {
 
   getContextMessageFactory<ChatMessageType, LlmMessageType>(): IContextMessageFactory<ChatMessageType, LlmMessageType>;
   getContextService<ChatMessageType, LlmMessageType>(): IContextService<ChatMessageType, LlmMessageType>
+  getContextCompressionService(): IContextCompressionService;
   getLlmGenerateTask(prompt: string, temperature: number | undefined): BaseTask<IHttpExchange<GenerateRequest, GenerateResponse>>;
   getLlmGenerateStructuredTask<T>(prompt: string, structuredRequestData: IStructuredRequestData | undefined)
     : BaseTask<IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, T>>;

@@ -84,6 +84,7 @@ function createMockServices(config: IConfigurationService, logger: jest.Mocked<I
     getTaskChannelPostProcessor: () => null as never,
     getContextMessageFactory: () => null as never,
     getContextService: () => null as never,
+    getContextCompressionService: () => null as never,
     getLlmGenerateTask: () => null as never,
     getLlmGenerateStructuredTask: () => null as never,
     getEmojiReactionTask: () => null as never,
