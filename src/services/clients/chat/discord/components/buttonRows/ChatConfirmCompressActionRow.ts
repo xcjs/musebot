@@ -1,14 +1,13 @@
-﻿import { ActionRowBuilder, ButtonBuilder } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder } from 'discord.js';
 
-import { IBotServiceContainer } from "../../../../../IBotServiceContainer.js"
+import { IBotServiceContainer } from '../../../../../IBotServiceContainer.js';
 import { BaseComponent } from '../BaseComponent.js';
-import { HelpButton } from '../buttons/HelpButton.js';
-import { ClearContextButton } from '../buttons/text/ClearContextButton.js';
-import { CompressContextButton } from '../buttons/text/CompressContextButton.js';
+import { CompressContextCancelButton } from '../buttons/text/CompressContextCancelButton.js';
+import { CompressContextConfirmButton } from '../buttons/text/CompressContextConfirmButton.js';
 import { IActionRowBuilderFactory } from '../IActionRowBuilderFactory.js';
 import { IActionRows } from './IActionRows.js';
 
-export class ChatActionRow extends BaseComponent<ActionRowBuilder<ButtonBuilder>[]> implements IActionRows {
+export class ChatConfirmCompressActionRow extends BaseComponent<ActionRowBuilder<ButtonBuilder>[]> implements IActionRows {
   #buttons: BaseComponent<ButtonBuilder>[] = [];
   get buttons(): BaseComponent<ButtonBuilder>[] {
     return this.#buttons;
@@ -31,9 +30,8 @@ export class ChatActionRow extends BaseComponent<ActionRowBuilder<ButtonBuilder>
 
   override build(): ActionRowBuilder<ButtonBuilder>[] {
     this.#buttons = [
-      new CompressContextButton(this.#services),
-      new ClearContextButton(this.#services),
-      new HelpButton(this.#services)
+      new CompressContextCancelButton(this.#services),
+      new CompressContextConfirmButton(this.#services)
     ];
 
     return this.#actionRowBuilderFactory.buildActionRows(this.#buttons);
