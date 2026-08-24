@@ -95,6 +95,12 @@ it is included as a leading system message so the new summary builds on it rathe
 than discarding older context. The summarization call uses the **same model** as
 chat (no separate config — YAGNI).
 
+If the total tokens of the summarization input (system prompt + old summary + all
+conversation messages) exceeds the context window, the **oldest conversation
+messages are truncated** until the input fits. The old summary (if any) is always
+preserved — only conversation messages are dropped, from the front. This ensures
+the summarization call itself never overflows the context window.
+
 ## Data Model Changes
 
 ### `ContextMessage` — add `isSummary`
@@ -114,10 +120,12 @@ isSummary: boolean  // true only for generated compression summaries
 
 ```ts
 getConversationMessages(channelId: string): ContextMessage[];
-// Returns !isReadOnly && channelId === id (includes summaries).
+// Returns !isReadOnly && !isPrivate && channelId === id (includes summaries).
+// !isPrivate matches getContextByChannelId's filter — private (DM) messages
+// are never sent to the LLM, so they're excluded from compression too.
 
 replaceChannelContext(channelId: string, newMessages: ContextMessage[]): void;
-// Removes all !isReadOnly messages for the channel, then pushes newMessages.
+// Removes all !isReadOnly && !isPrivate messages for the channel, then pushes newMessages.
 ```
 
 `clearContext` behavior unchanged (already keeps only `isReadOnly`; summaries are

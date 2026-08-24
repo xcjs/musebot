@@ -499,7 +499,9 @@ export class ContextCompressionService<ChatMessageType, LlmMessageType> implemen
       });
     }
 
-    const summaryText: string = await this.#generateSummary(context);
+    const truncatedContext: OllamaMessage[] = await this.#truncateForContextWindow(context);
+
+    const summaryText: string = await this.#generateSummary(truncatedContext);
 
     const summaryMessage: ContextMessage<ChatMessageType, LlmMessageType> =
       this.#contextMessageFactory.fromSummary(summaryText, channelId) as ContextMessage<ChatMessageType, LlmMessageType>;
@@ -537,6 +539,43 @@ export class ContextCompressionService<ChatMessageType, LlmMessageType> implemen
   #serializeMessages(messages: ContextMessage<ChatMessageType, LlmMessageType>[]): string {
     return messages
       .map((message) => `${message.llmMessage.role}: ${message.llmMessage.content}`)
+      .join('\n');
+  }
+
+  async #truncateForContextWindow(context: OllamaMessage[]): Promise<OllamaMessage[]> {
+    const contextWindow: number = await this.#resolveContextWindow();
+
+    let truncated: OllamaMessage[] = [...context];
+    let tokenCount: number = await this.#tokenize(this.#serializeOllamaMessages(truncated));
+
+    while (tokenCount > contextWindow && truncated.length > 1) {
+      const lastSystemIndex: number = truncated.reduce(
+        (last, msg, idx) => msg.role === 'system' ? idx : last,
+        -1
+      );
+
+      const oldestConversationIndex: number = truncated.findIndex(
+        (_, idx) => idx > lastSystemIndex
+      );
+
+      if (oldestConversationIndex === -1) {
+        break;
+      }
+
+      truncated = truncated.filter((_, idx) => idx !== oldestConversationIndex);
+      tokenCount = await this.#tokenize(this.#serializeOllamaMessages(truncated));
+    }
+
+    if (truncated.length < context.length) {
+      this.#logger.info(`Truncated ${context.length - truncated.length} message(s) from summarization input to fit context window (${contextWindow}).`);
+    }
+
+    return truncated;
+  }
+
+  #serializeOllamaMessages(messages: OllamaMessage[]): string {
+    return messages
+      .map((message) => `${message.role}: ${message.content}`)
       .join('\n');
   }
 
@@ -1499,6 +1538,65 @@ describe('ContextCompressionService', () => {
     expect(ollamaClient.sendMessage).not.toHaveBeenCalled();
     expect(contextService.replaceChannelContext).not.toHaveBeenCalled();
     expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('No messages to compress'), );
+  });
+
+  it('should truncate oldest conversation messages when summarization input exceeds context window', async (): Promise<void> => {
+    configurationService = createMockConfigurationService({ ollamaContextWindow: 100 });
+    services = createMockServices(contextService, configurationService, ollamaClient, contextMessageFactory, logger);
+    compressionService = new ContextCompressionService<unknown, unknown>(services);
+
+    const messages: ContextMessage<unknown, unknown>[] = [];
+    for (let i = 0; i < 50; i++) {
+      messages.push(makeMessage('user', `Message ${i} with some content to make it longer`));
+    }
+    contextService.getConversationMessages.mockReturnValue(messages);
+
+    const originalFetch = global.fetch;
+    let tokenCount = 10000;
+    global.fetch = jest.fn().mockImplementation(async () => ({
+      ok: true,
+      json: async () => ({ tokens: new Array(tokenCount > 100 ? 100 : tokenCount).fill('tok') })
+    })) as unknown as typeof fetch;
+
+    const sendCallCount = ollamaClient.sendMessage.mock.calls.length;
+    await compressionService.compressNow('channel1');
+
+    expect(ollamaClient.sendMessage).toHaveBeenCalled();
+    const callArgs = ollamaClient.sendMessage.mock.calls[0];
+    const context = callArgs[1] as { role: string; content: string }[];
+    expect(context.length).toBeLessThan(messages.length + 1);
+
+    global.fetch = originalFetch;
+  });
+
+  it('should preserve old summary when truncating conversation messages', async (): Promise<void> => {
+    configurationService = createMockConfigurationService({ ollamaContextWindow: 100 });
+    services = createMockServices(contextService, configurationService, ollamaClient, contextMessageFactory, logger);
+    compressionService = new ContextCompressionService<unknown, unknown>(services);
+
+    const oldSummary = makeMessage('system', 'Old summary of earlier conversation', true);
+    const messages: ContextMessage<unknown, unknown>[] = [oldSummary];
+    for (let i = 0; i < 50; i++) {
+      messages.push(makeMessage('user', `Message ${i} with some content`));
+    }
+    contextService.getConversationMessages.mockReturnValue(messages);
+
+    const originalFetch = global.fetch;
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ tokens: new Array(500).fill('tok') })
+    }) as unknown as typeof fetch;
+
+    await compressionService.compressNow('channel1');
+
+    const callArgs = ollamaClient.sendMessage.mock.calls[0];
+    const context = callArgs[1] as { role: string; content: string }[];
+    const hasOldSummary = context.some(
+      (m) => m.role === 'system' && m.content.includes('Old summary')
+    );
+    expect(hasOldSummary).toBe(true);
+
+    global.fetch = originalFetch;
   });
 });
 ```
