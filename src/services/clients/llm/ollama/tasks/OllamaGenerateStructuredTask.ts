@@ -1,4 +1,4 @@
-﻿import { GenerateRequest, GenerateResponse } from 'ollama';
+import { GenerateRequest, GenerateResponse } from 'ollama';
 
 import { IHttpExchangeWithAttachedData } from '../../../../../models/IHttpExchangeWithAttachedData.js';
 import { IBotServiceContainer } from "../../../../IBotServiceContainer.js"

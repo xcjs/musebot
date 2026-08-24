@@ -55,7 +55,7 @@ export class OllamaClient {
       };
     }
 
-      this.#logger.info(`Calling Ollama API with the prompt: ${prompt}`);
+    this.#logger.info(`Calling Ollama API with the prompt: ${prompt}`);
 
     try {
       const response = await this.#client.generate({ ...request, stream: false });

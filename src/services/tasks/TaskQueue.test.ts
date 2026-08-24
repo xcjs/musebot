@@ -147,7 +147,6 @@ describe('TaskQueue', () => {
 
       queue.add(task);
 
-              
       expect(mockLogger.info).toHaveBeenCalledWith(
         expect.stringContaining('myCustomChannel')
       );
