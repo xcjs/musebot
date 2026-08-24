@@ -35,6 +35,8 @@ function createMockConfigurationService(overrides: Partial<IConfigurationService
     ollamaStreamsResponse: false,
     ollamaEmbeddingModel: null,
     ollamaTopK: 5,
+    ollamaContextWindow: null,
+    ollamaContextCompressionThreshold: 0.75,
     applicationName: 'Musebot',
     isProduction: false,
     ...overrides,

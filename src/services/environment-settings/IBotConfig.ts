@@ -32,6 +32,8 @@ export interface IBotConfig {
     streamsResponse: boolean;
     embeddingModel?: string;
     topK?: number;
+    contextWindow?: number;
+    contextCompressionThreshold?: number;
   };
 
   multiModal?: {

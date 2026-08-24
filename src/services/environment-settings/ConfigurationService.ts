@@ -143,6 +143,14 @@ export class ConfigurationService implements IConfigurationService {
       ?? 5;
   }
 
+  get ollamaContextWindow(): number | null {
+    return this.#botConfig.ollama?.contextWindow ?? null;
+  }
+
+  get ollamaContextCompressionThreshold(): number {
+    return this.#botConfig.ollama?.contextCompressionThreshold ?? 0.75;
+  }
+
   get applicationName(): string {
     return toTitleCase(this.packageName);
   }
@@ -228,6 +236,8 @@ Detected environment variables: ${envVarList}`);
     this.#log.info(`bots[].ollama.streamsResponse: ${this.ollamaStreamsResponse}`);
     this.#log.info(`bots[].ollama.embeddingModel: ${this.ollamaEmbeddingModel ?? '(not set)'}`);
     this.#log.info(`bots[].ollama.topK: ${this.ollamaTopK}`);
+    this.#log.info(`bots[].ollama.contextWindow: ${this.ollamaContextWindow ?? '(not set)'}`);
+    this.#log.info(`bots[].ollama.contextCompressionThreshold: ${this.ollamaContextCompressionThreshold}`);
 
     this.#log.info(`bots[].multiModal.randomPrompts: ${this.randomPrompts.join(' | ')}`);
 

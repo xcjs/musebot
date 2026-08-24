@@ -105,6 +105,8 @@ export function createMockGlobalContainer(config?: MockServiceContainerConfig): 
       ollamaStreamsResponse: false,
       ollamaEmbeddingModel: null,
       ollamaTopK: 5,
+      ollamaContextWindow: null,
+      ollamaContextCompressionThreshold: 0.75,
       applicationName: 'Musebot',
       isProduction: false
     },
@@ -156,6 +158,8 @@ export function createMockServiceContainer(config?: MockServiceContainerConfig):
     ollamaStreamsResponse: false,
     ollamaEmbeddingModel: null,
     ollamaTopK: 5,
+    ollamaContextWindow: null,
+    ollamaContextCompressionThreshold: 0.75,
     applicationName: 'Musebot',
     isProduction: false
   };
