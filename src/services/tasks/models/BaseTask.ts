@@ -84,7 +84,7 @@ export abstract class BaseTask<T> {
     this.#lastError = error;
   }
 
-  protected services: IBotServiceContainer;
+  readonly services: IBotServiceContainer;
   parallelizationStrategy: IParallelizationStrategy;
   logger: ILogger;
 
