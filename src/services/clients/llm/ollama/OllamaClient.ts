@@ -22,6 +22,10 @@ export class OllamaClient {
     return this.#host;
   }
 
+  get model(): string {
+    return this.#model;
+  }
+
   constructor(services: IBotServiceContainer) {
     this.#configurationService = services.configurationService;
 
