@@ -31,9 +31,8 @@ export class ContextService<ChatMessageType, LlmMessageType> implements IContext
   getContextByChannelId(channelId: string): LlmMessageType[] {
     this.#logger.info('Getting context by channel:', channelId);
     return this.#context.filter(x =>
-      !x.isPrivate
-      && (x.channelId === null // Include system or global messages.
-        || x.channelId === channelId))
+      (!x.isPrivate && (x.channelId === null || x.channelId === channelId))
+      || (x.isPrivate && x.channelId === channelId))
       .map(x => x.llmMessage);
   }
 
