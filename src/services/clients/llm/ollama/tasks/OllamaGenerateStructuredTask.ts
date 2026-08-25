@@ -21,7 +21,7 @@ export class OllamaGenerateStructuredTask<T> extends OllamaBaseTask<IHttpExchang
   }
 
   override async process(): Promise<void> {
-    this.logger.info('Starting task with prompt:', this.#prompt);
+    this.logger.info(`Starting task with prompt: ${this.#prompt}`);
     this.#ollamaExchange = await this.ollamaClient.generateStructured<T>(this.#prompt, this.#structuredRequestData);
   }
 

@@ -20,7 +20,7 @@ export class OllamaGenerateTask extends OllamaBaseTask<IHttpExchange<GenerateReq
   }
 
   override async process(): Promise<void> {
-    this.logger.info('Starting task with prompt:', this.#prompt);
+    this.logger.info(`Starting task with prompt: ${this.#prompt}`);
     this.#ollamaExchange = await this.ollamaClient.generate(this.#prompt, this.#temperature);
   }
 
