@@ -35,7 +35,9 @@ const validChatBotConfig = {
     hosts: [mockUrl],
     models: ['model1', 'model2'],
     systemPrompt: 'You are a helpful assistant',
-    streamsResponse: false
+    streamsResponse: false,
+    contextWindow: 4096,
+    contextCompressionThreshold: 0.75
   },
   comfyUi: {
     hosts: []
@@ -281,6 +283,79 @@ describe('ConfigurationService', () => {
       expect(service.ollamaModels).toEqual(['model1', 'model2']);
       expect(service.ollamaSystemPrompt).toBe('You are a helpful assistant');
       expect(service.ollamaStreamsResponse).toBe(false);
+    });
+
+    it('should default ollamaContextWindow to null when not set', () => {
+      const configWithoutContextWindow = {
+        ...validChatBotConfig,
+        ollama: {
+          ...validChatBotConfig.ollama,
+          contextWindow: undefined,
+          contextCompressionThreshold: undefined
+        }
+      };
+
+      (ConfigLoader.load as jest.Mock).mockReturnValue({
+        global: globalConfig,
+        bots: [configWithoutContextWindow]
+      });
+
+      const service = new ConfigurationService(configWithoutContextWindow as unknown as IBotConfig);
+      expect(service.ollamaContextWindow).toBeNull();
+    });
+
+    it('should return configured ollamaContextWindow when set', () => {
+      const configWithContextWindow = {
+        ...validChatBotConfig,
+        ollama: {
+          ...validChatBotConfig.ollama,
+          contextWindow: 8192
+        }
+      };
+
+      (ConfigLoader.load as jest.Mock).mockReturnValue({
+        global: globalConfig,
+        bots: [configWithContextWindow]
+      });
+
+      const service = new ConfigurationService(configWithContextWindow as unknown as IBotConfig);
+      expect(service.ollamaContextWindow).toBe(8192);
+    });
+
+    it('should default ollamaContextCompressionThreshold to 0.75 when not set', () => {
+      const configWithoutThreshold = {
+        ...validChatBotConfig,
+        ollama: {
+          ...validChatBotConfig.ollama,
+          contextCompressionThreshold: undefined
+        }
+      };
+
+      (ConfigLoader.load as jest.Mock).mockReturnValue({
+        global: globalConfig,
+        bots: [configWithoutThreshold]
+      });
+
+      const service = new ConfigurationService(configWithoutThreshold as unknown as IBotConfig);
+      expect(service.ollamaContextCompressionThreshold).toBe(0.75);
+    });
+
+    it('should return configured ollamaContextCompressionThreshold when set', () => {
+      const configWithThreshold = {
+        ...validChatBotConfig,
+        ollama: {
+          ...validChatBotConfig.ollama,
+          contextCompressionThreshold: 0.5
+        }
+      };
+
+      (ConfigLoader.load as jest.Mock).mockReturnValue({
+        global: globalConfig,
+        bots: [configWithThreshold]
+      });
+
+      const service = new ConfigurationService(configWithThreshold as unknown as IBotConfig);
+      expect(service.ollamaContextCompressionThreshold).toBe(0.5);
     });
 
     it('should join system prompt array with newlines', () => {
