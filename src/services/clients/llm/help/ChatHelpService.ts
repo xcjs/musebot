@@ -9,6 +9,7 @@ import { IHelpService } from '../../../help/IHelpService.js';
 import { IBotServiceContainer } from "../../../IBotServiceContainer.js"
 import { ChatActionRow } from '../../chat/discord/components/buttonRows/ChatActionRow.js';
 import { ChatConfirmClearActionRow } from '../../chat/discord/components/buttonRows/ChatConfirmClearActionRow.js';
+import { ChatConfirmCompressActionRow } from '../../chat/discord/components/buttonRows/ChatConfirmCompressActionRow.js';
 import { DiscordConstants } from '../../chat/discord/enums/DiscordConstants.js';
 import { IReplyService } from '../../chat/IReplyService.js';
 
@@ -47,6 +48,7 @@ export class ChatHelpService extends BaseHelpService implements IHelpService {
 
     helpArticle += await this.buildHelpArticleFromActionRows(new ChatActionRow(this.#services));
     helpArticle += await this.buildHelpArticleFromActionRows(new ChatConfirmClearActionRow(this.#services));
+    helpArticle += await this.buildHelpArticleFromActionRows(new ChatConfirmCompressActionRow(this.#services));
 
     helpArticle += this.#buildLongTermMemorySection();
 
