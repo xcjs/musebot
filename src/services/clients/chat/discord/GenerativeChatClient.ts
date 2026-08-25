@@ -8,7 +8,6 @@ import { IFeatureService } from '../../../features/IFeatureService.js';
 import { IBotServiceContainer } from "../../../IBotServiceContainer.js"
 import { ITaskQueue } from '../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
-import { IContextCompressionService } from '../../llm/services/IContextCompressionService.js';
 import { IContextMessageFactory } from '../../llm/services/IContextMessageFactory.js';
 import { IContextService } from '../../llm/services/IContextService.js';
 import { ILlmChatMessageFactory } from '../../llm/services/ILlmChatMessageFactory.js';
@@ -18,7 +17,6 @@ import { ITypingService } from '../ITypingService.js';
 import { BaseDiscordClient } from './BaseDiscordClient.js';
 import { MemoryCommandHandler } from './commands/MemoryCommandHandler.js';
 import { ChatConfirmClearActionRow } from './components/buttonRows/ChatConfirmClearActionRow.js';
-import { ChatConfirmCompressActionRow } from './components/buttonRows/ChatConfirmCompressActionRow.js';
 import { DiscordAttachmentService } from './services/DiscordAttachmentService.js';
 
 export class GenerativeChatClient extends BaseDiscordClient {
@@ -28,7 +26,6 @@ export class GenerativeChatClient extends BaseDiscordClient {
   readonly #discordClient: DiscordClient;
   readonly #contextMessageFactory: IContextMessageFactory<DiscordMessage, OllamaMessage>;
   readonly #contextService: IContextService<DiscordMessage, OllamaMessage>;
-  readonly #contextCompressionService: IContextCompressionService;
   readonly #typingService: ITypingService;
   readonly #replyService: IReplyService<DiscordMessage, MessageReaction, Attachment, DiscordMessage | ButtonInteraction>;
   readonly #taskQueue: ITaskQueue;
@@ -47,7 +44,6 @@ export class GenerativeChatClient extends BaseDiscordClient {
     this.#configurationService = services.configurationService;
     this.#contextMessageFactory = services.getContextMessageFactory<DiscordMessage, OllamaMessage>();
     this.#contextService = services.getContextService<DiscordMessage, OllamaMessage>();
-    this.#contextCompressionService = services.getContextCompressionService();
     this.#discordClient = services.discordClient;
     this.#typingService = services.typingService;
     this.#replyService = services.getReplyService();
@@ -163,15 +159,6 @@ export class GenerativeChatClient extends BaseDiscordClient {
       case BotInteraction.ClearContextConfirm.toString():
         await this.#clearContext(interaction);
         break;
-      case BotInteraction.CompressContext.toString():
-        await this.#compressContextAskConfirmation(interaction);
-        break;
-      case BotInteraction.CompressContextCancel.toString():
-        await this.#compressContextCancel(interaction);
-        break;
-      case BotInteraction.CompressContextConfirm.toString():
-        await this.#compressContext(interaction);
-        break;
       case BotInteraction.Help.toString():
         this.#taskQueue.add(this.#services.getInteractionTask(interaction));
         break;
@@ -210,8 +197,8 @@ export class GenerativeChatClient extends BaseDiscordClient {
     }
      }
 
-  async #clearContextCancel(interaction: ButtonInteraction): Promise<void> {
-         this.logger.info('Cancelling clearing the large language model context...');
+   async #clearContextCancel(interaction: ButtonInteraction): Promise<void> {
+          this.logger.info('Cancelling clearing the large language model context...');
 
     try {
       await interaction.message.delete();
@@ -221,47 +208,6 @@ export class GenerativeChatClient extends BaseDiscordClient {
       this.logger.error('An error occurred while cancelling clearing the Ollama context: ', error);
     }
       }
-
-  async #compressContextAskConfirmation(interaction: ButtonInteraction): Promise<void> {
-    this.logger.info('Asking confirmation before compressing the large language model context...');
-
-    try {
-      const messageCount: number = this.#contextService.getContextByChannelId(interaction.channelId).length;
-      await interaction.editReply({
-        content: `Compress ${messageCount} messages into a summary? This will replace the conversation with a condensed summary to free up context window space.`,
-        components: new ChatConfirmCompressActionRow(this.#services).build()
-      });
-    } catch {
-      this.logger.error('An error occurred while asking to compress the Ollama context.');
-    }
-  }
-
-  async #compressContext(interaction: ButtonInteraction): Promise<void> {
-    this.logger.info('Compressing the large language model context...');
-
-    try {
-      const beforeCount: number = this.#contextService.getContextByChannelId(interaction.channelId).length;
-      await this.#contextCompressionService.compressNow(interaction.channelId);
-      const afterCount: number = this.#contextService.getContextByChannelId(interaction.channelId).length;
-
-      await interaction.editReply(`Context compressed — ${beforeCount} messages summarized into ${afterCount}.`);
-      await interaction.message.delete();
-    } catch(error) {
-      this.logger.error('An error occurred while compressing the Ollama context: ', error);
-    }
-  }
-
-  async #compressContextCancel(interaction: ButtonInteraction): Promise<void> {
-    this.logger.info('Cancelling compressing the large language model context...');
-
-    try {
-      await interaction.message.delete();
-      await interaction.editReply('Cancelling...');
-      await interaction.deleteReply();
-    } catch(error) {
-      this.logger.error('An error occurred while cancelling compressing the Ollama context: ', error);
-    }
-  }
 
   async #onMessageReactionAdd(reaction: MessageReaction, user: User): Promise<void> {
     if (reaction.partial) {

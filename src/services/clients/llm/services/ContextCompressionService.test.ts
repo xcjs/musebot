@@ -189,21 +189,6 @@ describe('ContextCompressionService', () => {
     global.fetch = originalFetch;
   });
 
-  it('should always compress with compressNow', async (): Promise<void> => {
-    const messages = [makeMessage('user', 'hello'), makeMessage('assistant', 'hi')];
-    contextService.getConversationMessages.mockReturnValue(messages);
-
-    const originalFetch = global.fetch;
-    global.fetch = mockFetchTokens(makeTokens(10));
-
-    await compressionService.compressNow('channel1');
-
-    expect(ollamaClient.sendMessage).toHaveBeenCalled();
-    expect(contextService.replaceChannelContext).toHaveBeenCalledWith('channel1', [expect.objectContaining({ isSummary: true })]);
-
-    global.fetch = originalFetch;
-  });
-
   it('should fold old summary into new summary', async (): Promise<void> => {
     const oldSummary = makeMessage('system', 'Old summary', true);
     const userMsg = makeMessage('user', 'hello');
@@ -211,12 +196,13 @@ describe('ContextCompressionService', () => {
     contextService.getConversationMessages.mockReturnValue([oldSummary, userMsg, assistantMsg]);
 
     const originalFetch = global.fetch;
-    global.fetch = mockFetchTokens(makeTokens(10));
+    global.fetch = mockFetchTokens(makeTokens(5000));
 
-    await compressionService.compressNow('channel1');
+    await compressionService.compressIfNeeded('channel1');
 
-    const callArgs = ollamaClient.sendMessage.mock.calls[0];
-    const context = callArgs[1];
+    const allCalls = ollamaClient.sendMessage.mock.calls;
+    const reduceCall = allCalls[allCalls.length - 1];
+    const context = reduceCall[1];
     const hasOldSummary = context.some(
       (m: { role: string; content: string }) => m.role === 'system' && m.content.includes('Old summary')
     );
@@ -247,9 +233,9 @@ describe('ContextCompressionService', () => {
     ollamaClient.sendMessage.mockRejectedValue(new Error('LLM error'));
 
     const originalFetch = global.fetch;
-    global.fetch = mockFetchTokens(makeTokens(10));
+    global.fetch = mockFetchTokens(makeTokens(5000));
 
-    await compressionService.compressNow('channel1');
+    await compressionService.compressIfNeeded('channel1');
 
     expect(contextService.replaceChannelContext).not.toHaveBeenCalled();
     expect(logger.error).toHaveBeenCalled();
@@ -295,16 +281,6 @@ describe('ContextCompressionService', () => {
     global.fetch = originalFetch;
   });
 
-  it('should log and no-op when compressNow is called with empty context', async (): Promise<void> => {
-    contextService.getConversationMessages.mockReturnValue([]);
-
-    await compressionService.compressNow('channel1');
-
-    expect(ollamaClient.sendMessage).not.toHaveBeenCalled();
-    expect(contextService.replaceChannelContext).not.toHaveBeenCalled();
-    expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('No messages to compress'));
-  });
-
   it('should chunk and summarize when conversation exceeds context window', async (): Promise<void> => {
     configurationService = createMockConfigurationService({ ollamaContextWindow: 100 });
     services = createMockServices(contextService, configurationService, ollamaClient, contextMessageFactory, logger);
@@ -319,7 +295,7 @@ describe('ContextCompressionService', () => {
     const originalFetch = global.fetch;
     global.fetch = mockFetchTokens(makeTokens(200));
 
-    await compressionService.compressNow('channel1');
+    await compressionService.compressIfNeeded('channel1');
 
     expect(ollamaClient.sendMessage).toHaveBeenCalled();
     expect(contextService.replaceChannelContext).toHaveBeenCalledWith('channel1', [expect.objectContaining({ isSummary: true })]);
@@ -342,7 +318,7 @@ describe('ContextCompressionService', () => {
     const originalFetch = global.fetch;
     global.fetch = mockFetchTokens(makeTokens(500));
 
-    await compressionService.compressNow('channel1');
+    await compressionService.compressIfNeeded('channel1');
 
     const allCalls = ollamaClient.sendMessage.mock.calls;
     const reduceCall = allCalls[allCalls.length - 1];

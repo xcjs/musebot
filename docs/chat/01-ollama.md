@@ -125,12 +125,6 @@ conversations responsive without losing the thread of discussion.
 3. **Replacement** — The conversation messages are replaced with the single
    summary message. The system prompt and channel topic are preserved.
 
-### Manual Compression
-
-Use the 🗜️ **Compress Context** button (next to the 🆑 Clear Context button)
-to manually compress the conversation at any time. A confirmation prompt shows
-the message count before proceeding.
-
 ### Configuration
 
 Both settings are optional and live under `ollama` in `config.jsonc`:

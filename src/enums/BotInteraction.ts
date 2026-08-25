@@ -11,9 +11,6 @@ export enum BotInteraction {
   ClearContext = 'clearContext',
   ClearContextCancel = 'clearContextCancel',
   ClearContextConfirm = 'clearContextConfirm',
-  CompressContext = 'compressContext',
-  CompressContextCancel = 'compressContextCancel',
-  CompressContextConfirm = 'compressContextConfirm',
   // Media Button Interactions
   ExpandPrompt = 'expandPrompt',
   GuidanceScaleMinus = 'guidanceScaleMinus',

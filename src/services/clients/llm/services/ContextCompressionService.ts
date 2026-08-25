@@ -57,22 +57,6 @@ export class ContextCompressionService<ChatMessageType, LlmMessageType extends {
     }
   }
 
-  async compressNow(channelId: string): Promise<void> {
-    const messages: ContextMessage<ChatMessageType, LlmMessageType>[] =
-      this.#contextService.getConversationMessages(channelId);
-
-    if (messages.length === 0) {
-      this.#logger.info(`No messages to compress for channel ${channelId}.`);
-      return;
-    }
-
-    try {
-      await this.#summarizeAndReplace(channelId);
-    } catch (error) {
-      this.#logger.error(`Failed to compress context for channel ${channelId}:`, error);
-    }
-  }
-
   async #summarizeAndReplace(channelId: string): Promise<void> {
     const messages: ContextMessage<ChatMessageType, LlmMessageType>[] =
       this.#contextService.getConversationMessages(channelId);
