@@ -182,7 +182,23 @@
     // Required: Optional
     // Default:  5
     // Type:     Integer
-    // "topK": 5
+    // "topK": 5,
+
+    // The maximum context window (in tokens) for the LLM. When set, Musebot
+    // uses this value to determine when to compress conversation context.
+    // When unset, Musebot queries Ollama for the model's max context length.
+    // Required: Optional
+    // Default:  (unset — auto-detect from Ollama show())
+    // Type:     Integer
+    // "contextWindow": 4096,
+
+    // The threshold (as a fraction of the context window) at which Musebot
+    // compresses the conversation context into a summary. For example, 0.75
+    // means compression triggers when token count reaches 75% of the window.
+    // Required: Optional
+    // Default:  0.75
+    // Type:     Number
+    // "contextCompressionThreshold": 0.75
       },
 
       // Multi-modal settings for cross-capable features.
