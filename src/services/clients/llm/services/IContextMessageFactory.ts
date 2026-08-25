@@ -23,4 +23,6 @@ export interface IContextMessageFactory<ChatMessageType, LlmMessageType> {
     serverId: string | null,
     channelId: string | null,
     associatedMessageId: string | null): ContextMessage<ChatMessageType, LlmMessageType>;
+
+  fromSummary(summary: string, channelId: string | null): ContextMessage<ChatMessageType, LlmMessageType>;
 }

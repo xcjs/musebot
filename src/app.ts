@@ -26,6 +26,7 @@ config.bots.forEach(botConfig => {
     }).catch((error) => {
       logger.error(`Failed to load supported features for bot ${botConfig.botId}.`
         + ` Check your workflows/workflow permissions and restart ${settings.applicationName}:`, error);
+      process.exitCode = 1;
     });
   } catch (error) {
     if (error instanceof Error && error.message.includes('botId is required')) {

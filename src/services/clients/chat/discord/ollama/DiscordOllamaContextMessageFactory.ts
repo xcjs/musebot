@@ -35,7 +35,8 @@ export class DiscordOllamaContextMessageFactory implements IContextMessageFactor
       timestamp: new Date(),
       llmMessage: ollamaMessage,
       isReadOnly: isReadOnly,
-      isPrivate: false
+      isPrivate: false,
+      isSummary: false
     };
   }
 
@@ -54,7 +55,8 @@ export class DiscordOllamaContextMessageFactory implements IContextMessageFactor
       chatMessage,
       llmMessage: ollamaMessage,
       isReadOnly: false,
-      isPrivate: chatMessage.guildId === null
+      isPrivate: chatMessage.guildId === null,
+      isSummary: false
     } as ContextMessage<DiscordMessage, OllamaMessage>;
   }
 
@@ -79,7 +81,8 @@ export class DiscordOllamaContextMessageFactory implements IContextMessageFactor
       chatMessage: null,
       llmMessage: ollamaMessage,
       isReadOnly: false,
-      isPrivate: serverId === null
+      isPrivate: serverId === null,
+      isSummary: false
     };
   }
 
@@ -99,7 +102,30 @@ export class DiscordOllamaContextMessageFactory implements IContextMessageFactor
       chatMessage: null,
       llmMessage,
       isReadOnly: false,
-      isPrivate: serverId === null
+      isPrivate: serverId === null,
+      isSummary: false
+    };
+  }
+
+  fromSummary(summary: string, channelId: string | null): ContextMessage<DiscordMessage, OllamaMessage> {
+    const llmMessage: OllamaMessage = {
+      role: OllamaRole.System,
+      content: summary
+    };
+
+    return {
+      messageId: null,
+      associatedMessageId: null,
+      userId: null,
+      associatedUserId: null,
+      channelId: channelId,
+      serverId: null,
+      timestamp: new Date(),
+      chatMessage: null,
+      llmMessage: llmMessage,
+      isReadOnly: false,
+      isPrivate: false,
+      isSummary: true
     };
   }
 }

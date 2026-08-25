@@ -60,13 +60,10 @@ export class GenerativeChatClient extends BaseDiscordClient {
   }
 
   #registerEvents(): void {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const self = this;
-
-    this.#discordClient.once(Events.ClientReady, (event) => void this.onClientReady.call(self, event));
-    this.#discordClient.on(Events.MessageCreate, (message) => void this.#onMessageCreate.call(self, message));
-    this.#discordClient.on(Events.InteractionCreate, (interaction) => void  this.#onInteractionCreate.call(self, interaction));
-    this.#discordClient.on(Events.MessageReactionAdd, (reaction, user) => void this.#onMessageReactionAdd.call(self, reaction, user));
+    this.#discordClient.once(Events.ClientReady, (event) => void this.onClientReady.call(this, event));
+    this.#discordClient.on(Events.MessageCreate, (message) => void this.#onMessageCreate.call(this, message));
+    this.#discordClient.on(Events.InteractionCreate, (interaction) => void  this.#onInteractionCreate.call(this, interaction));
+    this.#discordClient.on(Events.MessageReactionAdd, (reaction, user) => void this.#onMessageReactionAdd.call(this, reaction, user));
   }
 
   async #onMessageCreate(message: DiscordMessage): Promise<void> {
@@ -200,8 +197,8 @@ export class GenerativeChatClient extends BaseDiscordClient {
     }
      }
 
-  async #clearContextCancel(interaction: ButtonInteraction): Promise<void> {
-         this.logger.info('Cancelling clearing the large language model context...');
+   async #clearContextCancel(interaction: ButtonInteraction): Promise<void> {
+          this.logger.info('Cancelling clearing the large language model context...');
 
     try {
       await interaction.message.delete();
@@ -210,7 +207,7 @@ export class GenerativeChatClient extends BaseDiscordClient {
     } catch(error) {
       this.logger.error('An error occurred while cancelling clearing the Ollama context: ', error);
     }
-     }
+      }
 
   async #onMessageReactionAdd(reaction: MessageReaction, user: User): Promise<void> {
     if (reaction.partial) {

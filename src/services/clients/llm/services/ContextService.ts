@@ -31,9 +31,8 @@ export class ContextService<ChatMessageType, LlmMessageType> implements IContext
   getContextByChannelId(channelId: string): LlmMessageType[] {
     this.#logger.info('Getting context by channel:', channelId);
     return this.#context.filter(x =>
-      !x.isPrivate
-      && (x.channelId === null // Include system or global messages.
-        || x.channelId === channelId))
+      (!x.isPrivate && (x.channelId === null || x.channelId === channelId))
+      || (x.isPrivate && x.channelId === channelId))
       .map(x => x.llmMessage);
   }
 
@@ -49,5 +48,23 @@ export class ContextService<ChatMessageType, LlmMessageType> implements IContext
     this.#context = this.#context.filter(
       x => x.isReadOnly
       || x.channelId !== channelId);
+  }
+
+  getConversationMessages(channelId: string): ContextMessage<ChatMessageType, LlmMessageType>[] {
+    return this.#context.filter(
+      (message) => !message.isReadOnly && !message.isPrivate && message.channelId === channelId
+    );
+  }
+
+  replaceChannelContext(channelId: string, newMessages: ContextMessage<ChatMessageType, LlmMessageType>[]): void {
+    this.#context = this.#context.filter(
+      (message) => message.isReadOnly || message.isPrivate || message.channelId !== channelId
+    );
+
+    for (const message of newMessages) {
+      this.#context.push(message);
+    }
+
+    this.#logger.info(`Replaced context for channel ${channelId} with ${newMessages.length} message(s).`);
   }
 }

@@ -102,3 +102,45 @@ If you also integrate Musebot with a [ComfyUI](../media/01-swarm-ui.md) instance
 with `mode` set to `"chat"`, Musebot will use the large language model response
 as a prompt for an image and attach it to its response asynchronously, providing
 a visual for the response.
+
+## Context Compression
+
+As a conversation grows, the accumulated message history consumes more of the
+model's context window. When the token count exceeds a configurable threshold,
+Musebot automatically compresses the conversation context by summarizing older
+messages into a compact summary using the same LLM. This keeps long-running
+conversations responsive without losing the thread of discussion.
+
+### How It Works
+
+1. **Threshold check** — After each response, Musebot tokenizes the conversation
+   context and compares it against the configured context window multiplied by
+   the compression threshold. If the token count is below the threshold, nothing
+   happens.
+2. **Chunked summarization** — When the conversation exceeds the context window,
+   Musebot splits the conversation into window-sized chunks, summarizes each
+   chunk individually, then combines all chunk summaries (plus any existing
+   summary) into a final summary. If the combined summaries still exceed the
+   window, the oldest chunk summaries are dropped to fit.
+3. **Replacement** — The conversation messages are replaced with the single
+   summary message. The system prompt and channel topic are preserved.
+
+### Configuration
+
+Both settings are optional and live under `ollama` in `config.jsonc`:
+
+```jsonc
+"ollama": {
+  // ...
+  // The maximum context window (in tokens) for the LLM.
+  // When unset, Musebot queries Ollama for the model's max context length.
+  // "contextWindow": 4096,
+
+  // The threshold (as a fraction of the context window) at which compression
+  // triggers. For example, 0.75 means compression at 75% of the window.
+  // "contextCompressionThreshold": 0.75
+}
+```
+
+When `contextWindow` is unset, Musebot queries Ollama's `/api/show` endpoint
+for the model's `context_length`. If that fails, it falls back to 4096.

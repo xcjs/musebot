@@ -39,12 +39,9 @@ export class GenerativeMediaChatClient extends BaseDiscordClient {
   }
 
   #registerEvents(): void {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const self = this;
-
-    this.#discordClient.once(Events.ClientReady, (event) => void this.onClientReady.call(self, event));
-    this.#discordClient.on(Events.MessageCreate, (message) => void this.#onMessageCreate.call(self, message));
-    this.#discordClient.on(Events.InteractionCreate, (interaction) => void this.#onInteraction.call(self, interaction));
+    this.#discordClient.once(Events.ClientReady, (event) => void this.onClientReady.call(this, event));
+    this.#discordClient.on(Events.MessageCreate, (message) => void this.#onMessageCreate.call(this, message));
+    this.#discordClient.on(Events.InteractionCreate, (interaction) => void this.#onInteraction.call(this, interaction));
   }
 
   async #onMessageCreate(message: DiscordMessage): Promise<void> {

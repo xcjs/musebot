@@ -147,10 +147,20 @@ describe('TaskQueue', () => {
 
       queue.add(task);
 
-             
       expect(mockLogger.info).toHaveBeenCalledWith(
         expect.stringContaining('myCustomChannel')
       );
+    });
+
+    it('does not use private-state reflection to access task services (regression)', (): void => {
+      const task = new MockTask(mockBotServices, 'reflection-channel');
+      const queue = new TaskQueue(mockGlobalServices);
+
+      queue.add(task);
+
+      const taskServicesField = (task as unknown as { services?: unknown }).services;
+      expect(taskServicesField).toBeDefined();
+      expect(taskServicesField).toBe(task.services);
     });
   });
 

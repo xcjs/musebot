@@ -1,4 +1,4 @@
-﻿import { GenerateRequest, GenerateResponse } from 'ollama';
+import { GenerateRequest, GenerateResponse } from 'ollama';
 
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { IBotServiceContainer } from "../../../../IBotServiceContainer.js"
@@ -6,22 +6,10 @@ import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { OllamaBaseTask } from './OllamaBaseTask.js';
 
 export class OllamaGenerateTask extends OllamaBaseTask<IHttpExchange<GenerateRequest, GenerateResponse>> {
-
-  override set onSuccess(callback: (payload: IHttpExchange<GenerateRequest, GenerateResponse>) => void) {
-    this.#onSuccess = callback;
-  }
-
-  override set onFailure(callback: (error: Error) => void) {
-    this.#onFailure = callback;
-  }
-
   readonly #prompt: string;
   readonly #temperature: number | undefined = undefined;
 
   #ollamaExchange: IHttpExchange<GenerateRequest, GenerateResponse> | null = null;
-
-  #onSuccess: (payload: IHttpExchange<GenerateRequest, GenerateResponse>) => void = () => { };
-  #onFailure: (error: Error) => void = () => { };
 
   constructor(services: IBotServiceContainer, prompt: string, temperature: number | undefined = undefined) {
     super(services);
@@ -32,7 +20,7 @@ export class OllamaGenerateTask extends OllamaBaseTask<IHttpExchange<GenerateReq
   }
 
   override async process(): Promise<void> {
-    this.logger.info('Starting task with prompt:', this.#prompt);
+    this.logger.info(`Starting task with prompt: ${this.#prompt}`);
     this.#ollamaExchange = await this.ollamaClient.generate(this.#prompt, this.#temperature);
   }
 
@@ -44,7 +32,7 @@ export class OllamaGenerateTask extends OllamaBaseTask<IHttpExchange<GenerateReq
         this.logger.success('Task successful - passing Ollama exchange to callback:', this.#ollamaExchange);
 
         if(this.#ollamaExchange !== null) {
-          this.#onSuccess(this.#ollamaExchange);
+          this.invokeOnSuccess(this.#ollamaExchange);
         }
 
         break;
@@ -52,7 +40,7 @@ export class OllamaGenerateTask extends OllamaBaseTask<IHttpExchange<GenerateReq
       case TaskStatus.Dead:
         this.logger.error('Task dead - invoking onFailure callback.');
 
-        this.#onFailure(this.lastError ?? new Error('Task died without a captured error.'));
+        this.invokeOnFailure(this.lastError ?? new Error('Task died without a captured error.'));
 
         break;
     }

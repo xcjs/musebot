@@ -2,6 +2,31 @@
 
 All notable changes to Musebot are documented in this file.
 
+## [9.5.0] — 2026-08-25
+
+### Added
+
+- Automatic context compression for chat-mode bots: when the token count of a channel's conversation exceeds a configurable threshold of the model's context window, Musebot summarizes the conversation into a compact replacement message via the same LLM, preserving the system prompt and channel topic
+- Chunked map-reduce summarization: when the conversation to compress exceeds the context window, it is split into window-sized chunks, each summarized individually, then combined into a final summary; if the combined summaries still exceed the window, the oldest chunk summaries are dropped to fit
+- `ollamaContextWindow` and `ollamaContextCompressionThreshold` optional config settings under `ollama` in `config.jsonc` — when `contextWindow` is unset, Musebot queries Ollama's `/api/show` for the model's `context_length`, falling back to 4096 if that fails
+- `ContextCompressionService` lazy singleton with tokenization via Ollama's `/api/tokenize` endpoint (direct fetch), per-channel compression granularity, and best-effort error handling that never breaks chat
+- `isSummary` field on `ContextMessage` to mark generated summary messages; `fromSummary` factory method on `IContextMessageFactory`
+- `getConversationMessages` and `replaceChannelContext` methods on `IContextService` / `ContextService` for compression-aware context management
+- `model` getter on `OllamaClient` exposing the selected model name
+- Unit tests for `ContextCompressionService` (10 tests) and `ContextService` (12 tests covering channel isolation, DM context retrieval, summary handling, and replacement)
+- Configuration tests for `ollamaContextWindow` (default null, configured value) and `ollamaContextCompressionThreshold` (default 0.75, configured value)
+- Context Compression documentation in `docs/chat/01-ollama.md`
+
+### Changed
+
+- `ContextService.getContextByChannelId` now allows `isPrivate` messages when their `channelId` matches the requested channel, enabling DM conversation history to be retrieved within its own channel while maintaining isolation from other channels and the system-prompt path
+- `config.example.jsonc` rewritten with consistent 2-space indentation
+
+### Fixed
+
+- Private (DM) messages were excluded entirely from `getContextByChannelId` by the `!isPrivate` filter, causing DM history to never be retrieved — each DM message was a fresh conversation with no history
+- `OllamaGenerateTask` and `OllamaGenerateStructuredTask` log messages now interpolate the prompt into the message string instead of passing it as a separate logger argument, so multi-line prompts appear fully on the prefixed log line
+
 ## [9.4.0] — 2026-07-26
 
 ### Added

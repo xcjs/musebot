@@ -58,9 +58,23 @@ export abstract class BaseTask<T> {
     this.#isChild = isChild;
   }
 
-  set onSuccess(callback: (payload: T) => void) { }
+  #onSuccess: ((payload: T) => void) | null = null;
+  set onSuccess(callback: (payload: T) => void) {
+    this.#onSuccess = callback;
+  }
 
-  set onFailure(callback: (error: Error) => void) { }
+  #onFailure: ((error: Error) => void) | null = null;
+  set onFailure(callback: (error: Error) => void) {
+    this.#onFailure = callback;
+  }
+
+  protected invokeOnSuccess(payload: T): void {
+    this.#onSuccess?.(payload);
+  }
+
+  protected invokeOnFailure(error: Error): void {
+    this.#onFailure?.(error);
+  }
 
   get lastError(): Error | null {
     return this.#lastError;
@@ -70,7 +84,7 @@ export abstract class BaseTask<T> {
     this.#lastError = error;
   }
 
-  protected services: IBotServiceContainer;
+  readonly services: IBotServiceContainer;
   parallelizationStrategy: IParallelizationStrategy;
   logger: ILogger;
 

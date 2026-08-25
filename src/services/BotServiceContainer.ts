@@ -13,7 +13,6 @@ import { BotInteraction } from '../enums/BotInteraction.js';
 import { BotMode } from '../enums/BotMode.js';
 import { IHttpExchange } from '../models/IHttpExchange.js';
 import { IHttpExchangeWithAttachedData } from '../models/IHttpExchangeWithAttachedData.js';
-import { getRandomArrayEntry } from '../utilities/random-utilities.js';
 import { ComfyUiReplyService } from './clients/chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { ActionRowBuilderFactory } from './clients/chat/discord/components/ActionRowBuilderFactory.js';
 import { IActionRowBuilderFactory } from './clients/chat/discord/components/IActionRowBuilderFactory.js';
@@ -50,7 +49,9 @@ import { OllamaEmojiReactionTask } from './clients/llm/ollama/tasks/OllamaEmojiR
 import { OllamaGenerateStructuredTask } from './clients/llm/ollama/tasks/OllamaGenerateStructuredTask.js';
 import { OllamaGenerateTask } from './clients/llm/ollama/tasks/OllamaGenerateTask.js';
 import { OllamaMessageTask } from './clients/llm/ollama/tasks/OllamaMessageTask.js';
+import { ContextCompressionService } from './clients/llm/services/ContextCompressionService.js';
 import { ContextService } from './clients/llm/services/ContextService.js';
+import { IContextCompressionService } from './clients/llm/services/IContextCompressionService.js';
 import { IContextMessageFactory } from './clients/llm/services/IContextMessageFactory.js';
 import { IContextService } from './clients/llm/services/IContextService.js';
 import { ILlmChatMessageFactory } from './clients/llm/services/ILlmChatMessageFactory.js';
@@ -179,19 +180,20 @@ export class BotServiceContainer implements IBotServiceContainer {
       mutator => mutator.interactions.includes(interactionType)
         && mutator.types.includes(workflow.type));
 
-    if(supportedMutators.length === 1) {
+    if (supportedMutators.length === 1) {
       return supportedMutators[0];
-    } else if(supportedMutators.length > 1) {
-      const mutator = getRandomArrayEntry(supportedMutators);
-
-      if(mutator === null) {
-        throw new Error('A supported mutator could not be found.');
-      }
-
-      return mutator;
-    } else {
-      throw new Error('The task you are attempting to instantiate is not supported by your current configuration.');
     }
+
+    if (supportedMutators.length > 1) {
+      const names = supportedMutators.map(m => m.constructor.name).join(', ');
+      throw new Error(
+        `Ambiguous workflow mutator selection: ${supportedMutators.length} mutators match `
+        + `interaction '${interactionType}' and type '${workflow.type}': ${names}. `
+        + `Exactly one mutator must match.`
+      );
+    }
+
+    throw this.#taskNotConfiguredError;
   }
 
   get comfyUiClient(): ComfyUiClient {
@@ -279,6 +281,14 @@ export class BotServiceContainer implements IBotServiceContainer {
     }
 
     return this.#contextService as IContextService<ChatMessageType, LlmMessageType>;
+  }
+
+  #contextCompressionService: IContextCompressionService | null = null;
+  getContextCompressionService<ChatMessageType, LlmMessageType extends { role: string; content: string }>(): IContextCompressionService {
+    if (this.#contextCompressionService === null) {
+      this.#contextCompressionService = new ContextCompressionService<ChatMessageType, LlmMessageType>(this);
+    }
+    return this.#contextCompressionService;
   }
 
   getLlmGenerateTask(prompt: string, temperature: number | undefined): BaseTask<IHttpExchange<GenerateRequest, GenerateResponse>> {

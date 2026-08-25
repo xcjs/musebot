@@ -35,6 +35,9 @@ export interface IConfigurationService {
   ollamaEmbeddingModel: string | null;
   ollamaTopK: number;
 
+  get ollamaContextWindow(): number | null;
+  get ollamaContextCompressionThreshold(): number;
+
   applicationName: string;
   isProduction: boolean;
 }

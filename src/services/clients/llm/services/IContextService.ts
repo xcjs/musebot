@@ -6,4 +6,6 @@ export interface IContextService<ChatMessageType, LlmMessageType> {
   getContextByChannelId(channelId: string): LlmMessageType[];
   getContextByUserId(userId: string): LlmMessageType[];
   clearContext(channelId: string): void;
+  getConversationMessages(channelId: string): ContextMessage<ChatMessageType, LlmMessageType>[];
+  replaceChannelContext(channelId: string, newMessages: ContextMessage<ChatMessageType, LlmMessageType>[]): void;
 }

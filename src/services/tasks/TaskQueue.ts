@@ -1,5 +1,4 @@
 ﻿import { PromisedSettledResultStatus } from '../../enums/PromisedSettledResultStatus.js';
-import { IBotServiceContainer } from '../IBotServiceContainer.js';
 import { IGlobalServiceContainer } from '../IGlobalServiceContainer.js';
 import { TaskStatus } from './enums/TaskStatus.js';
 import { ITaskQueue } from './ITaskQueue.js';
@@ -22,7 +21,7 @@ export class TaskQueue implements ITaskQueue {
     this.#globalServices.getLogger('TaskQueue').info(`Adding task ${task.id} to the ${task.taskChannel} queue.`);
 
     let taskChannel: TaskChannel;
-    const taskServices = this.#getTaskServices(task);
+    const taskServices = task.services;
 
     if (this.#channels.filter(x => x.name === task.taskChannel).length === 0) {
       taskChannel = new TaskChannel(taskServices, task.taskChannel);
@@ -42,11 +41,6 @@ export class TaskQueue implements ITaskQueue {
     }
 
     void this.#processQueue();
-  }
-
-  #getTaskServices(task: BaseTask<unknown>): IBotServiceContainer {
-    // Access the private services field via type assertion
-    return (task as unknown as { services: IBotServiceContainer }).services;
   }
 
   async #processQueue(): Promise<void> {

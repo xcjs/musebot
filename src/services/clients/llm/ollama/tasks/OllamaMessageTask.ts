@@ -84,6 +84,8 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
       this.contextMessageFactory.fromLlmMessage(exchange.exchange.response.message,
         this.#message.id, this.#message.author.id, this.#message.channelId, this.#message.guildId)]);
 
+    await this.#services.getContextCompressionService().compressIfNeeded(this.#message.channelId);
+
     await this.#storeMemories(llmChatMessage, exchange.exchange.response.message.content);
 
     const replies = await this.ollamaReplyService.reply(this.#message, exchange.exchange);
@@ -166,6 +168,8 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
             this.#message.channelId,
             this.#message.guildId
           )]);
+
+        await this.#services.getContextCompressionService().compressIfNeeded(this.#message.channelId);
 
         await this.#storeMemories(llmChatMessage, fullResponse);
 
