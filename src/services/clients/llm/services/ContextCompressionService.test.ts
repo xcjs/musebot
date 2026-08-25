@@ -305,7 +305,7 @@ describe('ContextCompressionService', () => {
     expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('No messages to compress'));
   });
 
-  it('should truncate oldest conversation messages when summarization input exceeds context window', async (): Promise<void> => {
+  it('should chunk and summarize when conversation exceeds context window', async (): Promise<void> => {
     configurationService = createMockConfigurationService({ ollamaContextWindow: 100 });
     services = createMockServices(contextService, configurationService, ollamaClient, contextMessageFactory, logger);
     compressionService = new ContextCompressionService<unknown, { role: string; content: string }>(services);
@@ -322,14 +322,12 @@ describe('ContextCompressionService', () => {
     await compressionService.compressNow('channel1');
 
     expect(ollamaClient.sendMessage).toHaveBeenCalled();
-    const callArgs = ollamaClient.sendMessage.mock.calls[0];
-    const context = callArgs[1] as { role: string; content: string }[];
-    expect(context.length).toBeLessThan(messages.length + 1);
+    expect(contextService.replaceChannelContext).toHaveBeenCalledWith('channel1', [expect.objectContaining({ isSummary: true })]);
 
     global.fetch = originalFetch;
   });
 
-  it('should preserve old summary when truncating conversation messages', async (): Promise<void> => {
+  it('should preserve old summary when chunking conversation messages', async (): Promise<void> => {
     configurationService = createMockConfigurationService({ ollamaContextWindow: 100 });
     services = createMockServices(contextService, configurationService, ollamaClient, contextMessageFactory, logger);
     compressionService = new ContextCompressionService<unknown, { role: string; content: string }>(services);
@@ -346,9 +344,10 @@ describe('ContextCompressionService', () => {
 
     await compressionService.compressNow('channel1');
 
-    const callArgs = ollamaClient.sendMessage.mock.calls[0];
-    const context = callArgs[1] as { role: string; content: string }[];
-    const hasOldSummary = context.some(
+    const allCalls = ollamaClient.sendMessage.mock.calls;
+    const reduceCall = allCalls[allCalls.length - 1];
+    const reduceContext = reduceCall[1] as { role: string; content: string }[];
+    const hasOldSummary = reduceContext.some(
       (m) => m.role === 'system' && m.content.includes('Old summary')
     );
     expect(hasOldSummary).toBe(true);

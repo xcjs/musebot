@@ -1,8 +1,8 @@
 {
   // Global configuration shared across all bot instances.
   "global": {
-  // Task queue settings for managing concurrent task execution.
-  "taskQueue": {
+    // Task queue settings for managing concurrent task execution.
+    "taskQueue": {
       // The number of times to retry a failed task.
       // Required: Optional
       // Default:  10
@@ -30,12 +30,12 @@
       // Default:  false
       // Type:     Boolean
       "forceSerialAcrossHosts": false
-  }
+    }
   },
 
   // Per-bot configuration. Each object in the array defines a separate bot instance.
   "bots": [
-  {
+    {
       // A unique identifier for this bot instance. Used for logging and workflow paths.
       // Required: Required
       // Type:     String
@@ -75,7 +75,7 @@
 
       // Discord configuration. Token and channel settings for the bot's Discord connection.
       "chatApis": {
-    "discord": {
+        "discord": {
           // The Discord App Token used to authenticate as the bot created in the
           // Discord developer portal.
           // Required: Required
@@ -87,8 +87,8 @@
           // Required: Optional
           // Type:     Array of string (channel IDs)
           "channels": [
-      "YOUR_CHANNEL_ID_1",
-      "YOUR_CHANNEL_ID_2"
+            "YOUR_CHANNEL_ID_1",
+            "YOUR_CHANNEL_ID_2"
           ],
 
           // The Discord channel IDs the bot is not allowed to reply in.
@@ -103,124 +103,124 @@
           // Required: Optional
           // Type:     Array of string (usernames)
           "privateMessageUsers": [
-      "USER_ID_1",
-      "USER_ID_2"
+            "USER_ID_1",
+            "USER_ID_2"
           ]
-    }
+        }
       },
 
       // ComfyUI configuration for media generation. Required when mode is "media".
       "comfyUi": {
-    // The base URL(s) of the ComfyUI instance(s). Can be a list for multiple hosts.
-    // Required: Required when mode="media"
-    // Type:     Array of string (URLs)
-    "hosts": [
+        // The base URL(s) of the ComfyUI instance(s). Can be a list for multiple hosts.
+        // Required: Required when mode="media"
+        // Type:     Array of string (URLs)
+        "hosts": [
           "http://localhost:8188"
-    ],
+        ],
 
-    // The maximum duration in minutes that a single ComfyUI render task
-    // is allowed to run before being aborted. When the timeout elapses,
-    // Musebot interrupts the workflow and disconnects the WebSocket.
-    // Required: Optional
-    // Default:  30
-    // Type:     Number
-    "timeoutMinutes": 30,
+        // The maximum duration in minutes that a single ComfyUI render task
+        // is allowed to run before being aborted. When the timeout elapses,
+        // Musebot interrupts the workflow and disconnects the WebSocket.
+        // Required: Optional
+        // Default:  30
+        // Type:     Number
+        "timeoutMinutes": 30,
 
-    // The interval used when adjusting the guidance scale (CFG) via the
-    // guidance scale +/- buttons on generated media. Each click increases
-    // or decreases the CFG by this amount.
-    // Required: Optional
-    // Default:  0.5
-    // Type:     Number
-    "guidanceScaleInterval": 0.5,
+        // The interval used when adjusting the guidance scale (CFG) via the
+        // guidance scale +/- buttons on generated media. Each click increases
+        // or decreases the CFG by this amount.
+        // Required: Optional
+        // Default:  0.5
+        // Type:     Number
+        "guidanceScaleInterval": 0.5,
       },
 
       // Ollama configuration for large language model chat. Required when mode is "chat".
       "ollama": {
-    // The base URL(s) of the Ollama instance(s). Can be a list for multiple hosts.
-    // Required: Required when mode="chat"
-    // Type:     Array of string (URLs)
-    "hosts": [
+        // The base URL(s) of the Ollama instance(s). Can be a list for multiple hosts.
+        // Required: Required when mode="chat"
+        // Type:     Array of string (URLs)
+        "hosts": [
           "http://localhost:11434"
-    ],
+        ],
 
-    // The name(s) of the large language model(s) to use. Can be a list for multiple models.
-    // Vision-capable models (e.g. gemma4:12b, llava) are auto-detected and enable
-    // image interpretation in chat and long-term memory.
-    // Required: Required when mode="chat"
-    // Type:     Array of string (model names)
-    "models": [
+        // The name(s) of the large language model(s) to use. Can be a list for multiple models.
+        // Vision-capable models (e.g. gemma4:12b, llava) are auto-detected and enable
+        // image interpretation in chat and long-term memory.
+        // Required: Required when mode="chat"
+        // Type:     Array of string (model names)
+        "models": [
           "gemma4:12b"
-    ],
+        ],
 
-    // The system prompt used to give the LLM context or a custom persona.
-    // Musebot also pulls the current channel topic as part of its system prompt.
-    // Required: Optional
-    // Type:     String
-    "systemPrompt": "You are a helpful assistant.",
+        // The system prompt used to give the LLM context or a custom persona.
+        // Musebot also pulls the current channel topic as part of its system prompt.
+        // Required: Optional
+        // Type:     String
+        "systemPrompt": "You are a helpful assistant.",
 
-    // Whether Musebot can stream the Ollama response or not.
-    // This determines if the response shows up all at once at the end or in
-    // batches of tokens, making it seem like Musebot is typing in real time.
-    // Note: This is experimental and may not be stable.
-    // Required: Optional
-    // Default:  false
-    // Type:     Boolean
-    "streamsResponse": false,
+        // Whether Musebot can stream the Ollama response or not.
+        // This determines if the response shows up all at once at the end or in
+        // batches of tokens, making it seem like Musebot is typing in real time.
+        // Note: This is experimental and may not be stable.
+        // Required: Optional
+        // Default:  false
+        // Type:     Boolean
+        "streamsResponse": false,
 
-    // The name of an Ollama embedding model to use for long-term memory (LTM).
-    // When set, LTM is enabled — Musebot stores conversation messages as
-    // vector embeddings and retrieves relevant context from past conversations.
-    // See the Long-Term Memory documentation for details.
-    // Required: Optional
-    // Default:  (unset — LTM disabled)
-    // Type:     String
-    // "embeddingModel": "nomic-embed-text",
+        // The name of an Ollama embedding model to use for long-term memory (LTM).
+        // When set, LTM is enabled — Musebot stores conversation messages as
+        // vector embeddings and retrieves relevant context from past conversations.
+        // See the Long-Term Memory documentation for details.
+        // Required: Optional
+        // Default:  (unset — LTM disabled)
+        // Type:     String
+        // "embeddingModel": "nomic-embed-text",
 
-    // The number of similar memories to retrieve from the vector store when
-    // augmenting the LLM prompt. Only applies when embeddingModel is set.
-    // Required: Optional
-    // Default:  5
-    // Type:     Integer
-    // "topK": 5,
+        // The number of similar memories to retrieve from the vector store when
+        // augmenting the LLM prompt. Only applies when embeddingModel is set.
+        // Required: Optional
+        // Default:  5
+        // Type:     Integer
+        // "topK": 5,
 
-    // The maximum context window (in tokens) for the LLM. When set, Musebot
-    // uses this value to determine when to compress conversation context.
-    // When unset, Musebot queries Ollama for the model's max context length.
-    // Required: Optional
-    // Default:  (unset — auto-detect from Ollama show())
-    // Type:     Integer
-    // "contextWindow": 4096,
+        // The maximum context window (in tokens) for the LLM. When set, Musebot
+        // uses this value to determine when to compress conversation context.
+        // When unset, Musebot queries Ollama for the model's max context length.
+        // Required: Optional
+        // Default:  (unset — auto-detect from Ollama show())
+        // Type:     Integer
+        // "contextWindow": 4096,
 
-    // The threshold (as a fraction of the context window) at which Musebot
-    // compresses the conversation context into a summary. For example, 0.75
-    // means compression triggers when token count reaches 75% of the window.
-    // Required: Optional
-    // Default:  0.75
-    // Type:     Number
-    // "contextCompressionThreshold": 0.75
+        // The threshold (as a fraction of the context window) at which Musebot
+        // compresses the conversation context into a summary. For example, 0.75
+        // means compression triggers when token count reaches 75% of the window.
+        // Required: Optional
+        // Default:  0.75
+        // Type:     Number
+        // "contextCompressionThreshold": 0.75
       },
 
       // Multi-modal settings for cross-capable features.
       "multiModal": {
-    // Random prompts used for the randomize button when both ComfyUI
-    // and Ollama APIs are available. One will be chosen at random.
-    // Required: Optional
-    // Default:  ["Describe something or someone with extraordinary detail."]
-    // Type:     Array of string
-    "randomPrompts": [
+        // Random prompts used for the randomize button when both ComfyUI
+        // and Ollama APIs are available. One will be chosen at random.
+        // Required: Optional
+        // Default:  ["Describe something or someone with extraordinary detail."]
+        // Type:     Array of string
+        "randomPrompts": [
           "Describe something or someone with extraordinary detail."
-    ]
+        ]
       },
 
       // Per-bot task queue overrides. If provided, these take priority over
       // the global taskQueue settings.
       "taskQueue": {
-    "numAttempts": 10,
-    "retryDelayMs": 1000,
-    "strategy": "serial",
-    "forceSerialAcrossHosts": false
+        "numAttempts": 10,
+        "retryDelayMs": 1000,
+        "strategy": "serial",
+        "forceSerialAcrossHosts": false
       }
-  }
+    }
   ]
 }
