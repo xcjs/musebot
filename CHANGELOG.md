@@ -2,6 +2,13 @@
 
 All notable changes to Musebot are documented in this file.
 
+## [9.5.1] — 2026-08-25
+
+### Fixed
+
+- Context compression now runs **before** the context is read for each Ollama request (`OllamaMessageTask.process`), closing a gap where a response completing just under the 75% threshold left the next request vulnerable to mid-generation context overflow — when prompt + generated tokens exceeded `num_ctx`, Ollama's context-shift checkpoint paused the HTTP stream indefinitely with no error or timeout, silently freezing the bot while the server kept inferencing
+- Added unit tests for `OllamaMessageTask` asserting pre-request compression ordering (non-stream and stream paths)
+
 ## [9.5.0] — 2026-08-25
 
 ### Added
