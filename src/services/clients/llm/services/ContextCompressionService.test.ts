@@ -6,9 +6,14 @@ import { ILogger } from '../../../ILogger.js';
 import { ContextMessage } from '../ollama/models/ContextMessage.js';
 import { OllamaClient } from '../ollama/OllamaClient.js';
 import { ContextCompressionService } from './ContextCompressionService.js';
-import { IContextCompressionService } from './IContextCompressionService.js';
+import { IContextCompressionService, ITokenCountSample } from './IContextCompressionService.js';
 import { IContextMessageFactory } from './IContextMessageFactory.js';
 import { IContextService } from './IContextService.js';
+
+// Default chars-per-token ratio used by ContextCompressionService when no
+// calibration sample has been received yet. Mirrors the DEFAULT_CHARS_PER_TOKEN
+// constant in the implementation.
+const DEFAULT_CHARS_PER_TOKEN: number = 4.0;
 
 function createMockLogger(): jest.Mocked<ILogger> {
   return {
@@ -120,20 +125,12 @@ function makeMessage(role: string, content: string, isSummary: boolean = false):
   };
 }
 
-function makeTokens(count: number): string[] {
-  const tokens: string[] = [];
-  for (let i = 0; i < count; i++) {
-    tokens.push('tok');
-  }
-  return tokens;
-}
-
-function mockFetchTokens(tokens: string[]): typeof fetch {
-  const tokensCopy: string[] = [...tokens];
-  return jest.fn<() => Promise<unknown>>().mockResolvedValue({
-    ok: true,
-    json: (): Promise<{ tokens: string[] }> => Promise.resolve({ tokens: tokensCopy })
-  }) as unknown as typeof fetch;
+// Builds a message whose serialized form ("role: content\n") has the given
+// target token count under the default chars-per-token ratio.
+function makeMessageWithTokens(role: string, tokenCount: number, isSummary: boolean = false): ContextMessage<unknown, unknown> {
+  const prefix: string = `${role}: `;
+  const targetChars: number = Math.max(1, Math.floor(tokenCount * DEFAULT_CHARS_PER_TOKEN) - prefix.length);
+  return makeMessage(role, 'x'.repeat(targetChars), isSummary);
 }
 
 describe('ContextCompressionService', () => {
@@ -160,43 +157,31 @@ describe('ContextCompressionService', () => {
   });
 
   it('should not compress when token count is under the threshold', async (): Promise<void> => {
-    const messages = [makeMessage('user', 'hello'), makeMessage('assistant', 'hi')];
+    const messages = [makeMessageWithTokens('user', 2), makeMessageWithTokens('assistant', 2)];
     contextService.getConversationMessages.mockReturnValue(messages);
-
-    const originalFetch = global.fetch;
-    global.fetch = mockFetchTokens(makeTokens(10));
 
     await compressionService.compressIfNeeded('channel1');
 
     expect(ollamaClient.sendMessage).not.toHaveBeenCalled();
     expect(contextService.replaceChannelContext).not.toHaveBeenCalled();
-
-    global.fetch = originalFetch;
   });
 
   it('should compress when token count exceeds the threshold', async (): Promise<void> => {
-    const messages = [makeMessage('user', 'hello'), makeMessage('assistant', 'hi')];
+    // contextWindow 4096 * 0.75 = 3072 limit. Build messages totaling ~4000 tokens.
+    const messages = [makeMessageWithTokens('user', 2000), makeMessageWithTokens('assistant', 2000)];
     contextService.getConversationMessages.mockReturnValue(messages);
-
-    const originalFetch = global.fetch;
-    global.fetch = mockFetchTokens(makeTokens(5000));
 
     await compressionService.compressIfNeeded('channel1');
 
     expect(ollamaClient.sendMessage).toHaveBeenCalled();
     expect(contextService.replaceChannelContext).toHaveBeenCalledWith('channel1', [expect.objectContaining({ isSummary: true })]);
-
-    global.fetch = originalFetch;
   });
 
   it('should fold old summary into new summary', async (): Promise<void> => {
     const oldSummary = makeMessage('system', 'Old summary', true);
-    const userMsg = makeMessage('user', 'hello');
-    const assistantMsg = makeMessage('assistant', 'hi');
+    const userMsg = makeMessageWithTokens('user', 2000);
+    const assistantMsg = makeMessageWithTokens('assistant', 2000);
     contextService.getConversationMessages.mockReturnValue([oldSummary, userMsg, assistantMsg]);
-
-    const originalFetch = global.fetch;
-    global.fetch = mockFetchTokens(makeTokens(5000));
 
     await compressionService.compressIfNeeded('channel1');
 
@@ -207,40 +192,17 @@ describe('ContextCompressionService', () => {
       (m: { role: string; content: string }) => m.role === 'system' && m.content.includes('Old summary')
     );
     expect(hasOldSummary).toBe(true);
-
-    global.fetch = originalFetch;
-  });
-
-  it('should no-op when tokenize fails', async (): Promise<void> => {
-    const messages = [makeMessage('user', 'hello'), makeMessage('assistant', 'hi')];
-    contextService.getConversationMessages.mockReturnValue(messages);
-
-    const originalFetch = global.fetch;
-    global.fetch = jest.fn<() => Promise<unknown>>().mockRejectedValue(new Error('Network error')) as unknown as typeof fetch;
-
-    await compressionService.compressIfNeeded('channel1');
-
-    expect(ollamaClient.sendMessage).not.toHaveBeenCalled();
-    expect(contextService.replaceChannelContext).not.toHaveBeenCalled();
-    expect(logger.error).toHaveBeenCalled();
-
-    global.fetch = originalFetch;
   });
 
   it('should no-op when summarize fails', async (): Promise<void> => {
-    const messages = [makeMessage('user', 'hello'), makeMessage('assistant', 'hi')];
+    const messages = [makeMessageWithTokens('user', 2000), makeMessageWithTokens('assistant', 2000)];
     contextService.getConversationMessages.mockReturnValue(messages);
     ollamaClient.sendMessage.mockRejectedValue(new Error('LLM error'));
-
-    const originalFetch = global.fetch;
-    global.fetch = mockFetchTokens(makeTokens(5000));
 
     await compressionService.compressIfNeeded('channel1');
 
     expect(contextService.replaceChannelContext).not.toHaveBeenCalled();
     expect(logger.error).toHaveBeenCalled();
-
-    global.fetch = originalFetch;
   });
 
   it('should fall back to show() when ollamaContextWindow config is null', async (): Promise<void> => {
@@ -251,15 +213,10 @@ describe('ContextCompressionService', () => {
     const messages = [makeMessage('user', 'hello')];
     contextService.getConversationMessages.mockReturnValue(messages);
 
-    const originalFetch = global.fetch;
-    global.fetch = mockFetchTokens(makeTokens(10));
-
     await compressionService.compressIfNeeded('channel1');
 
     expect(ollamaClient.show).toHaveBeenCalled();
     expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('8192'));
-
-    global.fetch = originalFetch;
   });
 
   it('should fall back to 4096 when show() fails and config is null', async (): Promise<void> => {
@@ -271,14 +228,9 @@ describe('ContextCompressionService', () => {
     const messages = [makeMessage('user', 'hello')];
     contextService.getConversationMessages.mockReturnValue(messages);
 
-    const originalFetch = global.fetch;
-    global.fetch = mockFetchTokens(makeTokens(10));
-
     await compressionService.compressIfNeeded('channel1');
 
     expect(logger.warn).toHaveBeenCalled();
-
-    global.fetch = originalFetch;
   });
 
   it('should chunk and summarize when conversation exceeds context window', async (): Promise<void> => {
@@ -286,21 +238,17 @@ describe('ContextCompressionService', () => {
     services = createMockServices(contextService, configurationService, ollamaClient, contextMessageFactory, logger);
     compressionService = new ContextCompressionService<unknown, { role: string; content: string }>(services);
 
+    // 50 messages of 5 tokens each = ~250 tokens, well over window=100.
     const messages: ContextMessage<unknown, unknown>[] = [];
     for (let i = 0; i < 50; i++) {
-      messages.push(makeMessage('user', `Message ${i} with some content to make it longer`));
+      messages.push(makeMessageWithTokens('user', 5));
     }
     contextService.getConversationMessages.mockReturnValue(messages);
-
-    const originalFetch = global.fetch;
-    global.fetch = mockFetchTokens(makeTokens(200));
 
     await compressionService.compressIfNeeded('channel1');
 
     expect(ollamaClient.sendMessage).toHaveBeenCalled();
     expect(contextService.replaceChannelContext).toHaveBeenCalledWith('channel1', [expect.objectContaining({ isSummary: true })]);
-
-    global.fetch = originalFetch;
   });
 
   it('should preserve old summary when chunking conversation messages', async (): Promise<void> => {
@@ -311,12 +259,9 @@ describe('ContextCompressionService', () => {
     const oldSummary = makeMessage('system', 'Old summary of earlier conversation', true);
     const messages: ContextMessage<unknown, unknown>[] = [oldSummary];
     for (let i = 0; i < 50; i++) {
-      messages.push(makeMessage('user', `Message ${i} with some content`));
+      messages.push(makeMessageWithTokens('user', 5));
     }
     contextService.getConversationMessages.mockReturnValue(messages);
-
-    const originalFetch = global.fetch;
-    global.fetch = mockFetchTokens(makeTokens(500));
 
     await compressionService.compressIfNeeded('channel1');
 
@@ -327,7 +272,69 @@ describe('ContextCompressionService', () => {
       (m) => m.role === 'system' && m.content.includes('Old summary')
     );
     expect(hasOldSummary).toBe(true);
+  });
 
-    global.fetch = originalFetch;
+  describe('calibration via tokenCountSample', () => {
+    it('should calibrate charsPerToken from promptTokenCount sample', async (): Promise<void> => {
+      // Build messages with a known serialized char count.
+      const content: string = 'x'.repeat(400);
+      const messages = [makeMessage('user', content)];
+      contextService.getConversationMessages.mockReturnValue(messages);
+
+      // Sample says those 400 chars = 100 prompt tokens → 4 chars/token.
+      // With default already 4.0, no visible change, but this verifies
+      // calibration runs without error and compression still works.
+      const sample: ITokenCountSample = { promptTokenCount: 100, responseTokenCount: 50 };
+
+      await compressionService.compressIfNeeded('channel1', sample);
+
+      expect(logger.debug).toHaveBeenCalledWith(expect.stringContaining('calibrated'));
+    });
+
+    it('should adjust estimate after calibration with a different ratio', async (): Promise<void> => {
+      // 400 chars of content. Default ratio 4.0 → 100 tokens (under 3072 limit, no compress).
+      const content: string = 'x'.repeat(400);
+      const messages = [makeMessage('user', content)];
+      contextService.getConversationMessages.mockReturnValue(messages);
+
+      // First: calibrate to 1 char/token (100 tokens → 400 chars / 100 tokens = 4, not different).
+      // Instead, calibrate to a ratio that makes the estimate exceed threshold.
+      // 400 chars / 50 tokens = 8 chars/token. After calibration, estimate = 400/8 = 50 tokens.
+      // Still under. To force compression via calibration, use a sample that lowers charsPerToken.
+      // 400 chars / 1600 tokens = 0.25 chars/token → estimate = 400/0.25 = 1600 tokens.
+      // Still under 3072. Use a bigger content or smaller ratio.
+      // Use 20000 chars, sample 10000 prompt tokens → 2 chars/token → estimate = 20000/2 = 10000 > 3072.
+      const bigContent: string = 'x'.repeat(20000);
+      const bigMessages = [makeMessage('user', bigContent)];
+      contextService.getConversationMessages.mockReturnValue(bigMessages);
+
+      const sample: ITokenCountSample = { promptTokenCount: 10000, responseTokenCount: 100 };
+
+      await compressionService.compressIfNeeded('channel1', sample);
+
+      expect(ollamaClient.sendMessage).toHaveBeenCalled();
+      expect(contextService.replaceChannelContext).toHaveBeenCalledWith('channel1', [expect.objectContaining({ isSummary: true })]);
+    });
+
+    it('should skip calibration when no conversation messages exist', async (): Promise<void> => {
+      contextService.getConversationMessages.mockReturnValue([]);
+
+      const sample: ITokenCountSample = { promptTokenCount: 100, responseTokenCount: 50 };
+
+      await compressionService.compressIfNeeded('channel1', sample);
+
+      expect(logger.debug).not.toHaveBeenCalledWith(expect.stringContaining('calibrated'));
+    });
+
+    it('should skip calibration when promptTokenCount is zero', async (): Promise<void> => {
+      const messages = [makeMessage('user', 'hello')];
+      contextService.getConversationMessages.mockReturnValue(messages);
+
+      const sample: ITokenCountSample = { promptTokenCount: 0, responseTokenCount: 0 };
+
+      await compressionService.compressIfNeeded('channel1', sample);
+
+      expect(logger.debug).not.toHaveBeenCalledWith(expect.stringContaining('calibrated'));
+    });
   });
 });

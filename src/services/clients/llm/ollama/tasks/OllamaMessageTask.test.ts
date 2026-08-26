@@ -72,14 +72,18 @@ function buildMockServices(streamsResponse: boolean, contextMessages: OllamaMess
   const sendMessage = jest.fn<() => Promise<unknown>>().mockResolvedValue({
     exchange: {
       request: { model: 'test', messages: [] },
-      response: { message: fakeResponseMessage },
+      response: {
+        message: fakeResponseMessage,
+        prompt_eval_count: 10,
+        eval_count: 5
+      },
     },
     data: [],
   });
 
-  function* fakeStream(): Generator<{ message: OllamaMessage; done: boolean }> {
+  function* fakeStream(): Generator<{ message: OllamaMessage; done: boolean; prompt_eval_count?: number; eval_count?: number }> {
     yield { message: fakeResponseMessage, done: false };
-    yield { message: fakeResponseMessage, done: true };
+    yield { message: fakeResponseMessage, done: true, prompt_eval_count: 10, eval_count: 5 };
   }
 
   const sendMessageAndGetStream = jest.fn<() => Promise<unknown>>().mockResolvedValue({

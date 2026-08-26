@@ -6,7 +6,7 @@ import { ILogger } from '../../../ILogger.js';
 import { OllamaRole } from '../ollama/enums/OllamaRole.js';
 import { ContextMessage } from '../ollama/models/ContextMessage.js';
 import { OllamaClient } from '../ollama/OllamaClient.js';
-import { IContextCompressionService } from './IContextCompressionService.js';
+import { IContextCompressionService, ITokenCountSample } from './IContextCompressionService.js';
 import { IContextMessageFactory } from './IContextMessageFactory.js';
 import { IContextService } from './IContextService.js';
 
@@ -18,17 +18,33 @@ const SUMMARIZATION_SYSTEM_PROMPT: string =
 
 const FALLBACK_CONTEXT_WINDOW: number = 4096;
 
+// Default chars-per-token ratio for English text on typical BPE tokenizers
+// (Llama, Mistral, etc.). Used until the first prompt_eval_count sample
+// arrives to calibrate the ratio against the actual model.
+const DEFAULT_CHARS_PER_TOKEN: number = 4.0;
+
+// Exponential moving average smoothing factor. Lower = slower to update.
+// 0.3 lets a new sample move the ratio meaningfully without discarding
+// history from prior requests.
+const CALIBRATION_ALPHA: number = 0.3;
+
 export class ContextCompressionService<ChatMessageType, LlmMessageType extends { role: string; content: string }> implements IContextCompressionService {
   readonly #services: IBotServiceContainer;
   readonly #logger: ILogger;
+
+  #charsPerToken: number = DEFAULT_CHARS_PER_TOKEN;
 
   constructor(services: IBotServiceContainer) {
     this.#services = services;
     this.#logger = services.getLogger('ContextCompressionService');
   }
 
-  async compressIfNeeded(channelId: string): Promise<void> {
+  async compressIfNeeded(channelId: string, tokenCountSample?: ITokenCountSample): Promise<void> {
     try {
+      if (tokenCountSample !== undefined) {
+        this.#calibrate(channelId, tokenCountSample);
+      }
+
       const contextWindow: number = await this.#resolveContextWindow();
       const threshold: number = this.#configurationService.ollamaContextCompressionThreshold;
       const limit: number = Math.floor(contextWindow * threshold);
@@ -43,9 +59,9 @@ export class ContextCompressionService<ChatMessageType, LlmMessageType extends {
       const text: string = messages
         .map((message) => `${message.llmMessage.role}: ${message.llmMessage.content}`)
         .join('\n');
-      const tokenCount: number = await this.#tokenize(text);
+      const tokenCount: number = this.#estimateTokens(text);
 
-      this.#logger.info(`Channel ${channelId}: ${tokenCount} tokens / ${limit} limit (window ${contextWindow}, threshold ${threshold}).`);
+      this.#logger.info(`Channel ${channelId}: ${tokenCount} tokens / ${limit} limit (window ${contextWindow}, threshold ${threshold}, ${this.#charsPerToken.toFixed(2)} chars/token).`);
 
       if (tokenCount <= limit) {
         return;
@@ -55,6 +71,45 @@ export class ContextCompressionService<ChatMessageType, LlmMessageType extends {
     } catch (error) {
       this.#logger.error(`Failed to check/compress context for channel ${channelId}:`, error);
     }
+  }
+
+  #calibrate(channelId: string, sample: ITokenCountSample): void {
+    if (!Number.isFinite(sample.promptTokenCount) || sample.promptTokenCount <= 0) {
+      return;
+    }
+
+    const messages: ContextMessage<ChatMessageType, LlmMessageType>[] =
+      this.#contextService.getConversationMessages(channelId);
+
+    if (messages.length === 0) {
+      return;
+    }
+
+    const serialized: string = messages
+      .map((message) => `${message.llmMessage.role}: ${message.llmMessage.content}`)
+      .join('\n');
+
+    if (serialized.length === 0) {
+      return;
+    }
+
+    const observedCharsPerToken: number = serialized.length / sample.promptTokenCount;
+
+    if (!Number.isFinite(observedCharsPerToken) || observedCharsPerToken <= 0) {
+      return;
+    }
+
+    if (this.#charsPerToken === DEFAULT_CHARS_PER_TOKEN) {
+      this.#charsPerToken = observedCharsPerToken;
+    } else {
+      this.#charsPerToken = (CALIBRATION_ALPHA * observedCharsPerToken)
+        + ((1 - CALIBRATION_ALPHA) * this.#charsPerToken);
+    }
+
+    this.#logger.debug(
+      `Channel ${channelId}: calibrated chars/token to ${this.#charsPerToken.toFixed(2)}`
+      + ` (sample: ${sample.promptTokenCount} prompt + ${sample.responseTokenCount} response tokens, ${serialized.length} chars).`
+    );
   }
 
   async #summarizeAndReplace(channelId: string): Promise<void> {
@@ -90,7 +145,7 @@ export class ContextCompressionService<ChatMessageType, LlmMessageType extends {
 
     const fullContext: OllamaMessage[] = [systemPrompt, ...oldSummaryContext, ...conversationContext];
     const contextWindow: number = await this.#resolveContextWindow();
-    const fullTokenCount: number = await this.#tokenize(this.#serializeOllamaMessages(fullContext));
+    const fullTokenCount: number = this.#estimateTokens(this.#serializeOllamaMessages(fullContext));
 
     let summaryText: string;
 
@@ -114,12 +169,12 @@ export class ContextCompressionService<ChatMessageType, LlmMessageType extends {
     conversationContext: OllamaMessage[],
     contextWindow: number
   ): Promise<string> {
-    const systemPromptTokens: number = await this.#tokenize(this.#serializeOllamaMessages([systemPrompt]));
+    const systemPromptTokens: number = this.#estimateTokens(this.#serializeOllamaMessages([systemPrompt]));
     const chunkCapacity: number = contextWindow - systemPromptTokens;
 
     this.#logger.info(`Conversation exceeds context window (${contextWindow}); chunking into segments for individual summarization.`);
 
-    const chunks: OllamaMessage[][] = await this.#splitIntoChunks(conversationContext, chunkCapacity);
+    const chunks: OllamaMessage[][] = this.#splitIntoChunks(conversationContext, chunkCapacity);
 
     const chunkSummaries: OllamaMessage[] = [];
     for (const chunk of chunks) {
@@ -132,7 +187,7 @@ export class ContextCompressionService<ChatMessageType, LlmMessageType extends {
     }
 
     const reduceContext: OllamaMessage[] = [systemPrompt, ...oldSummaryContext, ...chunkSummaries];
-    const reduceTokenCount: number = await this.#tokenize(this.#serializeOllamaMessages(reduceContext));
+    const reduceTokenCount: number = this.#estimateTokens(this.#serializeOllamaMessages(reduceContext));
 
     if (reduceTokenCount <= contextWindow) {
       return this.#generateSummary(reduceContext);
@@ -146,13 +201,13 @@ export class ContextCompressionService<ChatMessageType, LlmMessageType extends {
 
     while (trimmedTokens > contextWindow && trimmedReduce.length > firstChunkSummaryIndex) {
       trimmedReduce = trimmedReduce.filter((_, idx) => idx !== firstChunkSummaryIndex);
-      trimmedTokens = await this.#tokenize(this.#serializeOllamaMessages(trimmedReduce));
+      trimmedTokens = this.#estimateTokens(this.#serializeOllamaMessages(trimmedReduce));
     }
 
     return this.#generateSummary(trimmedReduce);
   }
 
-  async #splitIntoChunks(messages: OllamaMessage[], capacity: number): Promise<OllamaMessage[][]> {
+  #splitIntoChunks(messages: OllamaMessage[], capacity: number): OllamaMessage[][] {
     if (messages.length === 0) {
       return [];
     }
@@ -162,7 +217,7 @@ export class ContextCompressionService<ChatMessageType, LlmMessageType extends {
     let currentTokens: number = 0;
 
     for (const message of messages) {
-      const messageTokens: number = await this.#tokenize(this.#serializeOllamaMessages([message]));
+      const messageTokens: number = this.#estimateTokens(this.#serializeOllamaMessages([message]));
 
       if (currentTokens + messageTokens > capacity && currentChunk.length > 0) {
         chunks.push(currentChunk);
@@ -187,23 +242,12 @@ export class ContextCompressionService<ChatMessageType, LlmMessageType extends {
     return exchange.exchange.response.message.content;
   }
 
-  async #tokenize(text: string): Promise<number> {
-    const configurationService: IConfigurationService = this.#configurationService;
-    const host: URL = configurationService.ollamaHosts[0];
-    const model: string = this.#services.ollamaClient.model;
-
-    const response: Response = await fetch(`${host.origin}/api/tokenize`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: model, text: text })
-    });
-
-    if (!response.ok) {
-      throw new Error(`Tokenize request failed: ${response.status} ${response.statusText}`);
+  #estimateTokens(text: string): number {
+    if (text.length === 0) {
+      return 0;
     }
 
-    const body: { tokens: string[] } = await response.json() as { tokens: string[] };
-    return body.tokens.length;
+    return Math.ceil(text.length / this.#charsPerToken);
   }
 
   #serializeOllamaMessages(messages: OllamaMessage[]): string {
