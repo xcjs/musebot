@@ -58,6 +58,15 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
 
     const llmChatMessage = this.#llmChatMessageFactory.create(this.#message);
     const formattedMessage = JSON.stringify(llmChatMessage);
+
+    // Compress context BEFORE reading it for the upcoming request so that
+    // context + generated tokens stay under num_ctx and Ollama never
+    // triggers a context-shift checkpoint mid-generation (which would
+    // stall the HTTP stream indefinitely). Post-response compression alone
+    // (called below after the response completes) cannot prevent overflow
+    // of the in-flight request.
+    await this.#services.getContextCompressionService().compressIfNeeded(this.#message.channelId);
+
     let context = this.contextService.getContextByChannelId(this.#message.channelId);
 
     for (const filter of this.#inputFilters) {
