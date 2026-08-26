@@ -1,5 +1,5 @@
 ﻿import { Message as DiscordMessage } from 'discord.js';
-import { GenerateRequest, GenerateResponse, Message as OllamaMessage } from 'ollama';
+import { ChatResponse, GenerateRequest, GenerateResponse, Message as OllamaMessage } from 'ollama';
 
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { endsWithWhitespace, hasOnly, isOnlyWhitespace } from '../../../../../utilities/string-utilities.js';
@@ -93,9 +93,13 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
       this.contextMessageFactory.fromLlmMessage(exchange.exchange.response.message,
         this.#message.id, this.#message.author.id, this.#message.channelId, this.#message.guildId)]);
 
-    await this.#services.getContextCompressionService().compressIfNeeded(this.#message.channelId);
+    const response: ChatResponse = exchange.exchange.response;
+    await this.#services.getContextCompressionService().compressIfNeeded(this.#message.channelId, {
+      promptTokenCount: response.prompt_eval_count,
+      responseTokenCount: response.eval_count
+    });
 
-    await this.#storeMemories(llmChatMessage, exchange.exchange.response.message.content);
+    await this.#storeMemories(llmChatMessage, response.message.content);
 
     const replies = await this.ollamaReplyService.reply(this.#message, exchange.exchange);
 
@@ -178,7 +182,10 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
             this.#message.guildId
           )]);
 
-        await this.#services.getContextCompressionService().compressIfNeeded(this.#message.channelId);
+        await this.#services.getContextCompressionService().compressIfNeeded(this.#message.channelId, {
+          promptTokenCount: response.prompt_eval_count,
+          responseTokenCount: response.eval_count
+        });
 
         await this.#storeMemories(llmChatMessage, fullResponse);
 

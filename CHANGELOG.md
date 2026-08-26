@@ -2,6 +2,12 @@
 
 All notable changes to Musebot are documented in this file.
 
+## [9.5.2] — 2026-08-25
+
+### Fixed
+
+- Context compression no longer calls Ollama's `/api/tokenize` endpoint, which does not exist in any released Ollama version (only in unmerged PR #16820) — every `compressIfNeeded` call was 404'ing, making context compression dead code in production. Token counts are now estimated from a chars-per-token ratio calibrated against `prompt_eval_count` returned on each `ChatResponse`, threaded through `OllamaMessageTask` into `compressIfNeeded`. This also removes the `ollamaHosts[0]` bypass — no more raw `fetch` outside `OllamaClient`
+
 ## [9.5.1] — 2026-08-25
 
 ### Fixed
