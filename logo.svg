@@ -22,8 +22,20 @@
       <stop offset="0.55" stop-color="#333F5E"/>
       <stop offset="1" stop-color="#2E3856"/>
     </linearGradient>
-    <radialGradient id="g-pupil-shadow" cx="0.5" cy="0.42" r="0.58">
-      <stop offset="0.6" stop-color="#151A28" stop-opacity="0.55"/>
+    <!-- Falloff sampled from the original: -13.5 at the pupil rim decaying
+         to zero by 2.75 pupil radii, a far softer tail than a plain
+         two-stop gradient produces. -->
+    <radialGradient id="g-pupil-shadow">
+      <stop offset="0.4" stop-color="#151A28" stop-opacity="0.37"/>
+      <stop offset="0.46" stop-color="#151A28" stop-opacity="0.3"/>
+      <stop offset="0.52" stop-color="#151A28" stop-opacity="0.23"/>
+      <stop offset="0.58" stop-color="#151A28" stop-opacity="0.16"/>
+      <stop offset="0.64" stop-color="#151A28" stop-opacity="0.12"/>
+      <stop offset="0.7" stop-color="#151A28" stop-opacity="0.07"/>
+      <stop offset="0.76" stop-color="#151A28" stop-opacity="0.04"/>
+      <stop offset="0.82" stop-color="#151A28" stop-opacity="0.02"/>
+      <stop offset="0.88" stop-color="#151A28" stop-opacity="0.01"/>
+      <stop offset="0.94" stop-color="#151A28" stop-opacity="0.01"/>
       <stop offset="1" stop-color="#151A28" stop-opacity="0"/>
     </radialGradient>
 
@@ -61,7 +73,7 @@
       <stop offset="1" stop-color="#6E9FDA"/>
     </linearGradient>
 
-    <linearGradient id="g-ring-q1" gradientUnits="userSpaceOnUse" x1="825" y1="512" x2="512" y2="825">
+    <linearGradient id="g-ring-q1" gradientUnits="userSpaceOnUse" x1="823.6" y1="512" x2="512" y2="823.6">
       <stop offset="0" stop-color="#B4CDF5"/>
       <stop offset="0.15" stop-color="#6D5EC5"/>
       <stop offset="0.32" stop-color="#6B5CD3"/>
@@ -70,7 +82,7 @@
       <stop offset="0.85" stop-color="#CD71A4"/>
       <stop offset="1" stop-color="#D57CFA"/>
     </linearGradient>
-    <linearGradient id="g-ring-q2" gradientUnits="userSpaceOnUse" x1="512" y1="825" x2="199" y2="512">
+    <linearGradient id="g-ring-q2" gradientUnits="userSpaceOnUse" x1="512" y1="823.6" x2="200.4" y2="512">
       <stop offset="0" stop-color="#D57CFA"/>
       <stop offset="0.15" stop-color="#4761AE"/>
       <stop offset="0.32" stop-color="#4A7CB9"/>
@@ -79,7 +91,7 @@
       <stop offset="0.85" stop-color="#39A5D3"/>
       <stop offset="1" stop-color="#4A6DB1"/>
     </linearGradient>
-    <linearGradient id="g-ring-q3" gradientUnits="userSpaceOnUse" x1="199" y1="512" x2="512" y2="199">
+    <linearGradient id="g-ring-q3" gradientUnits="userSpaceOnUse" x1="200.4" y1="512" x2="512" y2="200.4">
       <stop offset="0" stop-color="#4A6DB1"/>
       <stop offset="0.15" stop-color="#507ED3"/>
       <stop offset="0.32" stop-color="#5DB3F0"/>
@@ -88,7 +100,7 @@
       <stop offset="0.85" stop-color="#80ADE4"/>
       <stop offset="1" stop-color="#F780E6"/>
     </linearGradient>
-    <linearGradient id="g-ring-q4" gradientUnits="userSpaceOnUse" x1="512" y1="199" x2="825" y2="512">
+    <linearGradient id="g-ring-q4" gradientUnits="userSpaceOnUse" x1="512" y1="200.4" x2="823.6" y2="512">
       <stop offset="0" stop-color="#F780E6"/>
       <stop offset="0.15" stop-color="#D593EA"/>
       <stop offset="0.32" stop-color="#90A4DF"/>
@@ -101,7 +113,7 @@
     <!-- One eye, instanced twice. -->
     <g id="eye">
       <circle r="86" fill="url(#g-eye)"/>
-      <circle cy="13.2" r="40.8" fill="url(#g-pupil-shadow)"/>
+      <circle cy="13" r="60" fill="url(#g-pupil-shadow)"/>
       <circle cy="4.8" r="24" fill="#fff"/>
     </g>
   </defs>
@@ -227,11 +239,11 @@
     <circle cx="685.99" cy="744.61" r="3.96" opacity="0.55"/>
   </g>
 
-  <g id="orbit-ring" stroke-width="3.5">
-    <path d="M825 512A313 313 0 0 1 512 825" stroke="url(#g-ring-q1)"/>
-    <path d="M512 825A313 313 0 0 1 199 512" stroke="url(#g-ring-q2)"/>
-    <path d="M199 512A313 313 0 0 1 512 199" stroke="url(#g-ring-q3)"/>
-    <path d="M512 199A313 313 0 0 1 825 512" stroke="url(#g-ring-q4)"/>
+  <g id="orbit-ring" stroke-width="4.2">
+    <path d="M823.6 512A311.6 311.6 0 0 1 512 823.6" stroke="url(#g-ring-q1)"/>
+    <path d="M512 823.6A311.6 311.6 0 0 1 200.4 512" stroke="url(#g-ring-q2)"/>
+    <path d="M200.4 512A311.6 311.6 0 0 1 512 200.4" stroke="url(#g-ring-q3)"/>
+    <path d="M512 200.4A311.6 311.6 0 0 1 823.6 512" stroke="url(#g-ring-q4)"/>
   </g>
 
   <g id="orbs">
@@ -243,14 +255,14 @@
     <circle cx="387.76" cy="827.41" r="7" fill="#56A7E5"/>
     <circle cx="618.92" cy="182.93" r="6" fill="#E19BC6"/>
     <circle cx="405.08" cy="182.93" r="6" fill="#9FC4EE"/>
-    <circle cx="825" cy="512" r="11" fill="#67A7EF"/>
-    <circle cx="199" cy="512" r="11" fill="#62D4F2"/>
-    <circle cx="751.77" cy="713.19" r="13" fill="#F1B970"/>
-    <circle cx="272.23" cy="713.19" r="13" fill="#B677EE"/>
-    <circle cx="512" cy="825" r="14" fill="#C183F2"/>
-    <circle cx="512" cy="199" r="14" fill="#EB83E5"/>
-    <circle cx="272.23" cy="310.81" r="12" fill="#5EB3F6"/>
-    <circle cx="751.77" cy="310.81" r="12" fill="#6F9CF4"/>
+    <circle cx="823.6" cy="512" r="11" fill="#67A7EF"/>
+    <circle cx="200.4" cy="512" r="11" fill="#62D4F2"/>
+    <circle cx="750.7" cy="712.29" r="13" fill="#F1B970"/>
+    <circle cx="273.3" cy="712.29" r="13" fill="#B677EE"/>
+    <circle cx="512" cy="823.6" r="14" fill="#C183F2"/>
+    <circle cx="512" cy="200.4" r="14" fill="#EB83E5"/>
+    <circle cx="273.3" cy="311.71" r="12" fill="#5EB3F6"/>
+    <circle cx="750.7" cy="311.71" r="12" fill="#6F9CF4"/>
   </g>
 
   <g id="orbit-arcs" stroke-width="17.5" stroke-linecap="round">
