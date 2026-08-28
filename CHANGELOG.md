@@ -14,6 +14,7 @@ All notable changes to Musebot are documented in this file.
 ### Changed
 
 - Docs and README now use `musebot.svg` instead of `musebot.jpg` for the site logo, hero image, and introduction header
+- `musebot.ico` and the docs `favicon.ico` regenerated from the new mark (256/48/32/24/16 frames, alpha preserved), cropped to the logo's ink box so it fills the icon frame instead of sitting inside the SVG's transparent margin, with a light sharpening pass on the sub-48 frames to keep the eyes defined
 - Release pipeline bundles `musebot.svg` alongside `musebot.png` in the Linux and Windows distributables instead of `musebot.jpg`
 - Discord release announcement attaches `logo.png` instead of `logo.jpg` (Discord will not render an SVG embed attachment)
 - `eslint.config.ts` ignores `scripts/`, matching the existing treatment of `.gitlab-ci/` — both hold standalone Node scripts outside the TypeScript project
