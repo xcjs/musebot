@@ -2,7 +2,7 @@
 
 ## What is Musebot?
 
-![Musebot Logo](images/musebot.jpg)
+![Musebot Logo](images/musebot.svg)
 
 Musebot is a powerful, self-hosted Discord bot that acts as a bridge to
 generative AI systems. It transforms your Discord server into an interactive

@@ -1,7 +1,7 @@
 ---
 home: true
 title: Home
-heroImage: images/musebot.jpg
+heroImage: images/musebot.svg
 
 actions:
   - text: Download

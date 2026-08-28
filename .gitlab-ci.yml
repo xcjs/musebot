@@ -103,7 +103,7 @@ Build Linux Distributable:
     - cp -rf workflows/examples build/pkg/workflows
     - cp -f LICENSE build/pkg/LICENSE.txt
     - cp -f CHANGELOG.md build/pkg/CHANGELOG.md
-    - cp -f logo.jpg build/pkg/musebot.jpg
+    - cp -f logo.svg build/pkg/musebot.svg
     - cp -f logo.png build/pkg/musebot.png
     - cp -f musebot.ico build/pkg/musebot.ico
     - cp -f Dockerfile.dist build/pkg/Dockerfile
@@ -132,7 +132,7 @@ Build Windows Distributable:
     - cp -rf workflows/examples build/pkg/workflows
     - cp -f LICENSE build/pkg/LICENSE.txt
     - cp -f CHANGELOG.md build/pkg/CHANGELOG.md
-    - cp -f logo.jpg build/pkg/musebot.jpg
+    - cp -f logo.svg build/pkg/musebot.svg
     - cp -f logo.png build/pkg/musebot.png
     - cp -f musebot.ico build/pkg/musebot.ico
     - mkdir -p build/dist/windows

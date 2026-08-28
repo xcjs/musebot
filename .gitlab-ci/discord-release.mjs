@@ -73,7 +73,7 @@ async function postToMediaChannel() {
 				title: `Changelog — ${version}`,
 				description: changelogEmbed,
 				color: EMBED_COLOR,
-				image: { url: `attachment://logo.jpg` },
+				image: { url: `attachment://logo.png` },
 				footer: { text: 'Musebot Release' },
 				timestamp: now,
 			},
@@ -82,9 +82,10 @@ async function postToMediaChannel() {
 
 	formData.append('payload_json', JSON.stringify(payload));
 
-	const buf = readFileSync('logo.jpg');
-	formData.append('files[0]', new Blob([buf]), 'logo.jpg');
-	console.log(`  Attached: logo.jpg (${(buf.length / 1024 / 1024).toFixed(1)} MB)`);
+	// PNG rather than the SVG: Discord will not render an SVG embed attachment.
+	const buf = readFileSync('logo.png');
+	formData.append('files[0]', new Blob([buf]), 'logo.png');
+	console.log(`  Attached: logo.png (${(buf.length / 1024).toFixed(0)} KB)`);
 
 	const response = await fetch(mediaWebhook, { method: 'POST', body: formData });
 

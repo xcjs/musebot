@@ -2,6 +2,27 @@
 
 All notable changes to Musebot are documented in this file.
 
+## [9.5.3] — 2026-08-28
+
+### Added
+
+- `logo.svg` rewritten by hand as vector primitives (circles, arcs, capsules, and gradients) replacing the 432 KB / 443-path VTracer auto-trace of `logo.jpg`; the file is now 15 KB, editable, and resolution-independent
+- `scripts/generate-seo-images.mjs` generates every raster asset from `logo.svg` as the single source of truth — `logo.png` (1024×1024) and `docs/.vuepress/public/images/og-card.png` (1200×630 link-share card with the mark, wordmark, and tagline)
+- `images:seo` npm script for regenerating those assets
+- Open Graph and Twitter card metadata in `docs/.vuepress/config.ts` so shared links to the documentation site render a preview card
+
+### Changed
+
+- Docs and README now use `musebot.svg` instead of `musebot.jpg` for the site logo, hero image, and introduction header
+- Release pipeline bundles `musebot.svg` alongside `musebot.png` in the Linux and Windows distributables instead of `musebot.jpg`
+- Discord release announcement attaches `logo.png` instead of `logo.jpg` (Discord will not render an SVG embed attachment)
+- `eslint.config.ts` ignores `scripts/`, matching the existing treatment of `.gitlab-ci/` — both hold standalone Node scripts outside the TypeScript project
+
+### Removed
+
+- `logo.jpg`, `logo.afdesign`, and `logo.afphoto` — the raster original and its Affinity sources are superseded by `logo.svg`
+- `docs/images/musebot.jpg` and `docs/.vuepress/public/images/musebot.jpg`
+
 ## [9.5.2] — 2026-08-25
 
 ### Fixed

@@ -1,6 +1,6 @@
 # Musebot
 
-![Musebot Logo](docs/images/musebot.jpg)
+![Musebot Logo](docs/images/musebot.svg)
 
 Musebot is a self-hosted Discord bot that bridges generative AI systems into
 Discord. It connects to **Ollama** for LLM-powered conversation and

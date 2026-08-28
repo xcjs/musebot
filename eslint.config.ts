@@ -5,7 +5,7 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-  ignores: ['dist/', 'coverage/', '.gitlab-ci/']
+  ignores: ['dist/', 'coverage/', '.gitlab-ci/', 'scripts/']
   },
   ...tseslint.configs.recommendedTypeChecked,
   {

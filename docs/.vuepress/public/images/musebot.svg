@@ -1,0 +1,289 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" fill="none" role="img" aria-labelledby="musebot-title">
+  <title id="musebot-title">Musebot</title>
+
+  <defs>
+    <!-- Dark disc, lit from above and slightly right. Axis and endpoint
+         colours are the least-squares fit of the original artwork. -->
+    <linearGradient id="g-disc" gradientUnits="userSpaceOnUse" x1="613.84" y1="219.2" x2="410.16" y2="804.8">
+      <stop offset="0" stop-color="#465373"/>
+      <stop offset="0.5" stop-color="#364059"/>
+      <stop offset="1" stop-color="#262C3E"/>
+    </linearGradient>
+
+    <!-- Contact shadow cast by the face onto the disc. -->
+    <radialGradient id="g-shadow">
+      <stop offset="0.86" stop-color="#0B0E18" stop-opacity="0.32"/>
+      <stop offset="1" stop-color="#0B0E18" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- objectBoundingBox so the gradient follows each <use> instance. -->
+    <linearGradient id="g-eye" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#42507A"/>
+      <stop offset="0.55" stop-color="#333F5E"/>
+      <stop offset="1" stop-color="#2E3856"/>
+    </linearGradient>
+    <!-- Falloff sampled from the original: -13.5 at the pupil rim decaying
+         to zero by 2.75 pupil radii, a far softer tail than a plain
+         two-stop gradient produces. -->
+    <radialGradient id="g-pupil-shadow">
+      <stop offset="0.4" stop-color="#151A28" stop-opacity="0.37"/>
+      <stop offset="0.46" stop-color="#151A28" stop-opacity="0.3"/>
+      <stop offset="0.52" stop-color="#151A28" stop-opacity="0.23"/>
+      <stop offset="0.58" stop-color="#151A28" stop-opacity="0.16"/>
+      <stop offset="0.64" stop-color="#151A28" stop-opacity="0.12"/>
+      <stop offset="0.7" stop-color="#151A28" stop-opacity="0.07"/>
+      <stop offset="0.76" stop-color="#151A28" stop-opacity="0.04"/>
+      <stop offset="0.82" stop-color="#151A28" stop-opacity="0.02"/>
+      <stop offset="0.88" stop-color="#151A28" stop-opacity="0.01"/>
+      <stop offset="0.94" stop-color="#151A28" stop-opacity="0.01"/>
+      <stop offset="1" stop-color="#151A28" stop-opacity="0"/>
+    </radialGradient>
+
+    <linearGradient id="g-antenna" gradientUnits="userSpaceOnUse" x1="0" y1="237" x2="0" y2="397">
+      <stop offset="0" stop-color="#75DAFC"/>
+      <stop offset="1" stop-color="#5588F9"/>
+    </linearGradient>
+
+    <linearGradient id="g-arc-lr" gradientUnits="userSpaceOnUse" x1="759.58" y1="559" x2="651.09" y2="722.14">
+      <stop offset="0" stop-color="#7F99E5"/>
+      <stop offset="0.31" stop-color="#8C88F0"/>
+      <stop offset="0.53" stop-color="#9B78FA"/>
+      <stop offset="0.78" stop-color="#A87DF1"/>
+      <stop offset="1" stop-color="#B682E7"/>
+    </linearGradient>
+    <linearGradient id="g-arc-ll" gradientUnits="userSpaceOnUse" x1="372.91" y1="722.14" x2="264.42" y2="559">
+      <stop offset="0" stop-color="#4C6BC5"/>
+      <stop offset="0.22" stop-color="#5079DC"/>
+      <stop offset="0.47" stop-color="#5487F0"/>
+      <stop offset="0.72" stop-color="#6796E9"/>
+      <stop offset="1" stop-color="#7AA6E3"/>
+    </linearGradient>
+    <linearGradient id="g-arc-ul" gradientUnits="userSpaceOnUse" x1="264.42" y1="465" x2="457.46" y2="265.97">
+      <stop offset="0" stop-color="#4B7BB8"/>
+      <stop offset="0.2" stop-color="#5AA3DE"/>
+      <stop offset="0.47" stop-color="#68C2F6"/>
+      <stop offset="0.75" stop-color="#78CCF7"/>
+      <stop offset="1" stop-color="#89D5F7"/>
+    </linearGradient>
+    <linearGradient id="g-arc-ur" gradientUnits="userSpaceOnUse" x1="566.54" y1="265.97" x2="759.58" y2="465">
+      <stop offset="0" stop-color="#88D3F6"/>
+      <stop offset="0.25" stop-color="#7ACCF4"/>
+      <stop offset="0.52" stop-color="#74C9F2"/>
+      <stop offset="0.8" stop-color="#6FB0EC"/>
+      <stop offset="1" stop-color="#6E9FDA"/>
+    </linearGradient>
+
+    <linearGradient id="g-ring-q1" gradientUnits="userSpaceOnUse" x1="823.6" y1="512" x2="512" y2="823.6">
+      <stop offset="0" stop-color="#B4CDF5"/>
+      <stop offset="0.15" stop-color="#6D5EC5"/>
+      <stop offset="0.32" stop-color="#6B5CD3"/>
+      <stop offset="0.5" stop-color="#D48EC2"/>
+      <stop offset="0.68" stop-color="#D590BF"/>
+      <stop offset="0.85" stop-color="#CD71A4"/>
+      <stop offset="1" stop-color="#D57CFA"/>
+    </linearGradient>
+    <linearGradient id="g-ring-q2" gradientUnits="userSpaceOnUse" x1="512" y1="823.6" x2="200.4" y2="512">
+      <stop offset="0" stop-color="#D57CFA"/>
+      <stop offset="0.15" stop-color="#4761AE"/>
+      <stop offset="0.32" stop-color="#4A7CB9"/>
+      <stop offset="0.5" stop-color="#4FC6DE"/>
+      <stop offset="0.68" stop-color="#6BEFF4"/>
+      <stop offset="0.85" stop-color="#39A5D3"/>
+      <stop offset="1" stop-color="#4A6DB1"/>
+    </linearGradient>
+    <linearGradient id="g-ring-q3" gradientUnits="userSpaceOnUse" x1="200.4" y1="512" x2="512" y2="200.4">
+      <stop offset="0" stop-color="#4A6DB1"/>
+      <stop offset="0.15" stop-color="#507ED3"/>
+      <stop offset="0.32" stop-color="#5DB3F0"/>
+      <stop offset="0.5" stop-color="#73B4DC"/>
+      <stop offset="0.68" stop-color="#69C6E5"/>
+      <stop offset="0.85" stop-color="#80ADE4"/>
+      <stop offset="1" stop-color="#F780E6"/>
+    </linearGradient>
+    <linearGradient id="g-ring-q4" gradientUnits="userSpaceOnUse" x1="512" y1="200.4" x2="823.6" y2="512">
+      <stop offset="0" stop-color="#F780E6"/>
+      <stop offset="0.15" stop-color="#D593EA"/>
+      <stop offset="0.32" stop-color="#90A4DF"/>
+      <stop offset="0.5" stop-color="#899FD8"/>
+      <stop offset="0.68" stop-color="#A395E2"/>
+      <stop offset="0.85" stop-color="#D491D6"/>
+      <stop offset="1" stop-color="#B4CDF5"/>
+    </linearGradient>
+
+    <!-- One eye, instanced twice. -->
+    <g id="eye">
+      <circle r="86" fill="url(#g-eye)"/>
+      <circle cy="13" r="60" fill="url(#g-pupil-shadow)"/>
+      <circle cy="4.8" r="24" fill="#fff"/>
+    </g>
+  </defs>
+
+  <!-- Framed variant: uncomment for the original dark backdrop.
+  <linearGradient id="g-bg" x1="0" y1="1024" x2="1024" y2="0" gradientUnits="userSpaceOnUse">
+    <stop offset="0" stop-color="#3D4256"/><stop offset="1" stop-color="#707A9E"/>
+  </linearGradient>
+  <rect width="1024" height="1024" fill="url(#g-bg)"/>
+  -->
+
+  <!-- Star field beyond the disc. Tinted mid-slate so it reads on a dark
+       backdrop and stays quiet on a light one. Delete for a hard-edged mark. -->
+  <g id="stars-outer" fill="#A9B4D4">
+    <circle cx="528.85" cy="188.79" r="3.92" opacity="0.47"/>
+    <circle cx="790.55" cy="700.31" r="2.26" opacity="0.79"/>
+    <circle cx="212.59" cy="381.58" r="4" opacity="0.7"/>
+    <circle cx="702.61" cy="232.18" r="1.48" opacity="0.61"/>
+    <circle cx="284.06" cy="747.28" r="4.09" opacity="0.93"/>
+    <circle cx="316.55" cy="234.77" r="1.51" opacity="0.85"/>
+    <circle cx="839.13" cy="488.51" r="4.17" opacity="0.61"/>
+    <circle cx="183.64" cy="597.71" r="1.53" opacity="0.53"/>
+    <circle cx="809.52" cy="372.31" r="2.69" opacity="0.99"/>
+    <circle cx="476.99" cy="849.43" r="1.56" opacity="0.76"/>
+    <circle cx="197.3" cy="417.89" r="2.75" opacity="0.68"/>
+    <circle cx="849.7" cy="548.25" r="1.21" opacity="0.59"/>
+    <circle cx="300.34" cy="790.83" r="2.81" opacity="0.91"/>
+    <circle cx="664.29" cy="208.95" r="1.22" opacity="0.82"/>
+    <circle cx="698.48" cy="807.62" r="2.88" opacity="0.59"/>
+    <circle cx="197.01" cy="636.2" r="1.22" opacity="0.51"/>
+    <circle cx="808.35" cy="326.53" r="1.83" opacity="0.97"/>
+    <circle cx="517.69" cy="849.85" r="1.23" opacity="0.74"/>
+    <circle cx="442.52" cy="170.11" r="1.87" opacity="0.66"/>
+    <circle cx="829.62" cy="625.03" r="1.24" opacity="0.97"/>
+    <circle cx="336.31" cy="812.5" r="1.91" opacity="0.89"/>
+    <circle cx="626.12" cy="194.89" r="3.41" opacity="0.8"/>
+    <circle cx="731.14" cy="781.34" r="1.95" opacity="0.57"/>
+    <circle cx="239.05" cy="280.15" r="3.48" opacity="0.49"/>
+    <circle cx="781.96" cy="293.93" r="1.33" opacity="0.95"/>
+    <circle cx="199.91" cy="685.71" r="3.56" opacity="0.72"/>
+    <circle cx="402.9" cy="183.58" r="1.35" opacity="0.64"/>
+    <circle cx="859.5" cy="590.31" r="3.63" opacity="0.95"/>
+    <circle cx="167.19" cy="498.89" r="1.37" opacity="0.87"/>
+    <circle cx="591.47" cy="165.07" r="2.32" opacity="0.79"/>
+    <circle cx="379.07" cy="829.29" r="1.39" opacity="0.55"/>
+    <circle cx="215.95" cy="316.37" r="2.37" opacity="0.47"/>
+    <circle cx="821.62" cy="364.53" r="1.42" opacity="0.78"/>
+    <circle cx="225.78" cy="719.88" r="2.43" opacity="0.7"/>
+    <circle cx="605.72" cy="851.43" r="2.48" opacity="0.93"/>
+    <circle cx="150.29" cy="541.81" r="4.35" opacity="0.85"/>
+    <circle cx="851.36" cy="419.59" r="1.6" opacity="0.76"/>
+    <circle cx="413.24" cy="860.04" r="1.2" opacity="0.53"/>
+    <circle cx="544.51" cy="162.96" r="1.63" opacity="0.99"/>
+    <circle cx="802.26" cy="725.97" r="1.2" opacity="0.76"/>
+    <circle cx="255.98" cy="749.74" r="1.66" opacity="0.68"/>
+    <circle cx="726.71" cy="222.88" r="2.95" opacity="0.59"/>
+    <circle cx="644.26" cy="834.06" r="1.7" opacity="0.91"/>
+    <circle cx="317.33" cy="210.48" r="3.01" opacity="0.82"/>
+    <circle cx="834.06" cy="381.08" r="1.24" opacity="0.74"/>
+    <circle cx="456.34" cy="865.32" r="3.08" opacity="0.51"/>
+    <circle cx="821.81" cy="687.33" r="3.15" opacity="0.74"/>
+    <circle cx="687.95" cy="203.65" r="2" opacity="0.57"/>
+    <circle cx="286.13" cy="240.29" r="2.05" opacity="0.8"/>
+    <circle cx="871.19" cy="457.29" r="1.29" opacity="0.57"/>
+    <circle cx="179.51" cy="627.67" r="2.09" opacity="0.48"/>
+    <circle cx="458.64" cy="153.19" r="3.72" opacity="0.95"/>
+    <circle cx="158.97" cy="436.34" r="3.8" opacity="0.63"/>
+    <circle cx="318.14" cy="814.55" r="3.88" opacity="0.87"/>
+    <circle cx="726.2" cy="798.37" r="3.96" opacity="0.55"/>
+    <circle cx="798.32" cy="299.41" r="2.54" opacity="0.93"/>
+    <circle cx="413.94" cy="170.92" r="2.6" opacity="0.61"/>
+    <circle cx="358.5" cy="830.08" r="2.66" opacity="0.85"/>
+  </g>
+
+  <circle id="disc" cx="512" cy="512" r="310" fill="url(#g-disc)"/>
+
+  <g id="stars-inner" fill="#fff">
+    <circle cx="660.73" cy="676.25" r="1.21" opacity="0.83"/>
+    <circle cx="679.97" cy="360.98" r="3.12" opacity="0.66"/>
+    <circle cx="285.64" cy="512.63" r="3.19" opacity="0.89"/>
+    <circle cx="433.29" cy="723.7" r="3.26" opacity="0.57"/>
+    <circle cx="681.78" cy="659.33" r="3.33" opacity="0.81"/>
+    <circle cx="660.02" cy="342.63" r="2.12" opacity="0.64"/>
+    <circle cx="406.19" cy="315.45" r="2.16" opacity="0.87"/>
+    <circle cx="292.72" cy="541.8" r="2.21" opacity="0.55"/>
+    <circle cx="733.39" cy="661.67" r="2.26" opacity="0.79"/>
+    <circle cx="662.08" cy="291.69" r="1.48" opacity="0.61"/>
+    <circle cx="748.52" cy="495.01" r="4.17" opacity="0.61"/>
+    <circle cx="725.8" cy="411.62" r="2.69" opacity="0.99"/>
+    <circle cx="288.12" cy="445.05" r="2.75" opacity="0.68"/>
+    <circle cx="343.29" cy="734.25" r="2.81" opacity="0.91"/>
+    <circle cx="659.42" cy="745.7" r="2.88" opacity="0.59"/>
+    <circle cx="745.21" cy="366.04" r="1.83" opacity="0.97"/>
+    <circle cx="457.78" cy="245.17" r="1.87" opacity="0.66"/>
+    <circle cx="376.01" cy="744.6" r="1.91" opacity="0.89"/>
+    <circle cx="680.19" cy="718.72" r="1.95" opacity="0.57"/>
+    <circle cx="290.53" cy="323.88" r="3.48" opacity="0.49"/>
+    <circle cx="719.45" cy="344.43" r="1.33" opacity="0.95"/>
+    <circle cx="259.39" cy="652.6" r="3.56" opacity="0.72"/>
+    <circle cx="791.05" cy="574.88" r="3.63" opacity="0.95"/>
+    <circle cx="575.53" cy="234.68" r="2.32" opacity="0.79"/>
+    <circle cx="277.27" cy="356.9" r="2.37" opacity="0.47"/>
+    <circle cx="286.94" cy="675.45" r="2.43" opacity="0.7"/>
+    <circle cx="585.18" cy="777.01" r="2.48" opacity="0.93"/>
+    <circle cx="214.21" cy="536.54" r="4.35" opacity="0.85"/>
+    <circle cx="776.96" cy="439.85" r="1.6" opacity="0.76"/>
+    <circle cx="430.96" cy="797.57" r="1.2" opacity="0.53"/>
+    <circle cx="537.28" cy="240.57" r="1.63" opacity="0.99"/>
+    <circle cx="749.3" cy="686.92" r="1.2" opacity="0.76"/>
+    <circle cx="313.73" cy="696.11" r="1.66" opacity="0.68"/>
+    <circle cx="687.44" cy="275.76" r="2.95" opacity="0.59"/>
+    <circle cx="613.96" cy="760.28" r="1.7" opacity="0.91"/>
+    <circle cx="353.59" cy="266.63" r="3.01" opacity="0.82"/>
+    <circle cx="760.04" cy="411.17" r="1.24" opacity="0.74"/>
+    <circle cx="466.89" cy="798.31" r="3.08" opacity="0.51"/>
+    <circle cx="761.24" cy="653.05" r="3.15" opacity="0.74"/>
+    <circle cx="653" cy="264.9" r="2" opacity="0.57"/>
+    <circle cx="332.36" cy="295.91" r="2.05" opacity="0.8"/>
+    <circle cx="249.9" cy="603.18" r="2.09" opacity="0.48"/>
+    <circle cx="467.71" cy="214.17" r="3.72" opacity="0.95"/>
+    <circle cx="221.03" cy="449.64" r="3.8" opacity="0.63"/>
+    <circle cx="353.37" cy="759.58" r="3.88" opacity="0.87"/>
+    <circle cx="685.99" cy="744.61" r="3.96" opacity="0.55"/>
+  </g>
+
+  <g id="orbit-ring" stroke-width="4.2">
+    <path d="M823.6 512A311.6 311.6 0 0 1 512 823.6" stroke="url(#g-ring-q1)"/>
+    <path d="M512 823.6A311.6 311.6 0 0 1 200.4 512" stroke="url(#g-ring-q2)"/>
+    <path d="M200.4 512A311.6 311.6 0 0 1 512 200.4" stroke="url(#g-ring-q3)"/>
+    <path d="M512 200.4A311.6 311.6 0 0 1 823.6 512" stroke="url(#g-ring-q4)"/>
+  </g>
+
+  <g id="orbs">
+    <circle cx="845.52" cy="592.07" r="9" fill="#71DBF6"/>
+    <circle cx="178.48" cy="592.07" r="9" fill="#67D6F4"/>
+    <circle cx="731.83" cy="773.99" r="6.5" fill="#EB8DBA"/>
+    <circle cx="292.17" cy="773.99" r="6.5" fill="#47AFF0"/>
+    <circle cx="636.24" cy="827.41" r="7" fill="#EDB977"/>
+    <circle cx="387.76" cy="827.41" r="7" fill="#56A7E5"/>
+    <circle cx="618.92" cy="182.93" r="6" fill="#E19BC6"/>
+    <circle cx="405.08" cy="182.93" r="6" fill="#9FC4EE"/>
+    <circle cx="823.6" cy="512" r="11" fill="#67A7EF"/>
+    <circle cx="200.4" cy="512" r="11" fill="#62D4F2"/>
+    <circle cx="750.7" cy="712.29" r="13" fill="#F1B970"/>
+    <circle cx="273.3" cy="712.29" r="13" fill="#B677EE"/>
+    <circle cx="512" cy="823.6" r="14" fill="#C183F2"/>
+    <circle cx="512" cy="200.4" r="14" fill="#EB83E5"/>
+    <circle cx="273.3" cy="311.71" r="12" fill="#5EB3F6"/>
+    <circle cx="750.7" cy="311.71" r="12" fill="#6F9CF4"/>
+  </g>
+
+  <g id="orbit-arcs" stroke-width="17.5" stroke-linecap="round">
+    <path id="arc-lr" d="M759.58 559A252 252 0 0 1 651.09 722.14" stroke="url(#g-arc-lr)"/>
+    <path id="arc-ll" d="M372.91 722.14A252 252 0 0 1 264.42 559" stroke="url(#g-arc-ll)"/>
+    <path id="arc-ul" d="M264.42 465A252 252 0 0 1 457.46 265.97" stroke="url(#g-arc-ul)"/>
+    <path id="arc-ur" d="M566.54 265.97A252 252 0 0 1 759.58 465" stroke="url(#g-arc-ur)"/>
+  </g>
+
+  <g id="ticks">
+    <rect x="249.5" y="482.5" width="21" height="59" rx="10.5" fill="#FABC66"/>
+    <rect x="753.5" y="482.5" width="21" height="59" rx="10.5" fill="#F7A29C"/>
+  </g>
+
+  <g id="face">
+    <circle cx="512" cy="525" r="211" fill="url(#g-shadow)"/>
+    <circle cx="512" cy="512" r="198" fill="#FAFCFB"/>
+    <use href="#eye" x="428" y="503"/>
+    <use href="#eye" x="596" y="503"/>
+    <rect x="452" y="646" width="120" height="18" rx="9" fill="#29314A"/>
+  </g>
+
+  <rect id="antenna" x="481.5" y="237" width="61" height="160" rx="30.5" fill="url(#g-antenna)"/>
+</svg>
