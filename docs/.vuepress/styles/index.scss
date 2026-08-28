@@ -1,0 +1,15 @@
+// Renders the GitHub mark inside the "Source Code" hero action button. The
+// mark is drawn as a CSS mask filled with the button's current text colour, so
+// it adapts to hover and dark-mode state without extra rules.
+.vp-hero-action-button[href='https://github.com/xcjs/musebot']::before {
+  display: inline-block;
+  width: 1.2em;
+  height: 1.2em;
+  margin-right: 0.45em;
+  vertical-align: -0.18em;
+
+  background-color: currentColor;
+
+  content: '';
+  mask: url('/images/github-mark.svg') no-repeat center / contain;
+}
