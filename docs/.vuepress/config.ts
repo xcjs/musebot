@@ -9,7 +9,7 @@ export default defineUserConfig({
   title: 'Musebot',
   description: 'Generative AI for Discord',
   theme: defaultTheme({
-  logo: '/images/musebot.jpg',
+  logo: '/images/musebot.svg',
   navbar: [
       {
     text: 'Introduction',
@@ -52,6 +52,25 @@ export default defineUserConfig({
   ] as PluginConfig,
 
   head: [
+  // Link-sharing preview. og:image must be an absolute URL; scrapers do not
+  // resolve relative paths. The card is a flattened 1200x630 PNG rather than
+  // logo.png, which is square and has an alpha channel that platforms
+  // composite unpredictably.
+  ['meta', { property: 'og:type', content: 'website' }],
+  ['meta', { property: 'og:site_name', content: 'Musebot' }],
+  ['meta', { property: 'og:title', content: 'Musebot' }],
+  ['meta', { property: 'og:description', content: 'Generative AI for Discord' }],
+  ['meta', { property: 'og:url', content: 'https://musebot.docs.xcjs.com/' }],
+  ['meta', { property: 'og:image', content: 'https://musebot.docs.xcjs.com/images/og-card.png' }],
+  ['meta', { property: 'og:image:type', content: 'image/png' }],
+  ['meta', { property: 'og:image:width', content: '1200' }],
+  ['meta', { property: 'og:image:height', content: '630' }],
+  ['meta', { property: 'og:image:alt', content: 'The Musebot robot mark beside the wordmark Musebot and the tagline Generative AI for Discord' }],
+  ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
+  ['meta', { name: 'twitter:title', content: 'Musebot' }],
+  ['meta', { name: 'twitter:description', content: 'Generative AI for Discord' }],
+  ['meta', { name: 'twitter:image', content: 'https://musebot.docs.xcjs.com/images/og-card.png' }],
+  ['meta', { name: 'theme-color', content: '#2A2E3E' }],
   [
       "script",
       {},
