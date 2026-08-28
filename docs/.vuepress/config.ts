@@ -16,7 +16,18 @@ export default defineUserConfig({
     link: 'introduction.md'
       },
       {
-    text: 'Musebot',
+    text: 'User Guide',
+    prefix: 'user-guide',
+    children: [
+          '01-getting-started.md',
+          '02-chat.md',
+          '03-media.md',
+          '04-memory-and-privacy.md',
+          '05-faq.md'
+    ]
+      },
+      {
+    text: 'Setup',
     prefix: 'musebot',
     children: [
           '01-discord.md',

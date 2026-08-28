@@ -10,6 +10,12 @@ actions:
   - text: Introduction
     link: /introduction.md
     type: secondary
+  - text: User Guide
+    link: /user-guide/01-getting-started.md
+    type: secondary
+  - text: Source Code
+    link: https://github.com/xcjs/musebot
+    type: secondary
 
 features:
   - title: Media Generation
