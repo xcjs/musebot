@@ -44,32 +44,32 @@
       <stop offset="1" stop-color="#5588F9"/>
     </linearGradient>
 
-    <linearGradient id="g-arc-lr" gradientUnits="userSpaceOnUse" x1="757.04" y1="570.83" x2="651.09" y2="722.14">
+    <linearGradient id="g-arc-lr" gradientUnits="userSpaceOnUse" x1="759.58" y1="559" x2="651.09" y2="722.14">
       <stop offset="0" stop-color="#7F99E5"/>
-      <stop offset="0.26" stop-color="#8C88F0"/>
-      <stop offset="0.5" stop-color="#9B78FA"/>
-      <stop offset="0.76" stop-color="#A87DF1"/>
+      <stop offset="0.31" stop-color="#8C88F0"/>
+      <stop offset="0.53" stop-color="#9B78FA"/>
+      <stop offset="0.78" stop-color="#A87DF1"/>
       <stop offset="1" stop-color="#B682E7"/>
     </linearGradient>
-    <linearGradient id="g-arc-ll" gradientUnits="userSpaceOnUse" x1="372.91" y1="722.14" x2="266.96" y2="570.83">
+    <linearGradient id="g-arc-ll" gradientUnits="userSpaceOnUse" x1="372.91" y1="722.14" x2="264.42" y2="559">
       <stop offset="0" stop-color="#4C6BC5"/>
-      <stop offset="0.24" stop-color="#5079DC"/>
-      <stop offset="0.5" stop-color="#5487F0"/>
-      <stop offset="0.76" stop-color="#6796E9"/>
+      <stop offset="0.22" stop-color="#5079DC"/>
+      <stop offset="0.47" stop-color="#5487F0"/>
+      <stop offset="0.72" stop-color="#6796E9"/>
       <stop offset="1" stop-color="#7AA6E3"/>
     </linearGradient>
-    <linearGradient id="g-arc-ul" gradientUnits="userSpaceOnUse" x1="262.45" y1="476.93" x2="457.46" y2="265.97">
+    <linearGradient id="g-arc-ul" gradientUnits="userSpaceOnUse" x1="264.42" y1="465" x2="457.46" y2="265.97">
       <stop offset="0" stop-color="#4B7BB8"/>
-      <stop offset="0.23" stop-color="#5AA3DE"/>
-      <stop offset="0.49" stop-color="#68C2F6"/>
-      <stop offset="0.76" stop-color="#78CCF7"/>
+      <stop offset="0.2" stop-color="#5AA3DE"/>
+      <stop offset="0.47" stop-color="#68C2F6"/>
+      <stop offset="0.75" stop-color="#78CCF7"/>
       <stop offset="1" stop-color="#89D5F7"/>
     </linearGradient>
-    <linearGradient id="g-arc-ur" gradientUnits="userSpaceOnUse" x1="566.54" y1="265.97" x2="761.55" y2="476.93">
+    <linearGradient id="g-arc-ur" gradientUnits="userSpaceOnUse" x1="566.54" y1="265.97" x2="759.58" y2="465">
       <stop offset="0" stop-color="#88D3F6"/>
-      <stop offset="0.24" stop-color="#7ACCF4"/>
-      <stop offset="0.5" stop-color="#74C9F2"/>
-      <stop offset="0.77" stop-color="#6FB0EC"/>
+      <stop offset="0.25" stop-color="#7ACCF4"/>
+      <stop offset="0.52" stop-color="#74C9F2"/>
+      <stop offset="0.8" stop-color="#6FB0EC"/>
       <stop offset="1" stop-color="#6E9FDA"/>
     </linearGradient>
 
@@ -266,10 +266,10 @@
   </g>
 
   <g id="orbit-arcs" stroke-width="17.5" stroke-linecap="round">
-    <path id="arc-lr" d="M757.04 570.83A252 252 0 0 1 651.09 722.14" stroke="url(#g-arc-lr)"/>
-    <path id="arc-ll" d="M372.91 722.14A252 252 0 0 1 266.96 570.83" stroke="url(#g-arc-ll)"/>
-    <path id="arc-ul" d="M262.45 476.93A252 252 0 0 1 457.46 265.97" stroke="url(#g-arc-ul)"/>
-    <path id="arc-ur" d="M566.54 265.97A252 252 0 0 1 761.55 476.93" stroke="url(#g-arc-ur)"/>
+    <path id="arc-lr" d="M759.58 559A252 252 0 0 1 651.09 722.14" stroke="url(#g-arc-lr)"/>
+    <path id="arc-ll" d="M372.91 722.14A252 252 0 0 1 264.42 559" stroke="url(#g-arc-ll)"/>
+    <path id="arc-ul" d="M264.42 465A252 252 0 0 1 457.46 265.97" stroke="url(#g-arc-ul)"/>
+    <path id="arc-ur" d="M566.54 265.97A252 252 0 0 1 759.58 465" stroke="url(#g-arc-ur)"/>
   </g>
 
   <g id="ticks">
