@@ -96,6 +96,22 @@ export class GenerativeChatClient extends BaseDiscordClient {
       return;
     }
 
+    // Mirror the reply filter's channel gating: never remember messages from
+    // channels the bot is not allowed to operate in, or from DMs (memories
+    // are per-server and would never be retrievable).
+    if (message.guild === null) {
+      return;
+    }
+
+    if (this.#configurationService.discordChannelsDisallowed.includes(message.channel.id)) {
+      return;
+    }
+
+    if (this.#configurationService.discordChannels.length > 0
+      && !this.#configurationService.discordChannels.includes(message.channel.id)) {
+      return;
+    }
+
     const hasText = message.content.trim().length > 0;
     const hasImages = this.#featureService.hasFeature(SupportedFeature.Vision)
       && this.#attachmentService.getImageAttachments(message).length > 0;

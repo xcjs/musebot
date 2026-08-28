@@ -180,8 +180,11 @@ export class MemoryDatabase {
   }
 
   removeConsent(userId: string): void {
-    this.#deleteMemoriesByUser(userId);
-    this.#drizzle.delete(UserConsent).where(eq(UserConsent.userId, userId)).run();
+    const transaction = this.#db.transaction((id: string) => {
+      this.#deleteMemoriesByUser(id);
+      this.#drizzle.delete(UserConsent).where(eq(UserConsent.userId, id)).run();
+    });
+    transaction(userId);
   }
 
   storeMemory(
@@ -195,45 +198,54 @@ export class MemoryDatabase {
     embedding: number[]): number | null {
     this.#logger.debug(`storeMemory() called: discordMessageId=${discordMessageId}, userId=${userId}, isBot=${isBot}.`);
 
-    if (discordMessageId !== null) {
-      const existing = this.#db.prepare(
-        'SELECT id FROM LlmChatMessage WHERE discordMessageId = ?'
-      ).get(discordMessageId) as { id: number } | undefined;
+    const store = this.#db.transaction(() => {
+      if (discordMessageId !== null) {
+        const existing = this.#db.prepare(
+          'SELECT id FROM LlmChatMessage WHERE discordMessageId = ?'
+        ).get(discordMessageId) as { id: number } | undefined;
 
-      if (existing !== undefined) {
-        this.#logger.debug(`storeMemory() deduped: discordMessageId=${discordMessageId} matched existing row id=${existing.id}.`);
-        return null;
+        if (existing !== undefined) {
+          this.#logger.debug(`storeMemory() deduped: discordMessageId=${discordMessageId} matched existing row id=${existing.id}.`);
+          return null;
+        }
       }
-    }
 
-    const createdAt = new Date().toISOString();
-    this.#drizzle.insert(LlmChatMessageRecord)
-      .values({
-        userId,
-        serverId,
-        content: llmChatMessageJson,
-        messageText,
-        isBot,
-        embeddingModel,
-        discordMessageId,
-        createdAt
-      })
-      .run();
+      const createdAt = new Date().toISOString();
+      this.#drizzle.insert(LlmChatMessageRecord)
+        .values({
+          userId,
+          serverId,
+          content: llmChatMessageJson,
+          messageText,
+          isBot,
+          embeddingModel,
+          discordMessageId,
+          createdAt
+        })
+        .run();
 
-    const rowidRow = this.#db.prepare('SELECT last_insert_rowid() AS rowid').get() as { rowid: number };
-    const rowid = rowidRow.rowid;
+      const rowidRow = this.#db.prepare('SELECT last_insert_rowid() AS rowid').get() as { rowid: number };
+      const rowid = rowidRow.rowid;
 
-    const vecTable = `LlmChatMessage_vec_${this.#embeddingDimensions}`;
-    this.#db.prepare(`INSERT INTO ${vecTable}(rowid, embedding) VALUES ((SELECT last_insert_rowid()), ?)`)
-      .run(JSON.stringify(embedding));
+      const vecTable = `LlmChatMessage_vec_${this.#embeddingDimensions}`;
+      this.#db.prepare(`INSERT INTO ${vecTable}(rowid, embedding) VALUES ((SELECT last_insert_rowid()), ?)`)
+        .run(JSON.stringify(embedding));
 
-    this.#logger.debug(`storeMemory() inserted row id=${rowid} for discordMessageId=${discordMessageId}.`);
+      this.#logger.debug(`storeMemory() inserted row id=${rowid} for discordMessageId=${discordMessageId}.`);
 
-    return rowid;
+      return rowid;
+    });
+
+    return store();
   }
 
   queryMemories(embedding: number[], serverId: string, embeddingModel: string, topK: number): MemoryRecord[] {
     const vecTable = `LlmChatMessage_vec_${this.#embeddingDimensions}`;
+
+    // vec0 applies its KNN limit before the JOIN filters below, so vectors from
+    // other servers or embedding models can consume the top-K slots and starve
+    // the requested server. Over-fetch and re-rank against the filtered rows.
+    const fetchK = topK * 4;
     const stmt = this.#db.prepare(`
       SELECT vec.rowid, vec.distance, msg.content
       FROM ${vecTable} vec
@@ -243,25 +255,18 @@ export class MemoryDatabase {
               AND msg.serverId = ?
               AND msg.embeddingModel = ?
       ORDER BY vec.distance
+      LIMIT ?
     `);
 
-    return stmt.all(JSON.stringify(embedding), topK, serverId, embeddingModel) as MemoryRecord[];
+    return (stmt.all(JSON.stringify(embedding), fetchK, serverId, embeddingModel, topK) as MemoryRecord[]);
   }
 
   #deleteMemoriesByUser(userId: string): void {
     const vecTable = `LlmChatMessage_vec_${this.#embeddingDimensions}`;
-    const rowids = this.#drizzle.select({ id: LlmChatMessageRecord.id })
-      .from(LlmChatMessageRecord)
-      .where(eq(LlmChatMessageRecord.userId, userId))
-      .all();
-
-    if (rowids.length === 0) {
-      return;
-    }
-
-    const placeholders = rowids.map(() => '?').join(',');
-    this.#db.prepare(`DELETE FROM ${vecTable} WHERE rowid IN (${placeholders})`)
-      .run(...rowids.map(r => r.id));
+    // Subselect instead of an IN (…) parameter list: users with long histories
+    // exceed SQLite's 32,766 bound-parameter limit otherwise.
+    this.#db.prepare(`DELETE FROM ${vecTable} WHERE rowid IN (SELECT id FROM LlmChatMessage WHERE userId = ?)`)
+      .run(userId);
 
     this.#drizzle.delete(LlmChatMessageRecord).where(eq(LlmChatMessageRecord.userId, userId)).run();
   }
@@ -284,6 +289,12 @@ export class MemoryDatabase {
     ).all(embeddingModel) as Array<{ id: number; messageText: string; llmChatMessageJson: string; userId: string; serverId: string | null; isBot: number }>;
   }
 
+  getMemoriesNotUsingModel(embeddingModel: string): Array<{ id: number; messageText: string; llmChatMessageJson: string; userId: string; serverId: string | null; isBot: number }> {
+    return this.#db.prepare(
+      'SELECT id, messageText, content AS llmChatMessageJson, userId, serverId, isBot FROM LlmChatMessage WHERE embeddingModel != ?'
+    ).all(embeddingModel) as Array<{ id: number; messageText: string; llmChatMessageJson: string; userId: string; serverId: string | null; isBot: number }>;
+  }
+
   deleteVectorsByRowids(rowids: number[]): void {
     if (rowids.length === 0) {
       return;
@@ -297,11 +308,16 @@ export class MemoryDatabase {
 
   updateMemoryEmbeddingModel(id: number, embeddingModel: string, embedding: number[]): void {
     const vecTable = `LlmChatMessage_vec_${this.#embeddingDimensions}`;
-    this.#db.prepare(`DELETE FROM ${vecTable} WHERE rowid = ?`).run(id);
-    this.#db.prepare(`INSERT INTO ${vecTable}(rowid, embedding) VALUES (?, ?)`)
-      .run(id, JSON.stringify(embedding));
-    this.#db.prepare('UPDATE LlmChatMessage SET embeddingModel = ? WHERE id = ?')
-      .run(embeddingModel, id);
+    const update = this.#db.transaction(() => {
+      this.#db.prepare(`DELETE FROM ${vecTable} WHERE rowid = ?`).run(id);
+      // vec0 rejects bound parameters for the rowid column; id is an internal
+      // integer primary key, so inline it.
+      this.#db.prepare(`INSERT INTO ${vecTable}(rowid, embedding) VALUES (${id}, ?)`)
+        .run(JSON.stringify(embedding));
+      this.#db.prepare('UPDATE LlmChatMessage SET embeddingModel = ? WHERE id = ?')
+        .run(embeddingModel, id);
+    });
+    update();
   }
 
   close(): void {

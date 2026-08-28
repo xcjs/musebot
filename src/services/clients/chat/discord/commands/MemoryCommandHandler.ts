@@ -185,24 +185,40 @@ export class MemoryCommandHandler {
 
   async #catchUpChannel(channel: GuildTextBasedChannel, userId: string, botId: string, afterDate: Date): Promise<number> {
     let count = 0;
-    let afterId: string | undefined;
+    let beforeId: string | undefined;
+    const processed = new Set<string>();
+    let reachedLowerBound = false;
 
+    // The messages endpoint returns the newest `limit` messages regardless of the
+    // `after` anchor, so paginating with `after` skips any messages beyond the
+    // first page. Walk backwards from the newest message with `before` instead,
+    // stopping once the pages dip below the catch-up date.
     for (;;) {
-      const messages = await channel.messages.fetch({ limit: FETCH_PAGE_SIZE, after: afterId });
+      const messages = await channel.messages.fetch({ limit: FETCH_PAGE_SIZE, before: beforeId });
 
       if (messages.size === 0) {
         break;
       }
 
       const sortedMessages = [...messages.values()]
+        .sort((a: DiscordMessage, b: DiscordMessage) => a.createdTimestamp - b.createdTimestamp);
+
+      const oldestTimestamp = sortedMessages[0]?.createdTimestamp;
+
+      if (oldestTimestamp !== undefined && oldestTimestamp <= afterDate.getTime()) {
+        reachedLowerBound = true;
+      }
+
+      const eligibleMessages = sortedMessages
         .filter(m => m.createdTimestamp > afterDate.getTime())
         .sort((a: DiscordMessage, b: DiscordMessage) => a.createdTimestamp - b.createdTimestamp);
 
-      if (sortedMessages.length === 0) {
-        break;
-      }
+      for (const message of eligibleMessages) {
+        if (processed.has(message.id)) {
+          continue;
+        }
+        processed.add(message.id);
 
-      for (const message of sortedMessages) {
         if (message.author.id !== userId && message.author.id !== botId) {
           continue;
         }
@@ -234,11 +250,11 @@ export class MemoryCommandHandler {
 
       const lastMessage = sortedMessages[sortedMessages.length - 1];
 
-      if (lastMessage === undefined || messages.size < FETCH_PAGE_SIZE) {
+      if (lastMessage === undefined || reachedLowerBound || messages.size < FETCH_PAGE_SIZE) {
         break;
       }
 
-      afterId = lastMessage.id;
+      beforeId = lastMessage.id;
     }
 
     return count;
@@ -336,7 +352,7 @@ export class MemoryCommandHandler {
         }
       }
 
-      const lastMessage = sortedMessages[sortedMessages.length - 1];
+      const lastMessage = sortedMessages[0];
 
       if (lastMessage === undefined) {
         break;

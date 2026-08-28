@@ -139,8 +139,8 @@ export class MemoryService implements IMemoryService {
     this.#logger.debug(`store() proceeding for user ${consentUserId} (messageId=${llmChatMessage.messageId}, isBot=${llmChatMessage.isBot}).`);
 
     try {
-      const embedding = await this.#embed(llmChatMessage.message);
       const json = JSON.stringify(llmChatMessage);
+      const embedding = await this.#embed(json);
       const database = await this.#getDatabase();
       const embeddingModel = this.#getEmbeddingModel();
 
@@ -176,7 +176,8 @@ export class MemoryService implements IMemoryService {
     }
 
     try {
-      const embedding = await this.#embed(llmChatMessage.message);
+      const json = JSON.stringify(llmChatMessage);
+      const embedding = await this.#embed(json);
       const topK = this.#configurationService.ollamaTopK;
       const embeddingModel = this.#getEmbeddingModel();
       const database = await this.#getDatabase();
@@ -238,7 +239,10 @@ export class MemoryService implements IMemoryService {
 
     this.#logger.info(`Migrating memories to embedding model '${currentModel}'. ${currentModelCount}/${totalCount} already using this model.`);
 
-    const outdatedRecords = database.getMemoriesByModel('');
+    // Re-embed rows from ANY previous embedding model, not just the legacy
+    // empty-model rows: switching between two named models would otherwise
+    // silently strand every memory stored under the older model.
+    const outdatedRecords = database.getMemoriesNotUsingModel(currentModel);
 
     if (outdatedRecords.length === 0) {
       return;
@@ -249,7 +253,7 @@ export class MemoryService implements IMemoryService {
 
     for (const record of outdatedRecords) {
       try {
-        const embedding = await this.#embed(record.messageText);
+        const embedding = await this.#embed(record.llmChatMessageJson);
         database.updateMemoryEmbeddingModel(record.id, currentModel, embedding);
         migrated++;
       } catch (error) {
