@@ -88,7 +88,6 @@ export class MemoryDatabase {
       CREATE INDEX IF NOT EXISTS idx_LlmChatMessage_userId ON LlmChatMessage(userId);
       CREATE INDEX IF NOT EXISTS idx_LlmChatMessage_serverId ON LlmChatMessage(serverId);
       CREATE INDEX IF NOT EXISTS idx_LlmChatMessage_embeddingModel ON LlmChatMessage(embeddingModel);
-      CREATE UNIQUE INDEX IF NOT EXISTS idx_LlmChatMessage_discordMessageId ON LlmChatMessage(discordMessageId) WHERE discordMessageId IS NOT NULL;
     `);
 
     this.#migrateExistingDb();
@@ -103,6 +102,7 @@ export class MemoryDatabase {
     const msgColumns = this.#db.prepare('PRAGMA table_info(LlmChatMessage)').all() as Array<{ name: string }>;
     const hasEmbeddingModel = msgColumns.some(c => c.name === 'embeddingModel');
     const hasDiscordMessageId = msgColumns.some(c => c.name === 'discordMessageId');
+    const hasEmbeddingSource = msgColumns.some(c => c.name === 'embeddingSource');
 
     if (!hasEmbeddingModel) {
       this.#db.exec('ALTER TABLE LlmChatMessage ADD COLUMN embeddingModel TEXT NOT NULL DEFAULT \'\'');
@@ -114,6 +114,18 @@ export class MemoryDatabase {
       this.#logger.info('Added discordMessageId column to LlmChatMessage table.');
     }
 
+    if (!hasEmbeddingSource) {
+      // 'message' marks rows embedded from raw message text (pre-JSON era);
+      // migration re-embeds them from the stored JSON serialization.
+      this.#db.exec('ALTER TABLE LlmChatMessage ADD COLUMN embeddingSource TEXT NOT NULL DEFAULT \'message\'');
+      this.#logger.info('Added embeddingSource column to LlmChatMessage table.');
+    }
+
+    // The original global unique index on discordMessageId misattributed bot
+    // replies stored on behalf of multiple users; the dedupe scope is per user.
+    this.#db.exec('DROP INDEX IF EXISTS idx_LlmChatMessage_discordMessageId');
+    this.#db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_LlmChatMessage_userId_discordMessageId ON LlmChatMessage(userId, discordMessageId) WHERE discordMessageId IS NOT NULL');
+
     const consentColumns = this.#db.prepare('PRAGMA table_info(UserConsent)').all() as Array<{ name: string }>;
     const hasBackfillCompleted = consentColumns.some(c => c.name === 'backfillCompleted');
 
@@ -121,8 +133,6 @@ export class MemoryDatabase {
       this.#db.exec('ALTER TABLE UserConsent ADD COLUMN backfillCompleted INTEGER NOT NULL DEFAULT 0');
       this.#logger.info('Added backfillCompleted column to UserConsent table.');
     }
-
-    this.#db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_LlmChatMessage_discordMessageId ON LlmChatMessage(discordMessageId) WHERE discordMessageId IS NOT NULL');
   }
 
   hasMessage(discordMessageId: string): boolean {
@@ -195,14 +205,15 @@ export class MemoryDatabase {
     isBot: boolean,
     embeddingModel: string,
     discordMessageId: string | null,
-    embedding: number[]): number | null {
+    embedding: number[],
+    options: { createdAt?: string; embeddingSource?: string } = {}): number | null {
     this.#logger.debug(`storeMemory() called: discordMessageId=${discordMessageId}, userId=${userId}, isBot=${isBot}.`);
 
     const store = this.#db.transaction(() => {
       if (discordMessageId !== null) {
         const existing = this.#db.prepare(
-          'SELECT id FROM LlmChatMessage WHERE discordMessageId = ?'
-        ).get(discordMessageId) as { id: number } | undefined;
+          'SELECT id FROM LlmChatMessage WHERE userId = ? AND discordMessageId = ?'
+        ).get(userId, discordMessageId) as { id: number } | undefined;
 
         if (existing !== undefined) {
           this.#logger.debug(`storeMemory() deduped: discordMessageId=${discordMessageId} matched existing row id=${existing.id}.`);
@@ -210,7 +221,8 @@ export class MemoryDatabase {
         }
       }
 
-      const createdAt = new Date().toISOString();
+      const createdAt = options.createdAt ?? new Date().toISOString();
+      const embeddingSource = options.embeddingSource ?? 'json';
       this.#drizzle.insert(LlmChatMessageRecord)
         .values({
           userId,
@@ -219,6 +231,7 @@ export class MemoryDatabase {
           messageText,
           isBot,
           embeddingModel,
+          embeddingSource,
           discordMessageId,
           createdAt
         })
@@ -295,6 +308,13 @@ export class MemoryDatabase {
     ).all(embeddingModel) as Array<{ id: number; messageText: string; llmChatMessageJson: string; userId: string; serverId: string | null; isBot: number }>;
   }
 
+  getMemoriesNeedingReembed(embeddingModel: string, afterId: number, limit: number): Array<{ id: number; userId: string; serverId: string | null; isBot: number; llmChatMessageJson: string; createdAt: string }> {
+    return this.#db.prepare(
+      'SELECT id, userId, serverId, isBot, content AS llmChatMessageJson, createdAt FROM LlmChatMessage'
+      + ' WHERE (embeddingModel != ? OR embeddingSource != ?) AND id > ? ORDER BY id LIMIT ?'
+    ).all(embeddingModel, 'json', afterId, limit) as Array<{ id: number; userId: string; serverId: string | null; isBot: number; llmChatMessageJson: string; createdAt: string }>;
+  }
+
   deleteVectorsByRowids(rowids: number[]): void {
     if (rowids.length === 0) {
       return;
@@ -306,7 +326,7 @@ export class MemoryDatabase {
       .run(...rowids);
   }
 
-  updateMemoryEmbeddingModel(id: number, embeddingModel: string, embedding: number[]): void {
+  updateMemoryEmbedding(id: number, embeddingModel: string, embedding: number[], createdAt: string | null): void {
     const vecTable = `LlmChatMessage_vec_${this.#embeddingDimensions}`;
     const update = this.#db.transaction(() => {
       this.#db.prepare(`DELETE FROM ${vecTable} WHERE rowid = ?`).run(id);
@@ -314,8 +334,13 @@ export class MemoryDatabase {
       // integer primary key, so inline it.
       this.#db.prepare(`INSERT INTO ${vecTable}(rowid, embedding) VALUES (${id}, ?)`)
         .run(JSON.stringify(embedding));
-      this.#db.prepare('UPDATE LlmChatMessage SET embeddingModel = ? WHERE id = ?')
-        .run(embeddingModel, id);
+      if (createdAt !== null) {
+        this.#db.prepare('UPDATE LlmChatMessage SET embeddingModel = ?, embeddingSource = ?, createdAt = ? WHERE id = ?')
+          .run(embeddingModel, 'json', createdAt, id);
+      } else {
+        this.#db.prepare('UPDATE LlmChatMessage SET embeddingModel = ?, embeddingSource = ? WHERE id = ?')
+          .run(embeddingModel, 'json', id);
+      }
     });
     update();
   }

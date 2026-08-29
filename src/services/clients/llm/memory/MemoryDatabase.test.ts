@@ -51,7 +51,7 @@ describe('MemoryDatabase', () => {
     const rowid = db.storeMemory('{"id":"y"}', 'y', 'user-1', 'server-a', false, 'model', 'dm-y', [1, 0, 0, 0]);
     expect(rowid).not.toBeNull();
 
-    expect(() => db.updateMemoryEmbeddingModel(rowid, 'model-b', [1, 0.5])).toThrow();
+    expect(() => db.updateMemoryEmbedding(rowid, 'model-b', [1, 0.5], null)).toThrow();
 
     const results = db.queryMemories([1, 0, 0, 0], 'server-a', 'model', 5);
     expect(results).toHaveLength(1);
@@ -67,6 +67,89 @@ describe('MemoryDatabase', () => {
 
     expect(db.hasConsent('user-1')).toBe(false);
     expect(db.getTotalMemoryCount()).toBe(0);
+  });
+
+  it('stores the message datetime as createdAt', () => {
+    const messageDatetime = '2025-06-15T12:30:00.000Z';
+
+    db.storeMemory('{"id":"t1"}', 't1', 'user-1', 'server-a', false, 'model', 'dm-t1', [1, 0, 0, 0], { createdAt: messageDatetime });
+
+    const latest = db.getLatestMemoryTimestamp('user-1');
+    expect(latest).toBe(messageDatetime);
+  });
+
+  it('allows the same discord message id for different users', () => {
+    const first = db.storeMemory('{"id":"s1"}', 's1', 'user-1', 'server-a', false, 'model', 'dm-shared', [1, 0, 0, 0]);
+    const second = db.storeMemory('{"id":"s2"}', 's2', 'user-2', 'server-a', false, 'model', 'dm-shared', [0, 1, 0, 0]);
+
+    expect(first).not.toBeNull();
+    expect(second).not.toBeNull();
+  });
+
+  it('still dedupes the same discord message id for the same user', () => {
+    db.storeMemory('{"id":"s1"}', 's1', 'user-1', 'server-a', false, 'model', 'dm-shared', [1, 0, 0, 0]);
+    const duplicate = db.storeMemory('{"id":"s2"}', 's2', 'user-1', 'server-a', false, 'model', 'dm-shared', [0, 1, 0, 0]);
+
+    expect(duplicate).toBeNull();
+  });
+
+  it('upgrades a legacy global discordMessageId index to the per-user index', () => {
+    db.close();
+
+    const raw = new Database(dbPath);
+    raw.exec('DROP INDEX IF EXISTS idx_LlmChatMessage_discordMessageId');
+    raw.exec("CREATE UNIQUE INDEX idx_LlmChatMessage_discordMessageId ON LlmChatMessage(discordMessageId) WHERE discordMessageId IS NOT NULL AND userId = 'legacy-sentinel'");
+    raw.close();
+
+    db = new MemoryDatabase(dbPath, 4, createMockLogger());
+
+    const first = db.storeMemory('{"id":"u1"}', 'u1', 'user-1', 'server-a', false, 'model', 'dm-upgrade', [1, 0, 0, 0]);
+    const second = db.storeMemory('{"id":"u2"}', 'u2', 'user-2', 'server-a', false, 'model', 'dm-upgrade', [0, 1, 0, 0]);
+
+    expect(first).not.toBeNull();
+    expect(second).not.toBeNull();
+  });
+
+  it('pages through memories needing re-embedding without loading the whole table', () => {
+    for (let i = 1; i <= 25; i++) {
+      db.storeMemory(`{"id":"p${i}"}`, `p${i}`, 'user-1', 'server-a', false, 'current-model', `dm-p${i}`, [1, 0, 0, 0], { embeddingSource: 'message' });
+    }
+
+    const page1 = db.getMemoriesNeedingReembed('current-model', 0, 10);
+    expect(page1).toHaveLength(10);
+
+    const page2 = db.getMemoriesNeedingReembed('current-model', page1[page1.length - 1].id, 10);
+    expect(page2).toHaveLength(10);
+    expect(page2[0].id).toBeGreaterThan(page1[page1.length - 1].id);
+
+    const page3 = db.getMemoriesNeedingReembed('current-model', page2[page2.length - 1].id, 10);
+    expect(page3).toHaveLength(5);
+
+    const page4 = db.getMemoriesNeedingReembed('current-model', page3[page3.length - 1].id, 10);
+    expect(page4).toHaveLength(0);
+  });
+
+  it('updates embedding, model, embedding source, and message datetime together', () => {
+    const rowid = db.storeMemory('{"id":"e1"}', 'e1', 'user-1', 'server-a', false, 'legacy-model', 'dm-e1', [1, 0, 0, 0]);
+    expect(rowid).not.toBeNull();
+
+    const messageDatetime = '2025-07-01T08:00:00.000Z';
+    db.updateMemoryEmbedding(rowid, 'new-model', [0, 1, 0, 0], messageDatetime);
+
+    const results = db.queryMemories([0, 1, 0, 0], 'server-a', 'new-model', 5);
+    expect(results).toHaveLength(1);
+    expect(db.getMemoryCountByModel('legacy-model')).toBe(0);
+    expect(db.getLatestMemoryTimestamp('user-1')).toBe(messageDatetime);
+
+    const source = ((): { embeddingSource: string } => {
+      const raw = new Database(dbPath);
+      try {
+        return raw.prepare('SELECT embeddingSource FROM LlmChatMessage WHERE id = ?').get(rowid) as { embeddingSource: string };
+      } finally {
+        raw.close();
+      }
+    })();
+    expect(source.embeddingSource).toBe('json');
   });
 });
 

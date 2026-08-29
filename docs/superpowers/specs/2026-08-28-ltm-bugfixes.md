@@ -12,7 +12,7 @@
 
 ## Non-Goals
 
-- The MEDIUM/LOW review items: backfill allow-list enforcement (#8), >15-min interaction expiry (#9), `#getDatabase()` race (#10), catch-up `afterDate` semantics (#11), bot-reply attribution (#12), `getMemoriesByModel` memory footprint (#13), explicit `close()` lifecycle (#14), prompt-injection hardening, dedup of helper logic. These remain open follow-ups.
+- ~~The MEDIUM/LOW review items~~ Items #9–#14 and the helper-logic cleanup were subsequently implemented in `2026-08-28-ltm-followups.md`. Item #8 (backfill allow-list enforcement) was ruled **by design** and will not be implemented. Prompt-injection hardening remains an open follow-up.
 - Schema migrations for the orphans left behind by pre-fix runs (rows stranded under an old embedding model are picked up by fix #7 on next startup; orphaned `LlmChatMessage_vec_<dim>` tables from dimension changes are not cleaned up).
 
 ## Bug Summary and Fixes
@@ -40,7 +40,6 @@
 **Fix:** Over-fetch with `k = topK * 4`, apply the real filters, then `LIMIT topK` on the ordered results.
 
 **Test:** With memories spread across two servers, querying server B must return B's top matches rather than being starved by server A.
-
 ### 4. Non-atomic multi-statement writes — `MemoryDatabase`
 
 **Bug:** `storeMemory` (relational insert + vec insert), `updateMemoryEmbeddingModel` (vec delete + vec insert + model update), and `removeConsent` (memories delete + consent delete) were non-atomic. A failed vec insert left a relational row without a vector; worse, the unique index on `discordMessageId` then permanently blocked re-storing that message.

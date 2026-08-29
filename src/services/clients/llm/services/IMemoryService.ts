@@ -15,4 +15,5 @@ export interface IMemoryService {
   hasMessage(discordMessageId: string): Promise<boolean>;
   store(llmChatMessage: LlmChatMessage, ownerUserId?: string): Promise<void>;
   retrieve(llmChatMessage: LlmChatMessage): Promise<OllamaMessage[]>;
+  closeDatabase(): Promise<void>;
 }

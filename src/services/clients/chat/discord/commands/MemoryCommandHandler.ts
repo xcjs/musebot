@@ -9,7 +9,7 @@ import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { ILlmChatMessageFactory } from '../../../llm/services/ILlmChatMessageFactory.js';
 import { IMemoryService } from '../../../llm/services/IMemoryService.js';
-import { DiscordAttachmentService } from '../services/DiscordAttachmentService.js';
+import { collectBackfillChannels, isBackfillParticipant, isStorableMessage } from './backfillUtilities.js';
 
 const FETCH_PAGE_SIZE = 100;
 
@@ -21,7 +21,6 @@ export class MemoryCommandHandler {
   readonly #configurationService: IConfigurationService;
   readonly #taskQueue: ITaskQueue;
   readonly #logger: ILogger;
-  readonly #attachmentService: DiscordAttachmentService;
 
   constructor(services: IBotServiceContainer) {
     this.#services = services;
@@ -31,7 +30,6 @@ export class MemoryCommandHandler {
     this.#configurationService = services.configurationService;
     this.#taskQueue = services.taskQueue;
     this.#logger = services.getLogger('MemoryCommandHandler');
-    this.#attachmentService = new DiscordAttachmentService();
   }
 
   async handle(interaction: ChatInputCommandInteraction): Promise<void> {
@@ -68,24 +66,26 @@ export class MemoryCommandHandler {
         return;
       }
 
-      await interaction.editReply('You are already opted in to long-term memory. Resuming backfill of messages from all channels...');
-      const backfillCount = await this.#backfillMessages(interaction.client, userId);
-      await this.#memoryService.markBackfillComplete(userId);
-      await interaction.editReply(
-        `Backfill resumed and completed. Stored ${backfillCount} additional message${backfillCount === 1 ? '' : 's'} from all accessible channels.`);
+      await interaction.editReply("I'll remember you. Resuming backfill of your earlier messages in the background...");
+      void this.#runBackfillInBackground(interaction, userId);
       return;
     }
 
     await this.#memoryService.setConsent(userId);
 
-    await interaction.editReply('You have opted in to long-term memory. Backfilling messages from all channels...');
+    await interaction.editReply("I'll remember you. Backfilling your earlier messages in the background...");
 
-    const backfillCount = await this.#backfillMessages(interaction.client, userId);
+    void this.#runBackfillInBackground(interaction, userId);
+  }
 
-    await this.#memoryService.markBackfillComplete(userId);
-
-    await interaction.editReply(
-      `You have opted in to long-term memory. Backfilled ${backfillCount} message${backfillCount === 1 ? '' : 's'} from all accessible channels.`);
+  async #runBackfillInBackground(interaction: ChatInputCommandInteraction, userId: string): Promise<void> {
+    try {
+      const backfillCount = await this.#backfillMessages(interaction.client, userId);
+      await this.#memoryService.markBackfillComplete(userId);
+      this.#logger.info(`Background backfill complete for user ${userId}. Stored ${backfillCount} message${backfillCount === 1 ? '' : 's'}.`);
+    } catch (error) {
+      this.#logger.error(`Background backfill failed for user ${userId}:`, error);
+    }
   }
 
   async #handleForget(interaction: ChatInputCommandInteraction): Promise<void> {
@@ -133,26 +133,7 @@ export class MemoryCommandHandler {
     }
 
     const botId = client.user.id;
-    const disallowedChannelIds = this.#configurationService.discordChannelsDisallowed;
-    const channels: GuildTextBasedChannel[] = [];
-
-    for (const guild of client.guilds.cache.values()) {
-      for (const channel of guild.channels.cache.values()) {
-        if (!channel.isTextBased() || channel.isVoiceBased()) {
-          continue;
-        }
-
-        if (disallowedChannelIds.includes(channel.id)) {
-          continue;
-        }
-
-        if (!(channel as GuildTextBasedChannel).viewable) {
-          continue;
-        }
-
-        channels.push(channel as GuildTextBasedChannel);
-      }
-    }
+    const channels = collectBackfillChannels(client, this.#configurationService.discordChannelsDisallowed);
 
     const userIds = await this.#memoryService.getAllConsentingUserIds();
 
@@ -219,15 +200,7 @@ export class MemoryCommandHandler {
         }
         processed.add(message.id);
 
-        if (message.author.id !== userId && message.author.id !== botId) {
-          continue;
-        }
-
-        if (message.author.bot && message.author.id !== botId) {
-          continue;
-        }
-
-        if (!this.#isStorable(message)) {
+        if (!this.#shouldStore(message, userId, botId)) {
           continue;
         }
 
@@ -267,26 +240,7 @@ export class MemoryCommandHandler {
       return 0;
     }
 
-    const disallowedChannelIds = this.#configurationService.discordChannelsDisallowed;
-    const channels: GuildTextBasedChannel[] = [];
-
-    for (const guild of client.guilds.cache.values()) {
-      for (const channel of guild.channels.cache.values()) {
-        if (!channel.isTextBased() || channel.isVoiceBased()) {
-          continue;
-        }
-
-        if (disallowedChannelIds.includes(channel.id)) {
-          continue;
-        }
-
-        if (!(channel as GuildTextBasedChannel).viewable) {
-          continue;
-        }
-
-        channels.push(channel as GuildTextBasedChannel);
-      }
-    }
+    const channels = collectBackfillChannels(client, this.#configurationService.discordChannelsDisallowed);
 
     let totalCount = 0;
 
@@ -323,15 +277,7 @@ export class MemoryCommandHandler {
         (a: DiscordMessage, b: DiscordMessage) => a.createdTimestamp - b.createdTimestamp);
 
       for (const message of sortedMessages) {
-        if (message.author.id !== userId && message.author.id !== botId) {
-          continue;
-        }
-
-        if (message.author.bot && message.author.id !== botId) {
-          continue;
-        }
-
-        if (!this.#isStorable(message)) {
+        if (!this.#shouldStore(message, userId, botId)) {
           continue;
         }
 
@@ -368,11 +314,7 @@ export class MemoryCommandHandler {
     return count;
   }
 
-  #isStorable(message: DiscordMessage): boolean {
-    const hasText = message.content.trim().length > 0;
-    const hasImages = this.#featureService.hasFeature(SupportedFeature.Vision)
-      && this.#attachmentService.getImageAttachments(message).length > 0;
-
-    return hasText || hasImages;
+  #shouldStore(message: DiscordMessage, userId: string, botId: string): boolean {
+    return isBackfillParticipant(message, userId, botId) && isStorableMessage(message, this.#featureService);
   }
 }

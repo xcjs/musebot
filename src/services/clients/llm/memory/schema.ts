@@ -14,6 +14,7 @@ export const LlmChatMessageRecord = sqliteTable('LlmChatMessage', {
   messageText: text('messageText').notNull(),
   isBot: integer('isBot', { mode: 'boolean' }).notNull(),
   embeddingModel: text('embeddingModel').notNull(),
+  embeddingSource: text('embeddingSource').notNull().default('message'),
   discordMessageId: text('discordMessageId'),
   createdAt: text('createdAt').notNull()
 });

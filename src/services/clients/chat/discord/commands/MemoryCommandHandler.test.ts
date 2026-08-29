@@ -1,5 +1,5 @@
 import { describe, expect, it, jest } from '@jest/globals';
-import { Client as DiscordClient, GuildTextBasedChannel, Message as DiscordMessage } from 'discord.js';
+import { ChatInputCommandInteraction, Client as DiscordClient, GuildTextBasedChannel, Message as DiscordMessage } from 'discord.js';
 
 import { createMockLogger, createMockServiceContainer } from '../../../../../test-utils/mockBotServiceContainer.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
@@ -113,6 +113,69 @@ function createTestHarness(options: {
 }
 
 describe('MemoryCommandHandler', () => {
+  describe('#handleRemember ack-first flow', () => {
+    function createInteraction(): { interaction: ChatInputCommandInteraction; editReply: jest.Mock } {
+      const editReply = jest.fn((): Promise<unknown> => Promise.resolve());
+      const interaction = {
+        user: { id: USER_ID },
+        client: { user: { id: BOT_ID }, guilds: { cache: new Map() } },
+        options: { getSubcommand: () => 'remember' },
+        editReply,
+      } as unknown as ChatInputCommandInteraction;
+      return { interaction, editReply };
+    }
+
+    it("acknowledges with 'I'll remember you.' before starting the backfill", async () => {
+      const { services } = createTestHarness({ incompleteBackfillUserIds: [], consentingUserIds: [] });
+      const memoryService = services.getMemoryService() as unknown as {
+        hasConsent: jest.Mock;
+        setConsent: jest.Mock;
+        isBackfillComplete: jest.Mock;
+        markBackfillComplete: jest.Mock;
+      };
+      const { interaction, editReply } = createInteraction();
+
+      const handler = new MemoryCommandHandler(services);
+      await handler.handle(interaction);
+
+      expect(memoryService.setConsent).toHaveBeenCalledWith(USER_ID);
+      expect(editReply).toHaveBeenCalledWith(expect.stringContaining("I'll remember you."));
+      await new Promise(resolve => setImmediate(resolve));
+      expect(memoryService.markBackfillComplete).toHaveBeenCalledWith(USER_ID);
+    });
+
+    it('makes the acknowledgment before the backfill finishes and completes it in the background', async () => {
+      const { services } = createTestHarness({ incompleteBackfillUserIds: [], consentingUserIds: [] });
+      const { interaction, editReply } = createInteraction();
+
+      // 250-message channel: the fake fetch resolves immediately, so the old
+      // await-backfill-then-ack flow would finish the whole backfill before
+      // any editReply. Assert the ack is the only reply synchronously after
+      // handle() resolves — with an empty guild the backfill also completes
+      // instantly, so instead gate on call order: editReply must be called
+      // before markBackfillComplete.
+      const memoryService = services.getMemoryService() as unknown as {
+        markBackfillComplete: jest.Mock;
+      };
+      const order: string[] = [];
+      editReply.mockImplementation((): Promise<void> => {
+        order.push('editReply');
+        return Promise.resolve();
+      });
+      memoryService.markBackfillComplete.mockImplementation((): Promise<void> => {
+        order.push('markBackfillComplete');
+        return Promise.resolve();
+      });
+
+      const handler = new MemoryCommandHandler(services);
+      await handler.handle(interaction);
+      await new Promise(resolve => setImmediate(resolve));
+
+      expect(order[0]).toBe('editReply');
+      expect(order[order.length - 1]).toBe('markBackfillComplete');
+    });
+  });
+
   it('backfills every storable message in a channel with more than one page of history', async () => {
     const messages = Array.from({ length: TOTAL_MESSAGES }, (_, i) => createFakeMessage(i + 1));
     const { channel } = createChannelWithMessages(messages);
