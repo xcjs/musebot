@@ -115,7 +115,7 @@ describe('OllamaClient', () => {
     ps: jest.Mock<() => Promise<{ models: Array<{ name: string; model?: string }> }>>;
     chat: jest.Mock<() => Promise<unknown>>;
     show: jest.Mock<() => Promise<unknown>>;
-    embed: jest.Mock<() => Promise<{ embeddings: number[][] }>>;
+    embed: jest.Mock<(input: unknown) => Promise<{ embeddings: number[][] }>>;
   };
   let client: OllamaClient;
 
@@ -127,7 +127,7 @@ describe('OllamaClient', () => {
       ps: jest.fn<() => Promise<{ models: Array<{ name: string; model: string }> }>>(),
       chat: jest.fn<() => Promise<unknown>>(),
       show: jest.fn<() => Promise<unknown>>(),
-      embed: jest.fn<() => Promise<{ embeddings: number[][] }>>()
+      embed: jest.fn<(input: unknown) => Promise<{ embeddings: number[][] }>>()
     };
     (Ollama as unknown as jest.Mock).mockImplementation(() => mockOllamaInstance);
 
@@ -301,6 +301,54 @@ describe('OllamaClient', () => {
       } catch (error) {
         expect((error as Error).cause).toBe(originalError);
       }
+    });
+  });
+
+  describe('embed/embedBatch', () => {
+    it('embed() should return the first embedding', async (): Promise<void> => {
+      mockConfig = createMockConfigurationService({ ollamaEmbeddingModel: 'embed-model' });
+      client = new OllamaClient(createMockServices(mockConfig, mockLogger));
+      mockOllamaInstance.embed.mockResolvedValue({ embeddings: [[0.1, 0.2]] });
+
+      const result = await client.embed('hello');
+
+      expect(result).toEqual([0.1, 0.2]);
+      expect(mockOllamaInstance.embed).toHaveBeenCalledWith({ model: 'embed-model', input: 'hello' });
+    });
+
+    it('embed() should throw when no embedding model is configured', async (): Promise<void> => {
+      mockConfig = createMockConfigurationService({ ollamaEmbeddingModel: null });
+      const unconfigured = new OllamaClient(createMockServices(mockConfig, mockLogger));
+
+      await expect(unconfigured.embed('hello')).rejects.toThrow('No embedding model configured.');
+    });
+
+    it('embedBatch() should send all inputs in one request and return every embedding', async (): Promise<void> => {
+      mockConfig = createMockConfigurationService({ ollamaEmbeddingModel: 'embed-model' });
+      client = new OllamaClient(createMockServices(mockConfig, mockLogger));
+      mockOllamaInstance.embed.mockResolvedValue({ embeddings: [[0.1], [0.2], [0.3]] });
+
+      const result = await client.embedBatch(['a', 'b', 'c']);
+
+      expect(result).toEqual([[0.1], [0.2], [0.3]]);
+      expect(mockOllamaInstance.embed).toHaveBeenCalledWith({ model: 'embed-model', input: ['a', 'b', 'c'] });
+    });
+
+    it('embedBatch() should return an empty array without calling Ollama for empty input', async (): Promise<void> => {
+      mockConfig = createMockConfigurationService({ ollamaEmbeddingModel: 'embed-model' });
+      client = new OllamaClient(createMockServices(mockConfig, mockLogger));
+
+      const result = await client.embedBatch([]);
+
+      expect(result).toEqual([]);
+      expect(mockOllamaInstance.embed).not.toHaveBeenCalled();
+    });
+
+    it('embedBatch() should throw when no embedding model is configured', async (): Promise<void> => {
+      mockConfig = createMockConfigurationService({ ollamaEmbeddingModel: null });
+      const unconfigured = new OllamaClient(createMockServices(mockConfig, mockLogger));
+
+      await expect(unconfigured.embedBatch(['a'])).rejects.toThrow('No embedding model configured.');
     });
   });
 });

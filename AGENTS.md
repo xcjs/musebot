@@ -11,7 +11,7 @@ configured via environment: `chat` (LLM-powered conversation) or `media`
 - **Language:** TypeScript (ES2022, ESNext modules)
 - **Runtime:** Node.js
 - **Package Manager:** npm
-- **Version:** 9.4.0
+- **Version:** 9.6.0
 
 ## Repository Structure
 

@@ -20,6 +20,16 @@ config.bots.forEach(botConfig => {
 
     logger.info(`Starting bot ${botConfig.botId} in ${botConfig.mode} mode...`);
 
+    const memoryService = botServices.getMemoryService();
+
+    const shutdown = (): void => {
+      void memoryService.closeDatabase();
+    };
+
+    process.once('SIGINT', shutdown);
+    process.once('SIGTERM', shutdown);
+    process.once('exit', shutdown);
+
     // Top-level awaits are not compatible with Parcel/Pkg. Do not replace with an await.
     featureService.loadFeatures().then(() => {
       client.login();

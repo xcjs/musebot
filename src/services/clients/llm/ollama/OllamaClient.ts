@@ -269,6 +269,22 @@ export class OllamaClient {
     return response.embeddings[0];
   }
 
+  async embedBatch(inputs: string[]): Promise<number[][]> {
+    if (inputs.length === 0) {
+      return [];
+    }
+
+    const embeddingModel = this.#configurationService.ollamaEmbeddingModel;
+
+    if (!embeddingModel) {
+      throw new Error('No embedding model configured.');
+    }
+
+    const response = await this.#client.embed({ model: embeddingModel, input: inputs });
+
+    return response.embeddings;
+  }
+
   async interpretImages(images: string[], contextPrompt: string = ''): Promise<string> {
     if (images.length === 0) {
       return '';
