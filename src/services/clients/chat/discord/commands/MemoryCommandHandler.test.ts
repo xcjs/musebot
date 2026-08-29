@@ -31,7 +31,9 @@ function createFakeMessage(index: number): DiscordMessage {
   } as unknown as DiscordMessage;
 }
 
-function createChannelWithMessages(messages: DiscordMessage[]): { channel: GuildTextBasedChannel; fetch: jest.Mock } {
+type FetchMock = jest.Mock<(options: FetchOptions) => Promise<Map<string, DiscordMessage>>>;
+
+function createChannelWithMessages(messages: DiscordMessage[]): { channel: GuildTextBasedChannel; fetch: FetchMock } {
   const fetch = jest.fn((options: FetchOptions): Promise<Map<string, DiscordMessage>> => {
     const limit = options.limit ?? 50;
     let candidates = messages;
@@ -68,9 +70,11 @@ function createClientWithChannel(channel: GuildTextBasedChannel): DiscordClient 
   } as unknown as DiscordClient;
 }
 
+type CreateMock = jest.Mock<(message: DiscordMessage) => { id: string }>;
+
 interface TestHarness {
   readonly services: IBotServiceContainer;
-  readonly create: jest.Mock;
+  readonly create: CreateMock;
 }
 
 function createTestHarness(options: {
@@ -91,7 +95,7 @@ function createTestHarness(options: {
     hasFeature: jest.fn((feature: SupportedFeature): boolean => feature === SupportedFeature.LongTermMemory),
   } as unknown as IFeatureService;
 
-  const create = jest.fn((message: DiscordMessage) => ({ id: message.id }));
+  const create = jest.fn((message: DiscordMessage): { id: string } => ({ id: message.id }));
 
   const taskQueue = {
     add: jest.fn((task: { onSuccess?: () => void }): void => {
