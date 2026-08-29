@@ -2,6 +2,28 @@
 
 All notable changes to Musebot are documented in this file.
 
+## [9.6.0] — 2026-08-28
+
+### Fixed
+
+- Long-term memory (LTM) backfill pagination no longer rescans the same window repeatedly (O(n²)): each page now advances by the page's oldest message instead of its newest, so a 250-message backfill issues ~3 fetches instead of ~15,000
+- LTM catch-up no longer silently skips messages when more than one page is pending — it now walks backward from the newest message until it reaches the last stored memory, processing every message in between
+- LTM retrieval quality on servers other than the newest: sqlite-vec's KNN limit was applied before server/model filters, letting other servers' memories consume the top-K slots; retrieval now over-fetches and re-ranks against the requesting server's rows
+- `/memory forget` no longer fails for users with large histories (over SQLite's 32,766 bound-variable limit); vector deletion uses a subselect instead of a per-row parameter list
+- `/memory remember` now acknowledges immediately ("I'll remember you.") and backfills in the background instead of blocking the slash-command interaction past its 15-minute token expiry
+- Passive memory storage now honors channel gating: DMs, disallowed channels, and (when configured) channels outside the allow-list are no longer stored
+- Multi-statement memory writes (store, re-embed, forget) are now transactional — a failed vector insert no longer leaves an orphaned row that permanently blocks re-storing that message
+- Embedding model switches now migrate memories from *any* previous model, not just the legacy empty-model marker; rows embedded under an older model no longer silently vanish from retrieval
+- Memories are embedded from the full serialized conversation message (speaker, channel, timestamps, attachments, and more) instead of only the raw message text; existing databases are automatically re-embedded in batches on startup, and legacy insertion-time `createdAt` values are repaired from the message's actual timestamp
+- Per-user message dedupe: the same Discord message can now be stored once per user during backfill (bot replies previously collided on a global unique index and were attributed to whichever user's backfill ran first)
+
+### Added
+
+- `OllamaClient.embedBatch` for batched embedding requests, used by the startup re-embed migration (batches of 32)
+- Memory database schema revision handling: new `embeddingSource` column, per-user dedupe index migration, and paged re-embed of legacy rows — all automatic on first memory use
+- Memory database is now closed cleanly on process shutdown (SIGINT/SIGTERM/exit)
+- Shared Discord backfill utilities (`backfillUtilities.ts`) extracted from the memory command handler; dead null check removed from `hasMessage`
+
 ## [9.5.3] — 2026-08-28
 
 ### Added
