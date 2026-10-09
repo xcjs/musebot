@@ -14,15 +14,15 @@
 
 - Version target: **10.0.0** (breaking config change; bump `package.json` version in final task).
 - Never rename or alter behavior of: `LlmChatMessage`, factory method names (`getLlmGenerateTask` etc.), `ContextMessage`, `ResourceType.LargeLanguageModel`, `SerialStrategy`/`GlobalServiceContainer` channel logic.
-- No SDKs — direct `fetch` only; the `ollama` npm dependency is REMOVED (`npm uninstall ollama` in Task 1; it stays usable until the last import is deleted in Task 5 — deletion from `package.json` happens in Task 5 when imports are gone. Task 1 stops installing it for new work).
-- `Authorization: Bearer <token>` header sent only when the host has a non-null token.
+- No SDKs — direct `fetch` only. The `ollama` npm dependency stays installed until Task 5 removes it (`npm uninstall ollama`) once the last `from 'ollama'` import is deleted.
+- `Authorization: Bearer <token>` header sent only when the host has a non-null token — applies to LlmClient requests, all lifecycle strategy fetches, and registry probes alike (Content-Type: application/json on every POST).
 - Raw generate (`generate`, `interpretImages`) = single-user-message `POST /v1/chat/completions` (NOT `/v1/completions`).
 - Structured output wire format: `response_format: { type: 'json_schema', json_schema: { name: 'result', schema } }`; `trimTrailingJsonContent` remains a safety net.
 - Streaming: `stream_options: { include_usage: true }`; SSE `data:` line parse; usage only guaranteed on final chunk.
-- All new named types live in dedicated files — **no anonymous types** in `IBotConfig.llm` or `IConfigurationService` (user constraint: every type in its own file).
+- All new named types live in dedicated files — **no anonymous types** in `IBotConfig.llm`, `IConfigurationService`, strategy response payloads, registry probe payloads, or LlmClient wire payloads (user constraint: every type in its own file).
 - Imports use `.js` extensions; sorted imports (simple-import-sort) enforced by `npm run lint`.
 - `services.llmClient` is TRANSIENT — every access constructs a new client with a new random host + model. Flavor/isLocal probing must therefore be cached by host URL in a singleton registry.
-- Interface method surface preserved verbatim (old `OllamaClient` method names) so consumer mocks stay mechanical.
+- Interface method surface preserved verbatim (old `OllamaClient` method names) so consumer mocks stay mechanical. Two deliberate deltas: dead `calculateTokensPerSecond` (zero callers) is dropped, and `getContextWindow(): Promise<number | null>` is added (delegates to the lifecycle strategy).
 - Explicit return types required on all functions (`explicit-function-return-type: error`); no floating promises.
 - Tests co-located `*.test.ts`, excluded from tsc build, run with `npx jest <path>` or `npm test`.
 - Commits: conventional style (`feat:`, `refactor:`, `test:`, `docs:`, `chore:`), never commit `config.jsonc` (contains real Discord token).
@@ -215,6 +215,12 @@ git commit -m "feat: add neutral LLM DTOs, enums, and constants"
 - Create: `src/services/clients/llm/lifecycle/LlamaCppRouterLifecycleStrategy.ts`
 - Create: `src/services/clients/llm/lifecycle/LlamaCppSingleLifecycleStrategy.ts`
 - Create: `src/services/clients/llm/lifecycle/NullLifecycleStrategy.ts`
+- Create: `src/services/clients/llm/lifecycle/models/OllamaPsResponse.ts`
+- Create: `src/services/clients/llm/lifecycle/models/OllamaPsModel.ts`
+- Create: `src/services/clients/llm/lifecycle/models/OllamaShowResponse.ts`
+- Create: `src/services/clients/llm/lifecycle/models/LlamaCppModelsResponse.ts`
+- Create: `src/services/clients/llm/lifecycle/models/LlamaCppModelStatus.ts`
+- Create: `src/services/clients/llm/lifecycle/models/LlamaCppPropsResponse.ts`
 - Test: `src/services/clients/llm/lifecycle/OllamaLifecycleStrategy.test.ts`
 - Test: `src/services/clients/llm/lifecycle/LlamaCppRouterLifecycleStrategy.test.ts`
 - Test: `src/services/clients/llm/lifecycle/LlamaCppSingleLifecycleStrategy.test.ts`
@@ -222,7 +228,7 @@ git commit -m "feat: add neutral LLM DTOs, enums, and constants"
 
 **Interfaces:**
 - Consumes: `ILlmHost` (Task 1), `LlmConstants` not needed here.
-- Produces: `ILlmLifecycleStrategy` interface — all later lifecycle consumers depend on this exact shape:
+- Produces: `ILlmLifecycleStrategy` interface — all later lifecycle consumers depend on this exact shape. Constructors (all strategies take `(host: ILlmHost, model: string, logger: ILogger, ...)` so `LlmClient` can construct them uniformly):
 
 ```typescript
 export interface ILlmLifecycleStrategy {
@@ -240,11 +246,16 @@ export interface ILlmLifecycleStrategy {
 // src/services/clients/llm/lifecycle/OllamaLifecycleStrategy.test.ts
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 
+import { ILlmHost } from '../models/ILlmHost.js';
 import { OllamaLifecycleStrategy } from './OllamaLifecycleStrategy.js';
 
 const mockLogger = {
   debug: jest.fn(), info: jest.fn(), success: jest.fn(), warn: jest.fn(), error: jest.fn(), fatal: jest.fn()
 };
+
+function makeHost(url: string, token: string | null = null): ILlmHost {
+  return { url: new URL(url), token, isLocal: null };
+}
 
 function mockResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), { status });
@@ -256,9 +267,10 @@ describe('OllamaLifecycleStrategy', () => {
   beforeEach((): void => {
     global.fetch = jest.fn();
     strategy = new OllamaLifecycleStrategy(
-      new URL('http://localhost:11434'),
-      null,
-      mockLogger as never);
+      makeHost('http://localhost:11434'),
+      'test-model',
+      mockLogger as never,
+      10);
   });
 
   it('free() posts keep_alive: 0 to /api/generate', async (): Promise<void> => {
@@ -270,6 +282,20 @@ describe('OllamaLifecycleStrategy', () => {
     const [url, init] = (global.fetch as jest.Mock).mock.calls[0];
     expect(String(url)).toBe('http://localhost:11434/api/generate');
     expect(JSON.parse(init.body as string)).toEqual({ model: 'test-model', keep_alive: 0 });
+  });
+
+  it('sends Authorization header only when token present', async (): Promise<void> => {
+    const authed = new OllamaLifecycleStrategy(
+      makeHost('http://localhost:11434', 'secret-token'),
+      'test-model',
+      mockLogger as never,
+      10);
+    (global.fetch as jest.Mock).mockResolvedValue(mockResponse(200, {}));
+
+    await authed.free();
+
+    const [, init] = (global.fetch as jest.Mock).mock.calls[0];
+    expect((init.headers as Record<string, string>).Authorization).toBe('Bearer secret-token');
   });
 
   it('isModelLoaded() returns true when model present in /api/ps', async (): Promise<void> => {
@@ -288,7 +314,7 @@ describe('OllamaLifecycleStrategy', () => {
     const result = await strategy.waitForModelUnload(10);
 
     expect(result).toBe(true);
-    expect((global.fetch as jest.Mock).toHaveBeenCalledTimes(3);
+    expect((global.fetch as jest.Mock).toHaveBeenCalledTimes(3));
   });
 
   it('getContextWindow() reads *.context_length from /api/show model_info', async (): Promise<void> => {
@@ -311,11 +337,16 @@ describe('OllamaLifecycleStrategy', () => {
 // src/services/clients/llm/lifecycle/LlamaCppRouterLifecycleStrategy.test.ts
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 
+import { ILlmHost } from '../models/ILlmHost.js';
 import { LlamaCppRouterLifecycleStrategy } from './LlamaCppRouterLifecycleStrategy.js';
 
 const mockLogger = {
   debug: jest.fn(), info: jest.fn(), success: jest.fn(), warn: jest.fn(), error: jest.fn(), fatal: jest.fn()
 };
+
+function makeHost(url: string, token: string | null = null): ILlmHost {
+  return { url: new URL(url), token, isLocal: null };
+}
 
 function mockResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), { status });
@@ -327,9 +358,10 @@ describe('LlamaCppRouterLifecycleStrategy', () => {
   beforeEach((): void => {
     global.fetch = jest.fn();
     strategy = new LlamaCppRouterLifecycleStrategy(
-      new URL('http://localhost:8080'),
-      null,
-      mockLogger as never);
+      makeHost('http://localhost:8080'),
+      'test-model',
+      mockLogger as never,
+      ['vision-model']);
   });
 
   it('free() posts model to /models/unload', async (): Promise<void> => {
@@ -349,7 +381,7 @@ describe('LlamaCppRouterLifecycleStrategy', () => {
     expect(await strategy.isModelLoaded()).toBe(true);
   });
 
-  it('waitForModelUnload() polls /models until status unloaded', async (): Promise<void> {
+  it('waitForModelUnload() polls /models until status unloaded', async (): Promise<void> => {
     (global.fetch as jest.Mock)
       .mockResolvedValueOnce(mockResponse(200, { success: true }))  // free
       .mockResolvedValueOnce(mockResponse(200, {
@@ -365,30 +397,18 @@ describe('LlamaCppRouterLifecycleStrategy', () => {
   it('getContextWindow() always null', async (): Promise<void> => {
     expect(await strategy.getContextWindow()).toBeNull();
   });
+
+  it('hasVisionCapability() true when model in visionModels', async (): Promise<void> => {
+    expect(await strategy.hasVisionCapability('vision-model')).toBe(true);
+    expect(await strategy.hasVisionCapability('other-model')).toBe(false);
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
 });
 ```
 
-```typescript
-// src/services/clients/llm/lifecycle/LlamaCppSingleLifecycleStrategy.test.ts
-import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+*(complete the LlamaCppSingleLifecycleStrategy.test.ts per the Ollama/Router patterns above: constructor `(host, model, logger, visionModels?: string[])`; free() resolves true WITHOUT any fetch call; waitForModelUnload() polls GET /props until `is_sleeping === true` — mock sequence: `is_sleeping: false` then `is_sleeping: true`, expect 2 fetch calls, returns true; isModelLoaded() returns false always (no fetch); getContextWindow() null; hasVisionCapability() via visionModels arg only, no fetch. Also test that waitForModelUnload does NOT call free() first — single-mode has no unload endpoint, it just polls /props for the externally-configured `--sleep-idle-seconds` sleep.)*
 
-import { LlamaCppSingleLifecycleStrategy } from './LlamaCppSingleLifecycleStrategy.js';
-
-const mockLogger = {
-  debug: jest.fn(), info: jest.fn(), success: jest.fn(), warn: jest.fn(), error: jest.fn(), fatal: jest.fn()
-};
-
-function mockResponse(status: number, body: unknown): Response {
-  return new Response(JSON.stringify(body), { status });
-}
-
-describe('LlamaCppSingleLifecycleStrategy', () => methods here
-);
-```
-
-*(complete the LlamaCppSingle test body per pattern above: free() resolves true without any fetch call; waitForModelUnload polls GET /props until `is_sleeping === true` — mock sequence: `is_sleeping: false`, then `is_sleeping: true`, expect 2 calls, returns true; getContextWindow() null; hasVisionCapability() false without fetch unless visionModels arg contains model — constructor takes `(url, token, logger, visionModels?: string[])`)*
-
-*(complete NullLifecycleStrategy.test.ts: all methods no-op — free() true, isModelLoaded() false, waitForModelUnload() true with zero fetch calls, getContextWindow() null, hasVisionCapability() only true if model in visionModels arg)*
+*(complete NullLifecycleStrategy.test.ts: all methods no-op — free() true, isModelLoaded() false, waitForModelUnload() true with ZERO fetch calls, getContextWindow() null, hasVisionCapability(model) only true if model in visionModels arg; constructor `(host, model, logger, visionModels?: string[])`.)*
 
 - [ ] **Step 2: Run tests to verify they fail**
 
@@ -396,6 +416,56 @@ Run: `npx jest src/services/clients/llm/lifecycle`
 Expected: FAIL — cannot resolve strategy modules
 
 - [ ] **Step 3: Write minimal implementations**
+
+First the named response DTOs (NO-ANONYMOUS-TYPES constraint — one interface per file):
+
+```typescript
+// src/services/clients/llm/lifecycle/models/OllamaPsModel.ts
+export interface OllamaPsModel {
+  name?: string;
+  model?: string;
+}
+```
+
+```typescript
+// src/services/clients/llm/lifecycle/models/OllamaPsResponse.ts
+import { OllamaPsModel } from './OllamaPsModel.js';
+
+export interface OllamaPsResponse {
+  models?: OllamaPsModel[];
+}
+```
+
+```typescript
+// src/services/clients/llm/lifecycle/models/OllamaShowResponse.ts
+export interface OllamaShowResponse {
+  model_info?: Record<string, unknown>;
+  capabilities?: string[];
+}
+```
+
+```typescript
+// src/services/clients/llm/lifecycle/models/LlamaCppModelStatus.ts
+export interface LlamaCppModelStatus {
+  value?: string;
+}
+```
+
+```typescript
+// src/services/clients/llm/lifecycle/models/LlamaCppModelsResponse.ts
+import { LlamaCppModelStatus } from './LlamaCppModelStatus.js';
+
+export interface LlamaCppModelsResponse {
+  models?: Array<{ model?: string; status?: LlamaCppModelStatus }>;
+}
+```
+
+```typescript
+// src/services/clients/llm/lifecycle/models/LlamaCppPropsResponse.ts
+export interface LlamaCppPropsResponse {
+  is_sleeping?: boolean;
+}
+```
 
 ```typescript
 // src/services/clients/llm/lifecycle/ILlmLifecycleStrategy.ts
@@ -413,6 +483,8 @@ export interface ILlmLifecycleStrategy {
 import { ILogger } from '../../../ILogger.js';
 import { ILlmHost } from '../models/ILlmHost.js';
 import { ILlmLifecycleStrategy } from './ILlmLifecycleStrategy.js';
+import { OllamaPsResponse } from './models/OllamaPsResponse.js';
+import { OllamaShowResponse } from './models/OllamaShowResponse.js';
 
 export class OllamaLifecycleStrategy implements ILlmLifecycleStrategy {
   readonly #host: ILlmHost;
@@ -427,11 +499,22 @@ export class OllamaLifecycleStrategy implements ILlmLifecycleStrategy {
     this.#intervalMs = intervalMs;
   }
 
+  #headers(json: boolean): Record<string, string> {
+    const headers: Record<string, string> = {};
+    if (json) {
+      headers['Content-Type'] = 'application/json';
+    }
+    if (this.#host.token !== null) {
+      headers['Authorization'] = `Bearer ${this.#host.token}`;
+    }
+    return headers;
+  }
+
   async free(): Promise<boolean> {
     try {
       const response = await fetch(new URL('/api/generate', this.#host.url), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: this.#headers(true),
         body: JSON.stringify({ model: this.#model, keep_alive: 0 })
       });
 
@@ -444,12 +527,14 @@ export class OllamaLifecycleStrategy implements ILlmLifecycleStrategy {
 
   async isModelLoaded(): Promise<boolean> {
     try {
-      const response = await fetch(new URL('/api/ps', this.#host.url));
+      const response = await fetch(new URL('/api/ps', this.#host.url), {
+        headers: this.#headers(false)
+      });
       if (!response.ok) {
         return false;
       }
 
-      const payload = await response.json() as { models?: Array<{ name?: string; model?: string }> };
+      const payload = await response.json() as OllamaPsResponse;
       return payload.models?.some(m => m.name === this.#model || m.model === this.#model) ?? false;
     } catch {
       return false;
@@ -480,7 +565,7 @@ export class OllamaLifecycleStrategy implements ILlmLifecycleStrategy {
     try {
       const response = await fetch(new URL('/api/show', this.#host.url), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: this.#headers(true),
         body: JSON.stringify({ model: this.#model })
       });
 
@@ -488,7 +573,7 @@ export class OllamaLifecycleStrategy implements ILlmLifecycleStrategy {
         return null;
       }
 
-      const payload = await response.json() as { model_info?: Record<string, unknown> };
+      const payload = await response.json() as OllamaShowResponse;
 
       for (const [key, value] of Object.entries(payload.model_info ?? {})) {
         if (key.endsWith('.context_length')) {
@@ -506,7 +591,7 @@ export class OllamaLifecycleStrategy implements ILlmLifecycleStrategy {
     try {
       const response = await fetch(new URL('/api/show', this.#host.url), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: this.#headers(true),
         body: JSON.stringify({ model })
       });
 
@@ -514,7 +599,7 @@ export class OllamaLifecycleStrategy implements ILlmLifecycleStrategy {
         return false;
       }
 
-      const payload = await response.json() as { capabilities?: string[] };
+      const payload = await response.json() as OllamaShowResponse;
       return payload.capabilities?.includes('vision') ?? false;
     } catch {
       return false;
@@ -523,11 +608,11 @@ export class OllamaLifecycleStrategy implements ILlmLifecycleStrategy {
 }
 ```
 
-*(LlamaCppRouterLifecycleStrategy: same structure — free() POST /models/unload body `{ model }`; isModelLoaded() GET /models, match `models[].model === model && status.value === 'loaded'`; waitForModelUnload() poll until status.value !== 'loaded' AND !== 'loading'; getContextWindow() → null; hasVisionCapability(model) → `this.#visionModels.includes(model)` where visionModels: string[] is a constructor arg.)*
+*(LlamaCppRouterLifecycleStrategy: same structure and `#headers` helper — constructor `(host: ILlmHost, model: string, logger: ILogger, visionModels?: string[])`; free() POST /models/unload body `{ model }` expecting `{ success: true }`; isModelLoaded() GET /models typed as `LlamaCppModelsResponse`, match `models[].model === model && status.value === 'loaded' || 'loading'`; waitForModelUnload() free() then poll GET /models until the model's `status.value` is neither 'loaded' nor 'loading'; getContextWindow() → null; hasVisionCapability(model) → `this.#visionModels?.includes(model) ?? false`, no fetch.)*
 
-*(LlamaCppSingleLifecycleStrategy: free() resolves true with no fetch; waitForModelUnload() polls GET /props until `is_sleeping === true`; isModelLoaded() → true when a free was requested but props shows not sleeping? NO — per spec: single-mode has no load-status endpoint; isModelLoaded() returns false always (model assumed resident, nothing to gate on); getContextWindow() null; hasVisionCapability(model) via visionModels arg.)*
+*(LlamaCppSingleLifecycleStrategy: constructor `(host, model, logger, visionModels?: string[])`; free() resolves true with NO fetch (nothing to unload — sleep mode is externally configured via --sleep-idle-seconds); waitForModelUnload() polls GET /props typed as `LlamaCppPropsResponse` until `is_sleeping === true` — does NOT call free() first; isModelLoaded() → false always; getContextWindow() null; hasVisionCapability(model) via visionModels arg.)*
 
-*(NullLifecycleStrategy: free() true; isModelLoaded() false; waitForModelUnload() true immediately; getContextWindow() null; hasVisionCapability(model) via visionModels arg.)*
+*(NullLifecycleStrategy: constructor `(host, model, logger, visionModels?: string[])`; free() true; isModelLoaded() false; waitForModelUnload() true immediately; getContextWindow() null; hasVisionCapability(model) via visionModels arg. All without fetch.)*
 
 - [ ] **Step 4: Run tests to verify they pass**
 
@@ -555,7 +640,7 @@ git commit -m "feat: add ILlmLifecycleStrategy with Ollama, llama.cpp router/sin
 - Produces: `LlmHostFlavorRegistry` class:
   - `constructor(logger: ILogger)`
   - `probeHost(host: ILlmHost, probeTimeoutMs: number): Promise<void>` — fetch probe calls, priority-ordered, with AbortController timeout; caches result internally keyed by `host.url.toString()`.
-  - `resolve(host: ILlmHost): { flavor: LlmHostFlavor, isLocal: boolean }` — cache-first; if probe not yet run for that URL, returns `{ flavor: Generic, isLocal: true }` (conservative default). Registry filled externally by `FeatureService` at startup — wait, no. Per spec: "Singleton per bot container. Probes each configured host once at startup." — so probe happens in `loadFeatures()`. `resolve()` is pure cache lookup with conservative default.
+  - `resolve(host: ILlmHost): { flavor: LlmHostFlavor, isLocal: boolean }` — cache-first; for unprobed URLs returns `{ flavor: Generic, isLocal: <explicit host.isLocal flag, else true> }` (conservative default; an explicit `isLocal` flag governs even before probing). Per spec, probing happens once at startup in `FeatureService.loadFeatures()`; `resolve()` is otherwise a pure cache lookup.
   - `clear(): void` — test isolation.
 
 Probe priority (from spec, must match exactly): 1. `GET {url}/api/ps` → 200 ⇒ ollama; 2. `GET {url}/models` (non-/v1) → 200 ⇒ llamacpp-router; 3. `GET {url}/props` → 200 ⇒ llamacpp-single; 4. else ⇒ generic.
@@ -634,10 +719,10 @@ describe('LlmHostFlavorRegistry', () => {
     expect(resolved.isLocal).toBe(true);
   });
 
-  it('explicit isLocal flag wins over auto-detect', async (): Promise<void> => {
-    registry.probeHost; // no-op reference
+  it('explicit isLocal flag wins over auto-detect even when unprobed', (): void => {
     const resolved = registry.resolve(host('https://api.openai.com', false));
 
+    expect(resolved.flavor).toBe(LlmHostFlavor.Generic);
     expect(resolved.isLocal).toBe(false);
   });
 
@@ -689,7 +774,12 @@ export class LlmHostFlavorRegistry {
       return cached;
     }
 
-    // Conservative default: assume generic/local until probed.
+    // Unprobed: flavor unknown (generic), but an explicit isLocal flag still governs.
+    if (host.isLocal !== null) {
+      return { flavor: LlmHostFlavor.Generic, isLocal: host.isLocal };
+    }
+
+    // Conservative default: assume local until probed.
     return { flavor: LlmHostFlavor.Generic, isLocal: true };
   }
 
@@ -706,7 +796,13 @@ export class LlmHostFlavorRegistry {
 
     for (const probe of probes) {
       try {
+        const headers: Record<string, string> = {};
+        if (host.token !== null) {
+          headers['Authorization'] = `Bearer ${host.token}`;
+        }
+
         const response = await fetch(new URL(probe.path, host.url), {
+          headers,
           signal: AbortSignal.timeout(probeTimeoutMs)
         });
 
@@ -803,10 +899,13 @@ export interface ILlmClient {
   free(): Promise<boolean>;
   isModelLoaded(): Promise<boolean>;
   waitForModelUnload(intervalMs?: number): Promise<boolean>;
+  getContextWindow(): Promise<number | null>;
   hasVisionCapability(model?: string): Promise<boolean>;
-  show(model?: string): Promise<ShowResponse>;  // kept on ILlmClient for FeatureService/ContextCompression until re-typed in Task 6
+  show(model?: string): Promise<LlmShowResponse>;
 }
 ```
+
+(Old `OllamaClient` surface deltas: dead `calculateTokensPerSecond` static is dropped — zero callers; `getContextWindow()` added, delegating to the lifecycle strategy; `show()` re-typed to `LlmShowResponse`.)
 
 Define `ILlmRequest` in `src/services/clients/llm/models/ILlmRequest.ts`:
 ```typescript
@@ -819,7 +918,7 @@ export interface ILlmRequest {
 }
 ```
 
-`ShowResponse` stays the ollama-js import until Task 6 — NO. Global Constraints: no ollama-js types anywhere. Instead define `LlmShowResponse` in `src/services/clients/llm/models/LlmShowResponse.ts`:
+`ShowResponse` from ollama-js is replaced by `LlmShowResponse` in `src/services/clients/llm/models/LlmShowResponse.ts` (no ollama-js types anywhere):
 ```typescript
 export interface LlmShowResponse {
   model_info?: Record<string, unknown>;
@@ -828,11 +927,16 @@ export interface LlmShowResponse {
 ```
 `ILlmClient.show` returns `Promise<LlmShowResponse>`.
 
-`LlmClient` constructor: `(services: IBotServiceContainer)` — picks random host from `configurationService.llmHosts` (Task 6 renames it — this task codes against `llmHosts` and the registry property added in Task 6; until then the config service still exposes `ollamaHosts` — **resolution: this task consumes `services.llmHostFlavorRegistry` (new property added in Task 6) and `configurationService.llmHosts` (renamed in Task 6). To keep the branch compiling between Task 4 and Task 6, this task creates `LlmClient` with a constructor-local shim: it reads `(this.#configurationService as { llmHosts?: ILlmHost[] }).llmHosts ?? (this.#configurationService as { ollamaHosts?: URL[] }).ollamaHosts?.map(...)` — NO, that's messy.** Cleaner: Task 4 only defines the interface + LlmClient consuming `IConfigurationService.llmHosts: ILlmHost[]` — the config rename happens FIRST in the same commit as Task 4, so the config service must be updated in Task 4's commit too. **REVISED Task 4 scope: config rename (`ollamaHosts`→`llmHosts: ILlmHost[]`, all `ollama*`→`llm*` accessors, `IBotConfig.ollama`→`IBotConfig.llm` with host objects + `visionModels`, `#validateMode` update, `#logConfiguration` update) happens in Task 4, together with the client.** This keeps every commit compiling.
+`LlmClient` constructor: `(services: IBotServiceContainer)` — picks a random host from `configurationService.llmHosts` and a random model from `configurationService.llmModels`, exactly as `OllamaClient` does today with `ollamaHosts`/`ollamaModels`. Because `llmClient` is transient (new instance per access), flavor/isLocal comes from the singleton `services.llmHostFlavorRegistry` (cached by host URL). To keep this task self-contained and the branch compiling, **Task 4's commit includes BOTH the client and the config rename**, plus a minimal container addition:
+
+- `IBotServiceContainer` + `BotServiceContainer`: add singleton `llmHostFlavorRegistry: LlmHostFlavorRegistry` (lazily cached, `new LlmHostFlavorRegistry(services.getLogger('LlmHostFlavorRegistry'))`). Task 5 sweeps the remaining container members.
+- Config rename (details in Step 3): `IBotConfig.ollama` → `IBotConfig.llm` with host objects + `visionModels`; `IConfigurationService`/`ConfigurationService` `ollama*` accessors → `llm*`. Non-test consumers of the old accessor names (`FeatureService.ts:37-47,67`, `MemoryService.ts:182,205`, `ContextCompressionService.ts:49,260`, `GenerativeChatClient.ts:56`) are renamed in THIS commit too — they are only a handful of property reads, and leaving them would break `npm run build` (tsc compiles src, not tests).
+
+At this commit boundary, existing TEST files referencing `ollamaHosts`/`ollamaClient` may fail to compile under ts-jest — acceptable ONLY if `npm run build` passes and Task 4's own tests pass. Task 5 fixes the test files.
 
 - [ ] **Step 1: Write the failing test**
 
-*(Write `LlmClient.test.ts` mocking `global.fetch` — tests for: host/model random selection logging; generate() posts single-user-message chat completion body `{ model, messages: [{role:'user',content:prompt}], temperature }` to `{url}/v1/chat/completions`, returns `LlmGenerateResult` mapped from `choices[0].message.content` + usage; sendMessage() appends user message, returns message + pushes response into context; sendMessageAndGetStream() returns AsyncIterable of LlmStreamChunk parsed from SSE `data:` lines, final chunk carries usage; Bearer header only when token present; structured output sends response_format json_schema + parses trimmed JSON; embeddings POST /v1/embeddings `{ model, input }` returning data[0].embedding; embedBatch maps data[].embedding in input order; interpretImages builds the hardcoded vision prompt + single user message with image_url content parts `data:image/jpeg;base64,...`; error wrapping preserves `.cause`; calculateTokensPerSecond static re-typed to `LlmGenerateResult` using completionTokens/completionTokensPerSecond — see Step 3 for exact mapping code. Assert `Authorization` header absent when token null.)*
+*(Write `LlmClient.test.ts` mocking `global.fetch` — tests for: host/model random selection logging; generate() posts single-user-message chat completion body `{ model, messages: [{role:'user',content:prompt}], temperature }` to `{url}/v1/chat/completions`, returns `LlmGenerateResult` mapped from `choices[0].message.content` + usage; sendMessage() appends user message, returns message + pushes response into context; sendMessageAndGetStream() returns AsyncIterable of LlmStreamChunk parsed from SSE `data:` lines, final chunk carries usage; Bearer header only when token present; structured output sends response_format json_schema + parses trimmed JSON; embeddings POST /v1/embeddings `{ model, input }` returning data[0].embedding; embedBatch maps data[].embedding in input order; interpretImages builds the hardcoded vision prompt + single user message with image_url content parts `data:image/jpeg;base64,...`; error wrapping preserves `.cause`; strategy selection routes non-local hosts to NullLifecycleStrategy and ollama-flavor hosts to OllamaLifecycleStrategy (mock `services.llmHostFlavorRegistry.resolve`); `getContextWindow()` delegates to the strategy. Assert `Authorization` header absent when token null. Do NOT port any `calculateTokensPerSecond` test — the static is dead code and dropped.)*
 
 - [ ] **Step 2: Run test to verify it fails**
 
@@ -904,8 +1008,8 @@ git commit -m "feat: add ILlmClient/LlmClient with OpenAI-compatible wire protoc
 **Files:**
 - Modify: `src/services/IBotServiceContainer.ts`, `src/services/BotServiceContainer.ts`, `src/services/GlobalServiceContainer.ts`
 - Modify: all files under `src/services/clients/llm/ollama/` — renamed per table; delete old folder at the end
-- Modify: `src/services/clients/chat/discord/ollama/` → files renamed `OllamaReplyService.ts`→`LlmReplyService.ts`, `OllamaStreamingReplyService.ts`→`LlmStreamingReplyService.ts`, `DiscordOllamaContextMessageFactory.ts`→`DiscordLlmContextMessageFactory.ts`; folder `ollama/` → rename files only, keep folder? **Decision: rename folder to `llm/`?** — No: keep `chat/discord/ollama/` folder renamed to `chat/discord/llm/` for neutrality; `DiscordChatMessageFactory.ts` + `DiscordLlmChatMessageFactory.ts` move unchanged (import paths only).
-- Modify: `src/services/clients/chat/IInputChatMessageFilter.ts`, `GenerativeChatClient.ts`, `IMemoryService.ts`, `MemoryService.ts`, `DiscordMemoryInputFilter.ts`, `DiscordCodeBlockExtractFilter.ts`, `ContextCompressionService.ts`, `ContextService.ts` + `IContextService.ts` + `IContextMessageFactory.ts` (generic type param renames only), `GenerativeAiChannelPostProcessor.ts`, `FeatureService.ts`, `ComfyUiBaseTask.ts`, `ComfyUiAttachmentTask.ts`, `ComfyUiMessageTask.ts` (call-site re-types only)
+- Modify: `src/services/clients/chat/discord/ollama/` → folder renamed to `chat/discord/llm/`; files renamed `OllamaReplyService.ts`→`LlmReplyService.ts`, `OllamaStreamingReplyService.ts`→`LlmStreamingReplyService.ts`, `DiscordOllamaContextMessageFactory.ts`→`DiscordLlmContextMessageFactory.ts`; `DiscordChatMessageFactory.ts` + `DiscordLlmChatMessageFactory.ts` move unchanged (import-path fixes only)
+- Modify: `src/services/clients/chat/IInputChatMessageFilter.ts`, `GenerativeChatClient.ts`, `IMemoryService.ts`, `MemoryService.ts`, `DiscordMemoryInputFilter.ts`, `DiscordCodeBlockExtractFilter.ts`, `ContextCompressionService.ts`, `ContextService.ts` + `IContextService.ts` + `IContextMessageFactory.ts` + `ILlmChatMessageFactory.ts` (generic type param + import renames only), `GenerativeAiChannelPostProcessor.ts`, `FeatureService.ts`, `ComfyUiBaseTask.ts`, `ComfyUiAttachmentTask.ts`, `ComfyUiMessageTask.ts` (call-site re-types only), `SongPromptTypeRequestType.ts` + `SongPromptMetadataRequestType.ts` (import path fix: `llm/ollama/models/IStructuredRequestData.js` → `llm/models/IStructuredRequestData.js`)
 - Modify: `src/test-utils/mockBotServiceContainer.ts`
 - Modify: `src/services/clients/media/comfy-ui/services/workflow-mutators/ExpandPromptMutator.ts`, `RandomPromptMutator.ts`, `MessageToMusicMutator.ts` (+ their `.test.ts` files)
 - Delete: `src/services/clients/llm/ollama/` (entire folder) after moves
@@ -939,9 +1043,9 @@ For every file listed in Files:
 - `OllamaMessageTask.ts:96-99` and `:186-187`: `response.prompt_eval_count`→`response.promptTokens`, `response.eval_count`→`response.completionTokens` (LlmChatResult/LlmStreamChunk fields)
 - `ExpandPromptMutator.ts:75` and `RandomPromptMutator.ts:81,83`: `payload.response.response`→`payload.response.content`
 - `OllamaMessageTask.ts:285`: `payload.response.response`→`payload.response.content`
-- `ContextCompressionService.ts`: `show()` usage replaced by strategy chain: `#resolveContextWindow()` order = config `llmContextWindow` → `await this.#services.llmClient.getContextWindow()`… wait — `getContextWindow` is not on `ILlmClient`. Spec: "Context window resolution order (ContextCompressionService): config llm.contextWindow → strategy result → fallback 4096." So `ILlmClient` must also expose `getContextWindow(): Promise<number | null>` delegating to strategy. ADD to Task 4's `ILlmClient` interface: `getContextWindow(): Promise<number | null>;`. Task 5 wires `ContextCompressionService.#resolveContextWindow` to use config → `llmClient.getContextWindow()` → 4096.
+- `ContextCompressionService.ts`: `show()` usage (line 267) replaced by the context window chain: `#resolveContextWindow()` order = config `llmContextWindow` → `await this.#services.llmClient.getContextWindow()` (already on `ILlmClient` from Task 4) → fallback 4096. `sendMessage` re-typed to neutral DTOs (`ILlmRequest`/`LlmChatResult`; `.response.message.content` shape preserved).
 - `ComfyUiBaseTask.ts:50` / `ComfyUiMessageTask.ts` / `ComfyUiInteractionTask.ts` / `ComfyUiAttachmentTask.ts:158`: re-type `#ollamaClient` field to `ILlmClient`, rename to `#llmClient`, `services.ollamaClient` → `services.llmClient`
-- `FeatureService.ts`: `ollamaHosts`→`llmHosts`, `ollamaModels`→`llmModels`, `ollamaEmbeddingModel`→`llmEmbeddingModel`, `services.ollamaClient`→`services.llmClient`; ADD registry probing in `loadFeatures()` before vision probe:
+- `FeatureService.ts`: config keys renamed in Task 4 — in Task 5 add the registry probing in `loadFeatures()` before the vision probe (the `llmHostFlavorRegistry` container singleton added in Task 4 makes this possible):
 
 ```typescript
 // insert at top of loadFeatures(), after loadWorkflows():
@@ -951,15 +1055,17 @@ for (const host of this.#configurationService.llmHosts) {
 }
 ```
 
+- Also in `FeatureService.ts:71`: `this.#services.ollamaClient` → `this.#services.llmClient` (the vision probe `hasVisionCapability(model)` stays on the client interface and delegates to the strategy — for Ollama flavor it probes /api/show, for others it consults `llmVisionModels`).
+
 - [ ] **Step 3: Move + rename task files**
 
 Move each `clients/llm/ollama/tasks/Ollama*.ts` (+ `.test.ts`) to `clients/llm/tasks/Llm*.ts` with class renames, updated imports (DTOs, `LLM_TEMPERATURE_DEFAULT`, `LlmRole`, `LlmBaseTask`), and the response-field changes listed above. `LlmBaseTask` field renames: `ollamaClient`→`llmClient`, `ollamaReplyService`→`llmReplyService`, `ollamaStreamingReplyService`→`llmStreamingReplyService`. `LlmTaskChannelPostProcessor` frees via `services.llmClient.free()`.
 
 - [ ] **Step 4: Update the shared mock + fix remaining test files**
 
-`src/test-utils/mockBotServiceContainer.ts`: `ollamaClient: null as never` → `llmClient: null as never`; add `llmHostFlavorRegistry: null as never`; config literal `ollamaHosts: []` → `llmHosts: []`, `ollamaModels: []` → `llmModels: []`, `ollamaSystemPrompt` → `llmSystemPrompt: ''`, `ollamaStreamsResponse` → `llmStreamsResponse: false`, `ollamaEmbeddingModel` → `llmEmbeddingModel: null`, `ollamaTopK` → `llmTopK: 5`, `ollamaContextWindow` → `llmContextWindow: null`, `ollamaContextCompressionThreshold` → `llmContextCompressionThreshold: 0.75`, add `llmVisionModels: []`.
+`src/test-utils/mockBotServiceContainer.ts`: config literals exist TWICE (~lines 102-109 and ~lines 155-162) — update BOTH: `ollamaHosts: []` → `llmHosts: []`, `ollamaModels: []` → `llmModels: []`, `ollamaSystemPrompt` → `llmSystemPrompt: ''`, `ollamaStreamsResponse` → `llmStreamsResponse: false`, `ollamaEmbeddingModel` → `llmEmbeddingModel: null`, `ollamaTopK` → `llmTopK: 5`, `ollamaContextWindow` → `llmContextWindow: null`, `ollamaContextCompressionThreshold` → `llmContextCompressionThreshold: 0.75`, add `llmVisionModels: []` to each. Container properties: `ollamaClient: null as never` → `llmClient: null as never`; `ollamaReplyService` → `llmReplyService: null as never`; `ollamaStreamingReplyService` → `llmStreamingReplyService: null as never`; add `llmHostFlavorRegistry: null as never`.
 
-Then fix each consumer test file mechanically (jest.Mocked<OllamaClient> literals → jest.Mocked<ILlmClient> with identical method names; config keys swapped). List of affected test files: `OllamaGenerateTask.test.ts`, `OllamaGenerateStructuredTask.test.ts`, `OllamaMessageTask.test.ts`, `OllamaBaseTask.test.ts` (→ moved+renamed as `Llm*.test.ts`), `ContextCompressionService.test.ts`, `MemoryService.test.ts`, `GenerativeAiChannelPostProcessor.test.ts`, `FeatureService.test.ts`, `ComfyUiBaseTask.test.ts`, `ComfyUiMessageTask.test.ts`, `ComfyUiInteractionTask.test.ts`, `ContextService.test.ts`, `JsonMutator.test.ts`, `MessageToMusicMutator.test.ts`, `ComfyUiClient.test.ts`, `OllamaClient.test.ts` (DELETE — replaced by `LlmClient.test.ts` from Task 4).
+Then fix each consumer test file mechanically (jest.Mocked<OllamaClient> literals → jest.Mocked<ILlmClient> with identical method names; config keys swapped; `import ... from '../ollama/...'` → `'../models/...'` / `'../../models/...'` per new layout). Complete affected list (verified by grep): the four moved task tests (`OllamaGenerateTask.test.ts`, `OllamaGenerateStructuredTask.test.ts`, `OllamaMessageTask.test.ts`, `OllamaBaseTask.test.ts` → renamed `Llm*.test.ts` in `clients/llm/tasks/`), `ContextCompressionService.test.ts` (mock client + `show()`→`getContextWindow()` + config keys), `ContextService.test.ts` (ContextMessage import path + `ollamaClient`/`ollamaReplyService`/`ollamaStreamingReplyService` container keys), `MemoryService.test.ts` (config keys `ollamaEmbeddingModel`/`ollamaTopK` + `ollamaClient` key + LlmChatMessage import path), `GenerativeAiChannelPostProcessor.test.ts` (OllamaClient type → ILlmClient), `FeatureService.test.ts` (config keys), `ComfyUiClient.test.ts` (config keys + container keys), `ComfyUiBaseTask.test.ts`, `ComfyUiMessageTask.test.ts`, `ComfyUiInteractionTask.test.ts` (waitForModelUnload mocks), `JsonMutator.test.ts` + `MessageToMusicMutator.test.ts` (if they reference ollama types — check), `ConfigurationService.test.ts` (config keys + error-message assertions updated to new validation text), `OllamaClient.test.ts` (DELETE — replaced by `LlmClient.test.ts` from Task 4).
 
 - [ ] **Step 5: Full suite green + delete old folder + drop dependency**
 
