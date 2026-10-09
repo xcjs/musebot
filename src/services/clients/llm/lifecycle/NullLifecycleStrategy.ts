@@ -3,13 +3,11 @@ import { ILlmHost } from '../models/ILlmHost.js';
 import { ILlmLifecycleStrategy } from './ILlmLifecycleStrategy.js';
 
 export class NullLifecycleStrategy implements ILlmLifecycleStrategy {
-  readonly #host: ILlmHost;
   readonly #model: string;
   readonly #logger: ILogger;
   readonly #visionModels: string[] | undefined;
 
-  constructor(host: ILlmHost, model: string, logger: ILogger, visionModels?: string[]) {
-    this.#host = host;
+  constructor(_host: ILlmHost, model: string, logger: ILogger, visionModels?: string[]) {
     this.#model = model;
     this.#logger = logger;
     this.#visionModels = visionModels;

@@ -38,6 +38,7 @@ describe('OllamaLifecycleStrategy', () => {
     const [url, init] = fetchMock.mock.calls[0];
     expect(String(url as string)).toBe('http://localhost:11434/api/generate');
     expect(JSON.parse(init.body as string)).toEqual({ model: 'test-model', keep_alive: 0 });
+    expect((init.headers as Record<string, string>).Authorization).toBeUndefined();
   });
 
   it('sends Authorization header only when token present', async (): Promise<void> => {

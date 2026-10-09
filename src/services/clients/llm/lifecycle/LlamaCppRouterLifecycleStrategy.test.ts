@@ -36,6 +36,7 @@ describe('LlamaCppRouterLifecycleStrategy', () => {
     const [url, init] = fetchMock.mock.calls[0];
     expect(String(url as string)).toBe('http://localhost:8080/models/unload');
     expect(JSON.parse(init.body as string)).toEqual({ model: 'test-model' });
+    expect((init.headers as Record<string, string>).Authorization).toBeUndefined();
   });
 
   it('isModelLoaded() true when /models lists status loaded', async (): Promise<void> => {
