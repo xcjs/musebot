@@ -81,7 +81,7 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
 
     const images = await this.#getImages();
 
-    if (this.configurationService.ollamaStreamsResponse) {
+    if (this.configurationService.llmStreamsResponse) {
       await this.#processAsStream(formattedMessage, context, llmChatMessage, images);
       return;
     }

@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "build/tsc",
+    "sourceMap": true
+  },
+  "include": [
+    "docs/.vuepress/**/*.ts",
+    "src/**/*.ts",
+    "*.ts"
+  ],
+  "exclude": [
+    "**/*.test.ts"
+  ]
+}

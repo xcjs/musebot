@@ -40,7 +40,7 @@ export class OllamaEmojiReactionTask extends OllamaBaseTask<void> {
     const prompt = `${userMention} reacted to your response with ${this.#reaction.emoji.name}. React to them regarding their reaction.`
     const context = this.contextService.getContextByChannelId(this.#reaction.message.channelId);
 
-    if (this.configurationService.ollamaStreamsResponse) {
+    if (this.configurationService.llmStreamsResponse) {
       await this.#processAsStream(prompt, context);
       return;
     }

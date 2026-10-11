@@ -1,4 +1,4 @@
-﻿import { ChatRequest, ChatResponse, GenerateRequest, GenerateResponse, Message, Ollama, ShowResponse } from 'ollama';
+import { ChatRequest, ChatResponse, GenerateRequest, GenerateResponse, Message, Ollama, ShowResponse } from 'ollama';
 
 import { IHttpExchange } from '../../../../models/IHttpExchange.js';
 import { IHttpExchangeWithAttachedData } from '../../../../models/IHttpExchangeWithAttachedData.js';
@@ -31,20 +31,20 @@ export class OllamaClient {
 
     this.#logger = services.getLogger('OllamaClient');
 
-    const host = getRandomArrayEntry(this.#configurationService.ollamaHosts);
+    const host = getRandomArrayEntry(this.#configurationService.llmHosts);
 
     if (!host) {
       throw new Error('No Ollama hosts configured in environment settings.');
     }
 
-    this.#host = host;
-    this.#logger.info(`Selected host: ${host}`);
+    this.#host = host.url;
+    this.#logger.info(`Selected host: ${host.url.toString()}`);
 
     this.#client = new Ollama({
-      host: host.toString()
+      host: host.url.toString()
     });
 
-    this.#model = this.#selectModel(this.#configurationService.ollamaModels);
+    this.#model = this.#selectModel(this.#configurationService.llmModels);
   }
 
   async generate(prompt: string, temperature: number | undefined = undefined): Promise<IHttpExchange<GenerateRequest, GenerateResponse>> {
@@ -258,7 +258,7 @@ export class OllamaClient {
   }
 
   async embed(input: string): Promise<number[]> {
-    const embeddingModel = this.#configurationService.ollamaEmbeddingModel;
+    const embeddingModel = this.#configurationService.llmEmbeddingModel;
 
     if (!embeddingModel) {
       throw new Error('No embedding model configured.');
@@ -274,7 +274,7 @@ export class OllamaClient {
       return [];
     }
 
-    const embeddingModel = this.#configurationService.ollamaEmbeddingModel;
+    const embeddingModel = this.#configurationService.llmEmbeddingModel;
 
     if (!embeddingModel) {
       throw new Error('No embedding model configured.');

@@ -19,6 +19,7 @@ import { IInputChatMessageFilter } from './clients/chat/IInputChatMessageFilter.
 import { IOutputChatMessageFilter } from './clients/chat/IOutputChatMessageFilter.js';
 import { IReplyService } from './clients/chat/IReplyService.js';
 import { ITypingService } from './clients/chat/ITypingService.js';
+import { LlmHostFlavorRegistry } from './clients/llm/LlmHostFlavorRegistry.js';
 import { IStructuredRequestData } from './clients/llm/ollama/models/IStructuredRequestData.js';
 import { LlmChatMessage } from './clients/llm/ollama/models/LlmChatMessage.js';
 import { OllamaClient } from './clients/llm/ollama/OllamaClient.js';
@@ -57,6 +58,7 @@ export interface IBotServiceContainer {
   workflowService: IWorkflowService;
   parallelizationStrategy: IParallelizationStrategy;
   webContentService: WebContentService;
+  llmHostFlavorRegistry: LlmHostFlavorRegistry;
 
   getWorkflowMutator(interactionType: BotInteraction, workflow: IWorkflow): IWorkflowMutator;
 

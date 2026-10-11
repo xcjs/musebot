@@ -34,8 +34,8 @@ export class FeatureService implements IFeatureService {
   async loadFeatures(): Promise<void> {
     await this.#workflowService.loadWorkflows();
 
-    if (this.#configurationService.ollamaHosts.length > 0
-      && this.#configurationService.ollamaModels.length > 0) {
+    if (this.#configurationService.llmHosts.length > 0
+      && this.#configurationService.llmModels.length > 0) {
         this.#logger.info(`${SupportedFeature.Txt2Txt} supported.`);
         this.#supportedFeatures.push(SupportedFeature.Txt2Txt);
 
@@ -43,8 +43,8 @@ export class FeatureService implements IFeatureService {
     }
 
     if (this.#configurationService.botFunction === BotMode.Chat
-      && this.#configurationService.ollamaHosts.length > 0
-      && this.#configurationService.ollamaEmbeddingModel !== null) {
+      && this.#configurationService.llmHosts.length > 0
+      && this.#configurationService.llmEmbeddingModel !== null) {
         this.#logger.info(`${SupportedFeature.LongTermMemory} supported.`);
         this.#supportedFeatures.push(SupportedFeature.LongTermMemory);
     }
@@ -64,7 +64,7 @@ export class FeatureService implements IFeatureService {
   }
 
   async #probeVisionCapability(): Promise<void> {
-    const models = this.#configurationService.ollamaModels;
+    const models = this.#configurationService.llmModels;
 
     for (const model of models) {
       try {

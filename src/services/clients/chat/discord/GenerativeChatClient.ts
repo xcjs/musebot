@@ -53,7 +53,7 @@ export class GenerativeChatClient extends BaseDiscordClient {
     this.#featureService = services.featureService;
     this.#attachmentService = new DiscordAttachmentService();
 
-    const systemPrompt = this.#configurationService.ollamaSystemPrompt;
+    const systemPrompt = this.#configurationService.llmSystemPrompt;
     this.#contextService.addContext([this.#contextMessageFactory.fromSystemPrompt(systemPrompt, null, true)]);
 
     this.#registerEvents();

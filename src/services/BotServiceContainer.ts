@@ -40,6 +40,7 @@ import { IReplyService } from './clients/chat/IReplyService.js';
 import { ITypingService } from './clients/chat/ITypingService.js';
 import { ShowHelpTask } from './clients/internal/tasks/ShowHelpTask.js';
 import { ChatHelpService } from './clients/llm/help/ChatHelpService.js';
+import { LlmHostFlavorRegistry } from './clients/llm/LlmHostFlavorRegistry.js';
 import { MemoryService } from './clients/llm/memory/MemoryService.js';
 import { IStructuredRequestData } from './clients/llm/ollama/models/IStructuredRequestData.js';
 import { LlmChatMessage } from './clients/llm/ollama/models/LlmChatMessage.js';
@@ -152,6 +153,14 @@ export class BotServiceContainer implements IBotServiceContainer {
   readonly #webContentService: WebContentService;
   get webContentService(): WebContentService {
     return this.#webContentService;
+  }
+
+  #llmHostFlavorRegistry: LlmHostFlavorRegistry | null = null;
+  get llmHostFlavorRegistry(): LlmHostFlavorRegistry {
+    if (this.#llmHostFlavorRegistry === null) {
+      this.#llmHostFlavorRegistry = new LlmHostFlavorRegistry(this.getLogger('LlmHostFlavorRegistry'));
+    }
+    return this.#llmHostFlavorRegistry;
   }
 
   // Transients -------------------------------------------------------------/

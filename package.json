@@ -40,7 +40,7 @@
     "prestart": "npm run parcel",
     "start": "node .",
     "start:only": "node .",
-    "build": "tsc",
+    "build": "tsc -p tsconfig.build.json",
     "preparcel": "npm run build",
     "parcel": "parcel build build/tsc/src/app.js",
     "watch": "tsc -w",

@@ -1,5 +1,6 @@
 import { BotMode } from '../../enums/BotMode.js';
 import { TaskQueueStrategy } from '../../enums/TaskQueueStrategy.js';
+import { ILlmHostConfig } from './ILlmHostConfig.js';
 
 export interface IBotConfig {
   botId: string;
@@ -25,12 +26,13 @@ export interface IBotConfig {
     guidanceScaleInterval?: number;
   };
 
-  ollama: {
-    hosts: string[];
+  llm: {
+    hosts: ILlmHostConfig[];
     models: string[];
     systemPrompt: string | string[];
     streamsResponse: boolean;
     embeddingModel?: string;
+    visionModels?: string[];
     topK?: number;
     contextWindow?: number;
     contextCompressionThreshold?: number;

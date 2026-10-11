@@ -46,7 +46,7 @@ export class ContextCompressionService<ChatMessageType, LlmMessageType extends {
       }
 
       const contextWindow: number = await this.#resolveContextWindow();
-      const threshold: number = this.#configurationService.ollamaContextCompressionThreshold;
+      const threshold: number = this.#configurationService.llmContextCompressionThreshold;
       const limit: number = Math.floor(contextWindow * threshold);
 
       const messages: ContextMessage<ChatMessageType, LlmMessageType>[] =
@@ -257,7 +257,7 @@ export class ContextCompressionService<ChatMessageType, LlmMessageType extends {
   }
 
   async #resolveContextWindow(): Promise<number> {
-    const configWindow: number | null = this.#configurationService.ollamaContextWindow;
+    const configWindow: number | null = this.#configurationService.llmContextWindow;
 
     if (configWindow !== null) {
       return configWindow;

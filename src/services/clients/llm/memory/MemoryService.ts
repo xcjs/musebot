@@ -179,7 +179,7 @@ export class MemoryService implements IMemoryService {
     try {
       const json = JSON.stringify(llmChatMessage);
       const embedding = await this.#embed(json);
-      const topK = this.#configurationService.ollamaTopK;
+      const topK = this.#configurationService.llmTopK;
       const embeddingModel = this.#getEmbeddingModel();
       const database = await this.#getDatabase();
       const records = database.queryMemories(embedding, serverId, embeddingModel, topK);
@@ -202,7 +202,7 @@ export class MemoryService implements IMemoryService {
   }
 
   #getEmbeddingModel(): string {
-    const model = this.#configurationService.ollamaEmbeddingModel;
+    const model = this.#configurationService.llmEmbeddingModel;
     if (model === null) {
       throw new Error('Embedding model is not configured but LTM is enabled.');
     }
