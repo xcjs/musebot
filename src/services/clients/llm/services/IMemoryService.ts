@@ -1,6 +1,5 @@
-import { Message as OllamaMessage } from 'ollama';
-
-import { LlmChatMessage } from '../ollama/models/LlmChatMessage.js';
+import { LlmChatMessage } from '../models/LlmChatMessage.js';
+import { LlmMessage } from '../models/LlmMessage.js';
 
 export interface IMemoryService {
   isEnabled: boolean;
@@ -14,6 +13,6 @@ export interface IMemoryService {
   getLatestMemoryTimestamp(userId: string): Promise<string | null>;
   hasMessage(discordMessageId: string): Promise<boolean>;
   store(llmChatMessage: LlmChatMessage, ownerUserId?: string): Promise<void>;
-  retrieve(llmChatMessage: LlmChatMessage): Promise<OllamaMessage[]>;
+  retrieve(llmChatMessage: LlmChatMessage): Promise<LlmMessage[]>;
   closeDatabase(): Promise<void>;
 }

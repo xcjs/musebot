@@ -1,7 +1,6 @@
-import { Message as OllamaMessage } from 'ollama';
-
-import { LlmChatMessage } from '../llm/ollama/models/LlmChatMessage.js';
+import { LlmChatMessage } from '../llm/models/LlmChatMessage.js';
+import { LlmMessage } from '../llm/models/LlmMessage.js';
 
 export interface IInputChatMessageFilter<ChatMessageType> {
-  process(llmChatMessage: LlmChatMessage, chatMessage: ChatMessageType, context: OllamaMessage[]): Promise<OllamaMessage[]>;
+  process(llmChatMessage: LlmChatMessage, chatMessage: ChatMessageType, context: LlmMessage[]): Promise<LlmMessage[]>;
 }

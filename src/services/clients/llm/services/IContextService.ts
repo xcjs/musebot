@@ -1,4 +1,4 @@
-import { ContextMessage } from '../ollama/models/ContextMessage.js';
+import { ContextMessage } from '../models/ContextMessage.js';
 
 export interface IContextService<ChatMessageType, LlmMessageType> {
   addContext(context: ContextMessage<ChatMessageType, LlmMessageType>[]): void;

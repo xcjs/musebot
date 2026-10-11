@@ -1,5 +1,4 @@
-﻿import { Attachment, ButtonInteraction, ChatInputCommandInteraction, Client as DiscordClient, Events, Message as DiscordMessage, MessageReaction, TextChannel,User } from 'discord.js';
-import { Message as OllamaMessage } from 'ollama';
+import { Attachment, ButtonInteraction, ChatInputCommandInteraction, Client as DiscordClient, Events, Message as DiscordMessage, MessageReaction, TextChannel,User } from 'discord.js';
 
 import { BotInteraction } from '../../../../enums/BotInteraction.js';
 import { IConfigurationService } from '../../../environment-settings/IConfigurationService.js';
@@ -8,6 +7,7 @@ import { IFeatureService } from '../../../features/IFeatureService.js';
 import { IBotServiceContainer } from "../../../IBotServiceContainer.js"
 import { ITaskQueue } from '../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../tasks/models/BaseTask.js';
+import { LlmMessage } from '../../llm/models/LlmMessage.js';
 import { IContextMessageFactory } from '../../llm/services/IContextMessageFactory.js';
 import { IContextService } from '../../llm/services/IContextService.js';
 import { ILlmChatMessageFactory } from '../../llm/services/ILlmChatMessageFactory.js';
@@ -24,8 +24,8 @@ export class GenerativeChatClient extends BaseDiscordClient {
 
   readonly #configurationService: IConfigurationService;
   readonly #discordClient: DiscordClient;
-  readonly #contextMessageFactory: IContextMessageFactory<DiscordMessage, OllamaMessage>;
-  readonly #contextService: IContextService<DiscordMessage, OllamaMessage>;
+  readonly #contextMessageFactory: IContextMessageFactory<DiscordMessage, LlmMessage>;
+  readonly #contextService: IContextService<DiscordMessage, LlmMessage>;
   readonly #typingService: ITypingService;
   readonly #replyService: IReplyService<DiscordMessage, MessageReaction, Attachment, DiscordMessage | ButtonInteraction>;
   readonly #taskQueue: ITaskQueue;
@@ -42,8 +42,8 @@ export class GenerativeChatClient extends BaseDiscordClient {
 
     this.#services = services;
     this.#configurationService = services.configurationService;
-    this.#contextMessageFactory = services.getContextMessageFactory<DiscordMessage, OllamaMessage>();
-    this.#contextService = services.getContextService<DiscordMessage, OllamaMessage>();
+    this.#contextMessageFactory = services.getContextMessageFactory<DiscordMessage, LlmMessage>();
+    this.#contextService = services.getContextService<DiscordMessage, LlmMessage>();
     this.#discordClient = services.discordClient;
     this.#typingService = services.typingService;
     this.#replyService = services.getReplyService();
@@ -82,7 +82,7 @@ export class GenerativeChatClient extends BaseDiscordClient {
     }
 
     this.logger.info('Replying to message...');
-    const messageTask = this.#services.getMessageTask(message) as BaseTask<OllamaMessage[]>;
+    const messageTask = this.#services.getMessageTask(message) as BaseTask<LlmMessage[]>;
     this.#taskQueue.add(messageTask as BaseTask<unknown>);
     await this.#typingService.startTyping(message);
   }
@@ -195,7 +195,7 @@ export class GenerativeChatClient extends BaseDiscordClient {
         components: new ChatConfirmClearActionRow(this.#services).build()
       });
     } catch {
-      this.logger.error('An error occurred while asking to clear the Ollama context.');
+      this.logger.error('An error occurred while asking to clear the LLM context.');
     }
      }
 
@@ -209,7 +209,7 @@ export class GenerativeChatClient extends BaseDiscordClient {
       await interaction.editReply(`The conversational context has been cleared - ${interaction.member?.user.toString() ?? 'you'} just gave an AI amnesia!`);
       await interaction.message.delete();
     } catch(error) {
-      this.logger.error('An error occurred while clearing the Ollama context: ', error);
+      this.logger.error('An error occurred while clearing the LLM context: ', error);
     }
      }
 
@@ -221,7 +221,7 @@ export class GenerativeChatClient extends BaseDiscordClient {
       await interaction.editReply('Cancelling...');
       await interaction.deleteReply();
     } catch(error) {
-      this.logger.error('An error occurred while cancelling clearing the Ollama context: ', error);
+      this.logger.error('An error occurred while cancelling clearing the LLM context: ', error);
     }
       }
 

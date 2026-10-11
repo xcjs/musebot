@@ -1,5 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
-import { GenerateRequest, GenerateResponse } from 'ollama';
 
 import { BotInteraction } from '../../../../../../enums/BotInteraction.js';
 import type { IFeatureService } from '../../../../../features/IFeatureService.js';
@@ -10,6 +9,8 @@ import type { ITaskChannelPostProcessor } from '../../../../../parallelization/I
 import type { ITaskQueue } from '../../../../../tasks/ITaskQueue.js';
 import type { BaseTask } from '../../../../../tasks/models/BaseTask.js';
 import type { IReplyService } from '../../../../chat/IReplyService.js';
+import type { ILlmRequest } from '../../../../llm/models/ILlmRequest.js';
+import type { LlmGenerateResult } from '../../../../llm/models/LlmGenerateResult.js';
 import { BpmConstants } from '../../models/music/BpmConstants.js';
 import { KeyScale } from '../../models/music/KeyScale.js';
 import { SongPromptMetadata } from '../../models/music/SongPromptMetadataRequestType.js';
@@ -109,6 +110,7 @@ function createMockServices(
     helpService: null as never,
     workflowService: null as never,
     webContentService: null as never,
+    llmHostFlavorRegistry: null as never,
     parallelizationStrategy: { getTaskChannel: jest.fn(() => 'test') } as unknown as IParallelizationStrategy,
     getLogger: jest.fn(() => createMockLogger()),
     getTaskChannelPostProcessor: (() => null as never) as unknown as () => ITaskChannelPostProcessor,
@@ -128,9 +130,9 @@ function createMockServices(
     contentTypeService: null as never,
     comfyUiClient: null as never,
     comfyUiReplyService: null as never,
-    ollamaClient: null as never,
-    ollamaReplyService: null as never,
-    ollamaStreamingReplyService: null as never,
+    llmClient: null as never,
+    llmReplyService: null as never,
+    llmStreamingReplyService: null as never,
     actionRowBuilderFactory: null as never,
     getChatMessageFilters: () => [], getInputChatMessageFilters: () => [],
     getChatMessageFactory: () => null as never, getLlmChatMessageFactory: () => null as never, getMemoryService: () => null as never,
@@ -347,11 +349,11 @@ describe('MessageToMusicMutator', () => {
 
     describe('with Txt2Txt feature', () => {
       const typePayload = {
-        exchange: { request: {} as GenerateRequest, response: {} as GenerateResponse },
+        exchange: { request: {} as ILlmRequest, response: {} as LlmGenerateResult },
         data: { songPromptType: SongPromptType.Lyrical, promptHasTags: true, promptHasLyrics: false }
       };
       const metadataPayload = {
-        exchange: { request: {} as GenerateRequest, response: {} as GenerateResponse },
+        exchange: { request: {} as ILlmRequest, response: {} as LlmGenerateResult },
         data: {
           tags: ['jazz', 'saxophone'],
           lyrics: '[verse] LLM lyrics',
@@ -415,7 +417,7 @@ describe('MessageToMusicMutator', () => {
 
       it('should set prompt from LLM tags joined by comma and prompt2 from LLM lyrics', async (): Promise<void> => {
         mutator = setupMutator(typePayload, {
-          exchange: { request: {} as GenerateRequest, response: {} as GenerateResponse },
+          exchange: { request: {} as ILlmRequest, response: {} as LlmGenerateResult },
           data: {
             tags: ['jazz', 'saxophone', 'smooth'],
             lyrics: '[verse] LLM lyrics',
@@ -433,7 +435,7 @@ describe('MessageToMusicMutator', () => {
 
       it('should set bpm, keyScale, and timeSignature from LLM metadata', async (): Promise<void> => {
         mutator = setupMutator(typePayload, {
-          exchange: { request: {} as GenerateRequest, response: {} as GenerateResponse },
+          exchange: { request: {} as ILlmRequest, response: {} as LlmGenerateResult },
           data: {
             tags: ['pop'],
             lyrics: 'lyrics',
@@ -454,7 +456,7 @@ describe('MessageToMusicMutator', () => {
         mockReplyService.getMessageWithoutBotMentions = jest.fn(() => 'rock\n\n[verse] user lyrics here');
         mutator = setupMutator(
           {
-            exchange: { request: {} as GenerateRequest, response: {} as GenerateResponse },
+            exchange: { request: {} as ILlmRequest, response: {} as LlmGenerateResult },
             data: {
               tags: ['rock'],
               lyrics: '[verse] LLM generated lyrics',
@@ -483,7 +485,7 @@ describe('MessageToMusicMutator', () => {
         mockReplyService.getMessageWithoutBotMentions = jest.fn(() => 'user-tag-1, user-tag-2\n\nsome lyrics');
         mutator = setupMutator(
           {
-            exchange: { request: {} as GenerateRequest, response: {} as GenerateResponse },
+            exchange: { request: {} as ILlmRequest, response: {} as LlmGenerateResult },
             data: {
               tags: ['llm-tag-1', 'llm-tag-2'],
               lyrics: 'llm lyrics',

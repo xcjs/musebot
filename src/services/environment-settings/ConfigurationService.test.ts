@@ -31,8 +31,8 @@ const validChatBotConfig = {
       privateMessageUsers: ['user2']
     }
   },
-  ollama: {
-    hosts: [mockUrl],
+  llm: {
+    hosts: [{ url: mockUrl }],
     models: ['model1', 'model2'],
     systemPrompt: 'You are a helpful assistant',
     streamsResponse: false,
@@ -58,8 +58,8 @@ const validMediaBotConfig = {
       privateMessageUsers: ['user2']
     }
   },
-  ollama: {
-    hosts: [mockUrl],
+  llm: {
+    hosts: [{ url: mockUrl }],
     models: [],
     systemPrompt: 'You are a helpful assistant',
     streamsResponse: false
@@ -158,9 +158,9 @@ describe('ConfigurationService', () => {
     });
 
     it('should validate required fields for chat mode', () => {
-      const configWithoutOllamaHosts = {
+      const configWithoutLlmHosts = {
         ...validChatBotConfig,
-        ollama: {
+        llm: {
           hosts: [],
           models: [],
           systemPrompt: '',
@@ -170,21 +170,21 @@ describe('ConfigurationService', () => {
 
       (ConfigLoader.load as jest.Mock).mockReturnValue({
         global: globalConfig,
-        bots: [configWithoutOllamaHosts]
+        bots: [configWithoutLlmHosts]
       });
 
       expect(() => {
-        new ConfigurationService(configWithoutOllamaHosts as unknown as IBotConfig);
-      }).toThrow('Chat mode requires at least one Ollama host configured in ollama.hosts.');
+        new ConfigurationService(configWithoutLlmHosts as unknown as IBotConfig);
+      }).toThrow('Chat mode requires at least one LLM host configured in llm.hosts.');
     });
 
-    it('should warn for missing ollama models in chat mode', () => {
+    it('should warn for missing LLM models in chat mode', () => {
       const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
 
       const config = {
         ...validChatBotConfig,
-        ollama: {
-          hosts: [mockUrl],
+        llm: {
+          hosts: [{ url: mockUrl }],
           models: [],
           systemPrompt: '',
           streamsResponse: false
@@ -199,7 +199,7 @@ describe('ConfigurationService', () => {
       new ConfigurationService(config as unknown as IBotConfig);
 
       expect(consoleSpy).toHaveBeenCalledWith(
-        '[ConfigurationService] Warning: Chat mode has no Ollama models configured. Model selection not yet supported.'
+        '[ConfigurationService] Warning: Chat mode has no LLM models configured. Model selection not yet supported.'
       );
 
       consoleSpy.mockRestore();
@@ -272,24 +272,24 @@ describe('ConfigurationService', () => {
       expect(service.discordChannels).toEqual(['1234567891234567892']);
     });
 
-    it('should have ollama configuration', () => {
+    it('should have llm configuration', () => {
       (ConfigLoader.load as jest.Mock).mockReturnValue({
         global: globalConfig,
         bots: [validChatBotConfig]
       });
 
       const service = new ConfigurationService(validChatBotConfig as unknown as IBotConfig);
-      expect(service.ollamaHosts).toEqual([new URL(mockUrl)]);
-      expect(service.ollamaModels).toEqual(['model1', 'model2']);
-      expect(service.ollamaSystemPrompt).toBe('You are a helpful assistant');
-      expect(service.ollamaStreamsResponse).toBe(false);
+      expect(service.llmHosts).toEqual([{ url: new URL(mockUrl), token: null, isLocal: null }]);
+      expect(service.llmModels).toEqual(['model1', 'model2']);
+      expect(service.llmSystemPrompt).toBe('You are a helpful assistant');
+      expect(service.llmStreamsResponse).toBe(false);
     });
 
-    it('should default ollamaContextWindow to null when not set', () => {
+    it('should default llmContextWindow to null when not set', () => {
       const configWithoutContextWindow = {
         ...validChatBotConfig,
-        ollama: {
-          ...validChatBotConfig.ollama,
+        llm: {
+          ...validChatBotConfig.llm,
           contextWindow: undefined,
           contextCompressionThreshold: undefined
         }
@@ -301,14 +301,14 @@ describe('ConfigurationService', () => {
       });
 
       const service = new ConfigurationService(configWithoutContextWindow as unknown as IBotConfig);
-      expect(service.ollamaContextWindow).toBeNull();
+      expect(service.llmContextWindow).toBeNull();
     });
 
-    it('should return configured ollamaContextWindow when set', () => {
+    it('should return configured llmContextWindow when set', () => {
       const configWithContextWindow = {
         ...validChatBotConfig,
-        ollama: {
-          ...validChatBotConfig.ollama,
+        llm: {
+          ...validChatBotConfig.llm,
           contextWindow: 8192
         }
       };
@@ -319,14 +319,14 @@ describe('ConfigurationService', () => {
       });
 
       const service = new ConfigurationService(configWithContextWindow as unknown as IBotConfig);
-      expect(service.ollamaContextWindow).toBe(8192);
+      expect(service.llmContextWindow).toBe(8192);
     });
 
-    it('should default ollamaContextCompressionThreshold to 0.75 when not set', () => {
+    it('should default llmContextCompressionThreshold to 0.75 when not set', () => {
       const configWithoutThreshold = {
         ...validChatBotConfig,
-        ollama: {
-          ...validChatBotConfig.ollama,
+        llm: {
+          ...validChatBotConfig.llm,
           contextCompressionThreshold: undefined
         }
       };
@@ -337,14 +337,14 @@ describe('ConfigurationService', () => {
       });
 
       const service = new ConfigurationService(configWithoutThreshold as unknown as IBotConfig);
-      expect(service.ollamaContextCompressionThreshold).toBe(0.75);
+      expect(service.llmContextCompressionThreshold).toBe(0.75);
     });
 
-    it('should return configured ollamaContextCompressionThreshold when set', () => {
+    it('should return configured llmContextCompressionThreshold when set', () => {
       const configWithThreshold = {
         ...validChatBotConfig,
-        ollama: {
-          ...validChatBotConfig.ollama,
+        llm: {
+          ...validChatBotConfig.llm,
           contextCompressionThreshold: 0.5
         }
       };
@@ -355,14 +355,14 @@ describe('ConfigurationService', () => {
       });
 
       const service = new ConfigurationService(configWithThreshold as unknown as IBotConfig);
-      expect(service.ollamaContextCompressionThreshold).toBe(0.5);
+      expect(service.llmContextCompressionThreshold).toBe(0.5);
     });
 
     it('should join system prompt array with newlines', () => {
       const configWithArrayPrompt = {
         ...validChatBotConfig,
-        ollama: {
-          ...validChatBotConfig.ollama,
+        llm: {
+          ...validChatBotConfig.llm,
           systemPrompt: ['You are a helpful assistant.', 'Always be concise.', 'Never hallucinate.']
         }
       };
@@ -373,7 +373,7 @@ describe('ConfigurationService', () => {
       });
 
       const service = new ConfigurationService(configWithArrayPrompt as unknown as IBotConfig);
-      expect(service.ollamaSystemPrompt).toBe('You are a helpful assistant.\nAlways be concise.\nNever hallucinate.');
+      expect(service.llmSystemPrompt).toBe('You are a helpful assistant.\nAlways be concise.\nNever hallucinate.');
     });
 
     it('should have applicationName', () => {

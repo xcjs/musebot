@@ -1,19 +1,21 @@
 import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 import type { Message as DiscordMessage } from 'discord.js';
-import type { Message as OllamaMessage } from 'ollama';
 
-import { NodeEnvironment } from '../../../../../enums/NodeEnvironment.js';
-import { TaskQueueStrategy } from '../../../../../enums/TaskQueueStrategy.js';
-import type { IConfigurationService } from '../../../../environment-settings/IConfigurationService.js';
-import type { IFeatureService } from '../../../../features/IFeatureService.js';
-import type { IBotServiceContainer } from '../../../../IBotServiceContainer.js';
-import type { ILogger } from '../../../../ILogger.js';
-import type { IParallelizationStrategy } from '../../../../parallelization/IParallelizationStrategy.js';
-import type { ITaskChannelPostProcessor } from '../../../../parallelization/ITaskChannelPostProcessor.js';
-import type { ComfyUiClient } from '../../../media/comfy-ui/ComfyUiClient.js';
+import { NodeEnvironment } from '../../../../enums/NodeEnvironment.js';
+import { TaskQueueStrategy } from '../../../../enums/TaskQueueStrategy.js';
+import type { IConfigurationService } from '../../../environment-settings/IConfigurationService.js';
+import type { IFeatureService } from '../../../features/IFeatureService.js';
+import type { IBotServiceContainer } from '../../../IBotServiceContainer.js';
+import type { ILogger } from '../../../ILogger.js';
+import type { IParallelizationStrategy } from '../../../parallelization/IParallelizationStrategy.js';
+import type { ITaskChannelPostProcessor } from '../../../parallelization/ITaskChannelPostProcessor.js';
+import type { ComfyUiClient } from '../../media/comfy-ui/ComfyUiClient.js';
+import { LlmRole } from '../enums/LlmRole.js';
+import type { ILlmClient } from '../ILlmClient.js';
 import type { LlmChatMessage } from '../models/LlmChatMessage.js';
-import type { OllamaClient } from '../OllamaClient.js';
-import { OllamaMessageTask } from './OllamaMessageTask.js';
+import type { LlmMessage } from '../models/LlmMessage.js';
+import type { LlmStreamChunk } from '../models/LlmStreamChunk.js';
+import { LlmMessageTask } from './LlmMessageTask.js';
 
 function createMockLogger(): jest.Mocked<ILogger> {
   return {
@@ -29,7 +31,7 @@ function createMockLogger(): jest.Mocked<ILogger> {
 interface MockServices {
   container: IBotServiceContainer;
   compress: jest.Mock<() => Promise<void>>;
-  getContextByChannelId: jest.Mock<() => OllamaMessage[]>;
+  getContextByChannelId: jest.Mock<() => LlmMessage[]>;
   addContext: jest.Mock;
   createLlmChatMessage: jest.Mock;
   fromChatMessage: jest.Mock;
@@ -37,16 +39,16 @@ interface MockServices {
   fromSummary: jest.Mock;
   sendMessage: jest.Mock;
   sendMessageAndGetStream: jest.Mock;
-  ollamaReplyServiceReply: jest.Mock;
-  ollamaStreamingReplyServiceReply: jest.Mock;
-  ollamaStreamingReplyServiceClearState: jest.Mock;
+  llmReplyServiceReply: jest.Mock;
+  llmStreamingReplyServiceReply: jest.Mock;
+  llmStreamingReplyServiceClearState: jest.Mock;
 }
 
-function buildMockServices(streamsResponse: boolean, contextMessages: OllamaMessage[] = []): MockServices {
+function buildMockServices(streamsResponse: boolean, contextMessages: LlmMessage[] = []): MockServices {
   const logger = createMockLogger();
 
   const compress = jest.fn<() => Promise<void>>().mockResolvedValue(undefined);
-  const getContextByChannelId = jest.fn<() => OllamaMessage[]>(() => [...contextMessages]);
+  const getContextByChannelId = jest.fn<() => LlmMessage[]>(() => [...contextMessages]);
   const addContext = jest.fn();
   const createLlmChatMessage = jest.fn((): LlmChatMessage => ({
     messageId: 'msg-1',
@@ -67,23 +69,23 @@ function buildMockServices(streamsResponse: boolean, contextMessages: OllamaMess
   const fromLlmMessage = jest.fn(() => ({ role: 'assistant', content: 'hi' }));
   const fromSummary = jest.fn(() => ({ role: 'system', content: 'summary' }));
 
-  const fakeResponseMessage: OllamaMessage = { role: 'assistant', content: 'response' };
+  const fakeResponseMessage: LlmMessage = { role: LlmRole.Assistant, content: 'response' };
 
   const sendMessage = jest.fn<() => Promise<unknown>>().mockResolvedValue({
     exchange: {
       request: { model: 'test', messages: [] },
       response: {
         message: fakeResponseMessage,
-        prompt_eval_count: 10,
-        eval_count: 5
+        promptTokens: 10,
+        completionTokens: 5
       },
     },
     data: [],
   });
 
-  function* fakeStream(): Generator<{ message: OllamaMessage; done: boolean; prompt_eval_count?: number; eval_count?: number }> {
-    yield { message: fakeResponseMessage, done: false };
-    yield { message: fakeResponseMessage, done: true, prompt_eval_count: 10, eval_count: 5 };
+  function* fakeStream(): Generator<LlmStreamChunk> {
+    yield { content: 'response', done: false };
+    yield { content: '', done: true, promptTokens: 10, completionTokens: 5 };
   }
 
   const sendMessageAndGetStream = jest.fn<() => Promise<unknown>>().mockResolvedValue({
@@ -94,9 +96,9 @@ function buildMockServices(streamsResponse: boolean, contextMessages: OllamaMess
     data: [],
   });
 
-  const ollamaReplyServiceReply = jest.fn<() => Promise<unknown[]>>().mockResolvedValue([]);
-  const ollamaStreamingReplyServiceReply = jest.fn<() => Promise<unknown[]>>().mockResolvedValue([]);
-  const ollamaStreamingReplyServiceClearState = jest.fn<() => Promise<void>>().mockResolvedValue(undefined);
+  const llmReplyServiceReply = jest.fn<() => Promise<unknown[]>>().mockResolvedValue([]);
+  const llmStreamingReplyServiceReply = jest.fn<() => Promise<unknown[]>>().mockResolvedValue([]);
+  const llmStreamingReplyServiceClearState = jest.fn<() => Promise<void>>().mockResolvedValue(undefined);
 
   const config: IConfigurationService = {
     packageName: 'musebot',
@@ -119,14 +121,15 @@ function buildMockServices(streamsResponse: boolean, contextMessages: OllamaMess
     comfyUiTimeoutMinutes: 30,
     comfyUiGuidanceScaleInterval: 0.5,
     randomPrompts: [],
-    ollamaHosts: [new URL('http://localhost:11434')],
-    ollamaModels: ['test-model'],
-    ollamaSystemPrompt: '',
-    ollamaStreamsResponse: streamsResponse,
-    ollamaEmbeddingModel: null,
-    ollamaTopK: 5,
-    ollamaContextWindow: 100000,
-    ollamaContextCompressionThreshold: 0.75,
+    llmHosts: [{ url: new URL('http://localhost:11434'), token: null, isLocal: null }],
+    llmModels: ['test-model'],
+    llmSystemPrompt: '',
+    llmStreamsResponse: streamsResponse,
+    llmEmbeddingModel: null,
+    llmVisionModels: [],
+    llmTopK: 5,
+    llmContextWindow: 100000,
+    llmContextCompressionThreshold: 0.75,
     applicationName: 'Musebot',
     isProduction: false,
   } as unknown as IConfigurationService;
@@ -136,7 +139,7 @@ function buildMockServices(streamsResponse: boolean, contextMessages: OllamaMess
     host: new URL('http://localhost:8188'),
     free: jest.fn<() => Promise<boolean>>().mockResolvedValue(true),
   } as unknown as jest.Mocked<ComfyUiClient>;
-  const ollamaClient = {
+  const llmClient = {
     host: new URL('http://localhost:11434'),
     model: 'test-model',
     free: jest.fn<() => Promise<boolean>>().mockResolvedValue(true),
@@ -146,7 +149,7 @@ function buildMockServices(streamsResponse: boolean, contextMessages: OllamaMess
     sendMessageAndGetStream,
     isModelLoaded: jest.fn<() => Promise<boolean>>().mockResolvedValue(true),
     show: jest.fn(),
-  } as unknown as jest.Mocked<OllamaClient>;
+  } as unknown as jest.Mocked<ILlmClient>;
 
   const contextService = {
     getContextByChannelId,
@@ -166,10 +169,10 @@ function buildMockServices(streamsResponse: boolean, contextMessages: OllamaMess
   const memoryService = { isEnabled: false, store: jest.fn() };
   const webContentService = { extractUrls: jest.fn(() => []), fetchAll: jest.fn() };
 
-  const ollamaReplyService = { reply: ollamaReplyServiceReply };
-  const ollamaStreamingReplyService = {
-    reply: ollamaStreamingReplyServiceReply,
-    clearState: ollamaStreamingReplyServiceClearState,
+  const llmReplyService = { reply: llmReplyServiceReply };
+  const llmStreamingReplyService = {
+    reply: llmStreamingReplyServiceReply,
+    clearState: llmStreamingReplyServiceClearState,
   };
   const replyService = { replyWithError: jest.fn() };
 
@@ -183,6 +186,7 @@ function buildMockServices(streamsResponse: boolean, contextMessages: OllamaMess
     helpService: null as never,
     workflowService: null as never,
     webContentService: webContentService as never,
+    llmHostFlavorRegistry: null as never,
     parallelizationStrategy: { getTaskChannel: () => 'test' } as unknown as IParallelizationStrategy,
     getLogger: jest.fn(() => logger),
     getTaskChannelPostProcessor: (() => null as never) as unknown as () => ITaskChannelPostProcessor,
@@ -202,9 +206,9 @@ function buildMockServices(streamsResponse: boolean, contextMessages: OllamaMess
     contentTypeService: null as never,
     comfyUiClient,
     comfyUiReplyService: null as never,
-    ollamaClient,
-    ollamaReplyService: ollamaReplyService as never,
-    ollamaStreamingReplyService: ollamaStreamingReplyService as never,
+    llmClient,
+    llmReplyService: llmReplyService as never,
+    llmStreamingReplyService: llmStreamingReplyService as never,
     actionRowBuilderFactory: null as never,
     getChatMessageFilters: () => [],
     getInputChatMessageFilters: () => [],
@@ -224,9 +228,9 @@ function buildMockServices(streamsResponse: boolean, contextMessages: OllamaMess
     fromSummary,
     sendMessage,
     sendMessageAndGetStream,
-    ollamaReplyServiceReply,
-    ollamaStreamingReplyServiceReply,
-    ollamaStreamingReplyServiceClearState,
+    llmReplyServiceReply,
+    llmStreamingReplyServiceReply,
+    llmStreamingReplyServiceClearState,
   };
 }
 
@@ -240,7 +244,7 @@ function createMockDiscordMessage(): DiscordMessage {
   } as unknown as DiscordMessage;
 }
 
-describe('OllamaMessageTask', () => {
+describe('LlmMessageTask', () => {
   let mockDiscordMessage: DiscordMessage;
 
   beforeEach((): void => {
@@ -254,7 +258,7 @@ describe('OllamaMessageTask', () => {
   describe('process() pre-request compression', () => {
     it('calls compressIfNeeded BEFORE reading context (non-stream path)', async (): Promise<void> => {
       const mocks = buildMockServices(false);
-      const task = new OllamaMessageTask(mocks.container, mockDiscordMessage);
+      const task = new LlmMessageTask(mocks.container, mockDiscordMessage);
 
       await task.process();
 
@@ -269,7 +273,7 @@ describe('OllamaMessageTask', () => {
 
     it('calls compressIfNeeded BEFORE reading context (stream path)', async (): Promise<void> => {
       const mocks = buildMockServices(true);
-      const task = new OllamaMessageTask(mocks.container, mockDiscordMessage);
+      const task = new LlmMessageTask(mocks.container, mockDiscordMessage);
 
       await task.process();
 

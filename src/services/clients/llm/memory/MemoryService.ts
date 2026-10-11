@@ -1,13 +1,12 @@
-import { Message as OllamaMessage } from 'ollama';
-
 import { IConfigurationService } from '../../../environment-settings/IConfigurationService.js';
 import { SupportedFeature } from '../../../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../../../features/IFeatureService.js';
 import { IBotServiceContainer } from '../../../IBotServiceContainer.js';
 import { ILogger } from '../../../ILogger.js';
-import { OllamaRole } from '../ollama/enums/OllamaRole.js';
-import { LlmChatMessage } from '../ollama/models/LlmChatMessage.js';
-import { OllamaClient } from '../ollama/OllamaClient.js';
+import { LlmRole } from '../enums/LlmRole.js';
+import { ILlmClient } from '../ILlmClient.js';
+import { LlmChatMessage } from '../models/LlmChatMessage.js';
+import { LlmMessage } from '../models/LlmMessage.js';
 import { IMemoryService } from '../services/IMemoryService.js';
 import { MemoryDatabase, MemoryRecord } from './MemoryDatabase.js';
 
@@ -165,7 +164,7 @@ export class MemoryService implements IMemoryService {
     }
   }
 
-  async retrieve(llmChatMessage: LlmChatMessage): Promise<OllamaMessage[]> {
+  async retrieve(llmChatMessage: LlmChatMessage): Promise<LlmMessage[]> {
     if (!this.isEnabled) {
       return [];
     }
@@ -189,8 +188,8 @@ export class MemoryService implements IMemoryService {
       }
 
       const memoryText = records.map((record: MemoryRecord) => record.content).join('\n\n');
-      const systemMessage: OllamaMessage = {
-        role: OllamaRole.System,
+      const systemMessage: LlmMessage = {
+        role: LlmRole.System,
         content: `The following are relevant memories from past conversations in this server:\n\n${memoryText}`
       };
 
@@ -210,12 +209,12 @@ export class MemoryService implements IMemoryService {
   }
 
   async #embed(text: string): Promise<number[]> {
-    const client: OllamaClient = this.#services.ollamaClient;
+    const client: ILlmClient = this.#services.llmClient;
     return await client.embed(text);
   }
 
   async #embedBatch(texts: string[]): Promise<number[][]> {
-    const client: OllamaClient = this.#services.ollamaClient;
+    const client: ILlmClient = this.#services.llmClient;
     return await client.embedBatch(texts);
   }
 

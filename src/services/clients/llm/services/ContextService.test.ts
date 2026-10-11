@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals
 
 import type { IBotServiceContainer } from '../../../IBotServiceContainer.js';
 import type { ILogger } from '../../../ILogger.js';
-import { ContextMessage } from '../ollama/models/ContextMessage.js';
+import { ContextMessage } from '../models/ContextMessage.js';
 import { ContextService } from './ContextService.js';
 
 type TestMessage = { role: string; content: string };
@@ -29,6 +29,7 @@ function createMockServices(logger: jest.Mocked<ILogger>): IBotServiceContainer 
     helpService: null as never,
     workflowService: null as never,
     webContentService: null as never,
+    llmHostFlavorRegistry: null as never,
     parallelizationStrategy: null as never,
     getLogger: jest.fn(() => logger),
     getTaskChannelPostProcessor: (() => null as never) as unknown as () => never,
@@ -48,9 +49,9 @@ function createMockServices(logger: jest.Mocked<ILogger>): IBotServiceContainer 
     contentTypeService: null as never,
     comfyUiClient: null as never,
     comfyUiReplyService: null as never,
-    ollamaClient: null as never,
-    ollamaReplyService: null as never,
-    ollamaStreamingReplyService: null as never,
+    llmClient: null as never,
+    llmReplyService: null as never,
+    llmStreamingReplyService: null as never,
     actionRowBuilderFactory: null as never,
     getChatMessageFilters: () => [],
     getInputChatMessageFilters: () => [],

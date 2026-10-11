@@ -1,5 +1,4 @@
 ﻿import { AttachmentBuilder, ButtonInteraction } from 'discord.js';
-import { GenerateRequest, GenerateResponse } from 'ollama';
 
 import { BotInteraction } from '../../../../../../enums/BotInteraction.js';
 import { IHttpExchange } from '../../../../../../models/IHttpExchange.js';
@@ -7,7 +6,9 @@ import { SupportedFeature } from '../../../../../features/enum/SupportedFeature.
 import { IBotServiceContainer } from "../../../../../IBotServiceContainer.js"
 import { ITaskQueue } from '../../../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../../../tasks/models/BaseTask.js';
-import { OLLAMA_TEMPERATURE_DEFAULT } from '../../../../llm/ollama/constants/OllamaConstants.js';
+import { LLM_TEMPERATURE_DEFAULT } from '../../../../llm/constants/LlmConstants.js';
+import { ILlmRequest } from '../../../../llm/models/ILlmRequest.js';
+import { LlmGenerateResult } from '../../../../llm/models/LlmGenerateResult.js';
 import { IWorkflow } from '../../models/IWorkflow.js';
 import { SerializableRenderRequest } from '../../models/SerializableRenderRequest.js';
 import { IWorkflowMutator } from './IWorkflowMutator.js';
@@ -68,11 +69,11 @@ export class ExpandPromptMutator implements IWorkflowMutator {
       prompt = `The following is a prompt used to generate a piece of media from ${feature} ` +
         ` - expand it with meticulous detail to generate better results: ${prompt}`;
 
-      const task = this.#services.getLlmGenerateTask(prompt, OLLAMA_TEMPERATURE_DEFAULT);
+      const task = this.#services.getLlmGenerateTask(prompt, LLM_TEMPERATURE_DEFAULT);
       task.isChild = true;
 
-      const callback = (payload: IHttpExchange<GenerateRequest, GenerateResponse>): void => {
-        resolve(payload.response.response);
+      const callback = (payload: IHttpExchange<ILlmRequest, LlmGenerateResult>): void => {
+        resolve(payload.response.content);
       };
 
       task.onSuccess = callback;

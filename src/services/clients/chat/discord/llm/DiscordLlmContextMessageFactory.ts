@@ -1,13 +1,13 @@
 ﻿import { Message as DiscordMessage } from 'discord.js';
-import { Message as OllamaMessage } from 'ollama';
 
 import { IBotServiceContainer } from "../../../../IBotServiceContainer.js"
-import { OllamaRole } from '../../../llm/ollama/enums/OllamaRole.js';
-import { ContextMessage } from '../../../llm/ollama/models/ContextMessage.js';
+import { LlmRole } from '../../../llm/enums/LlmRole.js';
+import { ContextMessage } from '../../../llm/models/ContextMessage.js';
+import { LlmMessage } from '../../../llm/models/LlmMessage.js';
 import { IContextMessageFactory } from '../../../llm/services/IContextMessageFactory.js';
 import { ILlmChatMessageFactory } from '../../../llm/services/ILlmChatMessageFactory.js';
 
-export class DiscordOllamaContextMessageFactory implements IContextMessageFactory<DiscordMessage, OllamaMessage> {
+export class DiscordLlmContextMessageFactory implements IContextMessageFactory<DiscordMessage, LlmMessage> {
   #llmChatMessageFactory: ILlmChatMessageFactory<DiscordMessage>;
 
   constructor(services: IBotServiceContainer) {
@@ -18,9 +18,9 @@ export class DiscordOllamaContextMessageFactory implements IContextMessageFactor
     return JSON.stringify(this.#llmChatMessageFactory.create(chatMessage));
   }
 
-  fromSystemPrompt(prompt: string, channelId: string | null, isReadOnly = true): ContextMessage<DiscordMessage, OllamaMessage> {
-    const ollamaMessage: OllamaMessage = {
-      role: OllamaRole.System,
+  fromSystemPrompt(prompt: string, channelId: string | null, isReadOnly = true): ContextMessage<DiscordMessage, LlmMessage> {
+    const llmMessage: LlmMessage = {
+      role: LlmRole.System,
       content: prompt
     };
 
@@ -33,16 +33,16 @@ export class DiscordOllamaContextMessageFactory implements IContextMessageFactor
       serverId: null,
       chatMessage: null,
       timestamp: new Date(),
-      llmMessage: ollamaMessage,
+      llmMessage: llmMessage,
       isReadOnly: isReadOnly,
       isPrivate: false,
       isSummary: false
     };
   }
 
-  fromChatMessage(chatMessage: DiscordMessage): ContextMessage<DiscordMessage, OllamaMessage> {
-    const ollamaMessage: OllamaMessage = {
-      role: OllamaRole.User,
+  fromChatMessage(chatMessage: DiscordMessage): ContextMessage<DiscordMessage, LlmMessage> {
+    const llmMessage: LlmMessage = {
+      role: LlmRole.User,
       content: this.formatChatMessage(chatMessage)
     }
 
@@ -53,20 +53,20 @@ export class DiscordOllamaContextMessageFactory implements IContextMessageFactor
       userId: chatMessage.author.id,
       timestamp: chatMessage.createdAt,
       chatMessage,
-      llmMessage: ollamaMessage,
+      llmMessage: llmMessage,
       isReadOnly: false,
       isPrivate: chatMessage.guildId === null,
       isSummary: false
-    } as ContextMessage<DiscordMessage, OllamaMessage>;
+    } as ContextMessage<DiscordMessage, LlmMessage>;
   }
 
   fromChatPrompt(prompt: string,
     userId: string,
     serverId: string | null,
     channelId: string | null,
-    associatedMessageId: string | null): ContextMessage<DiscordMessage, OllamaMessage> {
-    const ollamaMessage: OllamaMessage = {
-      role: OllamaRole.Assistant,
+    associatedMessageId: string | null): ContextMessage<DiscordMessage, LlmMessage> {
+    const llmMessage: LlmMessage = {
+      role: LlmRole.Assistant,
       content: prompt
     };
 
@@ -79,18 +79,18 @@ export class DiscordOllamaContextMessageFactory implements IContextMessageFactor
       serverId,
       timestamp: new Date(),
       chatMessage: null,
-      llmMessage: ollamaMessage,
+      llmMessage: llmMessage,
       isReadOnly: false,
       isPrivate: serverId === null,
       isSummary: false
     };
   }
 
-  fromLlmMessage(llmMessage: OllamaMessage,
+  fromLlmMessage(llmMessage: LlmMessage,
     associatedUserId: string | null,
     serverId: string | null,
     channelId: string | null,
-    associatedMessageId: string | null): ContextMessage<DiscordMessage, OllamaMessage> {
+    associatedMessageId: string | null): ContextMessage<DiscordMessage, LlmMessage> {
     return {
       messageId: null,
       associatedMessageId,
@@ -107,9 +107,9 @@ export class DiscordOllamaContextMessageFactory implements IContextMessageFactor
     };
   }
 
-  fromSummary(summary: string, channelId: string | null): ContextMessage<DiscordMessage, OllamaMessage> {
-    const llmMessage: OllamaMessage = {
-      role: OllamaRole.System,
+  fromSummary(summary: string, channelId: string | null): ContextMessage<DiscordMessage, LlmMessage> {
+    const llmMessage: LlmMessage = {
+      role: LlmRole.System,
       content: summary
     };
 

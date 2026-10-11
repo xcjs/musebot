@@ -1,14 +1,15 @@
 import { Message } from 'discord.js';
-import { ChatRequest, ChatResponse } from 'ollama';
 
 import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
 import { IBotServiceContainer } from '../../../../IBotServiceContainer.js';
 import { ILogger } from '../../../../ILogger.js';
+import { ILlmRequest } from '../../../llm/models/ILlmRequest.js';
+import { LlmChatResult } from '../../../llm/models/LlmChatResult.js';
 import { IChatMessage } from '../../IChatMessage.js';
 import { IChatMessageFactory } from '../../IChatMessageFactory.js';
 import { IOutputChatMessageFilter } from '../../IOutputChatMessageFilter.js';
 
-export class OllamaReplyService {
+export class LlmReplyService {
   readonly #services: IBotServiceContainer;
   readonly #logger: ILogger;
   readonly #filters: IOutputChatMessageFilter[];
@@ -16,14 +17,14 @@ export class OllamaReplyService {
 
   constructor(services: IBotServiceContainer) {
     this.#services = services;
-    this.#logger = services.getLogger('OllamaReplyService');
+    this.#logger = services.getLogger('LlmReplyService');
     this.#filters = services.getChatMessageFilters();
     this.#factory = services.getChatMessageFactory<Message>();
   }
 
   async reply(
     message: Message,
-    exchange: IHttpExchange<ChatRequest, ChatResponse>,
+    exchange: IHttpExchange<ILlmRequest, LlmChatResult>,
     prependedText: string = ''): Promise<Message[]> {
     const initialMessage: IChatMessage = {
       content: `${prependedText} ${exchange.response.message.content}`,

@@ -6,7 +6,7 @@ import { IChatMessage } from '../../IChatMessage.js';
 import { IChatMessageFactory } from '../../IChatMessageFactory.js';
 import { IOutputChatMessageFilter } from '../../IOutputChatMessageFilter.js';
 
-export class OllamaStreamingReplyService {
+export class LlmStreamingReplyService {
   readonly #services: IBotServiceContainer;
   readonly #logger: ILogger;
   readonly #filters: IOutputChatMessageFilter[];
@@ -17,7 +17,7 @@ export class OllamaStreamingReplyService {
 
   constructor(services: IBotServiceContainer) {
     this.#services = services;
-    this.#logger = services.getLogger('OllamaStreamingReplyService');
+    this.#logger = services.getLogger('LlmStreamingReplyService');
     this.#filters = services.getChatMessageFilters();
     this.#factory = services.getChatMessageFactory<Message>();
   }

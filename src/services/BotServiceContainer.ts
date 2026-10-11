@@ -7,7 +7,6 @@ import {
   Partials,
   User
 } from 'discord.js';
-import { GenerateRequest, GenerateResponse } from 'ollama';
 
 import { BotInteraction } from '../enums/BotInteraction.js';
 import { BotMode } from '../enums/BotMode.js';
@@ -25,11 +24,11 @@ import { DiscordMemoryInputFilter } from './clients/chat/discord/filters/Discord
 import { DiscordMessageSplitFilter } from './clients/chat/discord/filters/DiscordMessageSplitFilter.js';
 import { GenerativeChatClient } from './clients/chat/discord/GenerativeChatClient.js';
 import { GenerativeMediaChatClient } from './clients/chat/discord/GenerativeMediaChatClient.js';
-import { DiscordChatMessageFactory } from './clients/chat/discord/ollama/DiscordChatMessageFactory.js';
-import { DiscordLlmChatMessageFactory } from './clients/chat/discord/ollama/DiscordLlmChatMessageFactory.js';
-import { DiscordOllamaContextMessageFactory } from './clients/chat/discord/ollama/DiscordOllamaContextMessageFactory.js';
-import { OllamaReplyService } from './clients/chat/discord/ollama/OllamaReplyService.js';
-import { OllamaStreamingReplyService } from './clients/chat/discord/ollama/OllamaStreamingReplyService.js';
+import { DiscordChatMessageFactory } from './clients/chat/discord/llm/DiscordChatMessageFactory.js';
+import { DiscordLlmChatMessageFactory } from './clients/chat/discord/llm/DiscordLlmChatMessageFactory.js';
+import { DiscordLlmContextMessageFactory } from './clients/chat/discord/llm/DiscordLlmContextMessageFactory.js';
+import { LlmReplyService } from './clients/chat/discord/llm/LlmReplyService.js';
+import { LlmStreamingReplyService } from './clients/chat/discord/llm/LlmStreamingReplyService.js';
 import { DiscordReplyService } from './clients/chat/discord/services/DiscordReplyService.js';
 import { DiscordTypingService } from './clients/chat/discord/services/DiscordTypingService.js';
 import { IChatMessageFactory } from './clients/chat/IChatMessageFactory.js';
@@ -40,16 +39,14 @@ import { IReplyService } from './clients/chat/IReplyService.js';
 import { ITypingService } from './clients/chat/ITypingService.js';
 import { ShowHelpTask } from './clients/internal/tasks/ShowHelpTask.js';
 import { ChatHelpService } from './clients/llm/help/ChatHelpService.js';
+import { ILlmClient } from './clients/llm/ILlmClient.js';
+import { LlmClient } from './clients/llm/LlmClient.js';
 import { LlmHostFlavorRegistry } from './clients/llm/LlmHostFlavorRegistry.js';
 import { MemoryService } from './clients/llm/memory/MemoryService.js';
-import { IStructuredRequestData } from './clients/llm/ollama/models/IStructuredRequestData.js';
-import { LlmChatMessage } from './clients/llm/ollama/models/LlmChatMessage.js';
-import { OllamaClient } from './clients/llm/ollama/OllamaClient.js';
-import { OllamaEmbedTask } from './clients/llm/ollama/tasks/OllamaEmbedTask.js';
-import { OllamaEmojiReactionTask } from './clients/llm/ollama/tasks/OllamaEmojiReactionTask.js';
-import { OllamaGenerateStructuredTask } from './clients/llm/ollama/tasks/OllamaGenerateStructuredTask.js';
-import { OllamaGenerateTask } from './clients/llm/ollama/tasks/OllamaGenerateTask.js';
-import { OllamaMessageTask } from './clients/llm/ollama/tasks/OllamaMessageTask.js';
+import { ILlmRequest } from './clients/llm/models/ILlmRequest.js';
+import { IStructuredRequestData } from './clients/llm/models/IStructuredRequestData.js';
+import { LlmChatMessage } from './clients/llm/models/LlmChatMessage.js';
+import { LlmGenerateResult } from './clients/llm/models/LlmGenerateResult.js';
 import { ContextCompressionService } from './clients/llm/services/ContextCompressionService.js';
 import { ContextService } from './clients/llm/services/ContextService.js';
 import { IContextCompressionService } from './clients/llm/services/IContextCompressionService.js';
@@ -58,6 +55,11 @@ import { IContextService } from './clients/llm/services/IContextService.js';
 import { ILlmChatMessageFactory } from './clients/llm/services/ILlmChatMessageFactory.js';
 import { IMemoryService } from './clients/llm/services/IMemoryService.js';
 import { WebContentService } from './clients/llm/services/web/WebContentService.js';
+import { LlmEmbedTask } from './clients/llm/tasks/LlmEmbedTask.js';
+import { LlmEmojiReactionTask } from './clients/llm/tasks/LlmEmojiReactionTask.js';
+import { LlmGenerateStructuredTask } from './clients/llm/tasks/LlmGenerateStructuredTask.js';
+import { LlmGenerateTask } from './clients/llm/tasks/LlmGenerateTask.js';
+import { LlmMessageTask } from './clients/llm/tasks/LlmMessageTask.js';
 import { ComfyUiClient } from './clients/media/comfy-ui/ComfyUiClient.js';
 import { IWorkflow } from './clients/media/comfy-ui/models/IWorkflow.js';
 import { IWorkflowService } from './clients/media/comfy-ui/services/IWorkflowService.js';
@@ -213,16 +215,16 @@ export class BotServiceContainer implements IBotServiceContainer {
     return new ComfyUiReplyService(this);
   }
 
-  get ollamaClient(): OllamaClient {
-    return new OllamaClient(this);
+  get llmClient(): ILlmClient {
+    return new LlmClient(this);
   }
 
-  get ollamaReplyService(): OllamaReplyService {
-    return new OllamaReplyService(this);
+  get llmReplyService(): LlmReplyService {
+    return new LlmReplyService(this);
   }
 
-  get ollamaStreamingReplyService(): OllamaStreamingReplyService {
-    return new OllamaStreamingReplyService(this);
+  get llmStreamingReplyService(): LlmStreamingReplyService {
+    return new LlmStreamingReplyService(this);
   }
 
   get actionRowBuilderFactory(): IActionRowBuilderFactory {
@@ -277,7 +279,7 @@ export class BotServiceContainer implements IBotServiceContainer {
   #contextMessageFactory: IContextMessageFactory<unknown, unknown> | null = null;
   getContextMessageFactory<ChatMessageType, LlmMessageType>(): IContextMessageFactory<ChatMessageType, LlmMessageType> {
     if(this.#contextMessageFactory === null) {
-      this.#contextMessageFactory = new DiscordOllamaContextMessageFactory(this);
+      this.#contextMessageFactory = new DiscordLlmContextMessageFactory(this);
     }
 
     return this.#contextMessageFactory as IContextMessageFactory<ChatMessageType, LlmMessageType>;
@@ -300,30 +302,30 @@ export class BotServiceContainer implements IBotServiceContainer {
     return this.#contextCompressionService;
   }
 
-  getLlmGenerateTask(prompt: string, temperature: number | undefined): BaseTask<IHttpExchange<GenerateRequest, GenerateResponse>> {
+  getLlmGenerateTask(prompt: string, temperature: number | undefined): BaseTask<IHttpExchange<ILlmRequest, LlmGenerateResult>> {
     if(!this.featureService.hasFeature(SupportedFeature.Txt2Txt)) {
       throw this.#taskNotConfiguredError;
     }
 
-    return new OllamaGenerateTask(this, prompt, temperature) as BaseTask<IHttpExchange<GenerateRequest, GenerateResponse>>;
+    return new LlmGenerateTask(this, prompt, temperature) as BaseTask<IHttpExchange<ILlmRequest, LlmGenerateResult>>;
   }
 
-  getLlmGenerateStructuredTask<T>(prompt: string, structuredRequestData: IStructuredRequestData): BaseTask<IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, T>> {
+  getLlmGenerateStructuredTask<T>(prompt: string, structuredRequestData: IStructuredRequestData): BaseTask<IHttpExchangeWithAttachedData<ILlmRequest, LlmGenerateResult, T>> {
     if (!this.featureService.hasFeature(SupportedFeature.Txt2Txt)) {
       throw this.#taskNotConfiguredError;
     }
 
-    return new OllamaGenerateStructuredTask<T>(this, prompt, structuredRequestData) as BaseTask<IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, T>>;
+    return new LlmGenerateStructuredTask<T>(this, prompt, structuredRequestData) as BaseTask<IHttpExchangeWithAttachedData<ILlmRequest, LlmGenerateResult, T>>;
   }
 
   getEmbedTask(llmChatMessage: LlmChatMessage, ownerUserId?: string): BaseTask<void> {
-    return new OllamaEmbedTask(this, llmChatMessage, ownerUserId) as BaseTask<void>;
+    return new LlmEmbedTask(this, llmChatMessage, ownerUserId) as BaseTask<void>;
   }
 
   getEmojiReactionTask(reaction: MessageReaction, user: User): BaseTask<unknown> {
     switch (this.configurationService.botFunction) {
       case BotMode.Chat:
-        return new OllamaEmojiReactionTask(this, reaction, user) as BaseTask<unknown>;
+        return new LlmEmojiReactionTask(this, reaction, user) as BaseTask<unknown>;
       default:
         throw this.#taskNotConfiguredError;
     }
@@ -332,7 +334,7 @@ export class BotServiceContainer implements IBotServiceContainer {
   getMessageTask(message: DiscordMessage): BaseTask<unknown> {
     switch(this.configurationService.botFunction) {
       case BotMode.Chat:
-        return new OllamaMessageTask(this, message) as BaseTask<unknown>;
+        return new LlmMessageTask(this, message) as BaseTask<unknown>;
       case BotMode.Media:
         return new ComfyUiMessageTask(this, message) as BaseTask<unknown>;
       default:

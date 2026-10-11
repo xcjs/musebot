@@ -1,4 +1,4 @@
-﻿import { OllamaClient } from '../clients/llm/ollama/OllamaClient.js';
+﻿import { ILlmClient } from '../clients/llm/ILlmClient.js';
 import { ComfyUiClient } from '../clients/media/comfy-ui/ComfyUiClient.js';
 import { SupportedFeature } from '../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../features/IFeatureService.js';
@@ -8,21 +8,21 @@ import { ITaskChannelPostProcessor } from './ITaskChannelPostProcessor.js';
 
 export class GenerativeAiChannelPostProcessor implements ITaskChannelPostProcessor {
   readonly #featureService: IFeatureService;
-  readonly #ollamaClient: OllamaClient;
+  readonly #llmClient: ILlmClient;
   readonly #comfyUiClient: ComfyUiClient;
 
   readonly #logger: ILogger;
 
   constructor(services: IBotServiceContainer) {
   this.#featureService = services.featureService;
-  this.#ollamaClient = services.ollamaClient;
+  this.#llmClient = services.llmClient;
   this.#comfyUiClient = services.comfyUiClient;
 
   this.#logger = services.getLogger('GenerativeAiChannelPostProcessor');
   }
 
   async postProcess(): Promise<void> {
-  this.#logger.info('Running Ollama and ComfyUI post-processors.');
+  this.#logger.info('Running LLM and ComfyUI post-processors.');
 
   if(this.#featureService.hasFeature(SupportedFeature.Txt2Audio)
       || this.#featureService.hasFeature(SupportedFeature.Txt2Img)
@@ -36,7 +36,7 @@ export class GenerativeAiChannelPostProcessor implements ITaskChannelPostProcess
   }
 
   if(this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
-      await this.#ollamaClient.free();
+      await this.#llmClient.free();
   }
   }
 }

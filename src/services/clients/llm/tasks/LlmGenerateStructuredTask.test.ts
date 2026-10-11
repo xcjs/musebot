@@ -1,18 +1,25 @@
 import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
-import { GenerateRequest, GenerateResponse } from 'ollama';
 
-import { TaskQueueStrategy } from '../../../../../enums/TaskQueueStrategy.js';
-import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
-import type { IConfigurationService } from '../../../../environment-settings/IConfigurationService.js';
-import type { IFeatureService } from '../../../../features/IFeatureService.js';
-import type { IBotServiceContainer } from '../../../../IBotServiceContainer.js';
-import type { ILogger } from '../../../../ILogger.js';
-import type { IParallelizationStrategy } from '../../../../parallelization/IParallelizationStrategy.js';
-import type { ITaskChannelPostProcessor } from '../../../../parallelization/ITaskChannelPostProcessor.js';
-import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
-import type { ComfyUiClient } from '../../../media/comfy-ui/ComfyUiClient.js';
-import type { OllamaClient } from '../OllamaClient.js';
-import { OllamaGenerateTask } from './OllamaGenerateTask.js';
+import { TaskQueueStrategy } from '../../../../enums/TaskQueueStrategy.js';
+import { IHttpExchangeWithAttachedData } from '../../../../models/IHttpExchangeWithAttachedData.js';
+import type { IConfigurationService } from '../../../environment-settings/IConfigurationService.js';
+import type { IFeatureService } from '../../../features/IFeatureService.js';
+import type { IBotServiceContainer } from '../../../IBotServiceContainer.js';
+import type { ILogger } from '../../../ILogger.js';
+import type { IParallelizationStrategy } from '../../../parallelization/IParallelizationStrategy.js';
+import type { ITaskChannelPostProcessor } from '../../../parallelization/ITaskChannelPostProcessor.js';
+import { TaskStatus } from '../../../tasks/enums/TaskStatus.js';
+import type { ComfyUiClient } from '../../media/comfy-ui/ComfyUiClient.js';
+import type { ILlmClient } from '../ILlmClient.js';
+import type { ILlmRequest } from '../models/ILlmRequest.js';
+import type { IStructuredRequestData } from '../models/IStructuredRequestData.js';
+import type { LlmGenerateResult } from '../models/LlmGenerateResult.js';
+import { LlmGenerateStructuredTask } from './LlmGenerateStructuredTask.js';
+
+interface TestOutput {
+  name: string;
+  value: number;
+}
 
 function createMockLogger(): jest.Mocked<ILogger> {
   return {
@@ -41,17 +48,30 @@ function createMockComfyUiClient(freeResult: boolean): jest.Mocked<ComfyUiClient
   } as unknown as jest.Mocked<ComfyUiClient>;
 }
 
-function createMockOllamaClient(generateResponse?: IHttpExchange<GenerateRequest, GenerateResponse>): jest.Mocked<OllamaClient> {
+function createMockStructuredRequestData(): IStructuredRequestData {
+  return {
+    systemPrompt: 'You are a helpful assistant.',
+    schema: { type: 'object', properties: { name: { type: 'string' }, value: { type: 'number' } } }
+  };
+}
+
+function createMockLlmClient(structuredResponse?: IHttpExchangeWithAttachedData<ILlmRequest, LlmGenerateResult, TestOutput>): jest.Mocked<ILlmClient> {
   return {
     host: new URL('http://localhost:11434'),
     free: jest.fn<() => Promise<boolean>>().mockResolvedValue(true),
-    generate: jest.fn<() => Promise<IHttpExchange<GenerateRequest, GenerateResponse>>>()
-      .mockResolvedValue(generateResponse ?? { request: {} as GenerateRequest, response: { response: 'test response' } as unknown as GenerateResponse }),
-    generateStructured: jest.fn(),
+    generate: jest.fn(),
+    generateStructured: jest.fn<() => Promise<IHttpExchangeWithAttachedData<ILlmRequest, LlmGenerateResult, TestOutput>>>()
+      .mockResolvedValue(structuredResponse ?? {
+        exchange: {
+          request: {} as ILlmRequest,
+          response: { content: 'test' } as LlmGenerateResult
+        },
+        data: { name: 'test', value: 42 } as TestOutput
+      }),
     sendMessage: jest.fn(),
     sendMessageAndGetStream: jest.fn(),
     isModelLoaded: jest.fn<() => Promise<boolean>>().mockResolvedValue(false),
-  } as unknown as jest.Mocked<OllamaClient>;
+  } as unknown as jest.Mocked<ILlmClient>;
 }
 
 function createMockServices(
@@ -59,7 +79,7 @@ function createMockServices(
   logger: jest.Mocked<ILogger>,
   featureService: jest.Mocked<IFeatureService>,
   comfyUiClient: jest.Mocked<ComfyUiClient>,
-  ollamaClient: jest.Mocked<OllamaClient>
+  llmClient: jest.Mocked<ILlmClient>
 ): IBotServiceContainer {
   return {
     configurationService: config,
@@ -71,6 +91,7 @@ function createMockServices(
     helpService: null as never,
     workflowService: null as never,
     webContentService: null as never,
+    llmHostFlavorRegistry: null as never,
     parallelizationStrategy: { getTaskChannel: jest.fn(() => 'test') } as unknown as IParallelizationStrategy,
     getLogger: jest.fn(() => logger),
     getTaskChannelPostProcessor: (() => null as never) as unknown as () => ITaskChannelPostProcessor,
@@ -90,9 +111,9 @@ function createMockServices(
     contentTypeService: null as never,
     comfyUiClient,
     comfyUiReplyService: null as never,
-    ollamaClient,
-    ollamaReplyService: null as never,
-    ollamaStreamingReplyService: null as never,
+    llmClient,
+    llmReplyService: null as never,
+    llmStreamingReplyService: null as never,
     actionRowBuilderFactory: null as never,
     getChatMessageFilters: () => [], getInputChatMessageFilters: () => [],
     getChatMessageFactory: () => null as never, getLlmChatMessageFactory: () => null as never, getMemoryService: () => null as never,
@@ -107,25 +128,27 @@ function createMockConfig(overrides: Partial<IConfigurationService> = {}): IConf
   } as unknown as IConfigurationService;
 }
 
-describe('OllamaGenerateTask', () => {
+describe('LlmGenerateStructuredTask', () => {
   let mockLogger: jest.Mocked<ILogger>;
   let mockConfig: IConfigurationService;
   let mockFeatureService: jest.Mocked<IFeatureService>;
   let mockComfyUiClient: jest.Mocked<ComfyUiClient>;
-  let mockOllamaClient: jest.Mocked<OllamaClient>;
-  let task: OllamaGenerateTask;
+  let mockLlmClient: jest.Mocked<ILlmClient>;
+  let structuredRequestData: IStructuredRequestData;
+  let task: LlmGenerateStructuredTask<TestOutput>;
 
   beforeEach((): void => {
     mockLogger = createMockLogger();
     mockConfig = createMockConfig();
     mockFeatureService = createMockFeatureService(false);
     mockComfyUiClient = createMockComfyUiClient(true);
-    mockOllamaClient = createMockOllamaClient();
+    mockLlmClient = createMockLlmClient();
+    structuredRequestData = createMockStructuredRequestData();
 
-    task = new OllamaGenerateTask(
-      createMockServices(mockConfig, mockLogger, mockFeatureService, mockComfyUiClient, mockOllamaClient),
+    task = new LlmGenerateStructuredTask<TestOutput>(
+      createMockServices(mockConfig, mockLogger, mockFeatureService, mockComfyUiClient, mockLlmClient),
       'test prompt',
-      0.5
+      structuredRequestData
     );
   });
 
@@ -134,43 +157,32 @@ describe('OllamaGenerateTask', () => {
   });
 
   describe('process()', () => {
-    it('should call ollamaClient.generate() with the prompt and temperature', async (): Promise<void> => {
+    it('should call llmClient.generateStructured() with the prompt and structured request data', async (): Promise<void> => {
       await task.process();
 
-      expect(mockOllamaClient.generate).toHaveBeenCalledWith('test prompt', 0.5);
-    });
-
-    it('should call ollamaClient.generate() with undefined temperature when not provided', async (): Promise<void> => {
-      task = new OllamaGenerateTask(
-        createMockServices(mockConfig, mockLogger, mockFeatureService, mockComfyUiClient, mockOllamaClient),
-        'test prompt'
-      );
-
-      await task.process();
-
-      expect(mockOllamaClient.generate).toHaveBeenCalledWith('test prompt', undefined);
+      expect(mockLlmClient.generateStructured).toHaveBeenCalledWith('test prompt', structuredRequestData);
     });
   });
 
   describe('postProcess()', () => {
-    it('should invoke onSuccess callback with the Ollama exchange when taskStatus is Successful', async (): Promise<void> => {
+    it('should invoke onSuccess callback with the structured exchange when taskStatus is Successful', async (): Promise<void> => {
       await task.process();
 
       task.taskStatus = TaskStatus.Successful;
 
-      const onSuccess = jest.fn<(payload: IHttpExchange<GenerateRequest, GenerateResponse>) => void>();
+      const onSuccess = jest.fn<(payload: IHttpExchangeWithAttachedData<ILlmRequest, LlmGenerateResult, TestOutput>) => void>();
       task.onSuccess = onSuccess;
 
       await task.postProcess();
 
       expect(onSuccess).toHaveBeenCalledTimes(1);
-      expect(onSuccess.mock.calls[0][0].response).toBeDefined();
+      expect(onSuccess.mock.calls[0][0].data).toEqual({ name: 'test', value: 42 });
     });
 
     it('should not invoke onSuccess when taskStatus is Successful but exchange is null', async (): Promise<void> => {
       task.taskStatus = TaskStatus.Successful;
 
-      const onSuccess = jest.fn<(payload: IHttpExchange<GenerateRequest, GenerateResponse>) => void>();
+      const onSuccess = jest.fn<(payload: IHttpExchangeWithAttachedData<ILlmRequest, LlmGenerateResult, TestOutput>) => void>();
       task.onSuccess = onSuccess;
 
       await task.postProcess();
@@ -179,7 +191,7 @@ describe('OllamaGenerateTask', () => {
     });
 
     it('should invoke onFailure callback with lastError when taskStatus is Dead', async (): Promise<void> => {
-      const testError = new Error('Ollama request failed');
+      const testError = new Error('Structured generation failed');
       task.lastError = testError;
 
       task.taskStatus = TaskStatus.Failed;
@@ -211,7 +223,7 @@ describe('OllamaGenerateTask', () => {
     });
 
     it('should not invoke onSuccess or onFailure when taskStatus is Idle', async (): Promise<void> => {
-      const onSuccess = jest.fn<(payload: IHttpExchange<GenerateRequest, GenerateResponse>) => void>();
+      const onSuccess = jest.fn<(payload: IHttpExchangeWithAttachedData<ILlmRequest, LlmGenerateResult, TestOutput>) => void>();
       const onFailure = jest.fn<(error: Error) => void>();
       task.onSuccess = onSuccess;
       task.onFailure = onFailure;

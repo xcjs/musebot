@@ -9,7 +9,7 @@ import { ResourceType } from '../../../../parallelization/ResourceType.js';
 import { BaseTask } from '../../../../tasks/models/BaseTask.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
-import { OllamaClient } from '../../../llm/ollama/OllamaClient.js';
+import { ILlmClient } from '../../../llm/ILlmClient.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
 import { IWorkflowService } from '../services/IWorkflowService.js';
 
@@ -28,7 +28,7 @@ export abstract class ComfyUiBaseTask extends BaseTask<void> {
   readonly comfyUiReplyService: ComfyUiReplyService;
   readonly replyService: IReplyService<Message, MessageReaction, Attachment, Message | ButtonInteraction>;
   readonly #featureService: IFeatureService;
-  readonly #ollamaClient: OllamaClient;
+  readonly #llmClient: ILlmClient;
 
   constructor(services: IBotServiceContainer) {
     super(services);
@@ -39,7 +39,7 @@ export abstract class ComfyUiBaseTask extends BaseTask<void> {
     this.comfyUiReplyService = services.comfyUiReplyService;
     this.replyService = services.getReplyService();
     this.#featureService = services.featureService;
-    this.#ollamaClient = services.ollamaClient;
+    this.#llmClient = services.llmClient;
   }
 
   override async preProcess(): Promise<void> {
@@ -47,9 +47,9 @@ export abstract class ComfyUiBaseTask extends BaseTask<void> {
 
     if (this.configurationService.taskQueueStrategy === TaskQueueStrategy.Serial
       && this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
-      const freed = await this.#ollamaClient.waitForModelUnload();
+      const freed = await this.#llmClient.waitForModelUnload();
       if (!freed) {
-        throw new Error('Ollama model could not be unloaded; aborting to prevent ComfyUI VRAM contention.');
+        throw new Error('The LLM model could not be unloaded; aborting to prevent ComfyUI VRAM contention.');
       }
     }
   }

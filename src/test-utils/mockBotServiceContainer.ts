@@ -187,9 +187,9 @@ export function createMockServiceContainer(config?: MockServiceContainerConfig):
     contentTypeService: null as never,
     comfyUiClient: null as never,
     comfyUiReplyService: null as never,
-    ollamaClient: null as never,
-    ollamaReplyService: null as never,
-    ollamaStreamingReplyService: null as never,
+    llmClient: null as never,
+    llmReplyService: null as never,
+    llmStreamingReplyService: null as never,
     actionRowBuilderFactory: null as never,
 
     // Factories

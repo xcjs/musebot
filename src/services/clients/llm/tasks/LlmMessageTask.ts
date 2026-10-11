@@ -1,26 +1,29 @@
 ﻿import { Message as DiscordMessage } from 'discord.js';
-import { ChatResponse, GenerateRequest, GenerateResponse, Message as OllamaMessage } from 'ollama';
 
-import { IHttpExchange } from '../../../../../models/IHttpExchange.js';
-import { endsWithWhitespace, hasOnly, isOnlyWhitespace } from '../../../../../utilities/string-utilities.js';
-import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
-import { IFeatureService } from '../../../../features/IFeatureService.js';
-import { IBotServiceContainer } from "../../../../IBotServiceContainer.js"
-import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
-import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
-import { BaseTask } from '../../../../tasks/models/BaseTask.js';
-import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.js';
-import { DiscordAttachmentService } from '../../../chat/discord/services/DiscordAttachmentService.js';
-import { IInputChatMessageFilter } from '../../../chat/IInputChatMessageFilter.js';
-import { ILlmChatMessageFactory } from '../../../llm/services/ILlmChatMessageFactory.js';
-import { IMemoryService } from '../../../llm/services/IMemoryService.js';
-import { WebContentService } from '../../../llm/services/web/WebContentService.js';
-import { OLLAMA_TEMPERATURE_DEFAULT } from '../constants/OllamaConstants.js';
-import { OllamaRole } from '../enums/OllamaRole.js';
+import { IHttpExchange } from '../../../../models/IHttpExchange.js';
+import { endsWithWhitespace, hasOnly, isOnlyWhitespace } from '../../../../utilities/string-utilities.js';
+import { SupportedFeature } from '../../../features/enum/SupportedFeature.js';
+import { IFeatureService } from '../../../features/IFeatureService.js';
+import { IBotServiceContainer } from "../../../IBotServiceContainer.js"
+import { TaskStatus } from '../../../tasks/enums/TaskStatus.js';
+import { ITaskQueue } from '../../../tasks/ITaskQueue.js';
+import { BaseTask } from '../../../tasks/models/BaseTask.js';
+import { DiscordConstants } from '../../chat/discord/enums/DiscordConstants.js';
+import { DiscordAttachmentService } from '../../chat/discord/services/DiscordAttachmentService.js';
+import { IInputChatMessageFilter } from '../../chat/IInputChatMessageFilter.js';
+import { LLM_TEMPERATURE_DEFAULT } from '../constants/LlmConstants.js';
+import { LlmRole } from '../enums/LlmRole.js';
+import { ILlmRequest } from '../models/ILlmRequest.js';
 import { LlmChatMessage } from '../models/LlmChatMessage.js';
-import { OllamaBaseTask } from './OllamaBaseTask.js';
+import { LlmChatResult } from '../models/LlmChatResult.js';
+import { LlmGenerateResult } from '../models/LlmGenerateResult.js';
+import { LlmMessage } from '../models/LlmMessage.js';
+import { ILlmChatMessageFactory } from '../services/ILlmChatMessageFactory.js';
+import { IMemoryService } from '../services/IMemoryService.js';
+import { WebContentService } from '../services/web/WebContentService.js';
+import { LlmBaseTask } from './LlmBaseTask.js';
 
-export class OllamaMessageTask extends OllamaBaseTask<void> {
+export class LlmMessageTask extends LlmBaseTask<void> {
   readonly #services: IBotServiceContainer;
 
   readonly #featureService: IFeatureService;
@@ -38,7 +41,7 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
     services: IBotServiceContainer,
     message: DiscordMessage) {
     super(services);
-    this.logger = services.getLogger('OllamaMessageTask');
+    this.logger = services.getLogger('LlmMessageTask');
 
     this.#services = services;
 
@@ -60,11 +63,11 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
     const formattedMessage = JSON.stringify(llmChatMessage);
 
     // Compress context BEFORE reading it for the upcoming request so that
-    // context + generated tokens stay under num_ctx and Ollama never
-    // triggers a context-shift checkpoint mid-generation (which would
-    // stall the HTTP stream indefinitely). Post-response compression alone
-    // (called below after the response completes) cannot prevent overflow
-    // of the in-flight request.
+    // context + generated tokens stay under the model's context window and
+    // the host never triggers a context-shift checkpoint mid-generation
+    // (which would stall the HTTP stream indefinitely). Post-response
+    // compression alone (called below after the response completes) cannot
+    // prevent overflow of the in-flight request.
     await this.#services.getContextCompressionService().compressIfNeeded(this.#message.channelId);
 
     let context = this.contextService.getContextByChannelId(this.#message.channelId);
@@ -86,22 +89,22 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
       return;
     }
 
-    const exchange = await this.ollamaClient.sendMessage(formattedMessage, context, images);
+    const exchange = await this.llmClient.sendMessage(formattedMessage, context, images);
 
     this.contextService.addContext([this.contextMessageFactory.fromChatMessage(this.#message)]);
     this.contextService.addContext([
       this.contextMessageFactory.fromLlmMessage(exchange.exchange.response.message,
         this.#message.id, this.#message.author.id, this.#message.channelId, this.#message.guildId)]);
 
-    const response: ChatResponse = exchange.exchange.response;
+    const response: LlmChatResult = exchange.exchange.response;
     await this.#services.getContextCompressionService().compressIfNeeded(this.#message.channelId, {
-      promptTokenCount: response.prompt_eval_count,
-      responseTokenCount: response.eval_count
+      promptTokenCount: response.promptTokens,
+      responseTokenCount: response.completionTokens
     });
 
     await this.#storeMemories(llmChatMessage, response.message.content);
 
-    const replies = await this.ollamaReplyService.reply(this.#message, exchange.exchange);
+    const replies = await this.llmReplyService.reply(this.#message, exchange.exchange);
 
     if (this.#featureService.hasFeature(SupportedFeature.Txt2Img)
       && replies.length > 0) {
@@ -118,11 +121,11 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
         break;
     }
 
-    this.ollamaStreamingReplyService.clearState();
+    this.llmStreamingReplyService.clearState();
   }
 
-  async #processAsStream(formattedMessage: string, context: OllamaMessage[], llmChatMessage: LlmChatMessage, images: string[]): Promise<void> {
-    const exchange = await this.ollamaClient.sendMessageAndGetStream(formattedMessage, context, images);
+  async #processAsStream(formattedMessage: string, context: LlmMessage[], llmChatMessage: LlmChatMessage, images: string[]): Promise<void> {
+    const exchange = await this.llmClient.sendMessageAndGetStream(formattedMessage, context, images);
 
     let averageResponseInMs = 0;
     let endTime = performance.now();
@@ -138,8 +141,8 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
       const startTime = performance.now();
       let replies: DiscordMessage[] = [];
 
-      fullResponse += response.message.content;
-      responseBatch += response.message.content;
+      fullResponse += response.content;
+      responseBatch += response.content;
 
       if (!response.done) {
         // Ensure we're not sending requests faster than Discord can
@@ -169,13 +172,15 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
         }
       }
 
-      replies = await this.ollamaStreamingReplyService.reply(this.#message, responseBatch, response.done);
+      replies = await this.llmStreamingReplyService.reply(this.#message, responseBatch, response.done);
       responseBatch = '';
 
       if (response.done) {
+        const assistantMessage: LlmMessage = { role: LlmRole.Assistant, content: fullResponse };
+
         this.contextService.addContext([this.contextMessageFactory.fromChatMessage(this.#message)]);
         this.contextService.addContext([
-          this.contextMessageFactory.fromLlmMessage(response.message,
+          this.contextMessageFactory.fromLlmMessage(assistantMessage,
             this.#message.author.id,
             this.#message.guildId,
             this.#message.channelId,
@@ -183,8 +188,8 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
           )]);
 
         await this.#services.getContextCompressionService().compressIfNeeded(this.#message.channelId, {
-          promptTokenCount: response.prompt_eval_count,
-          responseTokenCount: response.eval_count
+          promptTokenCount: response.promptTokens,
+          responseTokenCount: response.completionTokens
         });
 
         await this.#storeMemories(llmChatMessage, fullResponse);
@@ -227,7 +232,7 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
     }
   }
 
-  async #getWebContext(messageText: string): Promise<OllamaMessage | null> {
+  async #getWebContext(messageText: string): Promise<LlmMessage | null> {
     if (!this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
       return null;
     }
@@ -253,7 +258,7 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
       this.logger.info(`Fetched ${results.length} web page(s) for context: ${results.map(r => r.url).join(', ')}`);
 
       return {
-        role: OllamaRole.System,
+        role: LlmRole.System,
         content
       };
     } catch (error) {
@@ -263,7 +268,7 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
   }
 
   #attachImage(prompt: string, replies: Array<DiscordMessage>): void {
-    this.logger.info('An image will be attached to the Ollama response.');
+    this.logger.info('An image will be attached to the LLM response.');
 
     const lastReply = replies[replies.length - 1];
 
@@ -278,15 +283,15 @@ export class OllamaMessageTask extends OllamaBaseTask<void> {
       + ' If you do decide to include any text in the image, make sure to surround it with quotes and remain brief.'
       + `\n\n\`\`\`text\n${prompt}\n\`\`\``;
 
-    const generateTask = this.#services.getLlmGenerateTask(llmImagePrompt, OLLAMA_TEMPERATURE_DEFAULT);
+    const generateTask = this.#services.getLlmGenerateTask(llmImagePrompt, LLM_TEMPERATURE_DEFAULT);
     generateTask.isChild = true;
 
-    generateTask.onSuccess = (payload: IHttpExchange<GenerateRequest, GenerateResponse>): void => {
-      this.#enqueueAttachmentTask(lastReply, payload.response.response);
+    generateTask.onSuccess = (payload: IHttpExchange<ILlmRequest, LlmGenerateResult>): void => {
+      this.#enqueueAttachmentTask(lastReply, payload.response.content);
     };
 
     generateTask.onFailure = (error: Error): void => {
-      this.logger.error('Failed to generate an image for the prompt. Falling back to the original Ollama response to generate an image instead.', error);
+      this.logger.error('Failed to generate an image for the prompt. Falling back to the original LLM response to generate an image instead.', error);
       this.#enqueueAttachmentTask(lastReply, prompt);
     };
 

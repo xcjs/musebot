@@ -37,7 +37,7 @@ function createMockComfyUiClient(freeResult: boolean): jest.Mocked<ComfyUiClient
   } as unknown as jest.Mocked<ComfyUiClient>;
 }
 
-function createMockOllamaClient(): { free: jest.MockedFunction<() => Promise<boolean>>; waitForModelUnload: jest.MockedFunction<() => Promise<boolean>> } {
+function createMockLlmClient(): { free: jest.MockedFunction<() => Promise<boolean>>; waitForModelUnload: jest.MockedFunction<() => Promise<boolean>> } {
   return {
     free: jest.fn<() => Promise<boolean>>().mockResolvedValue(true),
     waitForModelUnload: jest.fn<() => Promise<boolean>>().mockResolvedValue(true)
@@ -61,7 +61,7 @@ function createMockServices(
   logger: jest.Mocked<ILogger>,
   featureService: jest.Mocked<IFeatureService>,
   comfyUiClient: jest.Mocked<ComfyUiClient>,
-  ollamaClient: { free: jest.MockedFunction<() => Promise<boolean>>; waitForModelUnload: jest.MockedFunction<() => Promise<boolean>> },
+  llmClient: { free: jest.MockedFunction<() => Promise<boolean>>; waitForModelUnload: jest.MockedFunction<() => Promise<boolean>> },
   workflowService: jest.Mocked<IWorkflowService>
 ): IBotServiceContainer {
   return {
@@ -74,6 +74,7 @@ function createMockServices(
     helpService: null as never,
     workflowService,
     webContentService: null as never,
+    llmHostFlavorRegistry: null as never,
     parallelizationStrategy: { getTaskChannel: jest.fn(() => 'test') } as unknown as IParallelizationStrategy,
     getLogger: jest.fn(() => logger),
     getTaskChannelPostProcessor: (() => null as never) as unknown as () => ITaskChannelPostProcessor,
@@ -93,9 +94,9 @@ function createMockServices(
     contentTypeService: null as never,
     comfyUiClient,
     comfyUiReplyService: null as never,
-    ollamaClient: ollamaClient as never,
-    ollamaReplyService: null as never,
-    ollamaStreamingReplyService: null as never,
+    llmClient: llmClient as never,
+    llmReplyService: null as never,
+    llmStreamingReplyService: null as never,
     actionRowBuilderFactory: null as never,
     getChatMessageFilters: () => [], getInputChatMessageFilters: () => [],
     getChatMessageFactory: () => null as never, getLlmChatMessageFactory: () => null as never, getMemoryService: () => null as never,
@@ -115,7 +116,7 @@ describe('ComfyUiBaseTask', () => {
   let mockConfig: IConfigurationService;
   let mockFeatureService: jest.Mocked<IFeatureService>;
   let mockComfyUiClient: jest.Mocked<ComfyUiClient>;
-  let mockOllamaClient: { free: jest.MockedFunction<() => Promise<boolean>>; waitForModelUnload: jest.MockedFunction<() => Promise<boolean>> };
+  let mockLlmClient: { free: jest.MockedFunction<() => Promise<boolean>>; waitForModelUnload: jest.MockedFunction<() => Promise<boolean>> };
   let mockWorkflowService: jest.Mocked<IWorkflowService>;
   let task: TestableComfyUiTask;
 
@@ -124,11 +125,11 @@ describe('ComfyUiBaseTask', () => {
     mockConfig = createMockConfig();
     mockFeatureService = createMockFeatureService(true);
     mockComfyUiClient = createMockComfyUiClient(true);
-    mockOllamaClient = createMockOllamaClient();
+    mockLlmClient = createMockLlmClient();
     mockWorkflowService = createMockWorkflowService();
 
     task = new TestableComfyUiTask(createMockServices(
-      mockConfig, mockLogger, mockFeatureService, mockComfyUiClient, mockOllamaClient, mockWorkflowService
+      mockConfig, mockLogger, mockFeatureService, mockComfyUiClient, mockLlmClient, mockWorkflowService
     ));
   });
 
@@ -137,38 +138,38 @@ describe('ComfyUiBaseTask', () => {
   });
 
   describe('preProcess()', () => {
-    it('should call ollama.waitForModelUnload() and not throw when it returns true', async (): Promise<void> => {
+    it('should call llm.waitForModelUnload() and not throw when it returns true', async (): Promise<void> => {
       await task.preProcess();
 
-      expect(mockOllamaClient.waitForModelUnload).toHaveBeenCalledTimes(1);
+      expect(mockLlmClient.waitForModelUnload).toHaveBeenCalledTimes(1);
     });
 
-    it('should throw when ollama.waitForModelUnload() returns false', async (): Promise<void> => {
-      mockOllamaClient.waitForModelUnload.mockResolvedValue(false);
+    it('should throw when llm.waitForModelUnload() returns false', async (): Promise<void> => {
+      mockLlmClient.waitForModelUnload.mockResolvedValue(false);
 
-      await expect(task.preProcess()).rejects.toThrow('Ollama model could not be unloaded');
+      await expect(task.preProcess()).rejects.toThrow('LLM model could not be unloaded');
     });
 
-    it('should not call ollama.waitForModelUnload() when not in serial mode', async (): Promise<void> => {
+    it('should not call llm.waitForModelUnload() when not in serial mode', async (): Promise<void> => {
       const parallelConfig = createMockConfig({ taskQueueStrategy: TaskQueueStrategy.Parallel });
       task = new TestableComfyUiTask(createMockServices(
-        parallelConfig, mockLogger, mockFeatureService, mockComfyUiClient, mockOllamaClient, mockWorkflowService
+        parallelConfig, mockLogger, mockFeatureService, mockComfyUiClient, mockLlmClient, mockWorkflowService
       ));
 
       await task.preProcess();
 
-      expect(mockOllamaClient.waitForModelUnload).not.toHaveBeenCalled();
+      expect(mockLlmClient.waitForModelUnload).not.toHaveBeenCalled();
     });
 
-    it('should not call ollama.waitForModelUnload() when Txt2Txt feature is unavailable', async (): Promise<void> => {
+    it('should not call llm.waitForModelUnload() when Txt2Txt feature is unavailable', async (): Promise<void> => {
       const noTxt2Txt = createMockFeatureService(false);
       task = new TestableComfyUiTask(createMockServices(
-        mockConfig, mockLogger, noTxt2Txt, mockComfyUiClient, mockOllamaClient, mockWorkflowService
+        mockConfig, mockLogger, noTxt2Txt, mockComfyUiClient, mockLlmClient, mockWorkflowService
       ));
 
       await task.preProcess();
 
-      expect(mockOllamaClient.waitForModelUnload).not.toHaveBeenCalled();
+      expect(mockLlmClient.waitForModelUnload).not.toHaveBeenCalled();
     });
   });
 

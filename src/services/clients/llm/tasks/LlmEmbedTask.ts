@@ -1,14 +1,14 @@
-import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
-import { IFeatureService } from '../../../../features/IFeatureService.js';
-import { IBotServiceContainer } from '../../../../IBotServiceContainer.js';
-import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
-import { IMemoryService } from '../../services/IMemoryService.js';
-import { WebContentService } from '../../services/web/WebContentService.js';
+import { SupportedFeature } from '../../../features/enum/SupportedFeature.js';
+import { IFeatureService } from '../../../features/IFeatureService.js';
+import { IBotServiceContainer } from '../../../IBotServiceContainer.js';
+import { TaskStatus } from '../../../tasks/enums/TaskStatus.js';
 import { LlmChatMessage } from '../models/LlmChatMessage.js';
 import { LlmChatMessageAttachment } from '../models/LlmChatMessageAttachment.js';
-import { OllamaBaseTask } from './OllamaBaseTask.js';
+import { IMemoryService } from '../services/IMemoryService.js';
+import { WebContentService } from '../services/web/WebContentService.js';
+import { LlmBaseTask } from './LlmBaseTask.js';
 
-export class OllamaEmbedTask extends OllamaBaseTask<void> {
+export class LlmEmbedTask extends LlmBaseTask<void> {
   override set onSuccess(callback: () => void) {
     this.#onSuccess = callback;
   }
@@ -29,7 +29,7 @@ export class OllamaEmbedTask extends OllamaBaseTask<void> {
 
   constructor(services: IBotServiceContainer, llmChatMessage: LlmChatMessage, ownerUserId?: string) {
     super(services);
-    this.logger = services.getLogger('OllamaEmbedTask');
+    this.logger = services.getLogger('LlmEmbedTask');
     this.#services = services;
     this.#llmChatMessage = llmChatMessage;
     this.#ownerUserId = ownerUserId;
@@ -90,7 +90,7 @@ export class OllamaEmbedTask extends OllamaBaseTask<void> {
 
   async #interpretImageAttachments(attachments: LlmChatMessageAttachment[]): Promise<void> {
     const contextPrompt = `The user posted: "${this.#llmChatMessage.message}"`;
-    const client = this.#services.ollamaClient;
+    const client = this.#services.llmClient;
 
     for (const attachment of attachments) {
       if (attachment.type !== 'image' || attachment.interpretation.length > 0) {

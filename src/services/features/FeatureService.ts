@@ -34,6 +34,11 @@ export class FeatureService implements IFeatureService {
   async loadFeatures(): Promise<void> {
     await this.#workflowService.loadWorkflows();
 
+    const registry = this.#services.llmHostFlavorRegistry;
+    for (const host of this.#configurationService.llmHosts) {
+      await registry.probeHost(host);
+    }
+
     if (this.#configurationService.llmHosts.length > 0
       && this.#configurationService.llmModels.length > 0) {
         this.#logger.info(`${SupportedFeature.Txt2Txt} supported.`);
@@ -68,7 +73,7 @@ export class FeatureService implements IFeatureService {
 
     for (const model of models) {
       try {
-        const client = this.#services.ollamaClient;
+        const client = this.#services.llmClient;
         const hasVision = await client.hasVisionCapability(model);
 
         if (hasVision) {

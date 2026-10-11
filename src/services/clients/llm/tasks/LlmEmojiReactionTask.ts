@@ -1,16 +1,17 @@
 ﻿import { Message as DiscordMessage, MessageReaction, User } from 'discord.js';
-import { Message as OllamaMessage } from 'ollama';
 
-import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
-import { IFeatureService } from '../../../../features/IFeatureService.js';
-import { IBotServiceContainer } from "../../../../IBotServiceContainer.js"
-import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
-import { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
-import { BaseTask } from '../../../../tasks/models/BaseTask.js';
-import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.js';
-import { OllamaBaseTask } from './OllamaBaseTask.js';
+import { SupportedFeature } from '../../../features/enum/SupportedFeature.js';
+import { IFeatureService } from '../../../features/IFeatureService.js';
+import { IBotServiceContainer } from "../../../IBotServiceContainer.js"
+import { TaskStatus } from '../../../tasks/enums/TaskStatus.js';
+import { ITaskQueue } from '../../../tasks/ITaskQueue.js';
+import { BaseTask } from '../../../tasks/models/BaseTask.js';
+import { DiscordConstants } from '../../chat/discord/enums/DiscordConstants.js';
+import { LlmRole } from '../enums/LlmRole.js';
+import { LlmMessage } from '../models/LlmMessage.js';
+import { LlmBaseTask } from './LlmBaseTask.js';
 
-export class OllamaEmojiReactionTask extends OllamaBaseTask<void> {
+export class LlmEmojiReactionTask extends LlmBaseTask<void> {
   readonly #services: IBotServiceContainer;
 
   readonly #featureService: IFeatureService;
@@ -24,7 +25,7 @@ export class OllamaEmojiReactionTask extends OllamaBaseTask<void> {
     reaction: MessageReaction,
     user: User) {
     super(services);
-    this.logger = services.getLogger('OllamaEmojiReactionTask');
+    this.logger = services.getLogger('LlmEmojiReactionTask');
 
     this.#services = services;
 
@@ -45,7 +46,7 @@ export class OllamaEmojiReactionTask extends OllamaBaseTask<void> {
       return;
     }
 
-    const exchange = await this.ollamaClient.sendMessage(prompt, context);
+    const exchange = await this.llmClient.sendMessage(prompt, context);
 
     this.contextService.addContext([
       this.contextMessageFactory.fromChatPrompt(prompt,
@@ -62,7 +63,7 @@ export class OllamaEmojiReactionTask extends OllamaBaseTask<void> {
         this.#reaction.message.id
       )]);
 
-    const replies = await this.ollamaReplyService.reply(this.#reaction.message as DiscordMessage, exchange.exchange, userMention);
+    const replies = await this.llmReplyService.reply(this.#reaction.message as DiscordMessage, exchange.exchange, userMention);
 
     if (this.#featureService.hasFeature(SupportedFeature.Txt2Img)
       && replies.length > 0) {
@@ -77,11 +78,11 @@ export class OllamaEmojiReactionTask extends OllamaBaseTask<void> {
         break;
     }
 
-    this.ollamaStreamingReplyService.clearState();
+    this.llmStreamingReplyService.clearState();
   }
 
-  async #processAsStream(prompt: string, context: OllamaMessage[]): Promise<void> {
-    const exchange = await this.ollamaClient.sendMessageAndGetStream(prompt, context);
+  async #processAsStream(prompt: string, context: LlmMessage[]): Promise<void> {
+    const exchange = await this.llmClient.sendMessageAndGetStream(prompt, context);
 
     let startTime = performance.now();
     let fullResponse = '';
@@ -92,16 +93,16 @@ export class OllamaEmojiReactionTask extends OllamaBaseTask<void> {
     }
 
     for await (const response of exchange.exchange.response) {
-      this.logger.info(`Appending "${response.message.content}"`);
+      this.logger.info(`Appending "${response.content}"`);
 
       let replies: DiscordMessage[] = [];
-      responseBatch += response.message.content;
+      responseBatch += response.content;
 
       if (performance.now() - startTime >= 1000
         / DiscordConstants.MaxRequestsPerSecond || response.done) {
         this.logger.info('Flushing response batch.');
 
-        replies = await this.ollamaStreamingReplyService.reply(this.#reaction.message as DiscordMessage, responseBatch, !!response.done);
+        replies = await this.llmStreamingReplyService.reply(this.#reaction.message as DiscordMessage, responseBatch, !!response.done);
         startTime = performance.now();
 
         fullResponse += responseBatch;
@@ -109,6 +110,8 @@ export class OllamaEmojiReactionTask extends OllamaBaseTask<void> {
       }
 
       if (response.done) {
+        const assistantMessage: LlmMessage = { role: LlmRole.Assistant, content: fullResponse };
+
         this.contextService.addContext([
           this.contextMessageFactory.fromChatPrompt(prompt,
             this.#user.id,
@@ -117,7 +120,7 @@ export class OllamaEmojiReactionTask extends OllamaBaseTask<void> {
             this.#reaction.message.id)]);
 
         this.contextService.addContext([
-          this.contextMessageFactory.fromLlmMessage(response.message,
+          this.contextMessageFactory.fromLlmMessage(assistantMessage,
             this.#user.id,
             this.#reaction.message.guildId,
             this.#reaction.message.channelId,
@@ -133,7 +136,7 @@ export class OllamaEmojiReactionTask extends OllamaBaseTask<void> {
   }
 
   #attachImage(prompt: string, replies: DiscordMessage[]): void {
-    this.logger.info('An image will be attached to the Ollama response.');
+    this.logger.info('An image will be attached to the LLM response.');
 
     const lastReply = replies[replies.length - 1];
     const attachTask = this.#services.getAttachmentTask(lastReply, prompt) as BaseTask<void>;

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 
-import type { OllamaClient } from '../clients/llm/ollama/OllamaClient.js';
+import type { ILlmClient } from '../clients/llm/ILlmClient.js';
 import type { ComfyUiClient } from '../clients/media/comfy-ui/ComfyUiClient.js';
 import type { IConfigurationService } from '../environment-settings/IConfigurationService.js';
 import { SupportedFeature } from '../features/enum/SupportedFeature.js';
@@ -30,10 +30,10 @@ function createMockFeatureService(hasTxt2Txt: boolean, hasMedia: boolean): jest.
   } as unknown as jest.Mocked<IFeatureService>;
 }
 
-function createMockOllamaClient(freeResult: boolean): jest.Mocked<OllamaClient> {
+function createMockLlmClient(freeResult: boolean): jest.Mocked<ILlmClient> {
   return {
     free: jest.fn<() => Promise<boolean>>().mockResolvedValue(freeResult),
-  } as unknown as jest.Mocked<OllamaClient>;
+  } as unknown as jest.Mocked<ILlmClient>;
 }
 
 function createMockComfyUiClient(freeResult: boolean): jest.Mocked<ComfyUiClient> {
@@ -45,7 +45,7 @@ function createMockComfyUiClient(freeResult: boolean): jest.Mocked<ComfyUiClient
 function createMockServices(
   logger: jest.Mocked<ILogger>,
   featureService: jest.Mocked<IFeatureService>,
-  ollamaClient: jest.Mocked<OllamaClient>,
+  llmClient: jest.Mocked<ILlmClient>,
   comfyUiClient: jest.Mocked<ComfyUiClient>
 ): IBotServiceContainer {
   return {
@@ -58,6 +58,7 @@ function createMockServices(
     helpService: null as never,
     workflowService: null as never,
     webContentService: null as never,
+    llmHostFlavorRegistry: null as never,
     parallelizationStrategy: null as never,
     getLogger: jest.fn(() => logger),
     getTaskChannelPostProcessor: (() => null as never) as unknown as () => ITaskChannelPostProcessor,
@@ -77,9 +78,9 @@ function createMockServices(
     contentTypeService: null as never,
     comfyUiClient,
     comfyUiReplyService: null as never,
-    ollamaClient,
-    ollamaReplyService: null as never,
-    ollamaStreamingReplyService: null as never,
+    llmClient,
+    llmReplyService: null as never,
+    llmStreamingReplyService: null as never,
     actionRowBuilderFactory: null as never,
     getChatMessageFilters: () => [], getInputChatMessageFilters: () => [],
     getChatMessageFactory: () => null as never, getLlmChatMessageFactory: () => null as never, getMemoryService: () => null as never,
@@ -89,18 +90,18 @@ function createMockServices(
 describe('GenerativeAiChannelPostProcessor', () => {
   let mockLogger: jest.Mocked<ILogger>;
   let mockFeatureService: jest.Mocked<IFeatureService>;
-  let mockOllamaClient: jest.Mocked<OllamaClient>;
+  let mockLlmClient: jest.Mocked<ILlmClient>;
   let mockComfyUiClient: jest.Mocked<ComfyUiClient>;
   let processor: GenerativeAiChannelPostProcessor;
 
   beforeEach((): void => {
     mockLogger = createMockLogger();
     mockFeatureService = createMockFeatureService(true, true);
-    mockOllamaClient = createMockOllamaClient(true);
+    mockLlmClient = createMockLlmClient(true);
     mockComfyUiClient = createMockComfyUiClient(true);
 
     processor = new GenerativeAiChannelPostProcessor(createMockServices(
-      mockLogger, mockFeatureService, mockOllamaClient, mockComfyUiClient
+      mockLogger, mockFeatureService, mockLlmClient, mockComfyUiClient
     ));
   });
 
@@ -113,32 +114,32 @@ describe('GenerativeAiChannelPostProcessor', () => {
       await processor.postProcess();
 
       expect(mockComfyUiClient.free).toHaveBeenCalledTimes(1);
-      expect(mockOllamaClient.free).toHaveBeenCalledTimes(1);
+      expect(mockLlmClient.free).toHaveBeenCalledTimes(1);
       expect(mockLogger.warn).not.toHaveBeenCalled();
     });
 
     it('should not call ComfyUI free() when no media features available', async (): Promise<void> => {
       const noMedia = createMockFeatureService(true, false);
       processor = new GenerativeAiChannelPostProcessor(createMockServices(
-        mockLogger, noMedia, mockOllamaClient, mockComfyUiClient
+        mockLogger, noMedia, mockLlmClient, mockComfyUiClient
       ));
 
       await processor.postProcess();
 
       expect(mockComfyUiClient.free).not.toHaveBeenCalled();
-      expect(mockOllamaClient.free).toHaveBeenCalledTimes(1);
+      expect(mockLlmClient.free).toHaveBeenCalledTimes(1);
     });
 
-    it('should not call Ollama free() when Txt2Txt feature unavailable', async (): Promise<void> => {
+    it('should not call LLM free() when Txt2Txt feature unavailable', async (): Promise<void> => {
       const noTxt2Txt = createMockFeatureService(false, true);
       processor = new GenerativeAiChannelPostProcessor(createMockServices(
-        mockLogger, noTxt2Txt, mockOllamaClient, mockComfyUiClient
+        mockLogger, noTxt2Txt, mockLlmClient, mockComfyUiClient
       ));
 
       await processor.postProcess();
 
       expect(mockComfyUiClient.free).toHaveBeenCalledTimes(1);
-      expect(mockOllamaClient.free).not.toHaveBeenCalled();
+      expect(mockLlmClient.free).not.toHaveBeenCalled();
     });
   });
 });

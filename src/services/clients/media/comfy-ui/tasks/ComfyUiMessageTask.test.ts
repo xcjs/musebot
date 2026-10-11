@@ -77,7 +77,7 @@ function createMockComfyUiReplyService(): jest.Mocked<ComfyUiReplyService> {
   } as unknown as jest.Mocked<ComfyUiReplyService>;
 }
 
-function createMockOllamaClient(): { free: jest.MockedFunction<() => Promise<boolean>>; waitForModelUnload: jest.MockedFunction<() => Promise<boolean>> } {
+function createMockLlmClient(): { free: jest.MockedFunction<() => Promise<boolean>>; waitForModelUnload: jest.MockedFunction<() => Promise<boolean>> } {
   return {
     free: jest.fn<() => Promise<boolean>>().mockResolvedValue(true),
     waitForModelUnload: jest.fn<() => Promise<boolean>>().mockResolvedValue(true)
@@ -137,7 +137,7 @@ function createMockServices(
   comfyUiClient: jest.Mocked<ComfyUiClient>,
   comfyUiReplyService: jest.Mocked<ComfyUiReplyService>,
   workflowService: jest.Mocked<IWorkflowService>,
-  ollamaClient: { free: jest.MockedFunction<() => Promise<boolean>>; waitForModelUnload: jest.MockedFunction<() => Promise<boolean>> },
+  llmClient: { free: jest.MockedFunction<() => Promise<boolean>>; waitForModelUnload: jest.MockedFunction<() => Promise<boolean>> },
   getWorkflowMutator: jest.Mock
 ): IBotServiceContainer {
   return {
@@ -150,6 +150,7 @@ function createMockServices(
     helpService: null as never,
     workflowService,
     webContentService: null as never,
+    llmHostFlavorRegistry: null as never,
     parallelizationStrategy: { getTaskChannel: jest.fn(() => 'test') } as unknown as IParallelizationStrategy,
     getLogger: jest.fn(() => logger),
     getTaskChannelPostProcessor: (() => null as never) as unknown as () => ITaskChannelPostProcessor,
@@ -169,9 +170,9 @@ function createMockServices(
     contentTypeService: null as never,
     comfyUiClient,
     comfyUiReplyService,
-    ollamaClient: ollamaClient as never,
-    ollamaReplyService: null as never,
-    ollamaStreamingReplyService: null as never,
+    llmClient: llmClient as never,
+    llmReplyService: null as never,
+    llmStreamingReplyService: null as never,
     actionRowBuilderFactory: null as never,
     getChatMessageFilters: () => [], getInputChatMessageFilters: () => [],
     getChatMessageFactory: () => null as never, getLlmChatMessageFactory: () => null as never, getMemoryService: () => null as never,
@@ -190,7 +191,7 @@ describe('ComfyUiMessageTask', () => {
   let mockComfyUiClient: jest.Mocked<ComfyUiClient>;
   let mockComfyUiReplyService: jest.Mocked<ComfyUiReplyService>;
   let mockWorkflowService: jest.Mocked<IWorkflowService>;
-  let mockOllamaClient: { free: jest.MockedFunction<() => Promise<boolean>>; waitForModelUnload: jest.MockedFunction<() => Promise<boolean>> };
+  let mockLlmClient: { free: jest.MockedFunction<() => Promise<boolean>>; waitForModelUnload: jest.MockedFunction<() => Promise<boolean>> };
   let mockMutator: jest.Mocked<IWorkflowMutator>;
   let mockGetWorkflowMutator: jest.Mock;
   let mockMessage: jest.Mocked<Message>;
@@ -199,7 +200,7 @@ describe('ComfyUiMessageTask', () => {
     return new ComfyUiMessageTask(createMockServices(
       mockConfig, mockLogger, mockFeatureService, mockReplyService,
       mockComfyUiClient, mockComfyUiReplyService, mockWorkflowService,
-      mockOllamaClient, mockGetWorkflowMutator
+      mockLlmClient, mockGetWorkflowMutator
     ), mockMessage);
   }
 
@@ -211,7 +212,7 @@ describe('ComfyUiMessageTask', () => {
     mockComfyUiClient = createMockComfyUiClient();
     mockComfyUiReplyService = createMockComfyUiReplyService();
     mockWorkflowService = createMockWorkflowService();
-    mockOllamaClient = createMockOllamaClient();
+    mockLlmClient = createMockLlmClient();
     mockMutator = createMockMutator(createBaseRenderRequest());
     mockGetWorkflowMutator = jest.fn(() => mockMutator);
     mockMessage = createMockMessage();

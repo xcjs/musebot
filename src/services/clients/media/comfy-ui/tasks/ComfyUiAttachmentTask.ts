@@ -9,8 +9,8 @@ import { TaskStatus } from '../../../../tasks/enums/TaskStatus.js';
 import { ComfyUiReplyService } from '../../../chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { DiscordConstants } from '../../../chat/discord/enums/DiscordConstants.js';
 import { IReplyService } from '../../../chat/IReplyService.js';
-import { LlmChatMessageAttachment } from '../../../llm/ollama/models/LlmChatMessageAttachment.js';
-import { OllamaClient } from '../../../llm/ollama/OllamaClient.js';
+import { ILlmClient } from '../../../llm/ILlmClient.js';
+import { LlmChatMessageAttachment } from '../../../llm/models/LlmChatMessageAttachment.js';
 import { ILlmChatMessageFactory } from '../../../llm/services/ILlmChatMessageFactory.js';
 import { IMemoryService } from '../../../llm/services/IMemoryService.js';
 import { ComfyUiClient } from '../ComfyUiClient.js';
@@ -30,7 +30,7 @@ export class ComfyUiAttachmentTask extends ComfyUiBaseTask {
   readonly #featureService: IFeatureService;
   readonly #llmChatMessageFactory: ILlmChatMessageFactory<Message>;
   readonly #memoryService: IMemoryService;
-  readonly #ollamaClient: OllamaClient;
+  readonly #llmClient: ILlmClient;
 
   readonly #message: Message;
   readonly #prompt: string;
@@ -49,7 +49,7 @@ export class ComfyUiAttachmentTask extends ComfyUiBaseTask {
     this.#featureService = services.featureService;
     this.#llmChatMessageFactory = services.getLlmChatMessageFactory<Message>();
     this.#memoryService = services.getMemoryService();
-    this.#ollamaClient = services.ollamaClient;
+    this.#llmClient = services.llmClient;
 
     this.#message = message;
     this.#prompt = prompt;
@@ -155,7 +155,7 @@ export class ComfyUiAttachmentTask extends ComfyUiBaseTask {
       return attachments;
     }
 
-    const interpretation = await this.#ollamaClient.interpretImages(base64Images, `The bot generated this image in response to the prompt: "${this.#prompt}"`);
+    const interpretation = await this.#llmClient.interpretImages(base64Images, `The bot generated this image in response to the prompt: "${this.#prompt}"`);
 
     for (let i = 0; i < base64Images.length; i++) {
       attachments.push({

@@ -2,8 +2,8 @@ import { Attachment, BaseGuildTextChannel, ButtonInteraction, Message as Discord
 
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../../../../features/IFeatureService.js';
-import { LlmChatMessage } from '../../../llm/ollama/models/LlmChatMessage.js';
-import { LlmChatMessageAttachment } from '../../../llm/ollama/models/LlmChatMessageAttachment.js';
+import { LlmChatMessage } from '../../../llm/models/LlmChatMessage.js';
+import { LlmChatMessageAttachment } from '../../../llm/models/LlmChatMessageAttachment.js';
 import { ILlmChatMessageFactory } from '../../../llm/services/ILlmChatMessageFactory.js';
 import { WebContentService } from '../../../llm/services/web/WebContentService.js';
 import { IReplyService } from '../../IReplyService.js';
