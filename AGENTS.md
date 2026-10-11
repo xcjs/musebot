@@ -12,7 +12,7 @@ configured via config: `chat` (LLM-powered conversation) or `media`
 - **Language:** TypeScript (ES2022, ESNext modules)
 - **Runtime:** Node.js
 - **Package Manager:** npm
-- **Version:** 9.6.0
+- **Version:** 10.0.0
 
 ## Repository Structure
 
@@ -212,8 +212,9 @@ Key settings (from `IBotConfig`):
 - **Run:** `npm test`
 - **Coverage:** Collected automatically to `coverage/`
 
-Tests are excluded from the TypeScript compilation via `tsconfig.json`
-(`"exclude": ["*.test.ts"]`).
+Tests are excluded from the TypeScript compilation via `tsconfig.build.json`
+(`"exclude": ["**/*.test.ts"]`), which `npm run build` uses; the root
+`tsconfig.json` still includes tests for editor and Jest tooling.
 
 ## Linting
 

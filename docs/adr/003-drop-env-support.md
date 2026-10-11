@@ -128,12 +128,16 @@ Drop `.env` support entirely and standardize on a unified JSON-based configurati
            hosts: string[];
        };
 
-        ollama: {
-            hosts: string[];
-            models: string[];
-            systemPrompt: string;
-            streamsResponse: boolean;
-        };
+       llm: {
+           hosts: {
+               url: string;
+               token?: string;
+               isLocal?: boolean;
+           }[];
+           models: string[];
+           systemPrompt: string;
+           streamsResponse: boolean;
+       };
 
         multiModal?: {
            randomPrompts: string[];
@@ -247,13 +251,13 @@ Drop `.env` support entirely and standardize on a unified JSON-based configurati
    Error: Media mode requires at least one ComfyUI host configured in bot.comfyUi.hosts.
    ```
    - If mode is 'chat' → check `llm.hosts` and `llm.models` have at least one value, else throw:
-    ```
-    Error: Chat mode requires at least one LLM host configured in llm.hosts.
-    Error: Chat mode requires at least one LLM model configured in llm.models.
-    ```
-    - If `llm.models` is empty → warning:
    ```
-   Warning: Bot 12345 has no Ollama models configured. Model selection not yet supported.
+   Error: Chat mode requires at least one LLM host configured in llm.hosts.
+   Error: Chat mode requires at least one LLM model configured in llm.models.
+   ```
+   - If `llm.models` is empty → warning:
+   ```
+   Warning: Chat mode has no LLM models configured. Model selection not yet supported.
    ```
 
 5. **Environment variable detection:**
@@ -275,9 +279,9 @@ Drop `.env` support entirely and standardize on a unified JSON-based configurati
    {
      "botId": "required" → throw: botId is required
      "discord.token" → throw: discord token is required in chat mode
-      "comfyUi.hosts" → throw: ComfyUI hosts are required in media mode
-      "llm.hosts" → throw: LLM hosts are required in chat mode
-      "llm.models" → throw: LLM models are required in chat mode
+     "comfyUi.hosts" → throw: ComfyUI hosts are required in media mode
+     "llm.hosts" → throw: LLM hosts are required in chat mode
+     "llm.models" → throw: LLM models are required in chat mode
    }
    ```
 
