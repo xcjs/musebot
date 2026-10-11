@@ -118,7 +118,7 @@ converse, even in channels where the bot doesn't respond.
 When a message contains image attachments or web links, Musebot interprets the
 content before storing it:
 
-* **Image attachments** — If the [Vision](01-ollama.md#vision) feature is
+* **Image attachments** — If the [Vision](01-llm.md#vision) feature is
   enabled, each image is sent to the vision-capable model and a text
   description (the "interpretation") is generated and stored as part of the
   `LlmChatMessage`'s `attachments` array. Image-only messages (no text body)

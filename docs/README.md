@@ -21,7 +21,7 @@ features:
   - title: Media Generation
     details: Generate and embed any type of media through ComfyUI integration.
   - title: Large Language Models
-    details: Create custom chat bots or enhance media generation using Ollama.
+    details: Create custom chat bots or enhance media generation using any OpenAI-compatible LLM provider.
   - title: Long-Term Memory
     details: Opt-in vector storage lets the bot recall past conversations across sessions.
   - title: Vision & Web Links

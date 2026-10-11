@@ -16,8 +16,8 @@
       "retryDelayMs": 1000,
 
       // Determines if tasks can execute concurrently or must run one at a time.
-      // If your system can handle executing both large language models (Ollama)
-      // *and* media generation (ComfyUI) at the same time, set this to "parallel".
+      // If your system can handle executing both large language model (LLM)
+      // *and* media generation (ComfyUI) workloads at the same time, set this to "parallel".
       // Systems on separate hosts will execute in parallel always.
       // Required: Optional
       // Default:  "serial"
@@ -47,7 +47,7 @@
       "nodeEnvironment": "production",
 
       // Musebot primary functionality — determines the bot's main mode of operation.
-      //   "chat" — for large language model integration (Ollama)
+      //   "chat" — for large language model integration (any OpenAI-compatible host)
       //   "media" — for audio/images/video/etc. generation (ComfyUI)
       // Required: Required
       // Values:   "chat" | "media"
@@ -135,23 +135,44 @@
         "guidanceScaleInterval": 0.5,
       },
 
-      // Ollama configuration for large language model chat. Required when mode is "chat".
-      "ollama": {
-        // The base URL(s) of the Ollama instance(s). Can be a list for multiple hosts.
+      // LLM configuration for chat. Required when mode is "chat".
+      // Works with any OpenAI-compatible platform: Ollama, llama.cpp's
+      // llama-server, and hosted APIs. See docs/chat/01-llm.md for details.
+      "llm": {
+        // The host(s) of your LLM backend(s). Can be a list for multiple hosts.
+        // Each entry is an object with a "url" (required) and optional
+        // "token" and "isLocal" fields. Bare strings are rejected.
         // Required: Required when mode="chat"
-        // Type:     Array of string (URLs)
+        // Type:     Array of object ({ url, token?, isLocal? })
         "hosts": [
-          "http://localhost:11434"
+          { "url": "http://localhost:11434" }
         ],
 
+        // A local host with a token would look like:
+        // { "url": "http://localhost:8080", "token": "sk-..." }
+        // A hosted OpenAI-compatible provider would look like:
+        // { "url": "https://api.examplerator.com", "token": "sk-...", "isLocal": false }
+        // The optional "isLocal" flag overrides Musebot's automatic local-host
+        // detection. Local hosts get model lifecycle management (on supported
+        // platforms); non-local hosts never have their models unloaded.
+        // Required: Optional
+        // Type:     Boolean (per host)
+
         // The name(s) of the large language model(s) to use. Can be a list for multiple models.
-        // Vision-capable models (e.g. gemma4:12b, llava) are auto-detected and enable
-        // image interpretation in chat and long-term memory.
+        // Vision capability is auto-detected on Ollama hosts; on all other hosts,
+        // list vision-capable models in "visionModels" below.
         // Required: Required when mode="chat"
         // Type:     Array of string (model names)
         "models": [
           "gemma4:12b"
         ],
+
+        // Model names (matching "models") that accept image input. Used to
+        // enable the Vision feature on non-Ollama hosts (llama.cpp, hosted
+        // APIs, etc.). Ollama hosts auto-detect vision and ignore this.
+        // Required: Optional
+        // Type:     Array of string (model names)
+        // "visionModels": ["llava"],
 
         // The system prompt used to give the LLM context or a custom persona.
         // Musebot also pulls the current channel topic as part of its system prompt.
@@ -159,7 +180,7 @@
         // Type:     String
         "systemPrompt": "You are a helpful assistant.",
 
-        // Whether Musebot can stream the Ollama response or not.
+        // Whether Musebot can stream the LLM response or not.
         // This determines if the response shows up all at once at the end or in
         // batches of tokens, making it seem like Musebot is typing in real time.
         // Note: This is experimental and may not be stable.
@@ -168,7 +189,7 @@
         // Type:     Boolean
         "streamsResponse": false,
 
-        // The name of an Ollama embedding model to use for long-term memory (LTM).
+        // The name of an embedding model to use for long-term memory (LTM).
         // When set, LTM is enabled — Musebot stores conversation messages as
         // vector embeddings and retrieves relevant context from past conversations.
         // See the Long-Term Memory documentation for details.
@@ -186,9 +207,10 @@
 
         // The maximum context window (in tokens) for the LLM. When set, Musebot
         // uses this value to determine when to compress conversation context.
-        // When unset, Musebot queries Ollama for the model's max context length.
+        // When unset, Musebot probes the host for the model's max context
+        // length (Ollama only) and falls back to 4096 otherwise.
         // Required: Optional
-        // Default:  (unset — auto-detect from Ollama show())
+        // Default:  (unset — auto-detect on Ollama, otherwise 4096)
         // Type:     Integer
         // "contextWindow": 4096,
 
@@ -204,7 +226,7 @@
       // Multi-modal settings for cross-capable features.
       "multiModal": {
         // Random prompts used for the randomize button when both ComfyUI
-        // and Ollama APIs are available. One will be chosen at random.
+        // and LLM APIs are available. One will be chosen at random.
         // Required: Optional
         // Default:  ["Describe something or someone with extraordinary detail."]
         // Type:     Array of string

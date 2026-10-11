@@ -1,6 +1,12 @@
 # Migration Guide: From .env to config.jsonc
 
-This guide will help you migrate from using environment variables (`.env` file) to the new JSON-based configuration system (`config.json` or `config.jsonc`).
+This guide will help you migrate from using environment variables (`.env` file) to the JSON-based configuration system (`config.json` or `config.jsonc`).
+
+> **Note:** In Musebot v10 and later, the LLM configuration lives under the
+> `llm` key (it was `ollama` when this migration was introduced). The
+> `llm.hosts` entries are objects (`{ "url": ... }`), not bare strings. See
+> the [v10 LLM Migration Guide](./04-migration-v10.md) for details. The
+> examples and mappings below use the current v10+ key names.
 
 ## Overview
 
@@ -57,8 +63,8 @@ Create a new `config.jsonc` file in your project root. You can use `config.json`
           "privateMessageUsers": ["USER_ID_1"]
         }
       },
-      "ollama": {
-        "hosts": ["http://localhost:11434"],
+      "llm": {
+        "hosts": [{ "url": "http://localhost:11434" }],
         "models": ["gemma4:12b"],
         "systemPrompt": "You are a helpful assistant",
         "streamsResponse": false
@@ -100,8 +106,8 @@ Create a new `config.jsonc` file in your project root. You can use `config.json`
           "privateMessageUsers": ["USER_ID_1"]
         }
       },
-      "ollama": {
-        "hosts": ["http://localhost:11434"],
+      "llm": {
+        "hosts": [{ "url": "http://localhost:11434" }],
         "models": [],
         "systemPrompt": "You are a helpful assistant",
         "streamsResponse": false
@@ -129,10 +135,10 @@ Create a new `config.jsonc` file in your project root. You can use `config.json`
 | `MUSEBOT_RESPONSE_RATE` | `bots[].responseRate` | number | No |
 | `MUSEBOT_PRIVATE_MESSAGE_USERS` | `bots[].chatApis.discord.privateMessageUsers` | string[] | No |
 | `MUSEBOT_ERROR_MESSAGE` | `bots[].errorMessage` | string | No |
-| `MUSEBOT_OLLAMA_HOSTS` | `bots[].ollama.hosts` | string[] | Yes (chat mode) |
-| `MUSEBOT_OLLAMA_MODELS` | `bots[].ollama.models` | string[] | No (chat mode) |
-| `MUSEBOT_OLLAMA_SYSTEM_PROMPT` | `bots[].ollama.systemPrompt` | string or string[] | No |
-| `MUSEBOT_OLLAMA_STREAMS_RESPONSE` | `bots[].ollama.streamsResponse` | boolean | No |
+| `MUSEBOT_OLLAMA_HOSTS` | `bots[].llm.hosts` (array of `{ "url": ... }` objects) | object[] | Yes (chat mode) |
+| `MUSEBOT_OLLAMA_MODELS` | `bots[].llm.models` | string[] | No (chat mode) |
+| `MUSEBOT_OLLAMA_SYSTEM_PROMPT` | `bots[].llm.systemPrompt` | string or string[] | No |
+| `MUSEBOT_OLLAMA_STREAMS_RESPONSE` | `bots[].llm.streamsResponse` | boolean | No |
 | `MUSEBOT_STABLE_DIFFUSION_HOSTS` | `bots[].comfyUi.hosts` | string[] | Yes (media mode) |
 | `MUSEBOT_STABLE_DIFFUSION_GUIDANCE_SCALE_INTERVAL` | `bots[].comfyUi.guidanceScaleInterval` | number | No |
 | `MUSEBOT_STABLE_DIFFUSION_OLLAMA_PROMPTS` | `bots[].multiModal.randomPrompts` | string[] | No |
@@ -166,12 +172,12 @@ npm start
 
 - **Media mode missing ComfyUI hosts:**
 ```
-Error: Media mode requires at least one ComfyUI host configured in bot.comfyUi.hosts.
+Error: Media mode requires at least one ComfyUI host configured in comfyUi.hosts.
 ```
 
-- **Chat mode missing Ollama hosts:**
+- **Chat mode missing LLM hosts:**
 ```
-Error: Chat mode requires at least one Ollama host configured in bot.ollama.hosts.
+Error: Chat mode requires at least one LLM host configured in llm.hosts.
 ```
 
 - **Environment variables detected:**
@@ -226,7 +232,7 @@ For a comprehensive reference on all configuration options, see: [Configuration]
 
 ### Mode mismatch errors
 
-- If you get "Chat mode requires Ollama hosts" - ensure `bots[].ollama.hosts` has at least one entry when `mode` is `chat`
+- If you get "Chat mode requires at least one LLM host" - ensure `bots[].llm.hosts` has at least one entry when `mode` is `chat`
 - If you get "Media mode requires ComfyUI hosts" - ensure `bots[].comfyUi.hosts` has at least one entry when `mode` is `media`
 
 ### Environment variable still being picked up
@@ -238,7 +244,7 @@ This shouldn't happen anymore, but if you see the FATAL ERROR with detected `MUS
 ### Missing required properties
 
 Check that all properties defined in your `mode` (chat or media) are present:
-- **Chat mode**: `ollama.hosts` and `discord.token`
+- **Chat mode**: `llm.hosts` and `discord.token`
 - **Media mode**: `comfyUi.hosts` and `discord.token`
 
 ## Support

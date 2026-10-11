@@ -3,9 +3,10 @@
 ## Project Overview
 
 Musebot is a Discord bot that bridges multiple generative AI systems into
-Discord. It connects to **Ollama** for LLM chat and **ComfyUI** for media
+Discord. It connects to **any OpenAI-compatible LLM platform** (Ollama,
+llama.cpp's `llama-server`, hosted APIs) for LLM chat and **ComfyUI** for media
 generation (images, video, audio, music). The bot operates in one of two modes
-configured via environment: `chat` (LLM-powered conversation) or `media`
+configured via config: `chat` (LLM-powered conversation) or `media`
 (generative media via ComfyUI workflows).
 
 - **Language:** TypeScript (ES2022, ESNext modules)
@@ -29,7 +30,7 @@ src/                          # TypeScript source
     IServiceContainer.ts      # Interface for the service container
     Logger.ts / ILogger.ts    # Timestamped prefix logger with debug/info/warn/error levels
     environment-settings/     # Loads config.jsonc, exposes typed config (IConfigurationService)
-    features/                 # FeatureService — probes Ollama + ComfyUI to detect supported features
+    features/                 # FeatureService — probes LLM + ComfyUI hosts to detect supported features
     help/                     # Help text generation (BaseHelpService, IHelpService)
     parallelization/          # Task execution strategies (ParallelStrategy, SerialStrategy)
     tasks/                    # TaskQueue and BaseTask abstractions
@@ -37,12 +38,23 @@ src/                          # TypeScript source
       chat/                   # Discord client layer
         discord/              # Discord-specific: GenerativeChatClient, GenerativeMediaChatClient,
                               #   reply services, typing service, components (action rows/buttons)
+        llm/                  # Discord LLM glue: message factories, reply/streaming reply services
         IGenerativeChatClient.ts
         IReplyService.ts
         ITypingService.ts
       llm/
-        ollama/               # OllamaClient, generate/message/structured/emoji-reaction tasks
-        services/             # ContextService, ContextMessageFactory
+        ILlmClient.ts         # Client interface (OpenAI-compatible protocol)
+        LlmClient.ts          # OpenAI-compatible client: /v1/chat/completions, /v1/embeddings
+        LlmHostFlavorRegistry.ts # Startup probe: classifies hosts (Ollama, llama.cpp, generic)
+        constants/            # LLM constants
+        enums/                # LlmHostFlavor, LlmRole enums
+        lifecycle/            # ILlmLifecycleStrategy + Ollama / llama.cpp router / llama.cpp
+                              #   single / null strategies, lifecycle DTOs
+        memory/               # MemoryDatabase, MemoryService, schema (long-term memory)
+        models/               # Neutral wire/DTO models (chat, embeddings, stream, show)
+        services/             # ContextService, ContextCompressionService, ContextMessageFactory,
+                              #   web content extraction
+        tasks/                # LlmBaseTask, generate/message/structured/embed/emoji-reaction tasks
         help/                 # ChatHelpService
       media/
         comfy-ui/             # ComfyUiClient, workflow models, workflow mutators, media tasks
@@ -70,7 +82,7 @@ and manages:
   `TypingService`, `DiscordClient`, `GenerativeChatClient`, `HelpService`,
   `WorkflowService`, `ParallelizationStrategy`
 - **Transients:** `ContentTypeService`, `ReplyService`, `ComfyUiClient`,
-  `OllamaClient`, reply services (new instance per access)
+  `LlmClient`, reply services (new instance per access)
 - **Factories:** `getLogger()`, `getMessageTask()`, `getInteractionTask()`,
   `getWorkflowMutator()`, etc.
 
@@ -79,15 +91,35 @@ dependencies through its interface.
 
 ### Feature Detection
 
-`FeatureService.loadFeatures()` probes configured hosts at startup to determine
-which `SupportedFeature` values are available: `Txt2Txt`, `Txt2Img`, `Txt2Vid`,
-`Txt2Music`, `Txt2Audio`, `Img2Img`, `Img2Vid`, `ContextualImg2Img`.
+`FeatureService.loadFeatures()` probes configured hosts at startup (via the
+`LlmHostFlavorRegistry`) to determine which `SupportedFeature` values are
+available: `Txt2Txt`, `Txt2Img`, `Txt2Vid`, `Txt2Music`, `Txt2Audio`,
+`Img2Img`, `Img2Vid`, `ContextualImg2Img`.
+
+### LLM Host Lifecycle (Strategy Pattern)
+
+At startup, `LlmHostFlavorRegistry` classifies each configured LLM host
+(probing `/api/ps` → Ollama, `/models` → llama.cpp router, `/props` →
+llama.cpp single-model, otherwise generic) and resolves whether it is local
+(RFC 1918 / Tailscale CGNAT / link-local / IPv6 ULA, or explicit `isLocal`
+config flag). Each transient `LlmClient` then selects an
+`ILlmLifecycleStrategy` for its host:
+
+- **Ollama** — unload via `/api/generate` with `keep_alive: 0`, verify via
+  `/api/ps`; auto-detects vision (`/api/show` capabilities) and context
+  window (`/api/show` `context_length`)
+- **LlamaCppRouter** — unload via `POST /models/unload`, verify via
+  `/models`; vision via the `llm.visionModels` config list
+- **LlamaCppSingle** — no unload endpoint; waits for `is_sleeping` in
+  `/props` (requires `--sleep-idle-seconds` server-side); vision via config
+- **Null** — non-local and generic hosts: no lifecycle management; vision
+  and context window via config only
 
 ### Task System
 
 Work is modeled as `BaseTask<T>` instances dispatched through a `TaskQueue`.
 The queue supports `Parallel` or `Serial` execution strategies. Tasks include
-Ollama generate/message tasks and ComfyUI media generation tasks.
+LLM generate/message tasks and ComfyUI media generation tasks.
 
 ### Workflow Mutators
 
@@ -102,7 +134,7 @@ and workflow `SupportedFeature` type. Mutators include: `RetryMutator`,
 
 The `BotFunction` enum determines mode at startup:
 
-- **`chat`** — Uses `GenerativeChatClient` + `OllamaClient` for LLM
+- **`chat`** — Uses `GenerativeChatClient` + `LlmClient` for LLM
   conversation with context management and streaming support.
 - **`media`** — Uses `GenerativeMediaChatClient` + `ComfyUiClient` for media
   generation with interactive Discord buttons (retry, randomize, expand prompt,
@@ -157,10 +189,15 @@ Key settings (from `IBotConfig`):
 | `bots[].chatApis.discord.channelsDisallowed` | Array of disallowed channel IDs               |
 | `bots[].requiresMention`                  | Whether the bot requires an @mention to respond |
 | `bots[].responseRate`                      | Response probability percentage                 |
-| `bots[].ollama.hosts`                      | Array of Ollama API URLs                        |
-| `bots[].ollama.models`                     | Array of Ollama model names                     |
-| `bots[].ollama.systemPrompt`               | System prompt for LLM conversations             |
-| `bots[].ollama.streamsResponse`            | Whether Ollama streams responses                |
+| `bots[].llm.hosts`                         | Array of LLM host objects (`{ url, token?, isLocal? }`) |
+| `bots[].llm.models`                        | Array of LLM model names                       |
+| `bots[].llm.systemPrompt`                  | System prompt for LLM conversations            |
+| `bots[].llm.streamsResponse`               | Whether the LLM streams responses              |
+| `bots[].llm.embeddingModel`                | Embedding model name (enables long-term memory) |
+| `bots[].llm.visionModels`                  | Vision-capable model names (non-Ollama hosts)  |
+| `bots[].llm.topK`                          | Number of similar memories retrieved per prompt |
+| `bots[].llm.contextWindow`                 | Max context window in tokens (optional override) |
+| `bots[].llm.contextCompressionThreshold`   | Fraction of the window that triggers compression |
 | `bots[].comfyUi.hosts`                     | Array of ComfyUI API URLs                       |
 | `bots[].comfyUi.guidanceScaleInterval`    | Guidance scale adjustment step                  |
 | `bots[].multiModal.randomPrompts`         | Random prompts for the randomize button         |

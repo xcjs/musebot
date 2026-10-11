@@ -3,17 +3,19 @@
 ![Musebot Logo](docs/images/musebot.svg)
 
 Musebot is a self-hosted Discord bot that bridges generative AI systems into
-Discord. It connects to **Ollama** for LLM-powered conversation and
-**ComfyUI/SwarmUI** for media generation (images, video, audio, music) — all
-running on your own hardware, no external APIs required.
+Discord. It connects to **any OpenAI-compatible LLM platform** (Ollama,
+llama.cpp, hosted APIs) for LLM-powered conversation and **ComfyUI/SwarmUI**
+for media generation (images, video, audio, music) — all running on your own
+hardware, no external APIs required.
 
 ## Features
 
-- **Chat Mode** — Context-aware LLM conversations via Ollama, with streaming
-  support, multi-model selection, and custom system prompts
+- **Chat Mode** — Context-aware LLM conversations via any OpenAI-compatible
+  provider, with streaming support, multi-model selection, and custom system
+  prompts
 - **Long-Term Memory** — Optional vector-based memory that stores past
   conversations and retrieves relevant context to augment the LLM's prompt
-  (requires an Ollama embedding model)
+  (requires an embedding model)
 - **Vision** — Automatically detected when a vision-capable model (e.g.
   `gemma4:12b`, `llava`) is configured; image attachments are passed to the LLM
   and interpreted for long-term memory storage
@@ -34,8 +36,9 @@ running on your own hardware, no external APIs required.
 ## Prerequisites
 
 - **Node.js** 24+ (for development) or a pre-built binary (for production)
-- **For Chat Mode:** [Ollama](https://ollama.com/) with at least one model
-  downloaded (e.g., `ollama pull gemma4:12b`)
+- **For Chat Mode:** an [OpenAI-compatible](docs/chat/01-llm.md) LLM server
+  (e.g., [Ollama](https://ollama.com/)) with at least one model downloaded
+  (e.g., `ollama pull gemma4:12b`)
 - **For Media Mode:** [ComfyUI](https://github.com/comfyanonymous/ComfyUI) or
   [SwarmUI](https://github.com/mcmonkeyprojects/SwarmUI) with a ComfyUI
   backend
@@ -99,8 +102,8 @@ documentation.
           "token": "YOUR_DISCORD_BOT_TOKEN"
         }
       },
-      "ollama": {
-        "hosts": ["http://localhost:11434"],
+      "llm": {
+        "hosts": [{ "url": "http://localhost:11434" }],
         "models": ["gemma4:12b"]
       }
     }
@@ -136,9 +139,9 @@ documentation.
 | `mode` | `"chat"` for LLM conversation, `"media"` for media generation |
 | `chatApis.discord.token` | Bot token from the [Discord Developer Portal](https://discord.com/developers/applications) |
 | `chatApis.discord.channels` | Allowed channel IDs (empty = all channels) |
-| `ollama.hosts` | Ollama API URLs (required for chat mode) |
-| `ollama.models` | LLM model names to use |
-| `ollama.systemPrompt` | Custom system prompt (string or string array) |
+| `llm.hosts` | LLM host objects, e.g. `{ "url": "http://localhost:11434" }` (required for chat mode; optional per-host `token`) |
+| `llm.models` | LLM model names to use |
+| `llm.systemPrompt` | Custom system prompt (string or string array) |
 | `comfyUi.hosts` | ComfyUI/SwarmUI API URLs (required for media mode) |
 | `requiresMention` | Require @mention to respond (default: `true`) |
 | `taskQueue.strategy` | `"serial"` or `"parallel"` execution (default: `"serial"`) |
@@ -178,10 +181,11 @@ Full end-user documentation is available online at [musebot.docs.xcjs.com](https
 [docs](docs/introduction.md) directory, including:
 
 - [Configuration Reference](docs/musebot/02-configuration.md)
-- [Ollama Integration](docs/chat/01-ollama.md)
+- [LLM Providers](docs/chat/01-llm.md)
 - [Long-Term Memory](docs/chat/02-long-term-memory.md)
 - [ComfyUI/SwarmUI Integration](docs/media/01-swarm-ui.md)
 - [Migration from .env to config.jsonc](docs/musebot/03-migration-from-env-to-jsonc.md)
+- [Migration to v10 (LLM Providers)](docs/musebot/04-migration-v10.md)
 
 ## License
 
