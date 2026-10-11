@@ -63,7 +63,6 @@
     "handlebars": "^4.7.8",
     "json5": "^2.2.3",
     "linkedom": "^0.18.12",
-    "ollama": "^0.6.0",
     "parcel": "^2.15.4",
     "sharp": "^0.34.2",
     "sqlite-vec": "^0.1.9",
