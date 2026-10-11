@@ -493,6 +493,41 @@ describe('LlmClient', (): void => {
       expect(chunks[chunks.length - 1].done).toBe(true);
     });
 
+    it('rejects with the HTTP status error as .cause when the response is non-ok', async (): Promise<void> => {
+      fetchMock.mockResolvedValue(mockJsonResponse({ error: 'server exploded' }, 500));
+
+      const rejection = await client.sendMessageAndGetStream('Hi', [])
+        .catch((reason: unknown): Error => reason as Error);
+      const error = rejection as Error;
+
+      expect(error).toBeInstanceOf(Error);
+      expect(error.message).toBe('Failed to send the LLM a message and retrieve a stream.');
+      expect(error.cause).toBeInstanceOf(Error);
+      expect((error.cause as Error).message).toBe('The LLM API at http://localhost:11434//v1/chat/completions responded with status 500.');
+    });
+
+    it('yields a terminal done chunk with usage when the stream ends without [DONE]', async (): Promise<void> => {
+      const sseBody = [
+        'data: {"choices":[{"delta":{"content":"Hel"}}]}\n\n',
+        'data: {"choices":[{"delta":{"content":"lo!"}}],"usage":{"prompt_tokens":7,"completion_tokens":4,"total_tokens":11}}\n\n'
+      ];
+      fetchMock.mockResolvedValue(sseResponse(sseBody));
+
+      const result = await client.sendMessageAndGetStream('Hi', []);
+
+      expect(result).not.toBeNull();
+
+      const chunks: LlmStreamChunk[] = [];
+      for await (const chunk of (result as { exchange: { response: AsyncIterable<LlmStreamChunk> } }).exchange.response) {
+        chunks.push(chunk);
+      }
+
+      expect(chunks.map(chunk => chunk.content)).toEqual(['Hel', 'lo!', '']);
+      expect(chunks[chunks.length - 1].done).toBe(true);
+      expect(chunks[chunks.length - 1].promptTokens).toBe(7);
+      expect(chunks[chunks.length - 1].completionTokens).toBe(4);
+    });
+
     it('wraps fetch failures preserving .cause', async (): Promise<void> => {
       const cause = new Error('stream boom');
       fetchMock.mockRejectedValue(cause);

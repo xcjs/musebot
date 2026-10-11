@@ -183,7 +183,12 @@ export class LlmClient implements ILlmClient {
     }
 
     try {
-      const response = await this.#fetchResponse('/v1/chat/completions', this.#toWireRequest(request));
+      const path = '/v1/chat/completions';
+      const response = await this.#fetchResponse(path, this.#toWireRequest(request));
+
+      if (!response.ok) {
+        throw new Error(`The LLM API at ${this.#host.url}${path} responded with status ${response.status}.`);
+      }
 
       if (response.body === null) {
         return null;
@@ -307,6 +312,7 @@ export class LlmClient implements ILlmClient {
     let buffer = '';
     let promptTokens: number | undefined;
     let completionTokens: number | undefined;
+    let sawDoneFrame = false;
 
     while (true) {
       const { done, value } = await reader.read();
@@ -332,6 +338,7 @@ export class LlmClient implements ILlmClient {
           }
 
           if (payload === '[DONE]') {
+            sawDoneFrame = true;
             yield { content: '', done: true, promptTokens, completionTokens };
             return;
           }
@@ -355,6 +362,10 @@ export class LlmClient implements ILlmClient {
           }
         }
       }
+    }
+
+    if (!sawDoneFrame) {
+      yield { content: '', done: true, promptTokens, completionTokens };
     }
   }
 

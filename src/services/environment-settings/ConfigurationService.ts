@@ -214,6 +214,10 @@ Detected environment variables: ${envVarList}`);
     } else {
       throw new Error(`Invalid mode: ${mode as string}. Must be 'chat' or 'media'.`);
     }
+
+    if (this.taskQueueStrategy === TaskQueueStrategy.Serial && this.llmHosts.some(host => host.isLocal === false)) {
+      console.info('[ConfigurationService] Note: Task queue strategy is serial and at least one LLM host is non-local; model-unload waiting is skipped for non-local hosts.');
+    }
   }
 
   #logConfiguration(): void {

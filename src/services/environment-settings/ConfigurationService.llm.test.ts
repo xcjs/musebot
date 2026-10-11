@@ -183,6 +183,38 @@ describe('ConfigurationService (llm section)', () => {
     warnSpy.mockRestore();
   });
 
+  it('logs an info note when serial strategy is combined with a non-local host', () => {
+    const infoSpy = jest.spyOn(console, 'info').mockImplementation(() => undefined);
+
+    new ConfigurationService(validChatBotConfig as unknown as IBotConfig);
+    expect(infoSpy).toHaveBeenCalledWith(
+      expect.stringContaining('model-unload waiting is skipped for non-local hosts')
+    );
+
+    infoSpy.mockClear();
+
+    const localOnlyConfig = {
+      ...validChatBotConfig,
+      llm: {
+        ...validChatBotConfig.llm,
+        hosts: [{ url: 'http://localhost:11434', isLocal: true }]
+      }
+    };
+    new ConfigurationService(localOnlyConfig as unknown as IBotConfig);
+    expect(infoSpy).not.toHaveBeenCalled();
+
+    infoSpy.mockClear();
+
+    const parallelConfig = {
+      ...validChatBotConfig,
+      taskQueue: { strategy: 'parallel' }
+    };
+    new ConfigurationService(parallelConfig as unknown as IBotConfig);
+    expect(infoSpy).not.toHaveBeenCalled();
+
+    infoSpy.mockRestore();
+  });
+
   it('nodeEnvironment test suppresses configuration logging', () => {
     const service = new ConfigurationService(validChatBotConfig as unknown as IBotConfig);
 
