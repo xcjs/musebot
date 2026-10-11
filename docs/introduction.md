@@ -8,7 +8,8 @@ Musebot is a powerful, self-hosted Discord bot that acts as a bridge to
 generative AI systems. It transforms your Discord server into an interactive
 platform for two distinct modes of creativity:
 
-* **Chat Function** leverages local large language models (via Ollama) for
+* **Chat Function** leverages large language models via any
+  OpenAI-compatible provider (e.g., [Ollama](https://ollama.com/)) for
   context-aware conversations, with optional **long-term memory**, **vision
   image interpretation**, and **web link content extraction**.
 * **Media Function** connects to SwarmUI or ComfyUI to generate images, video,
@@ -26,8 +27,8 @@ Musebot can be purchased affordably for download from the official
 ## Quick Setup
 
 This guide will help you get Musebot up and running with its two core
-integrations: **Ollama** for chat and/or **SwarmUI/ComfyUI** for media
-generation.
+integrations: an **OpenAI-compatible LLM provider** (e.g., Ollama) for chat
+and/or **SwarmUI/ComfyUI** for media generation.
 
 ---
 
@@ -36,14 +37,16 @@ generation.
 Before installing Musebot, ensure you have one of the following AI backends
 running:
 
-* **For Chat Functionality:** Install and run [Ollama](https://ollama.com/).
+* **For Chat Functionality:** Install and run an
+  OpenAI-compatible LLM server — [Ollama](https://ollama.com/) is the easiest
+  option (see [LLM Providers](chat/01-llm.md) for the full provider matrix).
   Download a model, for example:
 
     ```bash
     ollama pull gemma4:12b
     ```
 
-    Your Ollama instance should be running on `http://localhost:11434/` (or a
+    Your LLM instance should be running on `http://localhost:11434/` (or a
     known IP address).
 * **For Media Functionality:** Install and run
   [SwarmUI](https://github.com/mcmonkeyprojects/SwarmUI).
@@ -103,8 +106,8 @@ Set `mode` to `"chat"` for LLM chat or `"media"` for media generation.
 * **For `mode: "chat"`:**
 
     ```jsonc
-    "ollama": {
-      "hosts": ["http://localhost:11434"],
+    "llm": {
+      "hosts": [{ "url": "http://localhost:11434" }],
       "models": ["gemma4:12b"]
     }
     ```
@@ -112,8 +115,8 @@ Set `mode` to `"chat"` for LLM chat or `"media"` for media generation.
     For optional **long-term memory**, add an embedding model:
 
     ```jsonc
-    "ollama": {
-      "hosts": ["http://localhost:11434"],
+    "llm": {
+      "hosts": [{ "url": "http://localhost:11434" }],
       "models": ["gemma4:12b"],
       "embeddingModel": "nomic-embed-text"
     }
