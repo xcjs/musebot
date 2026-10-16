@@ -7,6 +7,7 @@ import type { IConfigurationService } from '../../environment-settings/IConfigur
 import type { IBotServiceContainer } from '../../IBotServiceContainer.js';
 import type { ILogger } from '../../ILogger.js';
 import { LlmHostFlavor } from './enums/LlmHostFlavor.js';
+import { LlmModality } from './enums/LlmModality.js';
 import { LlmRole } from './enums/LlmRole.js';
 import { ILlmClient } from './ILlmClient.js';
 import { LlamaCppRouterLifecycleStrategy } from './lifecycle/LlamaCppRouterLifecycleStrategy.js';
@@ -54,12 +55,14 @@ function createMockConfigurationService(overrides: Partial<IConfigurationService
     randomPrompts: [],
     llmHosts: [{ url: new URL('http://localhost:11434/v1'), token: null, isLocal: true }],
     llmModels: ['test-model'],
+    llmModelConfigs: [{ name: 'test-model', inputModalities: [LlmModality.Text], outputModalities: [LlmModality.Text] }],
     llmSystemPrompt: '',
     llmStreamsResponse: false,
     llmEmbeddingModel: 'embed-model',
     llmTopK: 5,
     llmContextWindow: null,
     llmContextCompressionThreshold: 0.75,
+    llmEmbeddingInputLimit: 2000,
     llmVisionModels: [],
     applicationName: 'Musebot',
     isProduction: false,

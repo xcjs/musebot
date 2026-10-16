@@ -161,13 +161,20 @@
         // Required: Optional
         // Type:     Boolean (per host)
 
-        // The name(s) of the large language model(s) to use. Can be a list for multiple models.
+        // The model(s) to use, as plain names or objects declaring what each
+        // model can accept and produce. A random one is selected per request.
         // Vision capability is auto-detected on Ollama hosts; on all other hosts,
         // list vision-capable models in "visionModels" below.
         // Required: Required when mode="chat"
-        // Type:     Array of string (model names)
+        // Type:     Array of string or object ({ name, inputModalities?, outputModalities? })
+        // Modality values are case-insensitive: text, image, video, audio,
+        // and default to ["text"] when omitted:
+        // "models": [
+        //   { "name": "gemma4-12b-qat", "inputModalities": ["text", "image"],
+        //     "outputModalities": ["text"] }
+        // ],
         "models": [
-          "gemma4:12b"
+          "gemma4-12b-qat"
         ],
 
         // Model names (matching "models") that accept image input. Used to
@@ -200,6 +207,16 @@
         // Default:  (unset — LTM disabled)
         // Type:     String
         // "embeddingModel": "nomic-embed-text",
+
+        // Maximum character length of embedding inputs. When set, Musebot
+        // truncates inputs (serialized memory rows) to this limit and logs a
+        // warning once. Raise it if your embedding server accepts large
+        // batches; lower it if your server rejects inputs Musebot considers
+        // small. Only applies when embeddingModel is set.
+        // Required: Optional
+        // Default:  2000
+        // Type:     Integer
+        // "embeddingInputLimit": 2000,
 
         // The number of similar memories to retrieve from the vector store when
         // augmenting the LLM prompt. Only applies when embeddingModel is set.

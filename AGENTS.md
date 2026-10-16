@@ -190,10 +190,11 @@ Key settings (from `IBotConfig`):
 | `bots[].requiresMention`                  | Whether the bot requires an @mention to respond |
 | `bots[].responseRate`                      | Response probability percentage                 |
 | `bots[].llm.hosts`                         | Array of LLM host objects (`{ url, token?, isLocal? }`) — `url` must include the OpenAI base route (usually `/v1`) |
-| `bots[].llm.models`                        | Array of LLM model names                       |
+| `bots[].llm.models`                        | Array of model names or `{ name, inputModalities?, outputModalities? }` objects (modalities case-insensitive: text/image/video/audio, default `text`) |
 | `bots[].llm.systemPrompt`                  | System prompt for LLM conversations            |
 | `bots[].llm.streamsResponse`               | Whether the LLM streams responses              |
 | `bots[].llm.embeddingModel`                | Embedding model name (enables long-term memory) |
+| `bots[].llm.embeddingInputLimit`           | Max character length of embedding inputs (default 2000) |
 | `bots[].llm.visionModels`                  | Vision-capable model names (non-Ollama hosts)  |
 | `bots[].llm.topK`                          | Number of similar memories retrieved per prompt |
 | `bots[].llm.contextWindow`                 | Max context window in tokens (optional override) |

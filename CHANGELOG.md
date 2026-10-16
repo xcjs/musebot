@@ -4,6 +4,12 @@ All notable changes to Musebot are documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- Model modality declarations: new `LlmModality` enum (text, image, video,
+  audio) and optional per-model `inputModalities`/`outputModalities` arrays in
+  `llm.models` entries (case-insensitive values, default `text`).
+
 ### Changed
 
 - LLM host URLs now include the OpenAI-compatible base route (usually `/v1`)
@@ -11,6 +17,10 @@ All notable changes to Musebot are documented in this file.
   `/chat/completions` and `/embeddings` to the URL exactly as configured.
   Sample: `{ "url": "http://localhost:11434/v1" }`. Root URL hosts still work
   but warn at startup.
+- Long-term memory embedding inputs are truncated to a configurable limit
+  (`llm.embeddingInputLimit`, default 2000 characters) with a warning logged
+  on every truncation, preventing hard failures on embedding servers with
+  small physical batch or context limits.
 
 ## [10.0.0] — 2026-10-08
 

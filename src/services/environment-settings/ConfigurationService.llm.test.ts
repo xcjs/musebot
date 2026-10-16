@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals
 
 import { BotMode } from '../../enums/BotMode.js';
 import { NodeEnvironment } from '../../enums/NodeEnvironment.js';
+import { LlmModality } from '../clients/llm/enums/LlmModality.js';
 import { ConfigurationService } from './ConfigurationService.js';
 
 jest.mock('./ConfigLoader.js', () => ({
@@ -132,6 +133,72 @@ describe('ConfigurationService (llm section)', () => {
     expect(service.llmTopK).toBe(5);
     expect(service.llmContextWindow).toBeNull();
     expect(service.llmContextCompressionThreshold).toBe(0.75);
+  });
+
+  it('returns model names for mixed string and object entries', () => {
+    const mixedConfig = {
+      ...validChatBotConfig,
+      llm: {
+        ...validChatBotConfig.llm,
+        models: ['model1', { name: 'model2' }]
+      }
+    };
+
+    const service = new ConfigurationService(mixedConfig as unknown as IBotConfig);
+
+    expect(service.llmModels).toEqual(['model1', 'model2']);
+    expect(service.llmModelConfigs[0].name).toBe('model1');
+    expect(service.llmModelConfigs[1].name).toBe('model2');
+  });
+
+  it('defaults model modalities to text', () => {
+    const mixedConfig = {
+      ...validChatBotConfig,
+      llm: {
+        ...validChatBotConfig.llm,
+        models: ['model1', { name: 'model2' }]
+      }
+    };
+
+    const service = new ConfigurationService(mixedConfig as unknown as IBotConfig);
+
+    expect(service.llmModelConfigs[0].inputModalities).toEqual([LlmModality.Text]);
+    expect(service.llmModelConfigs[0].outputModalities).toEqual([LlmModality.Text]);
+    expect(service.llmModelConfigs[1].inputModalities).toEqual([LlmModality.Text]);
+    expect(service.llmModelConfigs[1].outputModalities).toEqual([LlmModality.Text]);
+  });
+
+  it('normalizes configured modalities case-insensitively', () => {
+    const modalityConfig = {
+      ...validChatBotConfig,
+      llm: {
+        ...validChatBotConfig.llm,
+        models: [{
+          name: 'gemma4-12b-qat',
+          inputModalities: ['TEXT', 'Image'],
+          outputModalities: ['Text']
+        }]
+      }
+    };
+
+    const service = new ConfigurationService(modalityConfig as unknown as IBotConfig);
+
+    expect(service.llmModelConfigs[0].inputModalities).toEqual([LlmModality.Text, LlmModality.Image]);
+    expect(service.llmModelConfigs[0].outputModalities).toEqual([LlmModality.Text]);
+  });
+
+  it('throws for unknown modalities during configuration load', () => {
+    const invalidModalityConfig = {
+      ...validChatBotConfig,
+      llm: {
+        ...validChatBotConfig.llm,
+        models: [{ name: 'model1', inputModalities: ['smell'] }]
+      }
+    };
+
+    expect(() => {
+      new ConfigurationService(invalidModalityConfig as unknown as IBotConfig);
+    }).toThrow("Unknown LLM model modality 'smell'. Valid modalities (case-insensitive): text, image, video, audio.");
   });
 
   it('joins array system prompts with newlines', () => {

@@ -163,12 +163,30 @@ earlier release.
 
 #### `llm.models`
 
-* **Description:** An array of LLM names to use. A random one will be selected
-  for each request. Vision capability is auto-detected on Ollama hosts (via
-  `/api/show`); on all other hosts, vision-capable models must be listed in
-  `llm.visionModels`. See [Vision](../chat/01-llm.md#vision) for details.
+* **Description:** The LLM(s) to use. A random one will be selected for each
+  request. Entries may be plain model-name strings, or objects that declare
+  which inputs and outputs each model supports:
+
+  ```jsonc
+  "llm": {
+    "models": [
+      "gemma4-12b-qat",
+      {
+        "name": "gemma4-12b-qat",
+        "inputModalities": ["text", "image"],
+        "outputModalities": ["text"]
+      }
+    ]
+  }
+  ```
+
+  Modality values are **case-insensitive** and may be `text`, `image`,
+  `video`, or `audio`; both arrays default to `["text"]` when omitted. Model
+  names in the object form must still be listed in `llm.visionModels` (or be
+  on an Ollama host, which auto-detects vision) to enable the Vision feature.
+  See [Vision](../chat/01-llm.md#vision) for details.
 * **Required:** No
-* **Type:** `String[]`
+* **Type:** `Array<string | { name: String, inputModalities?: Modality[], outputModalities?: Modality[] }>`
 
 #### `llm.visionModels`
 
@@ -212,6 +230,19 @@ earlier release.
 * **Required:** No
 * **Type:** `String`
 * **Default:** *(unset — LTM disabled)*
+
+#### `llm.embeddingInputLimit`
+
+* **Description:** The maximum character length of embedding inputs (Musebot
+  embeds serialized conversation rows for long-term memory). Inputs longer
+  than the limit are truncated before they are sent to the embedding model,
+  and a warning is logged once. There is no standard way to query an
+  embedding server's maximum input size, so raise this if your server accepts
+  large inputs, or lower it if your server rejects inputs larger than you
+  expect. Only applies when `llm.embeddingModel` is set.
+* **Required:** No
+* **Type:** `Integer`
+* **Default:** `2000`
 
 #### `llm.topK`
 

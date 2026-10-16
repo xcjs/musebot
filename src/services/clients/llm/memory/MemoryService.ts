@@ -210,12 +210,24 @@ export class MemoryService implements IMemoryService {
 
   async #embed(text: string): Promise<number[]> {
     const client: ILlmClient = this.#services.llmClient;
-    return await client.embed(text);
+    return await client.embed(this.#capEmbeddingInput(text));
   }
 
   async #embedBatch(texts: string[]): Promise<number[][]> {
     const client: ILlmClient = this.#services.llmClient;
-    return await client.embedBatch(texts);
+    return await client.embedBatch(texts.map((text) => this.#capEmbeddingInput(text)));
+  }
+
+  #capEmbeddingInput(text: string): string {
+    const limit = this.#configurationService.llmEmbeddingInputLimit;
+
+    if (text.length <= limit) {
+      return text;
+    }
+
+    this.#logger.warn(`Embedding input truncated to ${limit} characters before embedding (configured via llm.embeddingInputLimit). Embedding models have small physical batches and context windows, so oversized inputs are rejected or low-quality.`);
+
+    return text.slice(0, limit);
   }
 
   /**

@@ -101,6 +101,7 @@ export function createMockGlobalContainer(config?: MockServiceContainerConfig): 
       randomPrompts: [],
       llmHosts: [],
       llmModels: [],
+      llmModelConfigs: [],
       llmSystemPrompt: '',
       llmStreamsResponse: false,
       llmEmbeddingModel: null,
@@ -108,6 +109,7 @@ export function createMockGlobalContainer(config?: MockServiceContainerConfig): 
       llmTopK: 5,
       llmContextWindow: null,
       llmContextCompressionThreshold: 0.75,
+      llmEmbeddingInputLimit: 2000,
       applicationName: 'Musebot',
       isProduction: false
     },
@@ -155,6 +157,7 @@ export function createMockServiceContainer(config?: MockServiceContainerConfig):
     randomPrompts: [],
     llmHosts: [],
     llmModels: [],
+    llmModelConfigs: [],
     llmSystemPrompt: '',
     llmStreamsResponse: false,
     llmEmbeddingModel: null,
@@ -162,6 +165,7 @@ export function createMockServiceContainer(config?: MockServiceContainerConfig):
     llmTopK: 5,
     llmContextWindow: null,
     llmContextCompressionThreshold: 0.75,
+    llmEmbeddingInputLimit: 2000,
     applicationName: 'Musebot',
     isProduction: false
   };

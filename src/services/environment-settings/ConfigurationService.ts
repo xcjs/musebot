@@ -2,12 +2,15 @@ import { BotMode } from '../../enums/BotMode.js';
 import { NodeEnvironment } from '../../enums/NodeEnvironment.js';
 import { TaskQueueStrategy } from '../../enums/TaskQueueStrategy.js';
 import { toTitleCase } from '../../utilities/string-utilities.js';
+import { LlmModality } from '../clients/llm/enums/LlmModality.js';
 import { ILlmHost } from '../clients/llm/models/ILlmHost.js';
+import { ILlmModel } from '../clients/llm/models/ILlmModel.js';
 import { ILogger } from '../ILogger.js';
 import { Logger } from '../Logger.js';
 import { ConfigLoader, IAppConfig } from './ConfigLoader.js';
 import { IBotConfig } from './IBotConfig.js';
 import { IConfigurationService } from './IConfigurationService.js';
+import { ILlmModelConfig } from './ILlmModelConfig.js';
 
 export class ConfigurationService implements IConfigurationService {
   readonly #loggers: Map<string, ILogger>;
@@ -111,6 +114,10 @@ export class ConfigurationService implements IConfigurationService {
       ?? ['Describe something or someone with extraordinary detail.'];
   }
 
+  readonly #modalityLookup: Map<string, LlmModality> = new Map(
+    Object.values(LlmModality).map((modality): [string, LlmModality] => [String(modality).toLowerCase(), modality])
+  );
+
   readonly #warnedRootHosts = new Set<string>();
 
   get llmHosts(): ILlmHost[] {
@@ -135,8 +142,31 @@ export class ConfigurationService implements IConfigurationService {
   }
 
   get llmModels(): string[] {
-    return this.#botConfig.llm?.models
-      || [];
+    return this.llmModelConfigs.map(model => model.name);
+  }
+
+  get llmModelConfigs(): ILlmModel[] {
+    return (this.#botConfig.llm?.models ?? []).map(model => {
+      const config: ILlmModelConfig = typeof model === 'string'
+        ? { name: model }
+        : model;
+
+      return {
+        name: config.name,
+        inputModalities: (config.inputModalities ?? [LlmModality.Text]).map(m => this.#toLlmModality(m)),
+        outputModalities: (config.outputModalities ?? [LlmModality.Text]).map(m => this.#toLlmModality(m))
+      };
+    });
+  }
+
+  #toLlmModality(value: LlmModality): LlmModality {
+    const modality = this.#modalityLookup.get(String(value).trim().toLowerCase());
+
+    if (modality === undefined) {
+      throw new Error(`Unknown LLM model modality '${value}'. Valid modalities (case-insensitive): ${Object.values(LlmModality).join(', ')}.`);
+    }
+
+    return modality;
   }
 
   get llmSystemPrompt(): string {
@@ -173,6 +203,11 @@ export class ConfigurationService implements IConfigurationService {
 
   get llmContextCompressionThreshold(): number {
     return this.#botConfig.llm?.contextCompressionThreshold ?? 0.75;
+  }
+
+  get llmEmbeddingInputLimit(): number {
+    return this.#botConfig.llm?.embeddingInputLimit
+      ?? 2000;
   }
 
   get applicationName(): string {
@@ -260,6 +295,7 @@ Detected environment variables: ${envVarList}`);
 
     this.#log.info(`bots[].llm.hosts: ${this.llmHosts.map(host => host.url.toString()).join(', ')}`);
     this.#log.info(`bots[].llm.models: ${this.llmModels.join(', ')}`);
+    this.#log.info(`bots[].llm.models.modalities: ${this.llmModelConfigs.map(model => `${model.name} (in: ${model.inputModalities.join('/')} out: ${model.outputModalities.join('/')})`).join(', ')}`);
     this.#log.info(`bots[].llm.systemPrompt: ${this.llmSystemPrompt}`);
     this.#log.info(`bots[].llm.streamsResponse: ${this.llmStreamsResponse}`);
     this.#log.info(`bots[].llm.embeddingModel: ${this.llmEmbeddingModel ?? '(not set)'}`);
@@ -267,6 +303,7 @@ Detected environment variables: ${envVarList}`);
     this.#log.info(`bots[].llm.topK: ${this.llmTopK}`);
     this.#log.info(`bots[].llm.contextWindow: ${this.llmContextWindow ?? '(not set)'}`);
     this.#log.info(`bots[].llm.contextCompressionThreshold: ${this.llmContextCompressionThreshold}`);
+    this.#log.info(`bots[].llm.embeddingInputLimit: ${this.llmEmbeddingInputLimit}`);
 
     this.#log.info(`bots[].multiModal.randomPrompts: ${this.randomPrompts.join(' | ')}`);
 
