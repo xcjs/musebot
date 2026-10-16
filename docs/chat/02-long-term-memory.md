@@ -62,7 +62,7 @@ To enable LTM, add the `embeddingModel` field to the `llm` block in your
     {
       // ...
       "llm": {
-        "hosts": [{ "url": "http://localhost:11434/" }],
+        "hosts": [{ "url": "http://localhost:11434/v1" }],
         "models": ["gemma4:12b"],
         "systemPrompt": "You are a helpful assistant.",
         "streamsResponse": false,

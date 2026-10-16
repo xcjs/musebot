@@ -1,7 +1,10 @@
 # LLM Providers
 
 Musebot's chat mode talks to any server that speaks the **OpenAI-compatible
-chat completions protocol** (`/v1/chat/completions` and `/v1/embeddings`).
+chat completions protocol**. Musebot appends only the endpoint paths
+(`/chat/completions` and `/embeddings`) to the host URL you configure — the
+URL must therefore already carry the provider's OpenAI base route, which is
+usually `/v1`.
 That includes [Ollama](https://ollama.com), [llama.cpp](https://github.com/ggml-org/llama.cpp)'s
 `llama-server`, and hosted OpenAI-compatible APIs (OpenRouter, Together,
 LM Studio, vLLM, etc.).
@@ -17,7 +20,7 @@ Each host is an object with a `url` and, optionally, a `token` and an
       // ...
       "llm": {
         "hosts": [
-          { "url": "http://localhost:11434/" },
+          { "url": "http://localhost:11434/v1" },
           { "url": "https://api.openai-compatible.example.com/v1", "token": "sk-..." }
         ]
       }
@@ -25,6 +28,12 @@ Each host is an object with a `url` and, optionally, a `token` and an
   ]
 }
 ```
+
+Musebot appends only `/chat/completions` and `/embeddings` to the URL exactly
+as given — include the versioned route (usually `/v1`) yourself. Platform
+probe endpoints (`/api/ps`, `/models`, `/props`, ...) are joined to the
+server root, so an Ollama host with route `http://localhost:11434/v1` still
+probes `/api/ps` at `http://localhost:11434/api/ps`.
 
 Bare-string hosts (`"hosts": ["http://localhost:11434"]`) were supported in
 earlier versions but are **rejected as of v10** — see the
@@ -58,7 +67,7 @@ of your assigned host:
 
 ```jsonc
 "llm": {
-  "hosts": [{ "url": "http://localhost:11434/" }]
+  "hosts": [{ "url": "http://localhost:11434/v1" }]
 }
 ```
 
@@ -261,7 +270,7 @@ Each host accepts an optional `token` field:
 ```jsonc
 "llm": {
   "hosts": [
-    { "url": "https://api.examplerator.com", "token": "sk-..." }
+    { "url": "https://api.examplerator.com/v1", "token": "sk-..." }
   ]
 }
 ```

@@ -64,7 +64,7 @@ Create a new `config.jsonc` file in your project root. You can use `config.json`
         }
       },
       "llm": {
-        "hosts": [{ "url": "http://localhost:11434" }],
+        "hosts": [{ "url": "http://localhost:11434/v1" }],
         "models": ["gemma4:12b"],
         "systemPrompt": "You are a helpful assistant",
         "streamsResponse": false
@@ -107,7 +107,7 @@ Create a new `config.jsonc` file in your project root. You can use `config.json`
         }
       },
       "llm": {
-        "hosts": [{ "url": "http://localhost:11434" }],
+        "hosts": [{ "url": "http://localhost:11434/v1" }],
         "models": [],
         "systemPrompt": "You are a helpful assistant",
         "streamsResponse": false

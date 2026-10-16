@@ -142,16 +142,19 @@
         // The host(s) of your LLM backend(s). Can be a list for multiple hosts.
         // Each entry is an object with a "url" (required) and optional
         // "token" and "isLocal" fields. Bare strings are rejected.
+        // The "url" must include the full OpenAI-compatible base route
+        // (usually "/v1") — Musebot appends only the endpoint paths such as
+        // "/chat/completions" and "/embeddings" to the URL exactly as given.
         // Required: Required when mode="chat"
         // Type:     Array of object ({ url, token?, isLocal? })
         "hosts": [
-          { "url": "http://localhost:11434" }
+          { "url": "http://localhost:11434/v1" }
         ],
 
         // A local host with a token would look like:
-        // { "url": "http://localhost:8080", "token": "sk-..." }
+        // { "url": "http://localhost:8080/v1", "token": "sk-..." }
         // A hosted OpenAI-compatible provider would look like:
-        // { "url": "https://api.examplerator.com", "token": "sk-...", "isLocal": false }
+        // { "url": "https://api.examplerator.com/v1", "token": "sk-...", "isLocal": false }
         // The optional "isLocal" flag overrides Musebot's automatic local-host
         // detection. Local hosts get model lifecycle management (on supported
         // platforms); non-local hosts never have their models unloaded.

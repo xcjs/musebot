@@ -44,7 +44,7 @@ src/                          # TypeScript source
         ITypingService.ts
       llm/
         ILlmClient.ts         # Client interface (OpenAI-compatible protocol)
-        LlmClient.ts          # OpenAI-compatible client: /v1/chat/completions, /v1/embeddings
+        LlmClient.ts          # OpenAI-compatible client: appends /chat/completions, /embeddings to the configured host route (usually /v1)
         LlmHostFlavorRegistry.ts # Startup probe: classifies hosts (Ollama, llama.cpp, generic)
         constants/            # LLM constants
         enums/                # LlmHostFlavor, LlmRole enums
@@ -189,7 +189,7 @@ Key settings (from `IBotConfig`):
 | `bots[].chatApis.discord.channelsDisallowed` | Array of disallowed channel IDs               |
 | `bots[].requiresMention`                  | Whether the bot requires an @mention to respond |
 | `bots[].responseRate`                      | Response probability percentage                 |
-| `bots[].llm.hosts`                         | Array of LLM host objects (`{ url, token?, isLocal? }`) |
+| `bots[].llm.hosts`                         | Array of LLM host objects (`{ url, token?, isLocal? }`) — `url` must include the OpenAI base route (usually `/v1`) |
 | `bots[].llm.models`                        | Array of LLM model names                       |
 | `bots[].llm.systemPrompt`                  | System prompt for LLM conversations            |
 | `bots[].llm.streamsResponse`               | Whether the LLM streams responses              |

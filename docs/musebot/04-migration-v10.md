@@ -1,8 +1,10 @@
 # Migration Guide: v9 → v10 (LLM Provider Migration)
 
 Musebot v10 replaces the Ollama-specific client with a provider-neutral
-**LLM client** that speaks the OpenAI-compatible protocol
-(`/v1/chat/completions`, `/v1/embeddings`). Ollama remains fully supported —
+**LLM client** that speaks the OpenAI-compatible protocol (`/chat/completions`,
+`/embeddings`) against the base route you configure in each host URL (usually
+`/v1` — Musebot appends only the endpoint paths to the URL as given).
+Ollama remains fully supported —
 it's just no longer the only option. llama.cpp's `llama-server` (router and
 single-model modes) and hosted OpenAI-compatible APIs now work too.
 
@@ -37,7 +39,7 @@ single-model modes) and hosted OpenAI-compatible APIs now work too.
 ```jsonc
 // v10 — after
 "llm": {
-  "hosts": [{ "url": "http://localhost:11434" }],
+  "hosts": [{ "url": "http://localhost:11434/v1" }],
   "models": ["gemma4:12b"],
   "systemPrompt": "You are a helpful assistant.",
   "streamsResponse": false,
@@ -51,7 +53,7 @@ For a hosted provider, add the token to the host object:
 
 ```jsonc
 "llm": {
-  "hosts": [{ "url": "https://api.examplerator.com", "token": "sk-..." }],
+  "hosts": [{ "url": "https://api.examplerator.com/v1", "token": "sk-..." }],
   "models": ["some-model-name"],
   "visionModels": ["some-model-name"],
   "contextWindow": 8192
@@ -67,7 +69,8 @@ Bare-string hosts are no longer supported; wrap each host as { "url": "..." }.
 See docs/musebot/04-migration-v10.md.
 ```
 
-Wrap each host URL in an object: `{ "url": "http://localhost:11434" }`.
+Wrap each host URL in an object, and include the OpenAI-compatible base
+route in the URL: `{ "url": "http://localhost:11434/v1" }`.
 
 ## Tokens (Authentication)
 

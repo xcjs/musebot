@@ -183,11 +183,11 @@ export class LlmClient implements ILlmClient {
     }
 
     try {
-      const path = '/v1/chat/completions';
+      const path = '/chat/completions';
       const response = await this.#fetchResponse(path, this.#toWireRequest(request));
 
       if (!response.ok) {
-        throw new Error(`The LLM API at ${this.#host.url}${path} responded with status ${response.status}.`);
+        throw new Error(`The LLM API at ${this.#endpointBase}${path} responded with status ${response.status}.`);
       }
 
       if (response.body === null) {
@@ -217,7 +217,7 @@ export class LlmClient implements ILlmClient {
     const request: ILlmEmbeddingsRequest = { model: embeddingModel, input };
 
     try {
-      const body = await this.#postJson<LlmEmbeddingsResponse>('/v1/embeddings', request);
+      const body = await this.#postJson<LlmEmbeddingsResponse>('/embeddings', request);
       return this.#toEmbeddings(body)[0] ?? [];
     } catch (error) {
       this.#logger.error('Failed to request embeddings from the LLM:', error);
@@ -239,7 +239,7 @@ export class LlmClient implements ILlmClient {
     const request: ILlmEmbeddingsRequest = { model: embeddingModel, input: inputs };
 
     try {
-      const body = await this.#postJson<LlmEmbeddingsResponse>('/v1/embeddings', request);
+      const body = await this.#postJson<LlmEmbeddingsResponse>('/embeddings', request);
       return this.#toEmbeddings(body);
     } catch (error) {
       this.#logger.error('Failed to request embeddings from the LLM:', error);
@@ -294,10 +294,15 @@ export class LlmClient implements ILlmClient {
     const request: ILlmShowRequest = { model };
 
     try {
-      const response = await this.#fetchResponse('/api/show', request);
+      const showUrl = new URL('/api/show', this.#host.url);
+      const response = await fetch(showUrl, {
+        method: 'POST',
+        headers: this.#headers(),
+        body: JSON.stringify(request)
+      });
 
       if (!response.ok) {
-        throw new Error(`The LLM API at ${this.#host.url}/api/show responded with status ${response.status}.`);
+        throw new Error(`The LLM API at ${showUrl} responded with status ${response.status}.`);
       }
 
       return await response.json() as LlmShowResponse;
@@ -399,25 +404,30 @@ export class LlmClient implements ILlmClient {
   }
 
   async #postChat(request: ILlmRequest): Promise<LlmChatCompletionResponse> {
-    return await this.#postJson<LlmChatCompletionResponse>('/v1/chat/completions', this.#toWireRequest(request));
+    return await this.#postJson<LlmChatCompletionResponse>('/chat/completions', this.#toWireRequest(request));
   }
 
   async #postJson<TResponse>(path: string, request: ILlmEmbeddingsRequest | LlmWireChatCompletionRequest): Promise<TResponse> {
     const response = await this.#fetchResponse(path, request);
 
     if (!response.ok) {
-      throw new Error(`The LLM API at ${this.#host.url}${path} responded with status ${response.status}.`);
+      throw new Error(`The LLM API at ${this.#endpointBase}${path} responded with status ${response.status}.`);
     }
 
     return await response.json() as TResponse;
   }
 
   async #fetchResponse(path: string, request: ILlmEmbeddingsRequest | LlmWireChatCompletionRequest | ILlmShowRequest): Promise<Response> {
-    return await fetch(new URL(path, this.#host.url), {
+    return await fetch(`${this.#endpointBase}${path}`, {
       method: 'POST',
       headers: this.#headers(),
       body: JSON.stringify(request)
     });
+  }
+
+  get #endpointBase(): string {
+    const href = this.#host.url.href;
+    return href.endsWith('/') ? href.slice(0, -1) : href;
   }
 
   #headers(): Record<string, string> {

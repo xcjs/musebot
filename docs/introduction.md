@@ -107,7 +107,7 @@ Set `mode` to `"chat"` for LLM chat or `"media"` for media generation.
 
     ```jsonc
     "llm": {
-      "hosts": [{ "url": "http://localhost:11434" }],
+      "hosts": [{ "url": "http://localhost:11434/v1" }],
       "models": ["gemma4:12b"]
     }
     ```
@@ -116,7 +116,7 @@ Set `mode` to `"chat"` for LLM chat or `"media"` for media generation.
 
     ```jsonc
     "llm": {
-      "hosts": [{ "url": "http://localhost:11434" }],
+      "hosts": [{ "url": "http://localhost:11434/v1" }],
       "models": ["gemma4:12b"],
       "embeddingModel": "nomic-embed-text"
     }

@@ -2,6 +2,16 @@
 
 All notable changes to Musebot are documented in this file.
 
+## [Unreleased]
+
+### Changed
+
+- LLM host URLs now include the OpenAI-compatible base route (usually `/v1`)
+  themselves; Musebot no longer injects it. The client appends only
+  `/chat/completions` and `/embeddings` to the URL exactly as configured.
+  Sample: `{ "url": "http://localhost:11434/v1" }`. Root URL hosts still work
+  but warn at startup.
+
 ## [10.0.0] — 2026-10-08
 
 ### Breaking Changes

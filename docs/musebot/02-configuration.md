@@ -119,8 +119,8 @@ earlier release.
   ```jsonc
   "llm": {
     "hosts": [
-      { "url": "http://localhost:11434" },
-      { "url": "https://api.examplerator.com", "token": "sk-...", "isLocal": false }
+      { "url": "http://localhost:11434/v1" },
+      { "url": "https://api.examplerator.com/v1", "token": "sk-...", "isLocal": false }
     ]
   }
   ```
@@ -129,8 +129,12 @@ earlier release.
 
 #### `llm.hosts[].url`
 
-* **Description:** The base URL of the LLM backend, e.g.
-  `http://localhost:11434` for Ollama.
+* **Description:** The base URL of the LLM backend. It must include the
+  full OpenAI-compatible base route (usually `/v1`), e.g.
+  `http://localhost:11434/v1` for Ollama. Musebot appends only the endpoint
+  paths (`/chat/completions`, `/embeddings`) to the URL exactly as given;
+  platform probe endpoints (`/api/ps`, `/models`, `/props`, ...) are
+  always joined to the server root.
 * **Required:** Yes
 * **Type:** `String`
 

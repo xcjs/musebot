@@ -52,7 +52,7 @@ function createMockConfigurationService(overrides: Partial<IConfigurationService
     comfyUiTimeoutMinutes: 30,
     comfyUiGuidanceScaleInterval: 0.5,
     randomPrompts: [],
-    llmHosts: [{ url: new URL('http://localhost:11434'), token: null, isLocal: true }],
+    llmHosts: [{ url: new URL('http://localhost:11434/v1'), token: null, isLocal: true }],
     llmModels: ['test-model'],
     llmSystemPrompt: '',
     llmStreamsResponse: false,
@@ -166,9 +166,9 @@ describe('LlmClient', (): void => {
     it('selects a random host and model and logs them', (): void => {
       client = makeClient();
 
-      expect(client.host).toEqual(new URL('http://localhost:11434'));
+      expect(client.host).toEqual(new URL('http://localhost:11434/v1'));
       expect(client.model).toBe('test-model');
-      expect(mockLogger.info).toHaveBeenCalledWith('Selected host: http://localhost:11434/');
+      expect(mockLogger.info).toHaveBeenCalledWith('Selected host: http://localhost:11434/v1');
       expect(mockLogger.info).toHaveBeenCalledWith('Selected model: test-model');
     });
 
@@ -291,6 +291,20 @@ describe('LlmClient', (): void => {
       expect(body.temperature).toBeUndefined();
     });
 
+    it('appends only the endpoint to the host as configured (config carries the /v1 route)', async (): Promise<void> => {
+      client = makeClient({ flavor: LlmHostFlavor.Ollama, isLocal: true }, {
+        llmHosts: [{ url: new URL('http://localhost:11434'), token: null, isLocal: true }]
+      });
+      fetchMock.mockResolvedValueOnce(mockJsonResponse({ choices: [{ message: { role: 'assistant', content: 'ok' } }] }));
+      fetchMock.mockResolvedValueOnce(mockJsonResponse({ data: [{ index: 0, embedding: [0.1] }] }));
+
+      await client.generate('Hi');
+      await client.embed('text');
+
+      expect(String(fetchMock.mock.calls[0][0] as string)).toBe('http://localhost:11434/chat/completions');
+      expect(String(fetchMock.mock.calls[1][0] as string)).toBe('http://localhost:11434/embeddings');
+    });
+
     it('wraps fetch errors preserving .cause', async (): Promise<void> => {
       const cause = new Error('network down');
       fetchMock.mockRejectedValue(cause);
@@ -303,7 +317,7 @@ describe('LlmClient', (): void => {
   describe('Bearer token', (): void => {
     it('sends Authorization header only when the host token is non-null', async (): Promise<void> => {
       client = makeClient({ flavor: LlmHostFlavor.Generic, isLocal: false }, {
-        llmHosts: [{ url: new URL('https://api.example.com'), token: 'secret-token', isLocal: false }]
+        llmHosts: [{ url: new URL('https://api.example.com/v1'), token: 'secret-token', isLocal: false }]
       });
 
       fetchMock.mockResolvedValue(mockJsonResponse({ choices: [{ message: { role: 'assistant', content: 'ok' } }] }));
@@ -503,7 +517,7 @@ describe('LlmClient', (): void => {
       expect(error).toBeInstanceOf(Error);
       expect(error.message).toBe('Failed to send the LLM a message and retrieve a stream.');
       expect(error.cause).toBeInstanceOf(Error);
-      expect((error.cause as Error).message).toBe('The LLM API at http://localhost:11434//v1/chat/completions responded with status 500.');
+      expect((error.cause as Error).message).toBe('The LLM API at http://localhost:11434/v1/chat/completions responded with status 500.');
     });
 
     it('yields a terminal done chunk with usage when the stream ends without [DONE]', async (): Promise<void> => {

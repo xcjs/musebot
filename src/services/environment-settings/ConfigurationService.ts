@@ -111,13 +111,26 @@ export class ConfigurationService implements IConfigurationService {
       ?? ['Describe something or someone with extraordinary detail.'];
   }
 
+  readonly #warnedRootHosts = new Set<string>();
+
   get llmHosts(): ILlmHost[] {
     return (this.#botConfig.llm?.hosts
       || []).map(host => {
         if (typeof host === 'string') {
           throw new Error('Bare-string hosts are no longer supported; wrap each host as { "url": "..." }. See docs/musebot/04-migration-v10.md.');
         }
-        return { url: new URL(host.url), token: host.token ?? null, isLocal: host.isLocal ?? null };
+        const url = new URL(host.url);
+
+        if (url.pathname === '/' && !this.#warnedRootHosts.has(url.toString())) {
+          this.#warnedRootHosts.add(url.toString());
+          this.#log.warn(`LLM host '${url}' has no route path. Requests will target '${url}chat/completions'. OpenAI-compatible platforms normally require a versioned route such as '/v1' in the host URL. See config.example.jsonc.`);
+        }
+
+        return {
+          url,
+          token: host.token ?? null,
+          isLocal: host.isLocal ?? null
+        };
       });
   }
 
