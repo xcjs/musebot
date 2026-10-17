@@ -210,11 +210,12 @@
         // Type:     String
         // "embeddingModel": "nomic-embed-text",
 
-        // Maximum character length of embedding inputs. When set, Musebot
-        // truncates inputs (serialized memory rows) to this limit and logs a
-        // warning once. Raise it if your embedding server accepts large
-        // batches; lower it if your server rejects inputs Musebot considers
-        // small. Only applies when embeddingModel is set.
+        // Chunk size in characters for embedding inputs. When set, Musebot
+        // splits oversized inputs (serialized memory rows) into chunks of this
+        // size, embeds each chunk, and pools the chunk vectors into one stored
+        // embedding — nothing is truncated. Keep it within limits your
+        // embedding server accepts for a single input. Only applies when
+        // embeddingModel is set.
         // Required: Optional
         // Default:  2000
         // Type:     Integer

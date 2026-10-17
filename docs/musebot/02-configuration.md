@@ -233,13 +233,15 @@ earlier release.
 
 #### `llm.embeddingInputLimit`
 
-* **Description:** The maximum character length of embedding inputs (Musebot
+* **Description:** The chunk size in characters for embedding inputs (Musebot
   embeds serialized conversation rows for long-term memory). Inputs longer
-  than the limit are truncated before they are sent to the embedding model,
-  and a warning is logged once. There is no standard way to query an
-  embedding server's maximum input size, so raise this if your server accepts
-  large inputs, or lower it if your server rejects inputs larger than you
-  expect. Only applies when `llm.embeddingModel` is set.
+  than the limit are split into chunks, each chunk is embedded separately,
+  and the resulting chunk vectors are pooled (averaged) into a single stored
+  embedding — inputs are never truncated. Retrieval for oversized inputs
+  matches their overall gist rather than individual chunk precision. There is
+  no standard way to query an embedding server's maximum input size, so keep
+  this within limits your embedding server accepts for a single input. Only
+  applies when `llm.embeddingModel` is set.
 * **Required:** No
 * **Type:** `Integer`
 * **Default:** `2000`

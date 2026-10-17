@@ -196,7 +196,7 @@ Key settings (from `IBotConfig`):
 | `bots[].llm.systemPrompt`                  | System prompt for LLM conversations            |
 | `bots[].llm.streamsResponse`               | Whether the LLM streams responses              |
 | `bots[].llm.embeddingModel`                | Embedding model name (enables long-term memory) |
-| `bots[].llm.embeddingInputLimit`           | Max character length of embedding inputs (default 2000) |
+| `bots[].llm.embeddingInputLimit`           | Embedding input chunk size in characters — oversized inputs are chunked and pooled, not truncated (default 2000) |
 | `bots[].llm.topK`                          | Number of similar memories retrieved per prompt |
 | `bots[].llm.contextWindow`                 | Max context window in tokens (optional override) |
 | `bots[].llm.contextCompressionThreshold`   | Fraction of the window that triggers compression |

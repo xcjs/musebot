@@ -103,33 +103,58 @@ describe('MemoryService', () => {
     expect(JSON.parse(embedInputs[0])).toEqual(message);
   });
 
-  it('truncates oversized embed inputs before sending them to the LLM', async () => {
+  it('chunks oversized embed inputs and stores their pooled embedding', async () => {
+    llmClient.embedBatch = jest.fn((inputs: string[]): Promise<number[][]> =>
+      Promise.resolve(inputs.map((_, index) => {
+        const vector = new Array<number>(4).fill(1);
+        vector[0] = index + 1;
+        return vector;
+      })));
+
     const service = new MemoryService(buildServices('model-a'));
     await service.setConsent('user-1');
 
     const message = createLlmChatMessage({ message: 'x'.repeat(5000) });
+    const json = JSON.stringify(message);
     await service.store(message);
 
-    const embedInput = llmClient.embed.mock.calls.map((args: unknown[]) => args[0] as string)
-      .filter((input: string) => input !== 'dimension probe')[0];
-    expect(embedInput).toBeDefined();
-    expect(embedInput.length).toBe(2000);
+    const batches = llmClient.embedBatch.mock.calls.map((args: unknown[]) => args[0] as string[]);
+    expect(batches).toHaveLength(1);
+
+    const chunks = batches[0];
+    expect(chunks.map((chunk: string) => chunk.length)).toEqual([2000, 2000, json.length - 4000]);
+    expect(chunks.join('')).toBe(json);
+    expect(llmClient.embed.mock.calls.filter((args: unknown[]) => args[0] !== 'dimension probe'))
+      .toHaveLength(0);
+
+    // Mean of [1,1,1,1], [2,1,1,1], [3,1,1,1] is exactly [2,1,1,1].
+    const pooled = [2, 1, 1, 1];
+    const database = new MemoryDatabase(join('workflows', 'bot-1', 'txt2txt', 'memory.db'), 4, createMockLogger());
+    try {
+      expect(database.queryMemories(pooled, 'server-1', 'model-a', 5)).toHaveLength(1);
+    } finally {
+      database.close();
+    }
   });
 
-  it('honors a custom llm.embeddingInputLimit from configuration', async (): Promise<void> => {
+  it('uses llm.embeddingInputLimit as the chunk size', async (): Promise<void> => {
     const service = new MemoryService(buildServices('model-a', 150));
     await service.setConsent('user-1');
 
     const message = createLlmChatMessage({ message: 'x'.repeat(5000) });
+    const json = JSON.stringify(message);
     await service.store(message);
 
-    const embedInput = llmClient.embed.mock.calls.map((args: unknown[]) => args[0] as string)
-      .filter((input: string) => input !== 'dimension probe')[0];
-    expect(embedInput).toBeDefined();
-    expect(embedInput.length).toBe(150);
+    const batches = llmClient.embedBatch.mock.calls.map((args: unknown[]) => args[0] as string[]);
+    expect(batches).toHaveLength(1);
+
+    const chunks = batches[0];
+    expect(chunks.length).toBe(Math.ceil(json.length / 150));
+    expect(chunks[0].length).toBe(150);
+    expect(chunks.join('')).toBe(json);
   });
 
-  it('truncates oversized migration batch inputs before re-embedding', async () => {
+  it('chunks oversized inputs during migration re-embedding', async () => {
     const seedDatabase = new MemoryDatabase(
       join('workflows', 'bot-1', 'txt2txt', 'memory.db'), 4, createMockLogger());
     const message = createLlmChatMessage();
@@ -143,7 +168,10 @@ describe('MemoryService', () => {
 
     const batchInputs = llmClient.embedBatch.mock.calls.map((args: unknown[]) => args[0] as string[]);
     expect(batchInputs.length).toBeGreaterThan(0);
-    expect(batchInputs[0].filter((input: string) => input.length === 2000)).toHaveLength(1);
+    expect(batchInputs[0].length).toBe(3);
+    expect(batchInputs[0][0].length).toBe(2000);
+    expect(batchInputs[0][1].length).toBe(2000);
+    expect(batchInputs[0].join('')).toBe(oversizedJson);
   });
 
   it('stores the message datetime rather than the insertion time as createdAt', async () => {

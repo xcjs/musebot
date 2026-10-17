@@ -21,10 +21,10 @@ All notable changes to Musebot are documented in this file.
   `/chat/completions` and `/embeddings` to the URL exactly as configured.
   Sample: `{ "url": "http://localhost:11434/v1" }`. Root URL hosts still work
   but warn at startup.
-- Long-term memory embedding inputs are truncated to a configurable limit
-  (`llm.embeddingInputLimit`, default 2000 characters) with a warning logged
-  on every truncation, preventing hard failures on embedding servers with
-  small physical batch or context limits.
+- Long-term memory embedding inputs are no longer truncated: oversized inputs
+  are split into chunks of a configurable size (`llm.embeddingInputLimit`,
+  default 2000 characters), each chunk is embedded, and the chunk vectors are
+  pooled (averaged) into the stored embedding of the conversation row.
 
 ## [10.0.0] — 2026-10-08
 

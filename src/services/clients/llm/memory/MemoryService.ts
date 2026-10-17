@@ -139,7 +139,7 @@ export class MemoryService implements IMemoryService {
 
     try {
       const json = JSON.stringify(llmChatMessage);
-      const embedding = await this.#embed(json);
+      const embedding = await this.#embedToVector(json);
       const database = await this.#getDatabase();
       const embeddingModel = this.#getEmbeddingModel();
 
@@ -177,7 +177,7 @@ export class MemoryService implements IMemoryService {
 
     try {
       const json = JSON.stringify(llmChatMessage);
-      const embedding = await this.#embed(json);
+      const embedding = await this.#embedToVector(json);
       const topK = this.#configurationService.llmTopK;
       const embeddingModel = this.#getEmbeddingModel();
       const database = await this.#getDatabase();
@@ -208,26 +208,48 @@ export class MemoryService implements IMemoryService {
     return model;
   }
 
-  async #embed(text: string): Promise<number[]> {
+  async #embedToVector(text: string): Promise<number[]> {
     const client: ILlmClient = this.#services.llmClient;
-    return await client.embed(this.#capEmbeddingInput(text));
-  }
+    const chunks = this.#splitEmbeddingInput(text);
 
-  async #embedBatch(texts: string[]): Promise<number[][]> {
-    const client: ILlmClient = this.#services.llmClient;
-    return await client.embedBatch(texts.map((text) => this.#capEmbeddingInput(text)));
-  }
-
-  #capEmbeddingInput(text: string): string {
-    const limit = this.#configurationService.llmEmbeddingInputLimit;
-
-    if (text.length <= limit) {
-      return text;
+    if (chunks.length === 1) {
+      return await client.embed(chunks[0]);
     }
 
-    this.#logger.warn(`Embedding input truncated to ${limit} characters before embedding (configured via llm.embeddingInputLimit). Embedding models have small physical batches and context windows, so oversized inputs are rejected or low-quality.`);
+    const vectors = await client.embedBatch(chunks);
 
-    return text.slice(0, limit);
+    if (vectors.length !== chunks.length) {
+      throw new Error(`The LLM API returned ${vectors.length} embeddings for ${chunks.length} embedding input chunks.`);
+    }
+
+    return vectors.length === 1 ? vectors[0] : this.#poolVectors(vectors);
+  }
+
+  #splitEmbeddingInput(text: string): string[] {
+    const limit = Math.max(1, this.#configurationService.llmEmbeddingInputLimit);
+    const chunks: string[] = [];
+
+    for (let offset = 0; offset < text.length; offset += limit) {
+      chunks.push(text.slice(offset, offset + limit));
+    }
+
+    return chunks;
+  }
+
+  #poolVectors(vectors: number[][]): number[] {
+    const pooled = new Array<number>(vectors[0].length).fill(0);
+
+    for (const vector of vectors) {
+      if (vector.length !== pooled.length) {
+        throw new Error('The LLM API returned embeddings of inconsistent dimensions for one input.');
+      }
+
+      for (let index = 0; index < pooled.length; index++) {
+        pooled[index] += vector[index];
+      }
+    }
+
+    return pooled.map((value) => value / vectors.length);
   }
 
   /**
@@ -293,13 +315,24 @@ export class MemoryService implements IMemoryService {
         break;
       }
 
-      const embeddings = await this.#embedBatch(records.map((record) => record.llmChatMessageJson));
+      const chunkLists = records.map((record) => this.#splitEmbeddingInput(record.llmChatMessageJson));
+      const client: ILlmClient = this.#services.llmClient;
+      const flatChunks = chunkLists.flat();
+      const chunkVectors = await client.embedBatch(flatChunks);
+
+      if (chunkVectors.length !== flatChunks.length) {
+        throw new Error(`The LLM API returned ${chunkVectors.length} embeddings for ${flatChunks.length} embedding input chunks.`);
+      }
+
+      let offset = 0;
 
       for (let index = 0; index < records.length; index++) {
         const record = records[index];
-        const embedding = embeddings[index];
+        const vectors = chunkVectors.slice(offset, offset + chunkLists[index].length);
+        const embedding = vectors.length === 1 ? vectors[0] : this.#poolVectors(vectors);
+        offset += chunkLists[index].length;
 
-        if (embedding === undefined) {
+        if (embedding === undefined || embedding.length === 0) {
           this.#logger.error(`Re-embed batch returned no embedding for memory ${record.id}; skipping.`);
           failed++;
           continue;
@@ -338,7 +371,7 @@ export class MemoryService implements IMemoryService {
       return this.#embeddingDimensions;
     }
 
-    const embedding = await this.#embed('dimension probe');
+    const embedding = await this.#embedToVector('dimension probe');
     this.#embeddingDimensions = embedding.length;
     this.#logger.info(`Detected embedding dimensions: ${this.#embeddingDimensions}`);
 
