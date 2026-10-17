@@ -25,8 +25,7 @@ describe('LlamaCppSingleLifecycleStrategy', () => {
     strategy = new LlamaCppSingleLifecycleStrategy(
       makeHost('http://localhost:8080'),
       'test-model',
-      mockLogger as never,
-      ['vision-model']);
+      mockLogger as never);
   });
 
   it('free() resolves true without any fetch call', async (): Promise<void> => {
@@ -56,9 +55,8 @@ describe('LlamaCppSingleLifecycleStrategy', () => {
     expect(await strategy.getContextWindow()).toBeNull();
   });
 
-  it('hasVisionCapability() true when model in visionModels', async (): Promise<void> => {
-    expect(await strategy.hasVisionCapability('vision-model')).toBe(true);
-    expect(await strategy.hasVisionCapability('other-model')).toBe(false);
+  it('hasVisionCapability() always false without any fetch call', async (): Promise<void> => {
+    expect(await strategy.hasVisionCapability('test-model')).toBe(false);
     expect(fetchMock).not.toHaveBeenCalled();
   });
 });

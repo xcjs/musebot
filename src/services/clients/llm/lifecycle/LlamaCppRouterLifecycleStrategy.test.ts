@@ -25,8 +25,7 @@ describe('LlamaCppRouterLifecycleStrategy', () => {
     strategy = new LlamaCppRouterLifecycleStrategy(
       makeHost('http://localhost:8080'),
       'test-model',
-      mockLogger as never,
-      ['vision-model']);
+      mockLogger as never);
   });
 
   it('free() posts model to /models/unload', async (): Promise<void> => {
@@ -60,13 +59,60 @@ describe('LlamaCppRouterLifecycleStrategy', () => {
     expect(await strategy.waitForModelUnload(10)).toBe(true);
   });
 
-  it('getContextWindow() always null', async (): Promise<void> => {
+  it('getContextWindow() reads context_length from the models catalog', async (): Promise<void> => {
+    fetchMock.mockResolvedValue(mockResponse(200, {
+      data: [{ id: 'another-model' }, { id: 'test-model', context_length: 262144 }]
+    }));
+
+    expect(await strategy.getContextWindow()).toBe(262144);
+
+    const [url] = fetchMock.mock.calls[0];
+    expect(String(url as string)).toBe('http://localhost:8080/models');
+  });
+
+  it('getContextWindow() null when the model is absent from the catalog', async (): Promise<void> => {
+    fetchMock.mockResolvedValue(mockResponse(200, { data: [{ id: 'another-model', context_length: 4096 }] }));
+
     expect(await strategy.getContextWindow()).toBeNull();
   });
 
-  it('hasVisionCapability() true when model in visionModels', async (): Promise<void> => {
-    expect(await strategy.hasVisionCapability('vision-model')).toBe(true);
-    expect(await strategy.hasVisionCapability('other-model')).toBe(false);
-    expect(fetchMock).not.toHaveBeenCalled();
+  it('getContextWindow() null when the entry has no context_length', async (): Promise<void> => {
+    fetchMock.mockResolvedValue(mockResponse(200, { data: [{ id: 'test-model' }] }));
+
+    expect(await strategy.getContextWindow()).toBeNull();
+  });
+
+  it('getContextWindow() null on failed HTTP response', async (): Promise<void> => {
+    fetchMock.mockResolvedValue(mockResponse(500, {}));
+
+    expect(await strategy.getContextWindow()).toBeNull();
+  });
+
+  it('getContextWindow() null when fetch rejects', async (): Promise<void> => {
+    fetchMock.mockRejectedValue(new Error('connection refused'));
+
+    expect(await strategy.getContextWindow()).toBeNull();
+  });
+
+  it('hasVisionCapability() true when the catalog lists image input', async (): Promise<void> => {
+    fetchMock.mockResolvedValue(mockResponse(200, {
+      data: [{ id: 'test-model', architecture: { input_modalities: ['text', 'image'] } }]
+    }));
+
+    expect(await strategy.hasVisionCapability()).toBe(true);
+  });
+
+  it('hasVisionCapability() false when the catalog lists only text', async (): Promise<void> => {
+    fetchMock.mockResolvedValue(mockResponse(200, {
+      data: [{ id: 'test-model', architecture: { input_modalities: ['text'] } }]
+    }));
+
+    expect(await strategy.hasVisionCapability()).toBe(false);
+  });
+
+  it('hasVisionCapability() false on a failed HTTP response', async (): Promise<void> => {
+    fetchMock.mockResolvedValue(mockResponse(500, {}));
+
+    expect(await strategy.hasVisionCapability()).toBe(false);
   });
 });

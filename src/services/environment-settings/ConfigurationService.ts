@@ -190,12 +190,6 @@ export class ConfigurationService implements IConfigurationService {
       ?? null;
   }
 
-  get llmVisionModels(): string[] {
-    return this.llmModelConfigs
-      .filter(model => model.inputModalities.includes(LlmModality.Image))
-      .map(model => model.name);
-  }
-
   get llmTopK(): number {
     return this.#botConfig.llm?.topK
       ?? 5;
@@ -307,7 +301,6 @@ Detected environment variables: ${envVarList}`);
     this.#log.info(`bots[].llm.systemPrompt: ${this.llmSystemPrompt}`);
     this.#log.info(`bots[].llm.streamsResponse: ${this.llmStreamsResponse}`);
     this.#log.info(`bots[].llm.embeddingModel: ${this.llmEmbeddingModel ?? '(not set)'}`);
-    this.#log.info(`bots[].llm.visionModels: ${this.llmVisionModels.join(', ')}`);
     this.#log.info(`bots[].llm.topK: ${this.llmTopK}`);
     this.#log.info(`bots[].llm.contextWindow: ${this.llmContextWindow ?? '(not set)'}`);
     this.#log.info(`bots[].llm.contextCompressionThreshold: ${this.llmContextCompressionThreshold}`);

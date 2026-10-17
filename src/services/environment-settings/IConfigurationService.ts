@@ -36,7 +36,6 @@ export interface IConfigurationService {
   llmSystemPrompt: string;
   llmStreamsResponse: boolean;
   llmEmbeddingModel: string | null;
-  llmVisionModels: string[];
   llmTopK: number;
 
   get llmContextWindow(): number | null;

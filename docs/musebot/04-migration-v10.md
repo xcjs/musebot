@@ -13,8 +13,10 @@ single-model modes) and hosted OpenAI-compatible APIs now work too.
 * The `ollama` config block is now the **`llm`** config block.
 * `llm.hosts` entries are now **objects** (`{ "url": ... }`) instead of bare
   strings, with optional `token` and `isLocal` fields.
-* New optional `llm.visionModels` setting declares vision-capable models on
-  non-Ollama hosts (Ollama still auto-detects vision).
+* Vision capability is declared per model via `inputModalities` on
+  `llm.models` entries, or auto-detected from the host (Ollama via
+  `/api/show`; llama.cpp router and most hosted providers via their
+  `/models` catalog).
 * Internal accessors were renamed (e.g., `ollamaHosts` → `llmHosts`,
   `OllamaClient` → `LlmClient`). If you only configure via `config.jsonc`
   this is invisible to you.
@@ -44,8 +46,7 @@ single-model modes) and hosted OpenAI-compatible APIs now work too.
   "systemPrompt": "You are a helpful assistant.",
   "streamsResponse": false,
   "embeddingModel": "nomic-embed-text",
-  "topK": 5,
-  "visionModels": []
+  "topK": 5
 }
 ```
 
@@ -54,8 +55,9 @@ For a hosted provider, add the token to the host object:
 ```jsonc
 "llm": {
   "hosts": [{ "url": "https://api.examplerator.com/v1", "token": "sk-..." }],
-  "models": ["some-model-name"],
-  "visionModels": ["some-model-name"],
+  "models": [
+    { "name": "some-model-name", "inputModalities": ["text", "image"] }
+  ],
   "contextWindow": 8192
 }
 ```
@@ -118,8 +120,9 @@ llama-server --models-dir ./models --models-max 4 --api-key sk-your-key
 * Instances inherit the router's API key — set `--api-key` and configure the
   same key as the host's `token`.
 * `--models-max` (default `4`) bounds how many models stay resident.
-* Vision models must be listed in `llm.visionModels`; there is no
-  context-window detection, so set `llm.contextWindow` manually.
+* Context window and vision come from the `/models` catalog
+  (`context_length`, `architecture.input_modalities`); declare
+  `inputModalities` in `llm.models` to override.
 
 ### Single-Model Mode
 
@@ -135,8 +138,8 @@ automatically reload on the next request. Musebot watches for `is_sleeping` in
 `GET /props`. **Without `--sleep-idle-seconds`, Musebot's post-task unload
 wait never terminates** — make sure the flag is set.
 
-As with router mode, vision and context window come from `llm.visionModels`
-and `llm.contextWindow`.
+Single-model mode has no `/models` catalog probe — set `llm.contextWindow`
+manually and declare vision via per-model `inputModalities` in `llm.models`.
 
 ## Where to Go Next
 

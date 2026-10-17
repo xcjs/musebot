@@ -181,22 +181,14 @@ earlier release.
   ```
 
   Modality values are **case-insensitive** and may be `text`, `image`,
-  `video`, or `audio`; both arrays default to `["text"]` when omitted. Model
-  names in the object form must still be listed in `llm.visionModels` (or be
-  on an Ollama host, which auto-detects vision) to enable the Vision feature.
+  `video`, or `audio`; both arrays default to `["text"]` when omitted. A model
+  declared with `image` input enables the Vision feature directly; otherwise
+  Musebot detects vision from the host (Ollama via `/api/show`, other hosts
+  via their `/models` catalog when available). Configured modalities always
+  win over host detection.
   See [Vision](../chat/01-llm.md#vision) for details.
 * **Required:** No
 * **Type:** `Array<string | { name: String, inputModalities?: Modality[], outputModalities?: Modality[] }>`
-
-#### `llm.visionModels`
-
-* **Description:** An array of model names (matching entries in `llm.models`)
-  that accept image input. Used to enable the Vision feature on non-Ollama
-  hosts (llama.cpp, hosted APIs, etc.). Ollama hosts ignore this field and
-  auto-detect vision instead.
-* **Required:** No
-* **Type:** `String[]`
-* **Default:** *(unset — on Ollama hosts vision is auto-detected; elsewhere Vision is disabled)*
 
 #### `llm.systemPrompt`
 
@@ -260,13 +252,14 @@ earlier release.
 
 * **Description:** The maximum context window (in tokens) for the LLM, used to
   decide when conversation context compression triggers. When unset, Musebot
-  probes the host for the model's context length (Ollama hosts only, via
-  `/api/show`); if that fails, it falls back to `4096`. For llama.cpp and
-  hosted providers, set this manually for accurate compression. See
-  [Context Compression](../chat/01-llm.md#context-compression) for details.
+  probes the host for the model's context length — Ollama via `/api/show`,
+  llama.cpp router and most other OpenAI-compatible hosts via their `/models`
+  catalog — and falls back to `4096` if the probe fails or returns nothing.
+  A manually set value always wins over the probe.
+  See [Context Compression](../chat/01-llm.md#context-compression) for details.
 * **Required:** No
 * **Type:** `Integer`
-* **Default:** *(unset — probe on Ollama, otherwise 4096)*
+* **Default:** *(unset — probe the host, otherwise 4096)*
 
 #### `llm.contextCompressionThreshold`
 

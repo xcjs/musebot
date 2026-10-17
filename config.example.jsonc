@@ -172,8 +172,9 @@
 
         // The model(s) to use, as plain names or objects declaring what each
         // model can accept and produce. A random one is selected per request.
-        // Vision capability is declared per model (an "inputModalities" list
-        // containing "image"); Ollama hosts instead auto-detect vision.
+        // Vision capability comes from a model's "inputModalities" containing
+        // "image"; when omitted, Musebot detects it from the host (Ollama via
+        // /api/show, other hosts via their /models catalog when available).
         // Required: Required when mode="chat"
         // Type:     Array of string or object ({ name, inputModalities?, outputModalities? })
         // Modality values are case-insensitive: text, image, video, audio,
@@ -230,10 +231,11 @@
 
         // The maximum context window (in tokens) for the LLM. When set, Musebot
         // uses this value to determine when to compress conversation context.
-        // When unset, Musebot probes the host for the model's max context
-        // length (Ollama only) and falls back to 4096 otherwise.
+        // When unset, Musebot reads context_length from the host (Ollama via
+        // /api/show; OpenAI-compatible hosts via their /models catalog) and
+        // falls back to 4096 otherwise.
         // Required: Optional
-        // Default:  (unset — auto-detect on Ollama, otherwise 4096)
+        // Default:  (unset — auto-detect from the host catalog, otherwise 4096)
         // Type:     Integer
         // "contextWindow": 4096,
 

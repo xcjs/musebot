@@ -51,8 +51,12 @@ no sense.
 | Detection                      | `GET /api/ps` responds                  | `GET /models` responds                              | `GET /props` responds                                   | Anything else                     |
 | Model unload (`free()`)         | Yes — `POST /api/generate` with `keep_alive: 0` | Yes — `POST /models/unload` with `{"model": name}` | No — only idle sleep (see below)                        | No                                |
 | Unload verification            | Yes — `GET /api/ps` until the model disappears | Yes — `GET /models` until status changes     | Yes — `GET /props` until `is_sleeping: true`            | No-op (always "unloaded")         |
-| Vision detection               | Auto — `POST /api/show` capabilities    | Via `llm.visionModels` config                       | Via `llm.visionModels` config                           | Via `llm.visionModels` config    |
-| Context window detection       | Auto — `POST /api/show`                 | None — set `llm.contextWindow` manually            | None — set `llm.contextWindow` manually                 | None — set `llm.contextWindow` manually |
+| Vision detection               | Auto — `POST /api/show` capabilities    | Auto — `/models` catalog `input_modalities`         | Config — per-model `inputModalities`                     | Auto — `/models` catalog when exposed |
+| Context window detection       | Auto — `POST /api/show`                 | Auto — `/models` catalog `context_length`           | None — set `llm.contextWindow` manually                  | Auto — `/models` catalog when exposed; else `llm.contextWindow` |
+
+Configuration always wins over detection: a model with declared
+`inputModalities` or a manually set `llm.contextWindow` is never probed for
+that capability.
 | Authentication                | Optional per-host `token`               | Optional per-host `token`                           | Optional per-host `token`                                | Typically required — `token`     |
 
 ### Ollama
@@ -113,8 +117,9 @@ terminates — the model always looks loaded.
 Any OpenAI-compatible endpoint works: OpenRouter, Together, Groq, vLLM, LM
 Studio, and so on. Configure the `token` per host — Musebot sends it as an
 `Authorization: Bearer <token>` header on every request. Musebot performs no
-model lifecycle management on non-local hosts; vision models must be listed
-in `llm.visionModels` and the context window set via `llm.contextWindow`.
+model lifecycle management on non-local hosts; context window and vision are
+read from the host's `/models` catalog when it exposes them, with
+`llm.contextWindow` and per-model `inputModalities` taking precedence.
 
 ## Local vs Non-Local
 
@@ -148,20 +153,26 @@ For other providers, use whatever model identifiers the provider exposes
 ## Vision
 
 Musebot automatically enables its **Vision** feature when a configured model
-is capable of image input.
+is capable of image input. Vision capability is resolved, in order:
 
-* **Ollama hosts** — vision capability is auto-detected at startup by
-  querying Ollama's `/api/show` endpoint. If any configured model reports
-  `vision` in its capabilities, Vision is enabled. No configuration required.
-* **Everything else** — list the model names that accept image input in the
-  optional `llm.visionModels` array:
+1. **Declared modalities** — if the model is declared as an object in
+   `llm.models` with an `inputModalities` containing `image`, Vision is
+   enabled without any probing:
 
-  ```jsonc
-  "llm": {
-    // ...
-    "visionModels": ["llava", "gemma4:12b"]
-  }
-  ```
+   ```jsonc
+   "llm": {
+     "models": [
+       { "name": "llava", "inputModalities": ["text", "image"] }
+     ]
+   }
+   ```
+
+2. **Ollama hosts** — vision capability is auto-detected at startup by
+   querying Ollama's `/api/show` endpoint. If the model reports `vision` in
+   its capabilities, Vision is enabled.
+3. **Models catalogs** — for other hosts, the `/models` endpoint's
+   `architecture.input_modalities` is consulted where the server exposes it
+   (llama.cpp's router mode and many OpenAI-compatible providers do).
 
 When Vision is enabled:
 
@@ -228,12 +239,13 @@ conversations responsive without losing the thread of discussion.
 The context window is resolved in this order:
 
 1. **Config** — `llm.contextWindow` in `config.jsonc`, if set, always wins.
-2. **Strategy probe** — Ollama hosts only: the model's `context_length` is read
-   from `/api/show`.
+2. **Strategy probe** — Ollama hosts: `context_length` from `/api/show`;
+   llama.cpp router and most other OpenAI-compatible hosts: `context_length`
+   from the `/models` catalog (when the server exposes it).
 3. **Fallback** — `4096` tokens.
 
-For llama.cpp and hosted providers there is no probe, so set
-`llm.contextWindow` manually if your model's window differs from the fallback.
+For llama.cpp single-model mode there is no probe, so set `llm.contextWindow`
+manually if your model's window differs from the fallback.
 
 ### Configuration
 

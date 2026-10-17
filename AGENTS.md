@@ -109,13 +109,18 @@ config flag). Each transient `LlmClient` then selects an
   `/api/ps`; auto-detects vision (`/api/show` capabilities) and context
   window (`/api/show` `context_length`)
 - **LlamaCppRouter** — unload via `POST /models/unload`, verify via
-  `/models`; vision via per-model `inputModalities` containing `image`
+  `/models`; context window and vision from the `/models` catalog
+  (`context_length`, `architecture.input_modalities`)
 - **LlamaCppSingle** — no unload endpoint; waits for `is_sleeping` in
-  `/props` (requires `--sleep-idle-seconds` server-side); vision via
-  per-model `inputModalities` containing `image`
-- **Null** — non-local and generic hosts: no lifecycle management; vision
-  via per-model `inputModalities` containing `image`; context window via
-  config only
+  `/props` (requires `--sleep-idle-seconds` server-side); no catalog probes —
+  no context-window or vision detection
+- **Null** — non-local and generic hosts: no lifecycle management; context
+  window and vision from the `/models` catalog (`context_length`,
+  `architecture.input_modalities`)
+
+Context-window and vision values resolve with configuration winning over API
+detection: a model declared in `llm.models` with modalities (or
+`contextWindow` in config) never consults the host for that capability.
 
 ### Task System
 
@@ -198,7 +203,7 @@ Key settings (from `IBotConfig`):
 | `bots[].llm.embeddingModel`                | Embedding model name (enables long-term memory) |
 | `bots[].llm.embeddingInputLimit`           | Embedding input chunk size in characters — oversized inputs are chunked and pooled, not truncated (default 2000) |
 | `bots[].llm.topK`                          | Number of similar memories retrieved per prompt |
-| `bots[].llm.contextWindow`                 | Max context window in tokens (optional override) |
+| `bots[].llm.contextWindow`                 | Max context window in tokens (optional override; when unset, read from the host's catalog — Ollama `/api/show` or an OpenAI-compatible `/models` — falling back to 4096) |
 | `bots[].llm.contextCompressionThreshold`   | Fraction of the window that triggers compression |
 | `bots[].comfyUi.hosts`                     | Array of ComfyUI API URLs                       |
 | `bots[].comfyUi.guidanceScaleInterval`    | Guidance scale adjustment step                  |

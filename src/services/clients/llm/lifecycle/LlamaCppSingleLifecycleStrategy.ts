@@ -7,13 +7,11 @@ export class LlamaCppSingleLifecycleStrategy implements ILlmLifecycleStrategy {
   readonly #host: ILlmHost;
   readonly #model: string;
   readonly #logger: ILogger;
-  readonly #visionModels: string[] | undefined;
 
-  constructor(host: ILlmHost, model: string, logger: ILogger, visionModels?: string[]) {
+  constructor(host: ILlmHost, model: string, logger: ILogger) {
     this.#host = host;
     this.#model = model;
     this.#logger = logger;
-    this.#visionModels = visionModels;
   }
 
   #headers(json: boolean): Record<string, string> {
@@ -65,7 +63,7 @@ export class LlamaCppSingleLifecycleStrategy implements ILlmLifecycleStrategy {
     return await Promise.resolve(contextWindow);
   }
 
-  async hasVisionCapability(model: string = this.#model): Promise<boolean> {
-    return await Promise.resolve(this.#visionModels?.includes(model) ?? false);
+  async hasVisionCapability(_model?: string): Promise<boolean> {
+    return await Promise.resolve(false);
   }
 }

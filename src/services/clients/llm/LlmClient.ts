@@ -6,6 +6,7 @@ import { IConfigurationService } from '../../environment-settings/IConfiguration
 import { IBotServiceContainer } from '../../IBotServiceContainer.js';
 import { ILogger } from '../../ILogger.js';
 import { LlmHostFlavor } from './enums/LlmHostFlavor.js';
+import { LlmModality } from './enums/LlmModality.js';
 import { LlmRole } from './enums/LlmRole.js';
 import { ILlmClient } from './ILlmClient.js';
 import { ILlmLifecycleStrategy } from './lifecycle/ILlmLifecycleStrategy.js';
@@ -287,6 +288,12 @@ export class LlmClient implements ILlmClient {
   }
 
   async hasVisionCapability(model: string = this.#model): Promise<boolean> {
+    const declared = this.#configurationService.llmModelConfigs.find(config => config.name === model);
+
+    if (declared !== undefined) {
+      return declared.inputModalities.includes(LlmModality.Image);
+    }
+
     return await this.#lifecycleStrategy.hasVisionCapability(model);
   }
 
@@ -505,7 +512,7 @@ export class LlmClient implements ILlmClient {
     const classification = services.llmHostFlavorRegistry.resolve(host);
 
     if (classification.isLocal === false) {
-      return new NullLifecycleStrategy(host, this.#model, this.#logger, this.#configurationService.llmVisionModels);
+      return new NullLifecycleStrategy(host, this.#model, this.#logger);
     }
 
     switch (classification.flavor) {
@@ -516,19 +523,11 @@ export class LlmClient implements ILlmClient {
           this.#logger,
           this.#configurationService.taskRetryDelayMilliseconds);
       case LlmHostFlavor.LlamaCppRouter:
-        return new LlamaCppRouterLifecycleStrategy(
-          host,
-          this.#model,
-          this.#logger,
-          this.#configurationService.llmVisionModels);
+        return new LlamaCppRouterLifecycleStrategy(host, this.#model, this.#logger);
       case LlmHostFlavor.LlamaCppSingle:
-        return new LlamaCppSingleLifecycleStrategy(
-          host,
-          this.#model,
-          this.#logger,
-          this.#configurationService.llmVisionModels);
+        return new LlamaCppSingleLifecycleStrategy(host, this.#model, this.#logger);
       default:
-        return new NullLifecycleStrategy(host, this.#model, this.#logger, this.#configurationService.llmVisionModels);
+        return new NullLifecycleStrategy(host, this.#model, this.#logger);
     }
   }
 }

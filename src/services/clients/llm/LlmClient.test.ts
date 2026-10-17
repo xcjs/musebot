@@ -63,7 +63,6 @@ function createMockConfigurationService(overrides: Partial<IConfigurationService
     llmContextWindow: null,
     llmContextCompressionThreshold: 0.75,
     llmEmbeddingInputLimit: 2000,
-    llmVisionModels: [],
     applicationName: 'Musebot',
     isProduction: false,
     ...overrides,
@@ -237,20 +236,43 @@ describe('LlmClient', (): void => {
       expect(ollamaSpy).not.toHaveBeenCalled();
     });
 
-    it('gives non-local hosts visionModels via the Null strategy', async (): Promise<void> => {
-      const windowSpy = jest.spyOn(OllamaLifecycleStrategy.prototype, 'getContextWindow').mockResolvedValue(123);
+    it('uses declared input modalities for vision regardless of the host flavor', async (): Promise<void> => {
+      const visionSpy = jest.spyOn(NullLifecycleStrategy.prototype, 'hasVisionCapability').mockResolvedValue(true);
+      const ollamaVisionSpy = jest.spyOn(OllamaLifecycleStrategy.prototype, 'hasVisionCapability').mockResolvedValue(true);
+
+      client = makeClient({ flavor: LlmHostFlavor.Ollama, isLocal: false }, {
+        llmModelConfigs: [
+          { name: 'test-model', inputModalities: [LlmModality.Text], outputModalities: [LlmModality.Text] }
+        ]
+      });
+
+      expect(await client.hasVisionCapability()).toBe(false);
+      expect(visionSpy).not.toHaveBeenCalled();
+      expect(ollamaVisionSpy).not.toHaveBeenCalled();
+    });
+
+    it('returns true for a model declared with the image modality', async (): Promise<void> => {
       const visionSpy = jest.spyOn(NullLifecycleStrategy.prototype, 'hasVisionCapability').mockResolvedValue(false);
 
       client = makeClient({ flavor: LlmHostFlavor.Ollama, isLocal: false }, {
-        llmVisionModels: ['vision-model']
+        llmModelConfigs: [
+          { name: 'test-model', inputModalities: [LlmModality.Text, LlmModality.Image], outputModalities: [LlmModality.Text] }
+        ]
       });
 
-      await client.getContextWindow();
-      expect(windowSpy).not.toHaveBeenCalled();
+      expect(await client.hasVisionCapability()).toBe(true);
+      expect(visionSpy).not.toHaveBeenCalled();
+    });
 
-      await client.hasVisionCapability('vision-model');
-      expect(visionSpy).toHaveBeenCalledWith('vision-model');
-      expect(await client.hasVisionCapability('vision-model')).toBe(false);
+    it('falls back to the lifecycle strategy for models without declared modalities', async (): Promise<void> => {
+      const visionSpy = jest.spyOn(NullLifecycleStrategy.prototype, 'hasVisionCapability').mockResolvedValue(true);
+
+      client = makeClient({ flavor: LlmHostFlavor.Ollama, isLocal: false }, {
+        llmModelConfigs: []
+      });
+
+      expect(await client.hasVisionCapability('unlisted-model')).toBe(true);
+      expect(visionSpy).toHaveBeenCalledWith('unlisted-model');
     });
   });
 

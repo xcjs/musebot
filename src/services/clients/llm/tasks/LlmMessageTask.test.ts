@@ -126,7 +126,6 @@ function buildMockServices(streamsResponse: boolean, contextMessages: LlmMessage
     llmSystemPrompt: '',
     llmStreamsResponse: streamsResponse,
     llmEmbeddingModel: null,
-    llmVisionModels: [],
     llmTopK: 5,
     llmContextWindow: 100000,
     llmContextCompressionThreshold: 0.75,

@@ -9,13 +9,20 @@ All notable changes to Musebot are documented in this file.
 - Model modality declarations: new `LlmModality` enum (text, image, video,
   audio) and optional per-model `inputModalities`/`outputModalities` arrays in
   `llm.models` entries (case-insensitive values, default `text`).
+- Context window and vision auto-detection from OpenAI-compatible hosts:
+  Musebot reads the model's `context_length` and
+  `architecture.input_modalities` from the host's `/models` catalog (Ollama
+  hosts continue using `/api/show`). A model with modalities declared in
+  `llm.models` — or a manually configured `llm.contextWindow` — skips
+  detection entirely.
 
 ### Changed
 
 - **Breaking:** removed the `llm.visionModels` setting. Vision capability is
-  now declared per model in `llm.models` entries whose `inputModalities`
-  include `image`; a startup warning fires when the removed key is still
-  configured.
+  declared per model in `llm.models` entries whose `inputModalities` include
+  `image`, or auto-detected from the host (Ollama `/api/show` capabilities;
+  the `/models` catalog elsewhere); a startup warning fires when the removed
+  key is still configured.
 - LLM host URLs now include the OpenAI-compatible base route (usually `/v1`)
   themselves; Musebot no longer injects it. The client appends only
   `/chat/completions` and `/embeddings` to the URL exactly as configured.

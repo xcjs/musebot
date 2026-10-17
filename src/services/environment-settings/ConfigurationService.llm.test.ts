@@ -103,26 +103,6 @@ describe('ConfigurationService (llm section)', () => {
     }).toThrow('Bare-string hosts are no longer supported; wrap each host as { "url": "..." }. See docs/musebot/04-migration-v10.md.');
   });
 
-  it('defaults llmVisionModels to []', () => {
-    const service = new ConfigurationService(validChatBotConfig as unknown as IBotConfig);
-
-    expect(service.llmVisionModels).toEqual([]);
-  });
-
-  it('derives llmVisionModels from model input modalities', () => {
-    const visionConfig = {
-      ...validChatBotConfig,
-      llm: {
-        ...validChatBotConfig.llm,
-        models: [{ name: 'llava', inputModalities: ['text', 'image'] }]
-      }
-    };
-
-    const service = new ConfigurationService(visionConfig as unknown as IBotConfig);
-
-    expect(service.llmVisionModels).toEqual(['llava']);
-  });
-
   it('warns when the removed llm.visionModels key is still configured', () => {
     const legacyConfig = {
       ...validChatBotConfig,
