@@ -44,6 +44,12 @@ class MockTask extends BaseTask<unknown> {
   }
 }
 
+const drainMicrotasks = async (): Promise<void> => {
+  for (let i = 0; i < 200; i++) {
+    await Promise.resolve();
+  }
+};
+
 describe('TaskQueue', () => {
   let mockGlobalServices: MockGlobalContainer;
   let mockBotServices: MockContainer;
@@ -371,10 +377,95 @@ describe('TaskQueue', () => {
 
       await jest.runAllTimersAsync();
 
-             
+              
       expect(mockLogger.info).toHaveBeenCalledWith(
         expect.stringContaining('Retrieving the next tasks')
       );
+    });
+
+    it('keeps a failed task in its channel while awaiting retry', async function (this: void): Promise<void> {
+      const globalServices = createMockGlobalContainer({
+        logger: mockLogger,
+        postProcessor: mockPostProcessor,
+        configurationService: { maxTaskAttempts: 3 } as never,
+      });
+      const botServices = createMockServiceContainer({
+        logger: mockLogger,
+        postProcessor: mockPostProcessor,
+        configurationService: { maxTaskAttempts: 3 } as never,
+      });
+      let callCount = 0;
+      const processMock = (): Promise<void> => {
+        callCount++;
+        if (callCount === 1) {
+          return Promise.reject(new Error('Task failed'));
+        }
+        return Promise.resolve();
+      };
+      const queue = new TaskQueue(globalServices);
+      const task = new MockTask(botServices, 'testChannel', undefined, processMock);
+
+      queue.add(task);
+
+      await drainMicrotasks();
+
+      expect(callCount).toBe(1);
+      expect(task.numAttempts).toBe(1);
+      expect(task.taskStatus).not.toBe(TaskStatus.Dead);
+      expect(mockPostProcessor.postProcess).not.toHaveBeenCalled();
+
+      await jest.runAllTimersAsync();
+
+      expect(callCount).toBe(2);
+      expect(task.taskStatus).toBe(TaskStatus.Successful);
+      expect(mockPostProcessor.postProcess).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not pick up a failed task again before its retry delay', async function (this: void): Promise<void> {
+      const globalServices = createMockGlobalContainer({
+        logger: mockLogger,
+        postProcessor: mockPostProcessor,
+        configurationService: { maxTaskAttempts: 3 } as never,
+      });
+      const botServices = createMockServiceContainer({
+        logger: mockLogger,
+        postProcessor: mockPostProcessor,
+        configurationService: { maxTaskAttempts: 3 } as never,
+      });
+      let callCount = 0;
+      let otherRan = false;
+      const processMock = (): Promise<void> => {
+        callCount++;
+        if (callCount === 1) {
+          return Promise.reject(new Error('Task failed'));
+        }
+        return Promise.resolve();
+      };
+      const queue = new TaskQueue(globalServices);
+      const task = new MockTask(botServices, 'testChannel', undefined, processMock);
+      const otherTask = new MockTask(botServices, 'testChannel', undefined, (): Promise<void> => {
+        otherRan = true;
+        return Promise.resolve();
+      });
+
+      queue.add(task);
+
+      await drainMicrotasks();
+
+      expect(callCount).toBe(1);
+      expect(task.numAttempts).toBe(1);
+      expect(task.taskStatus).not.toBe(TaskStatus.Dead);
+
+      queue.add(otherTask);
+
+      await drainMicrotasks();
+
+      expect(callCount).toBe(1);
+
+      await jest.runAllTimersAsync();
+
+      expect(callCount).toBe(2);
+      expect(otherRan).toBe(true);
     });
   });
 });
