@@ -109,11 +109,13 @@ config flag). Each transient `LlmClient` then selects an
   `/api/ps`; auto-detects vision (`/api/show` capabilities) and context
   window (`/api/show` `context_length`)
 - **LlamaCppRouter** — unload via `POST /models/unload`, verify via
-  `/models`; vision via the `llm.visionModels` config list
+  `/models`; vision via per-model `inputModalities` containing `image`
 - **LlamaCppSingle** — no unload endpoint; waits for `is_sleeping` in
-  `/props` (requires `--sleep-idle-seconds` server-side); vision via config
+  `/props` (requires `--sleep-idle-seconds` server-side); vision via
+  per-model `inputModalities` containing `image`
 - **Null** — non-local and generic hosts: no lifecycle management; vision
-  and context window via config only
+  via per-model `inputModalities` containing `image`; context window via
+  config only
 
 ### Task System
 
@@ -195,7 +197,6 @@ Key settings (from `IBotConfig`):
 | `bots[].llm.streamsResponse`               | Whether the LLM streams responses              |
 | `bots[].llm.embeddingModel`                | Embedding model name (enables long-term memory) |
 | `bots[].llm.embeddingInputLimit`           | Max character length of embedding inputs (default 2000) |
-| `bots[].llm.visionModels`                  | Vision-capable model names (non-Ollama hosts)  |
 | `bots[].llm.topK`                          | Number of similar memories retrieved per prompt |
 | `bots[].llm.contextWindow`                 | Max context window in tokens (optional override) |
 | `bots[].llm.contextCompressionThreshold`   | Fraction of the window that triggers compression |
@@ -212,6 +213,17 @@ Key settings (from `IBotConfig`):
 - **Test Files:** Co-located with source using `*.test.ts` pattern
 - **Run:** `npm test`
 - **Coverage:** Collected automatically to `coverage/`
+
+The root tsconfig uses `module: nodenext`, which sources rely on for
+`package.json` import attributes (`import nodePackage from '...package.json'
+with { type: 'json' }` in ConfigurationService, ChatHelpService,
+MediaHelpService). ts-jest does not run with `isolatedModules: true` (a
+tsconfig setting that must not be changed), so it emits TS151002 diagnostics
+on every transform of those files; the warning is benign — the code compiles
+and runs correctly — and is silenced per-diagnostic in `jest.config.ts`
+(`ts-jest` transform option `diagnostics.ignoreCodes`) rather than in
+tsconfig. `npm run build` (tsc) compiles the import attributes cleanly; full
+bundled binaries (`npm run build:bin`) are verified against the attribute.
 
 Tests are excluded from the TypeScript compilation via `tsconfig.build.json`
 (`"exclude": ["**/*.test.ts"]`), which `npm run build` uses; the root

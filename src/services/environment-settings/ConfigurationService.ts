@@ -1,3 +1,6 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import nodePackage from '../../../package.json' with { type: 'json' };
 import { BotMode } from '../../enums/BotMode.js';
 import { NodeEnvironment } from '../../enums/NodeEnvironment.js';
 import { TaskQueueStrategy } from '../../enums/TaskQueueStrategy.js';
@@ -23,7 +26,7 @@ export class ConfigurationService implements IConfigurationService {
   }
 
   get version(): string {
-    return '8.7.1';
+    return nodePackage.version;
   }
 
   get nodeEnvironment(): NodeEnvironment {
@@ -188,8 +191,9 @@ export class ConfigurationService implements IConfigurationService {
   }
 
   get llmVisionModels(): string[] {
-    return this.#botConfig.llm?.visionModels
-      ?? [];
+    return this.llmModelConfigs
+      .filter(model => model.inputModalities.includes(LlmModality.Image))
+      .map(model => model.name);
   }
 
   get llmTopK(): number {
@@ -261,6 +265,10 @@ Detected environment variables: ${envVarList}`);
       }
     } else {
       throw new Error(`Invalid mode: ${mode as string}. Must be 'chat' or 'media'.`);
+    }
+
+    if ((this.#botConfig.llm as { visionModels?: string[] } | undefined)?.visionModels !== undefined) {
+      console.warn('[ConfigurationService] Warning: llm.visionModels is no longer supported. Declare vision capability per model via llm.models entries with "inputModalities" containing "image". See config.example.jsonc.');
     }
 
     if (this.taskQueueStrategy === TaskQueueStrategy.Serial && this.llmHosts.some(host => host.isLocal === false)) {

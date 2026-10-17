@@ -34,7 +34,6 @@ export interface IBotConfig {
     streamsResponse: boolean;
     embeddingModel?: string;
     embeddingInputLimit?: number;
-    visionModels?: string[];
     topK?: number;
     contextWindow?: number;
     contextCompressionThreshold?: number;

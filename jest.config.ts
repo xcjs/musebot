@@ -183,8 +183,17 @@ const config: Config = {
   // testRunner: "jest-circus/runner",
 
   // A map from regular expressions to paths to transformers
+  // ts-jest diagnostics are deliberately selective here:
+  //  - 151002 ("hybrid module kind is only supported in isolatedModules") —
+  //    tsconfig.json sets "module": "nodenext" so package.json can be
+  //    imported as a JSON module with the `{ type: 'json' }` import
+  //    attribute (see ConfigurationService/ChatHelpService/MediaHelpService).
+  //    ts-jest does not inherit isolatedModules from tsconfig, so it warns
+  //    on every transform; the code compiles and runs correctly under Jest,
+  //    and tsconfig.json must stay untouched, so the warning is silenced
+  //    here only.
   transform: {
-  "^.+.tsx?$": ["ts-jest", {}],
+  "^.+.tsx?$": ["ts-jest", { diagnostics: { ignoreCodes: [151002] } }],
   },
 
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation

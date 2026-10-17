@@ -109,8 +109,22 @@ describe('ConfigurationService (llm section)', () => {
     expect(service.llmVisionModels).toEqual([]);
   });
 
-  it('returns configured llmVisionModels', () => {
+  it('derives llmVisionModels from model input modalities', () => {
     const visionConfig = {
+      ...validChatBotConfig,
+      llm: {
+        ...validChatBotConfig.llm,
+        models: [{ name: 'llava', inputModalities: ['text', 'image'] }]
+      }
+    };
+
+    const service = new ConfigurationService(visionConfig as unknown as IBotConfig);
+
+    expect(service.llmVisionModels).toEqual(['llava']);
+  });
+
+  it('warns when the removed llm.visionModels key is still configured', () => {
+    const legacyConfig = {
       ...validChatBotConfig,
       llm: {
         ...validChatBotConfig.llm,
@@ -118,9 +132,15 @@ describe('ConfigurationService (llm section)', () => {
       }
     };
 
-    const service = new ConfigurationService(visionConfig as unknown as IBotConfig);
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
 
-    expect(service.llmVisionModels).toEqual(['llava']);
+    new ConfigurationService(legacyConfig as unknown as IBotConfig);
+
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('llm.visionModels is no longer supported')
+    );
+
+    warnSpy.mockRestore();
   });
 
   it('exposes llm accessors for the rest of the section', () => {

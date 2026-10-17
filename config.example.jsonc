@@ -163,8 +163,8 @@
 
         // The model(s) to use, as plain names or objects declaring what each
         // model can accept and produce. A random one is selected per request.
-        // Vision capability is auto-detected on Ollama hosts; on all other hosts,
-        // list vision-capable models in "visionModels" below.
+        // Vision capability is declared per model (an "inputModalities" list
+        // containing "image"); Ollama hosts instead auto-detect vision.
         // Required: Required when mode="chat"
         // Type:     Array of string or object ({ name, inputModalities?, outputModalities? })
         // Modality values are case-insensitive: text, image, video, audio,
@@ -176,13 +176,6 @@
         "models": [
           "gemma4-12b-qat"
         ],
-
-        // Model names (matching "models") that accept image input. Used to
-        // enable the Vision feature on non-Ollama hosts (llama.cpp, hosted
-        // APIs, etc.). Ollama hosts auto-detect vision and ignore this.
-        // Required: Optional
-        // Type:     Array of string (model names)
-        // "visionModels": ["llava"],
 
         // The system prompt used to give the LLM context or a custom persona.
         // Musebot also pulls the current channel topic as part of its system prompt.
