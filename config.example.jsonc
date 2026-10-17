@@ -145,6 +145,20 @@
         // The "url" must include the full OpenAI-compatible base route
         // (usually "/v1") — Musebot appends only the endpoint paths such as
         // "/chat/completions" and "/embeddings" to the URL exactly as given.
+        //
+        // The "isLocal" flag on each host overrides Musebot's automatic
+        // local-host detection. Musebot considers a host local when it
+        // resolves to localhost (127.0.0.1, ::1) or a private address
+        // (RFC 1918 ranges such as 10.x.x.x/172.16.x.x/192.168.x.x,
+        // Tailscale CGNAT 100.64.x.x, link-local, IPv6 ULA) — and assumes
+        // local if the address cannot be resolved. Local hosts participate
+        // in model lifecycle management: Musebot unloads models after use
+        // to free VRAM for other workloads (on supported platforms — Ollama
+        // via keep_alive 0, llama.cpp via /models/unload). Non-local hosts
+        // are never unloaded — correct for hosted APIs or shared servers
+        // you do not own. Set the flag when detection gets it wrong:
+        // "isLocal": false on a private host you do not want touched,
+        // "isLocal": true on a public host you own and do want unloaded.
         // Required: Required when mode="chat"
         // Type:     Array of object ({ url, token?, isLocal? })
         "hosts": [
@@ -155,11 +169,6 @@
         // { "url": "http://localhost:8080/v1", "token": "sk-..." }
         // A hosted OpenAI-compatible provider would look like:
         // { "url": "https://api.examplerator.com/v1", "token": "sk-...", "isLocal": false }
-        // The optional "isLocal" flag overrides Musebot's automatic local-host
-        // detection. Local hosts get model lifecycle management (on supported
-        // platforms); non-local hosts never have their models unloaded.
-        // Required: Optional
-        // Type:     Boolean (per host)
 
         // The model(s) to use, as plain names or objects declaring what each
         // model can accept and produce. A random one is selected per request.
