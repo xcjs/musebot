@@ -46,6 +46,30 @@ describe('LlamaCppRouterLifecycleStrategy', () => {
     expect(await strategy.isModelLoaded()).toBe(true);
   });
 
+  it('isModelLoaded() true when /models uses the OpenAI-style data catalog', async (): Promise<void> => {
+    fetchMock.mockResolvedValue(mockResponse(200, {
+      data: [{ id: 'test-model', status: { value: 'loaded' } }]
+    }));
+
+    expect(await strategy.isModelLoaded()).toBe(true);
+  });
+
+  it('isModelLoaded() true for a loading model in the OpenAI-style data catalog', async (): Promise<void> => {
+    fetchMock.mockResolvedValue(mockResponse(200, {
+      data: [{ id: 'test-model', status: { value: 'loading' } }]
+    }));
+
+    expect(await strategy.isModelLoaded()).toBe(true);
+  });
+
+  it('isModelLoaded() false when the model is absent from the data catalog', async (): Promise<void> => {
+    fetchMock.mockResolvedValue(mockResponse(200, {
+      data: [{ id: 'other-model', status: { value: 'loaded' } }]
+    }));
+
+    expect(await strategy.isModelLoaded()).toBe(false);
+  });
+
   it('waitForModelUnload() polls /models until status unloaded', async (): Promise<void> => {
     fetchMock
       .mockResolvedValueOnce(mockResponse(200, { success: true }))  // free

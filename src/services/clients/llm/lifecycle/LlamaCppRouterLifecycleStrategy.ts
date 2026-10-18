@@ -2,6 +2,7 @@ import { ILogger } from '../../../ILogger.js';
 import { ILlmHost } from '../models/ILlmHost.js';
 import { ILlmLifecycleStrategy } from './ILlmLifecycleStrategy.js';
 import { LlamaCppModelsResponse } from './models/LlamaCppModelsResponse.js';
+import { LlamaCppModelStatus } from './models/LlamaCppModelStatus.js';
 import { ModelsCatalog } from './ModelsCatalog.js';
 
 export class LlamaCppRouterLifecycleStrategy implements ILlmLifecycleStrategy {
@@ -53,8 +54,10 @@ export class LlamaCppRouterLifecycleStrategy implements ILlmLifecycleStrategy {
       }
 
       const payload = await response.json() as LlamaCppModelsResponse;
-      return payload.models?.some(m => m.model === this.#model
-        && (m.status?.value === 'loaded' || m.status?.value === 'loading')) ?? false;
+      const entries = (payload.models ?? payload.data ?? []) as Array<{ model?: string; id?: string; status?: LlamaCppModelStatus }>;
+
+      return entries.some(m => (m.model ?? m.id) === this.#model
+        && (m.status?.value === 'loaded' || m.status?.value === 'loading'));
     } catch {
       return false;
     }
