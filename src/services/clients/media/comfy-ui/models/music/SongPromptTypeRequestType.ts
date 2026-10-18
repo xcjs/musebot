@@ -1,4 +1,4 @@
-import { IStructuredRequestData } from '../../../../llm/ollama/models/IStructuredRequestData.js';
+import { IStructuredRequestData } from '../../../../llm/models/IStructuredRequestData.js';
 import { SongPromptType } from './SongPromptType.js';
 
 export const songPromptTypeRequestTypeData: IStructuredRequestData = {

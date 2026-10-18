@@ -1,9 +1,9 @@
-import { GenerateRequest, GenerateResponse } from 'ollama';
-
 import { IHttpExchangeWithAttachedData } from '../../../../../models/IHttpExchangeWithAttachedData.js';
 import { SupportedFeature } from '../../../../features/enum/SupportedFeature.js';
 import { IBotServiceContainer } from '../../../../IBotServiceContainer.js';
-import { IStructuredRequestData } from '../../../llm/ollama/models/IStructuredRequestData.js';
+import { ILlmRequest } from '../../../llm/models/ILlmRequest.js';
+import { IStructuredRequestData } from '../../../llm/models/IStructuredRequestData.js';
+import { LlmGenerateResult } from '../../../llm/models/LlmGenerateResult.js';
 import { IChatMessage } from '../../IChatMessage.js';
 import { IChatMessageAttachment } from '../../IChatMessageAttachment.js';
 import { IOutputChatMessageFilter } from '../../IOutputChatMessageFilter.js';
@@ -131,7 +131,7 @@ export class DiscordCodeBlockExtractFilter implements IOutputChatMessageFilter {
       const task = this.#services.getLlmGenerateStructuredTask<CodeBlockFilenames>(prompt, filenameRequestData);
       task.isChild = true;
 
-      const callback = (payload: IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, CodeBlockFilenames>): void => {
+      const callback = (payload: IHttpExchangeWithAttachedData<ILlmRequest, LlmGenerateResult, CodeBlockFilenames>): void => {
         resolve(payload.data.filenames);
       };
 

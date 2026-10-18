@@ -34,7 +34,7 @@ exists — only button interactions are handled.
 ## Decision
 
 Add optional long-term memory (LTM) to chat-mode bots using SQLite + sqlite-vec
-+ Drizzle ORM. When `ollama.embeddingModel` is configured, Musebot embeds both
++ Drizzle ORM. When `llm.embeddingModel` is configured, Musebot embeds both
 user messages and bot responses into a vector store, retrieves semantically
 related memories for new prompts, and injects them as system-role context before
 the LLM call. Users opt in/out globally via `/memory remember` and `/memory
@@ -53,8 +53,8 @@ forget` slash commands.
 3. **Storage**: Store BOTH user messages AND bot responses in the vector store,
    both as `LlmChatMessage` objects (bot responses have `isBot: true`).
 
-4. **Embedding model config**: `ollama.embeddingModel` inside the existing
-   `ollama` config block. Presence of this field = LTM enabled. No separate
+4. **Embedding model config**: `llm.embeddingModel` inside the existing
+   `llm` config block. Presence of this field = LTM enabled. No separate
    `memory.enabled` flag.
 
 5. **Consent scope**: Global per-user. Opt in once, applies across all servers.
@@ -63,11 +63,11 @@ forget` slash commands.
 6. **DB path**: `workflows/{botId}/txt2txt/memory.db`. Musebot creates the
    directory if missing. Scoped per bot instance.
 
-7. **topK config**: `ollama.topK` inside the existing `ollama` block. Defaults
+7. **topK config**: `llm.topK` inside the existing `llm` block. Defaults
    to 5 if omitted.
 
 8. **Feature detection**: New `SupportedFeature.LongTermMemory` (`'ltm'`), active
-   when `ollama.embeddingModel` is set AND `ollamaHosts` present. Config-based
+   when `llm.embeddingModel` is set AND `llmHosts` present. Config-based
    check (consistent with existing `FeatureService` pattern — no HTTP probe).
 
 9. **sqlite-vec limitation**: Does not support parameterized queries for vector
@@ -168,7 +168,7 @@ filter from Discord. Integration-specific factories map external types to
 `LlmChatMessage`. This supports future backends (Telegram, Slack, etc.) without
 changing the filter interface.
 
-**Config-gated feature**: Presence of `ollama.embeddingModel` enables LTM. No
+**Config-gated feature**: Presence of `llm.embeddingModel` enables LTM. No
 separate toggle — follows the pattern of existing features (Txt2Txt is enabled
 by presence of hosts + models). The `SupportedFeature.LongTermMemory` enum value
 allows other services to check LTM availability via `featureService.hasFeature`.
@@ -545,9 +545,9 @@ Each phase is independently testable. Lint + build after each phase:
 
 ## Success Criteria
 
-- [ ] Bots without `ollama.embeddingModel` behave exactly as before (zero
+- [ ] Bots without `llm.embeddingModel` behave exactly as before (zero
       overhead, no memory storage or retrieval).
-- [ ] Bots with `ollama.embeddingModel` store user messages (when opted in) and
+- [ ] Bots with `llm.embeddingModel` store user messages (when opted in) and
       bot responses to the SQLite vector store.
 - [ ] Retrieved memories are injected as system-role context before the LLM call.
 - [ ] `/memory remember` opts a user in globally; `/memory forget` opts out and

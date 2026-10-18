@@ -1,11 +1,10 @@
-import { Message as OllamaMessage } from 'ollama';
-
 import { IConfigurationService } from '../../../environment-settings/IConfigurationService.js';
 import { IBotServiceContainer } from '../../../IBotServiceContainer.js';
 import { ILogger } from '../../../ILogger.js';
-import { OllamaRole } from '../ollama/enums/OllamaRole.js';
-import { ContextMessage } from '../ollama/models/ContextMessage.js';
-import { OllamaClient } from '../ollama/OllamaClient.js';
+import { LlmRole } from '../enums/LlmRole.js';
+import { ILlmClient } from '../ILlmClient.js';
+import { ContextMessage } from '../models/ContextMessage.js';
+import { LlmMessage } from '../models/LlmMessage.js';
 import { IContextCompressionService, ITokenCountSample } from './IContextCompressionService.js';
 import { IContextMessageFactory } from './IContextMessageFactory.js';
 import { IContextService } from './IContextService.js';
@@ -19,7 +18,7 @@ const SUMMARIZATION_SYSTEM_PROMPT: string =
 const FALLBACK_CONTEXT_WINDOW: number = 4096;
 
 // Default chars-per-token ratio for English text on typical BPE tokenizers
-// (Llama, Mistral, etc.). Used until the first prompt_eval_count sample
+// (Llama, Mistral, etc.). Used until the first promptTokens sample
 // arrives to calibrate the ratio against the actual model.
 const DEFAULT_CHARS_PER_TOKEN: number = 4.0;
 
@@ -46,7 +45,7 @@ export class ContextCompressionService<ChatMessageType, LlmMessageType extends {
       }
 
       const contextWindow: number = await this.#resolveContextWindow();
-      const threshold: number = this.#configurationService.ollamaContextCompressionThreshold;
+      const threshold: number = this.#configurationService.llmContextCompressionThreshold;
       const limit: number = Math.floor(contextWindow * threshold);
 
       const messages: ContextMessage<ChatMessageType, LlmMessageType>[] =
@@ -131,21 +130,21 @@ export class ContextCompressionService<ChatMessageType, LlmMessageType extends {
       }
     }
 
-    const systemPrompt: OllamaMessage = { role: OllamaRole.System, content: SUMMARIZATION_SYSTEM_PROMPT };
+    const systemPrompt: LlmMessage = { role: LlmRole.System, content: SUMMARIZATION_SYSTEM_PROMPT };
 
-    const oldSummaryContext: OllamaMessage[] = summaryMessages.map((summary) => ({
-      role: OllamaRole.System,
+    const oldSummaryContext: LlmMessage[] = summaryMessages.map((summary) => ({
+      role: LlmRole.System,
       content: `Previous summary of earlier conversation:\n${summary.llmMessage.content}`
     }));
 
-    const conversationContext: OllamaMessage[] = conversationMessages.map((message) => ({
-      role: message.llmMessage.role,
+    const conversationContext: LlmMessage[] = conversationMessages.map((message) => ({
+      role: message.llmMessage.role as LlmRole,
       content: message.llmMessage.content
     }));
 
-    const fullContext: OllamaMessage[] = [systemPrompt, ...oldSummaryContext, ...conversationContext];
+    const fullContext: LlmMessage[] = [systemPrompt, ...oldSummaryContext, ...conversationContext];
     const contextWindow: number = await this.#resolveContextWindow();
-    const fullTokenCount: number = this.#estimateTokens(this.#serializeOllamaMessages(fullContext));
+    const fullTokenCount: number = this.#estimateTokens(this.#serializeLlmMessages(fullContext));
 
     let summaryText: string;
 
@@ -164,30 +163,30 @@ export class ContextCompressionService<ChatMessageType, LlmMessageType extends {
   }
 
   async #summarizeInChunks(
-    systemPrompt: OllamaMessage,
-    oldSummaryContext: OllamaMessage[],
-    conversationContext: OllamaMessage[],
+    systemPrompt: LlmMessage,
+    oldSummaryContext: LlmMessage[],
+    conversationContext: LlmMessage[],
     contextWindow: number
   ): Promise<string> {
-    const systemPromptTokens: number = this.#estimateTokens(this.#serializeOllamaMessages([systemPrompt]));
+    const systemPromptTokens: number = this.#estimateTokens(this.#serializeLlmMessages([systemPrompt]));
     const chunkCapacity: number = contextWindow - systemPromptTokens;
 
     this.#logger.info(`Conversation exceeds context window (${contextWindow}); chunking into segments for individual summarization.`);
 
-    const chunks: OllamaMessage[][] = this.#splitIntoChunks(conversationContext, chunkCapacity);
+    const chunks: LlmMessage[][] = this.#splitIntoChunks(conversationContext, chunkCapacity);
 
-    const chunkSummaries: OllamaMessage[] = [];
+    const chunkSummaries: LlmMessage[] = [];
     for (const chunk of chunks) {
-      const chunkContext: OllamaMessage[] = [systemPrompt, ...chunk];
+      const chunkContext: LlmMessage[] = [systemPrompt, ...chunk];
       const chunkSummary: string = await this.#generateSummary(chunkContext);
       chunkSummaries.push({
-        role: OllamaRole.System,
+        role: LlmRole.System,
         content: `Summary of conversation segment:\n${chunkSummary}`
       });
     }
 
-    const reduceContext: OllamaMessage[] = [systemPrompt, ...oldSummaryContext, ...chunkSummaries];
-    const reduceTokenCount: number = this.#estimateTokens(this.#serializeOllamaMessages(reduceContext));
+    const reduceContext: LlmMessage[] = [systemPrompt, ...oldSummaryContext, ...chunkSummaries];
+    const reduceTokenCount: number = this.#estimateTokens(this.#serializeLlmMessages(reduceContext));
 
     if (reduceTokenCount <= contextWindow) {
       return this.#generateSummary(reduceContext);
@@ -195,29 +194,29 @@ export class ContextCompressionService<ChatMessageType, LlmMessageType extends {
 
     this.#logger.info(`Combined summaries exceed context window; dropping oldest segment summaries to fit.`);
 
-    let trimmedReduce: OllamaMessage[] = [...reduceContext];
+    let trimmedReduce: LlmMessage[] = [...reduceContext];
     let trimmedTokens: number = reduceTokenCount;
     const firstChunkSummaryIndex: number = 1 + oldSummaryContext.length;
 
     while (trimmedTokens > contextWindow && trimmedReduce.length > firstChunkSummaryIndex) {
       trimmedReduce = trimmedReduce.filter((_, idx) => idx !== firstChunkSummaryIndex);
-      trimmedTokens = this.#estimateTokens(this.#serializeOllamaMessages(trimmedReduce));
+      trimmedTokens = this.#estimateTokens(this.#serializeLlmMessages(trimmedReduce));
     }
 
     return this.#generateSummary(trimmedReduce);
   }
 
-  #splitIntoChunks(messages: OllamaMessage[], capacity: number): OllamaMessage[][] {
+  #splitIntoChunks(messages: LlmMessage[], capacity: number): LlmMessage[][] {
     if (messages.length === 0) {
       return [];
     }
 
-    const chunks: OllamaMessage[][] = [];
-    let currentChunk: OllamaMessage[] = [];
+    const chunks: LlmMessage[][] = [];
+    let currentChunk: LlmMessage[] = [];
     let currentTokens: number = 0;
 
     for (const message of messages) {
-      const messageTokens: number = this.#estimateTokens(this.#serializeOllamaMessages([message]));
+      const messageTokens: number = this.#estimateTokens(this.#serializeLlmMessages([message]));
 
       if (currentTokens + messageTokens > capacity && currentChunk.length > 0) {
         chunks.push(currentChunk);
@@ -236,9 +235,9 @@ export class ContextCompressionService<ChatMessageType, LlmMessageType extends {
     return chunks;
   }
 
-  async #generateSummary(context: OllamaMessage[]): Promise<string> {
-    const ollamaClient: OllamaClient = this.#services.ollamaClient;
-    const exchange = await ollamaClient.sendMessage('Summarize the conversation above.', context);
+  async #generateSummary(context: LlmMessage[]): Promise<string> {
+    const llmClient: ILlmClient = this.#services.llmClient;
+    const exchange = await llmClient.sendMessage('Summarize the conversation above.', context);
     return exchange.exchange.response.message.content;
   }
 
@@ -250,33 +249,30 @@ export class ContextCompressionService<ChatMessageType, LlmMessageType extends {
     return Math.ceil(text.length / this.#charsPerToken);
   }
 
-  #serializeOllamaMessages(messages: OllamaMessage[]): string {
+  #serializeLlmMessages(messages: LlmMessage[]): string {
     return messages
       .map((message) => `${message.role}: ${message.content}`)
       .join('\n');
   }
 
   async #resolveContextWindow(): Promise<number> {
-    const configWindow: number | null = this.#configurationService.ollamaContextWindow;
+    const configWindow: number | null = this.#configurationService.llmContextWindow;
 
     if (configWindow !== null) {
       return configWindow;
     }
 
     try {
-      const showResponse = await this.#services.ollamaClient.show();
-      const modelInfo: Map<string, unknown> = showResponse.model_info;
+      const contextWindow: number | null = await this.#services.llmClient.getContextWindow();
 
-      for (const [key, value] of modelInfo) {
-        if (key.endsWith('.context_length')) {
-          return value as number;
-        }
+      if (contextWindow !== null) {
+        return contextWindow;
       }
 
-      this.#logger.warn(`No *.context_length key found in model_info; falling back to ${FALLBACK_CONTEXT_WINDOW}.`);
+      this.#logger.warn(`The LLM host did not report a context window; falling back to ${FALLBACK_CONTEXT_WINDOW}.`);
       return FALLBACK_CONTEXT_WINDOW;
     } catch (error) {
-      this.#logger.warn(`Failed to query show() for context window; falling back to ${FALLBACK_CONTEXT_WINDOW}:`, error);
+      this.#logger.warn(`Failed to query the LLM for its context window; falling back to ${FALLBACK_CONTEXT_WINDOW}:`, error);
       return FALLBACK_CONTEXT_WINDOW;
     }
   }

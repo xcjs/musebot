@@ -1,5 +1,4 @@
 ﻿import { AttachmentBuilder, ButtonInteraction } from 'discord.js';
-import { GenerateRequest, GenerateResponse } from 'ollama';
 
 import { MAX_FILE_NAME_LENGTH, MAX_TEXT_LINE_LENGTH } from '../../../../../../constants/FileConstants.js';
 import { BotInteraction } from '../../../../../../enums/BotInteraction.js';
@@ -12,7 +11,9 @@ import { SupportedFeature } from '../../../../../features/enum/SupportedFeature.
 import { IBotServiceContainer } from "../../../../../IBotServiceContainer.js"
 import { ITaskQueue } from '../../../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../../../tasks/models/BaseTask.js';
-import { OLLAMA_TEMPERATURE_MAX } from '../../../../llm/ollama/constants/OllamaConstants.js';
+import { LLM_TEMPERATURE_MAX } from '../../../../llm/constants/LlmConstants.js';
+import { ILlmRequest } from '../../../../llm/models/ILlmRequest.js';
+import { LlmGenerateResult } from '../../../../llm/models/LlmGenerateResult.js';
 import { IWorkflow } from '../../models/IWorkflow.js';
 import { SerializableRenderRequest } from '../../models/SerializableRenderRequest.js';
 import { IWorkflowMutator } from './IWorkflowMutator.js';
@@ -73,14 +74,14 @@ export class RandomPromptMutator implements IWorkflowMutator {
   async #getRandomPrompt(): Promise<string> {
     return new Promise((resolve, reject) => {
       const prompt = getRandomArrayEntry(this.#configurationService.randomPrompts) || '';
-      const task = this.#services.getLlmGenerateTask(prompt, OLLAMA_TEMPERATURE_MAX);
+      const task = this.#services.getLlmGenerateTask(prompt, LLM_TEMPERATURE_MAX);
       task.isChild = true;
 
-      const callback = (payload: IHttpExchange<GenerateRequest, GenerateResponse>): void => {
+      const callback = (payload: IHttpExchange<ILlmRequest, LlmGenerateResult>): void => {
         this.additionalAttachments.push(
-          this.#packageExpandedPromptAsMarkdown(payload.response.response));
+          this.#packageExpandedPromptAsMarkdown(payload.response.content));
 
-        resolve(payload.response.response);
+        resolve(payload.response.content);
       };
 
       task.onSuccess = callback;

@@ -1,12 +1,19 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import nodePackage from '../../../package.json' with { type: 'json' };
 import { BotMode } from '../../enums/BotMode.js';
 import { NodeEnvironment } from '../../enums/NodeEnvironment.js';
 import { TaskQueueStrategy } from '../../enums/TaskQueueStrategy.js';
 import { toTitleCase } from '../../utilities/string-utilities.js';
+import { LlmModality } from '../clients/llm/enums/LlmModality.js';
+import { ILlmHost } from '../clients/llm/models/ILlmHost.js';
+import { ILlmModel } from '../clients/llm/models/ILlmModel.js';
 import { ILogger } from '../ILogger.js';
 import { Logger } from '../Logger.js';
 import { ConfigLoader, IAppConfig } from './ConfigLoader.js';
 import { IBotConfig } from './IBotConfig.js';
 import { IConfigurationService } from './IConfigurationService.js';
+import { ILlmModelConfig } from './ILlmModelConfig.js';
 
 export class ConfigurationService implements IConfigurationService {
   readonly #loggers: Map<string, ILogger>;
@@ -19,7 +26,7 @@ export class ConfigurationService implements IConfigurationService {
   }
 
   get version(): string {
-    return '8.7.1';
+    return nodePackage.version;
   }
 
   get nodeEnvironment(): NodeEnvironment {
@@ -110,45 +117,95 @@ export class ConfigurationService implements IConfigurationService {
       ?? ['Describe something or someone with extraordinary detail.'];
   }
 
-  get ollamaHosts(): URL[] {
-    return (this.#botConfig.ollama?.hosts
-      || []).map(x => new URL(x));
+  readonly #modalityLookup: Map<string, LlmModality> = new Map(
+    Object.values(LlmModality).map((modality): [string, LlmModality] => [String(modality).toLowerCase(), modality])
+  );
+
+  readonly #warnedRootHosts = new Set<string>();
+
+  get llmHosts(): ILlmHost[] {
+    return (this.#botConfig.llm?.hosts
+      || []).map(host => {
+        if (typeof host === 'string') {
+          throw new Error('Bare-string hosts are no longer supported; wrap each host as { "url": "..." }. See docs/musebot/04-migration-v10.md.');
+        }
+        const url = new URL(host.url);
+
+        if (url.pathname === '/' && !this.#warnedRootHosts.has(url.toString())) {
+          this.#warnedRootHosts.add(url.toString());
+          this.#log.warn(`LLM host '${url}' has no route path. Requests will target '${url}chat/completions'. OpenAI-compatible platforms normally require a versioned route such as '/v1' in the host URL. See config.example.jsonc.`);
+        }
+
+        return {
+          url,
+          token: host.token ?? null,
+          isLocal: host.isLocal ?? null
+        };
+      });
   }
 
-  get ollamaModels(): string[] {
-    return this.#botConfig.ollama?.models
-      || [];
+  get llmModels(): string[] {
+    return this.llmModelConfigs.map(model => model.name);
   }
 
-  get ollamaSystemPrompt(): string {
-    const prompt = this.#botConfig.ollama?.systemPrompt;
+  get llmModelConfigs(): ILlmModel[] {
+    return (this.#botConfig.llm?.models ?? []).map(model => {
+      const config: ILlmModelConfig = typeof model === 'string'
+        ? { name: model }
+        : model;
+
+      return {
+        name: config.name,
+        inputModalities: (config.inputModalities ?? [LlmModality.Text]).map(m => this.#toLlmModality(m)),
+        outputModalities: (config.outputModalities ?? [LlmModality.Text]).map(m => this.#toLlmModality(m))
+      };
+    });
+  }
+
+  #toLlmModality(value: LlmModality): LlmModality {
+    const modality = this.#modalityLookup.get(String(value).trim().toLowerCase());
+
+    if (modality === undefined) {
+      throw new Error(`Unknown LLM model modality '${value}'. Valid modalities (case-insensitive): ${Object.values(LlmModality).join(', ')}.`);
+    }
+
+    return modality;
+  }
+
+  get llmSystemPrompt(): string {
+    const prompt = this.#botConfig.llm?.systemPrompt;
     if (Array.isArray(prompt)) {
       return prompt.join('\n');
     }
     return prompt || '';
   }
 
-  get ollamaStreamsResponse(): boolean {
-    return this.#botConfig.ollama?.streamsResponse
+  get llmStreamsResponse(): boolean {
+    return this.#botConfig.llm?.streamsResponse
       ?? false;
   }
 
-  get ollamaEmbeddingModel(): string | null {
-    return this.#botConfig.ollama?.embeddingModel
+  get llmEmbeddingModel(): string | null {
+    return this.#botConfig.llm?.embeddingModel
       ?? null;
   }
 
-  get ollamaTopK(): number {
-    return this.#botConfig.ollama?.topK
+  get llmTopK(): number {
+    return this.#botConfig.llm?.topK
       ?? 5;
   }
 
-  get ollamaContextWindow(): number | null {
-    return this.#botConfig.ollama?.contextWindow ?? null;
+  get llmContextWindow(): number | null {
+    return this.#botConfig.llm?.contextWindow ?? null;
   }
 
-  get ollamaContextCompressionThreshold(): number {
-    return this.#botConfig.ollama?.contextCompressionThreshold ?? 0.75;
+  get llmContextCompressionThreshold(): number {
+    return this.#botConfig.llm?.contextCompressionThreshold ?? 0.75;
+  }
+
+  get llmEmbeddingInputLimit(): number {
+    return this.#botConfig.llm?.embeddingInputLimit
+      ?? 2000;
   }
 
   get applicationName(): string {
@@ -190,11 +247,11 @@ Detected environment variables: ${envVarList}`);
     const mode = this.botFunction;
 
     if (mode === BotMode.Chat) {
-      if (!this.ollamaHosts || this.ollamaHosts.length === 0) {
-        throw new Error('Chat mode requires at least one Ollama host configured in ollama.hosts.');
+      if (!this.llmHosts || this.llmHosts.length === 0) {
+        throw new Error('Chat mode requires at least one LLM host configured in llm.hosts.');
       }
-      if (!this.ollamaModels || this.ollamaModels.length === 0) {
-        console.warn('[ConfigurationService] Warning: Chat mode has no Ollama models configured. Model selection not yet supported.');
+      if (!this.llmModels || this.llmModels.length === 0) {
+        console.warn('[ConfigurationService] Warning: Chat mode has no LLM models configured. Model selection not yet supported.');
       }
     } else if (mode === BotMode.Media) {
       if (!this.comfyUiHosts || this.comfyUiHosts.length === 0) {
@@ -202,6 +259,14 @@ Detected environment variables: ${envVarList}`);
       }
     } else {
       throw new Error(`Invalid mode: ${mode as string}. Must be 'chat' or 'media'.`);
+    }
+
+    if ((this.#botConfig.llm as { visionModels?: string[] } | undefined)?.visionModels !== undefined) {
+      console.warn('[ConfigurationService] Warning: llm.visionModels is no longer supported. Declare vision capability per model via llm.models entries with "inputModalities" containing "image". See config.example.jsonc.');
+    }
+
+    if (this.taskQueueStrategy === TaskQueueStrategy.Serial && this.llmHosts.some(host => host.isLocal === false)) {
+      console.info('[ConfigurationService] Note: Task queue strategy is serial and at least one LLM host is non-local; model-unload waiting is skipped for non-local hosts.');
     }
   }
 
@@ -230,14 +295,16 @@ Detected environment variables: ${envVarList}`);
     this.#log.info(`bots[].comfyUi.timeoutMinutes: ${this.comfyUiTimeoutMinutes}`);
     this.#log.info(`bots[].comfyUi.guidanceScaleInterval: ${this.comfyUiGuidanceScaleInterval}`);
 
-    this.#log.info(`bots[].ollama.hosts: ${this.ollamaHosts.join(', ')}`);
-    this.#log.info(`bots[].ollama.models: ${this.ollamaModels.join(', ')}`);
-    this.#log.info(`bots[].ollama.systemPrompt: ${this.ollamaSystemPrompt}`);
-    this.#log.info(`bots[].ollama.streamsResponse: ${this.ollamaStreamsResponse}`);
-    this.#log.info(`bots[].ollama.embeddingModel: ${this.ollamaEmbeddingModel ?? '(not set)'}`);
-    this.#log.info(`bots[].ollama.topK: ${this.ollamaTopK}`);
-    this.#log.info(`bots[].ollama.contextWindow: ${this.ollamaContextWindow ?? '(not set)'}`);
-    this.#log.info(`bots[].ollama.contextCompressionThreshold: ${this.ollamaContextCompressionThreshold}`);
+    this.#log.info(`bots[].llm.hosts: ${this.llmHosts.map(host => host.url.toString()).join(', ')}`);
+    this.#log.info(`bots[].llm.models: ${this.llmModels.join(', ')}`);
+    this.#log.info(`bots[].llm.models.modalities: ${this.llmModelConfigs.map(model => `${model.name} (in: ${model.inputModalities.join('/')} out: ${model.outputModalities.join('/')})`).join(', ')}`);
+    this.#log.info(`bots[].llm.systemPrompt: ${this.llmSystemPrompt}`);
+    this.#log.info(`bots[].llm.streamsResponse: ${this.llmStreamsResponse}`);
+    this.#log.info(`bots[].llm.embeddingModel: ${this.llmEmbeddingModel ?? '(not set)'}`);
+    this.#log.info(`bots[].llm.topK: ${this.llmTopK}`);
+    this.#log.info(`bots[].llm.contextWindow: ${this.llmContextWindow ?? '(not set)'}`);
+    this.#log.info(`bots[].llm.contextCompressionThreshold: ${this.llmContextCompressionThreshold}`);
+    this.#log.info(`bots[].llm.embeddingInputLimit: ${this.llmEmbeddingInputLimit}`);
 
     this.#log.info(`bots[].multiModal.randomPrompts: ${this.randomPrompts.join(' | ')}`);
 

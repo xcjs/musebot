@@ -1,5 +1,5 @@
 import { JavaScriptType } from '../../../../../../enums/JavaScriptType.js';
-import { IStructuredRequestData } from '../../../../llm/ollama/models/IStructuredRequestData.js';
+import { IStructuredRequestData } from '../../../../llm/models/IStructuredRequestData.js';
 import { KeyScale } from './KeyScale.js';
 import { TimeSignature } from './TimeSignature.js';
 

@@ -2,6 +2,53 @@
 
 All notable changes to Musebot are documented in this file.
 
+## [Unreleased]
+
+### Added
+
+- Model modality declarations: new `LlmModality` enum (text, image, video,
+  audio) and optional per-model `inputModalities`/`outputModalities` arrays in
+  `llm.models` entries (case-insensitive values, default `text`).
+- Context window and vision auto-detection from OpenAI-compatible hosts:
+  Musebot reads the model's `context_length` and
+  `architecture.input_modalities` from the host's `/models` catalog (Ollama
+  hosts continue using `/api/show`). A model with modalities declared in
+  `llm.models` — or a manually configured `llm.contextWindow` — skips
+  detection entirely.
+
+### Changed
+
+- **Breaking:** removed the `llm.visionModels` setting. Vision capability is
+  declared per model in `llm.models` entries whose `inputModalities` include
+  `image`, or auto-detected from the host (Ollama `/api/show` capabilities;
+  the `/models` catalog elsewhere); a startup warning fires when the removed
+  key is still configured.
+- LLM host URLs now include the OpenAI-compatible base route (usually `/v1`)
+  themselves; Musebot no longer injects it. The client appends only
+  `/chat/completions` and `/embeddings` to the URL exactly as configured.
+  Sample: `{ "url": "http://localhost:11434/v1" }`. Root URL hosts still work
+  but warn at startup.
+- Long-term memory embedding inputs are no longer truncated: oversized inputs
+  are split into chunks of a configurable size (`llm.embeddingInputLimit`,
+  default 2000 characters), each chunk is embedded, and the chunk vectors are
+  pooled (averaged) into the stored embedding of the conversation row.
+
+## [10.0.0] — 2026-10-08
+
+### Breaking Changes
+
+- **LLM configuration renamed from `ollama` to `llm`.** The top-level `ollama` config key on each bot has been replaced by `llm`, and its `hosts` are now objects (`{ "url": ..., "token"?, "isLocal"? }`) instead of plain URL strings — each host may carry its own API token for authenticated providers. See the [Migration Guide](docs/musebot/04-migration-v10.md) for step-by-step instructions.
+
+### Added
+
+- Support for **any OpenAI-compatible LLM provider** — Ollama, llama.cpp's `llama-server`, and hosted APIs — with per-host bearer tokens; chat and embedding requests now go through the standard OpenAI-compatible protocol (`/v1/chat/completions`, `/v1/embeddings`)
+- New `llm.visionModels` config for declaring vision-capable models on non-Ollama hosts (Ollama hosts auto-detect vision from `/api/show` capabilities)
+- Per-host lifecycle strategies auto-detected at startup by probing each host's flavor: **Ollama** (unload via `/api/generate` with `keep_alive: 0`, verified via `/api/ps`), **llama.cpp router** (unload via `POST /models/unload`, verified via `/models`), **llama.cpp single** (watches for `is_sleeping` in `/props`, requiring `--sleep-idle-seconds` server-side), and **none** for non-local generic hosts
+
+### Removed
+
+- The `ollama` npm dependency — the bot talks to OpenAI-compatible hosts directly and no longer bundles the Ollama client SDK
+
 ## [9.6.0] — 2026-08-28
 
 ### Fixed

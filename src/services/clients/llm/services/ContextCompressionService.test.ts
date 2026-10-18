@@ -3,8 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals
 import { IConfigurationService } from '../../../environment-settings/IConfigurationService.js';
 import { IBotServiceContainer } from '../../../IBotServiceContainer.js';
 import { ILogger } from '../../../ILogger.js';
-import { ContextMessage } from '../ollama/models/ContextMessage.js';
-import { OllamaClient } from '../ollama/OllamaClient.js';
+import { ILlmClient } from '../ILlmClient.js';
+import { ContextMessage } from '../models/ContextMessage.js';
 import { ContextCompressionService } from './ContextCompressionService.js';
 import { IContextCompressionService, ITokenCountSample } from './IContextCompressionService.js';
 import { IContextMessageFactory } from './IContextMessageFactory.js';
@@ -41,19 +41,19 @@ function createMockContextService(
 
 function createMockConfigurationService(overrides: Partial<IConfigurationService> = {}): IConfigurationService {
   return {
-    ollamaHosts: [new URL('http://localhost:11434')],
-    ollamaModels: ['test-model'],
-    ollamaSystemPrompt: 'system',
-    ollamaStreamsResponse: false,
-    ollamaEmbeddingModel: null,
-    ollamaTopK: 5,
-    ollamaContextWindow: 4096,
-    ollamaContextCompressionThreshold: 0.75,
+    llmHosts: [{ url: new URL('http://localhost:11434'), token: null, isLocal: null }],
+    llmModels: ['test-model'],
+    llmSystemPrompt: 'system',
+    llmStreamsResponse: false,
+    llmEmbeddingModel: null,
+    llmTopK: 5,
+    llmContextWindow: 4096,
+    llmContextCompressionThreshold: 0.75,
     ...overrides
   } as IConfigurationService;
 }
 
-function createMockOllamaClient(summaryContent: string = 'Summary text'): jest.Mocked<OllamaClient> {
+function createMockLlmClient(summaryContent: string = 'Summary text'): jest.Mocked<ILlmClient> {
   return {
     sendMessage: jest.fn<() => Promise<unknown>>().mockResolvedValue({
       exchange: {
@@ -62,10 +62,10 @@ function createMockOllamaClient(summaryContent: string = 'Summary text'): jest.M
       },
       data: []
     }),
-    show: jest.fn<() => Promise<unknown>>().mockResolvedValue({ model_info: new Map([['llama.context_length', 8192]]) }),
+    getContextWindow: jest.fn<() => Promise<number | null>>().mockResolvedValue(8192),
     model: 'test-model',
     host: new URL('http://localhost:11434')
-  } as unknown as jest.Mocked<OllamaClient>;
+  } as unknown as jest.Mocked<ILlmClient>;
 }
 
 function createMockContextMessageFactory(): jest.Mocked<IContextMessageFactory<unknown, unknown>> {
@@ -95,7 +95,7 @@ function createMockContextMessageFactory(): jest.Mocked<IContextMessageFactory<u
 function createMockServices(
   contextService: jest.Mocked<IContextService<unknown, unknown>>,
   configurationService: IConfigurationService,
-  ollamaClient: jest.Mocked<OllamaClient>,
+  llmClient: jest.Mocked<ILlmClient>,
   contextMessageFactory: jest.Mocked<IContextMessageFactory<unknown, unknown>>,
   logger: jest.Mocked<ILogger>
 ): IBotServiceContainer {
@@ -103,7 +103,7 @@ function createMockServices(
     configurationService,
     getContextService: jest.fn().mockReturnValue(contextService),
     getContextMessageFactory: jest.fn().mockReturnValue(contextMessageFactory),
-    ollamaClient,
+    llmClient,
     getLogger: jest.fn().mockReturnValue(logger)
   } as unknown as IBotServiceContainer;
 }
@@ -136,7 +136,7 @@ function makeMessageWithTokens(role: string, tokenCount: number, isSummary: bool
 describe('ContextCompressionService', () => {
   let contextService: jest.Mocked<IContextService<unknown, unknown>>;
   let configurationService: IConfigurationService;
-  let ollamaClient: jest.Mocked<OllamaClient>;
+  let llmClient: jest.Mocked<ILlmClient>;
   let contextMessageFactory: jest.Mocked<IContextMessageFactory<unknown, unknown>>;
   let logger: jest.Mocked<ILogger>;
   let services: IBotServiceContainer;
@@ -146,9 +146,9 @@ describe('ContextCompressionService', () => {
     logger = createMockLogger();
     contextService = createMockContextService();
     configurationService = createMockConfigurationService();
-    ollamaClient = createMockOllamaClient();
+    llmClient = createMockLlmClient();
     contextMessageFactory = createMockContextMessageFactory();
-    services = createMockServices(contextService, configurationService, ollamaClient, contextMessageFactory, logger);
+    services = createMockServices(contextService, configurationService, llmClient, contextMessageFactory, logger);
     compressionService = new ContextCompressionService<unknown, { role: string; content: string }>(services);
   });
 
@@ -162,7 +162,7 @@ describe('ContextCompressionService', () => {
 
     await compressionService.compressIfNeeded('channel1');
 
-    expect(ollamaClient.sendMessage).not.toHaveBeenCalled();
+    expect(llmClient.sendMessage).not.toHaveBeenCalled();
     expect(contextService.replaceChannelContext).not.toHaveBeenCalled();
   });
 
@@ -173,7 +173,7 @@ describe('ContextCompressionService', () => {
 
     await compressionService.compressIfNeeded('channel1');
 
-    expect(ollamaClient.sendMessage).toHaveBeenCalled();
+    expect(llmClient.sendMessage).toHaveBeenCalled();
     expect(contextService.replaceChannelContext).toHaveBeenCalledWith('channel1', [expect.objectContaining({ isSummary: true })]);
   });
 
@@ -185,7 +185,7 @@ describe('ContextCompressionService', () => {
 
     await compressionService.compressIfNeeded('channel1');
 
-    const allCalls = ollamaClient.sendMessage.mock.calls;
+    const allCalls = llmClient.sendMessage.mock.calls;
     const reduceCall = allCalls[allCalls.length - 1];
     const context = reduceCall[1];
     const hasOldSummary = context.some(
@@ -197,7 +197,7 @@ describe('ContextCompressionService', () => {
   it('should no-op when summarize fails', async (): Promise<void> => {
     const messages = [makeMessageWithTokens('user', 2000), makeMessageWithTokens('assistant', 2000)];
     contextService.getConversationMessages.mockReturnValue(messages);
-    ollamaClient.sendMessage.mockRejectedValue(new Error('LLM error'));
+    llmClient.sendMessage.mockRejectedValue(new Error('LLM error'));
 
     await compressionService.compressIfNeeded('channel1');
 
@@ -205,9 +205,9 @@ describe('ContextCompressionService', () => {
     expect(logger.error).toHaveBeenCalled();
   });
 
-  it('should fall back to show() when ollamaContextWindow config is null', async (): Promise<void> => {
-    configurationService = createMockConfigurationService({ ollamaContextWindow: null });
-    services = createMockServices(contextService, configurationService, ollamaClient, contextMessageFactory, logger);
+  it('should fall back to getContextWindow() when llmContextWindow config is null', async (): Promise<void> => {
+    configurationService = createMockConfigurationService({ llmContextWindow: null });
+    services = createMockServices(contextService, configurationService, llmClient, contextMessageFactory, logger);
     compressionService = new ContextCompressionService<unknown, { role: string; content: string }>(services);
 
     const messages = [makeMessage('user', 'hello')];
@@ -215,14 +215,14 @@ describe('ContextCompressionService', () => {
 
     await compressionService.compressIfNeeded('channel1');
 
-    expect(ollamaClient.show).toHaveBeenCalled();
+    expect(llmClient.getContextWindow).toHaveBeenCalled();
     expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('8192'));
   });
 
-  it('should fall back to 4096 when show() fails and config is null', async (): Promise<void> => {
-    configurationService = createMockConfigurationService({ ollamaContextWindow: null });
-    ollamaClient.show.mockRejectedValue(new Error('show failed'));
-    services = createMockServices(contextService, configurationService, ollamaClient, contextMessageFactory, logger);
+  it('should fall back to 4096 when getContextWindow() fails and config is null', async (): Promise<void> => {
+    configurationService = createMockConfigurationService({ llmContextWindow: null });
+    llmClient.getContextWindow.mockRejectedValue(new Error('context window probe failed'));
+    services = createMockServices(contextService, configurationService, llmClient, contextMessageFactory, logger);
     compressionService = new ContextCompressionService<unknown, { role: string; content: string }>(services);
 
     const messages = [makeMessage('user', 'hello')];
@@ -234,8 +234,8 @@ describe('ContextCompressionService', () => {
   });
 
   it('should chunk and summarize when conversation exceeds context window', async (): Promise<void> => {
-    configurationService = createMockConfigurationService({ ollamaContextWindow: 100 });
-    services = createMockServices(contextService, configurationService, ollamaClient, contextMessageFactory, logger);
+    configurationService = createMockConfigurationService({ llmContextWindow: 100 });
+    services = createMockServices(contextService, configurationService, llmClient, contextMessageFactory, logger);
     compressionService = new ContextCompressionService<unknown, { role: string; content: string }>(services);
 
     // 50 messages of 5 tokens each = ~250 tokens, well over window=100.
@@ -247,13 +247,13 @@ describe('ContextCompressionService', () => {
 
     await compressionService.compressIfNeeded('channel1');
 
-    expect(ollamaClient.sendMessage).toHaveBeenCalled();
+    expect(llmClient.sendMessage).toHaveBeenCalled();
     expect(contextService.replaceChannelContext).toHaveBeenCalledWith('channel1', [expect.objectContaining({ isSummary: true })]);
   });
 
   it('should preserve old summary when chunking conversation messages', async (): Promise<void> => {
-    configurationService = createMockConfigurationService({ ollamaContextWindow: 100 });
-    services = createMockServices(contextService, configurationService, ollamaClient, contextMessageFactory, logger);
+    configurationService = createMockConfigurationService({ llmContextWindow: 100 });
+    services = createMockServices(contextService, configurationService, llmClient, contextMessageFactory, logger);
     compressionService = new ContextCompressionService<unknown, { role: string; content: string }>(services);
 
     const oldSummary = makeMessage('system', 'Old summary of earlier conversation', true);
@@ -265,7 +265,7 @@ describe('ContextCompressionService', () => {
 
     await compressionService.compressIfNeeded('channel1');
 
-    const allCalls = ollamaClient.sendMessage.mock.calls;
+    const allCalls = llmClient.sendMessage.mock.calls;
     const reduceCall = allCalls[allCalls.length - 1];
     const reduceContext = reduceCall[1] as { role: string; content: string }[];
     const hasOldSummary = reduceContext.some(
@@ -312,7 +312,7 @@ describe('ContextCompressionService', () => {
 
       await compressionService.compressIfNeeded('channel1', sample);
 
-      expect(ollamaClient.sendMessage).toHaveBeenCalled();
+      expect(llmClient.sendMessage).toHaveBeenCalled();
       expect(contextService.replaceChannelContext).toHaveBeenCalledWith('channel1', [expect.objectContaining({ isSummary: true })]);
     });
 

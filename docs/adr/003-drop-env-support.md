@@ -4,6 +4,14 @@
 
 Accepted
 
+> **Update (v10):** Musebot v10 renamed the LLM configuration block from
+> `ollama:` to `llm:` and changed host entries from bare strings to objects
+> (`{ "url": ..., "token"?, "isLocal"? }`), with authentication living only in
+> `config.jsonc` as `Authorization: Bearer` tokens per host. Key references in
+> this ADR have been updated to the `llm.*` names; see the
+> [v10 LLM Migration Guide](../musebot/04-migration-v10.md) for the current
+> configuration surface.
+
 ## Context
 
 Musebot currently supports two competing configuration formats simultaneously:
@@ -120,14 +128,18 @@ Drop `.env` support entirely and standardize on a unified JSON-based configurati
            hosts: string[];
        };
 
-       ollama: {
-           hosts: string[];
+       llm: {
+           hosts: {
+               url: string;
+               token?: string;
+               isLocal?: boolean;
+           }[];
            models: string[];
            systemPrompt: string;
            streamsResponse: boolean;
        };
 
-       multiModal?: {
+        multiModal?: {
            randomPrompts: string[];
        };
 
@@ -238,14 +250,14 @@ Drop `.env` support entirely and standardize on a unified JSON-based configurati
    ```
    Error: Media mode requires at least one ComfyUI host configured in bot.comfyUi.hosts.
    ```
-   - If mode is 'chat' → check `ollama.hosts` and `ollama.models` have at least one value, else throw:
+   - If mode is 'chat' → check `llm.hosts` and `llm.models` have at least one value, else throw:
    ```
-   Error: Chat mode requires at least one Ollama host configured in bot.ollama.hosts.
-   Error: Chat mode requires at least one Ollama model configured in bot.ollama.models.
+   Error: Chat mode requires at least one LLM host configured in llm.hosts.
+   Error: Chat mode requires at least one LLM model configured in llm.models.
    ```
-   - If `ollama.models` is empty → warning:
+   - If `llm.models` is empty → warning:
    ```
-   Warning: Bot 12345 has no Ollama models configured. Model selection not yet supported.
+   Warning: Chat mode has no LLM models configured. Model selection not yet supported.
    ```
 
 5. **Environment variable detection:**
@@ -268,8 +280,8 @@ Drop `.env` support entirely and standardize on a unified JSON-based configurati
      "botId": "required" → throw: botId is required
      "discord.token" → throw: discord token is required in chat mode
      "comfyUi.hosts" → throw: ComfyUI hosts are required in media mode
-     "ollama.hosts" → throw: Ollama hosts are required in chat mode
-     "ollama.models" → throw: Ollama models are required in chat mode
+     "llm.hosts" → throw: LLM hosts are required in chat mode
+     "llm.models" → throw: LLM models are required in chat mode
    }
    ```
 
@@ -318,8 +330,8 @@ MUSEBOT_OLLAMA_SYSTEM_PROMPT=You are a helpful assistant
         "channels": ["1343757467854704732"]
       }
     },
-    "ollama": {
-      "hosts": ["http://host1:11434/", "http://host2:11434/"],
+    "llm": {
+      "hosts": [{ "url": "http://host1:11434/" }, { "url": "http://host2:11434/" }],
       "models": ["model1", "model2"],
       "systemPrompt": "You are a helpful assistant"
     }

@@ -38,7 +38,7 @@ export default defineUserConfig({
     text: 'Chat',
     prefix: 'chat',
     children: [
-          '01-ollama.md',
+          '01-llm.md',
           '02-long-term-memory.md'
     ]
       },

@@ -1,5 +1,4 @@
 ﻿import { Attachment, AttachmentBuilder, ButtonInteraction, Message, MessageReaction } from 'discord.js';
-import { GenerateRequest, GenerateResponse } from 'ollama';
 
 import { BotInteraction } from '../../../../../../enums/BotInteraction.js';
 import { IHttpExchangeWithAttachedData } from '../../../../../../models/IHttpExchangeWithAttachedData.js';
@@ -10,6 +9,8 @@ import { IBotServiceContainer } from "../../../../../IBotServiceContainer.js"
 import { ITaskQueue } from '../../../../../tasks/ITaskQueue.js';
 import { BaseTask } from '../../../../../tasks/models/BaseTask.js';
 import { IReplyService } from '../../../../chat/IReplyService.js';
+import { ILlmRequest } from '../../../../llm/models/ILlmRequest.js';
+import { LlmGenerateResult } from '../../../../llm/models/LlmGenerateResult.js';
 import { IWorkflow } from '../../models/IWorkflow.js';
 import { BpmConstants } from '../../models/music/BpmConstants.js';
 import { KeyScale } from '../../models/music/KeyScale.js';
@@ -103,7 +104,7 @@ export class MessageToMusicMutator implements IWorkflowMutator {
         const task = this.#services.getLlmGenerateStructuredTask<SongPromptRequestType>(prompt, songPromptTypeRequestTypeData);
         task.isChild = true;
 
-        const callback = (payload: IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, SongPromptRequestType>): void => {
+        const callback = (payload: IHttpExchangeWithAttachedData<ILlmRequest, LlmGenerateResult, SongPromptRequestType>): void => {
           resolve({
             ...payload.data,
             tags,
@@ -133,7 +134,7 @@ export class MessageToMusicMutator implements IWorkflowMutator {
         const task = this.#services.getLlmGenerateStructuredTask<SongPromptMetadata>(metadataPrompt, songPromptMetadataRequestData);
         task.isChild = true;
 
-        const callback = (payload: IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, SongPromptMetadata>): void => {
+        const callback = (payload: IHttpExchangeWithAttachedData<ILlmRequest, LlmGenerateResult, SongPromptMetadata>): void => {
           // If user-provided lyrics are present, prioritize those over what
           // the LLM generates. This allows "weird" lyrical prompts to
           // function as expected.

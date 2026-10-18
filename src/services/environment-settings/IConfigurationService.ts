@@ -1,6 +1,8 @@
 import { BotMode } from '../../enums/BotMode.js';
 import { NodeEnvironment } from '../../enums/NodeEnvironment.js';
 import { TaskQueueStrategy } from '../../enums/TaskQueueStrategy.js';
+import { ILlmHost } from '../clients/llm/models/ILlmHost.js';
+import { ILlmModel } from '../clients/llm/models/ILlmModel.js';
 
 export interface IConfigurationService {
   packageName: string;
@@ -28,15 +30,17 @@ export interface IConfigurationService {
   comfyUiTimeoutMinutes: number;
   randomPrompts: string[];
 
-  ollamaHosts: URL[];
-  ollamaModels: string[];
-  ollamaSystemPrompt: string;
-  ollamaStreamsResponse: boolean;
-  ollamaEmbeddingModel: string | null;
-  ollamaTopK: number;
+  llmHosts: ILlmHost[];
+  llmModels: string[];
+  llmModelConfigs: ILlmModel[];
+  llmSystemPrompt: string;
+  llmStreamsResponse: boolean;
+  llmEmbeddingModel: string | null;
+  llmTopK: number;
 
-  get ollamaContextWindow(): number | null;
-  get ollamaContextCompressionThreshold(): number;
+  get llmContextWindow(): number | null;
+  get llmContextCompressionThreshold(): number;
+  get llmEmbeddingInputLimit(): number;
 
   applicationName: string;
   isProduction: boolean;

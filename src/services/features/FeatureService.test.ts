@@ -1,11 +1,20 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 
 import { createMockLogger, createMockServiceContainer } from '../../test-utils/mockBotServiceContainer.js';
+import type { ILlmHost } from '../clients/llm/models/ILlmHost.js';
 import type { IWorkflowService } from '../clients/media/comfy-ui/services/IWorkflowService.js';
 import type { IConfigurationService } from '../environment-settings/IConfigurationService.js';
 import type { IBotServiceContainer } from '../IBotServiceContainer.js';
 import { SupportedFeature } from './enum/SupportedFeature.js';
 import { FeatureService } from './FeatureService.js';
+
+function createTestHost(): ILlmHost {
+  return { url: new URL('http://localhost:11434'), token: null, isLocal: null };
+}
+
+function createMockRegistry(): { probeHost: jest.Mock } {
+  return { probeHost: jest.fn() };
+}
 
 function createMockConfigurationService(overrides: Partial<IConfigurationService> = {}): IConfigurationService {
   return {
@@ -29,14 +38,16 @@ function createMockConfigurationService(overrides: Partial<IConfigurationService
     comfyUiTimeoutMinutes: 30,
     comfyUiGuidanceScaleInterval: 0.5,
     randomPrompts: [],
-    ollamaHosts: [],
-    ollamaModels: [],
-    ollamaSystemPrompt: '',
-    ollamaStreamsResponse: false,
-    ollamaEmbeddingModel: null,
-    ollamaTopK: 5,
-    ollamaContextWindow: null,
-    ollamaContextCompressionThreshold: 0.75,
+    llmHosts: [],
+    llmModels: [],
+    llmModelConfigs: [],
+    llmSystemPrompt: '',
+    llmStreamsResponse: false,
+    llmEmbeddingModel: null,
+    llmTopK: 5,
+    llmContextWindow: null,
+    llmContextCompressionThreshold: 0.75,
+    llmEmbeddingInputLimit: 2000,
     applicationName: 'Musebot',
     isProduction: false,
     ...overrides,
@@ -67,6 +78,7 @@ describe('FeatureService', () => {
       ...createMockServiceContainer(),
       configurationService: mockConfigurationService,
       workflowService: mockWorkflowService,
+      llmHostFlavorRegistry: createMockRegistry() as never,
     };
 
     service = new FeatureService(mockContainer);
@@ -84,8 +96,8 @@ describe('FeatureService', () => {
     });
 
     it('should return true when feature is supported', async (): Promise<void> => {
-      mockConfigurationService.ollamaHosts = [new URL('http://localhost:11434')];
-      mockConfigurationService.ollamaModels = ['llama3'];
+      mockConfigurationService.llmHosts = [createTestHost()];
+      mockConfigurationService.llmModels = ['llama3'];
 
       await service.loadFeatures();
 
@@ -100,27 +112,27 @@ describe('FeatureService', () => {
       expect(mockLoadWorkflows).toHaveBeenCalledTimes(1);
     });
 
-    it('should add Txt2Txt when ollamaHosts and ollamaModels are configured', async function (this: void): Promise<void> {
-      mockConfigurationService.ollamaHosts = [new URL('http://localhost:11434')];
-      mockConfigurationService.ollamaModels = ['llama3'];
+    it('should add Txt2Txt when llmHosts and llmModels are configured', async function (this: void): Promise<void> {
+      mockConfigurationService.llmHosts = [createTestHost()];
+      mockConfigurationService.llmModels = ['llama3'];
 
       await service.loadFeatures();
 
       expect(service.supportedFeatures).toContain(SupportedFeature.Txt2Txt);
     });
 
-    it('should not add Txt2Txt when ollamaHosts is empty', async function (this: void): Promise<void> {
-      mockConfigurationService.ollamaHosts = [];
-      mockConfigurationService.ollamaModels = ['llama3'];
+    it('should not add Txt2Txt when llmHosts is empty', async function (this: void): Promise<void> {
+      mockConfigurationService.llmHosts = [];
+      mockConfigurationService.llmModels = ['llama3'];
 
       await service.loadFeatures();
 
       expect(service.supportedFeatures).not.toContain(SupportedFeature.Txt2Txt);
     });
 
-    it('should not add Txt2Txt when ollamaModels is empty', async function (this: void): Promise<void> {
-      mockConfigurationService.ollamaHosts = [new URL('http://localhost:11434')];
-      mockConfigurationService.ollamaModels = [];
+    it('should not add Txt2Txt when llmModels is empty', async function (this: void): Promise<void> {
+      mockConfigurationService.llmHosts = [createTestHost()];
+      mockConfigurationService.llmModels = [];
 
       await service.loadFeatures();
 
@@ -128,8 +140,8 @@ describe('FeatureService', () => {
     });
 
     it('should return early when workflowService has no workflows', async function (this: void): Promise<void> {
-      mockConfigurationService.ollamaHosts = [new URL('http://localhost:11434')];
-      mockConfigurationService.ollamaModels = ['llama3'];
+      mockConfigurationService.llmHosts = [createTestHost()];
+      mockConfigurationService.llmModels = ['llama3'];
       mockWorkflowService.hasWorkflows = false;
 
       await service.loadFeatures();
@@ -162,8 +174,8 @@ describe('FeatureService', () => {
     });
 
     it('should add both Txt2Txt and workflow features together', async function (this: void): Promise<void> {
-      mockConfigurationService.ollamaHosts = [new URL('http://localhost:11434')];
-      mockConfigurationService.ollamaModels = ['llama3'];
+      mockConfigurationService.llmHosts = [createTestHost()];
+      mockConfigurationService.llmModels = ['llama3'];
       mockConfigurationService.comfyUiHosts = [new URL('http://localhost:8188')];
       mockWorkflowService.hasWorkflows = true;
       mockHasWorkflowType.mockImplementation((feature: SupportedFeature): boolean => {
@@ -189,11 +201,12 @@ describe('FeatureService', () => {
         ...createMockServiceContainer({ logger }),
         configurationService: mockConfigurationService,
         workflowService: mockWorkflowService,
+        llmHostFlavorRegistry: createMockRegistry() as never,
       };
       service = new FeatureService(mockContainer);
 
-      mockConfigurationService.ollamaHosts = [new URL('http://localhost:11434')];
-      mockConfigurationService.ollamaModels = ['llama3'];
+      mockConfigurationService.llmHosts = [createTestHost()];
+      mockConfigurationService.llmModels = ['llama3'];
 
       await service.loadFeatures();
 
@@ -207,6 +220,7 @@ describe('FeatureService', () => {
         ...createMockServiceContainer({ logger }),
         configurationService: mockConfigurationService,
         workflowService: mockWorkflowService,
+        llmHostFlavorRegistry: createMockRegistry() as never,
       };
       service = new FeatureService(mockContainer);
 

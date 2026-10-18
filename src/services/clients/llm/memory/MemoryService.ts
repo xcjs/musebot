@@ -1,13 +1,12 @@
-import { Message as OllamaMessage } from 'ollama';
-
 import { IConfigurationService } from '../../../environment-settings/IConfigurationService.js';
 import { SupportedFeature } from '../../../features/enum/SupportedFeature.js';
 import { IFeatureService } from '../../../features/IFeatureService.js';
 import { IBotServiceContainer } from '../../../IBotServiceContainer.js';
 import { ILogger } from '../../../ILogger.js';
-import { OllamaRole } from '../ollama/enums/OllamaRole.js';
-import { LlmChatMessage } from '../ollama/models/LlmChatMessage.js';
-import { OllamaClient } from '../ollama/OllamaClient.js';
+import { LlmRole } from '../enums/LlmRole.js';
+import { ILlmClient } from '../ILlmClient.js';
+import { LlmChatMessage } from '../models/LlmChatMessage.js';
+import { LlmMessage } from '../models/LlmMessage.js';
 import { IMemoryService } from '../services/IMemoryService.js';
 import { MemoryDatabase, MemoryRecord } from './MemoryDatabase.js';
 
@@ -140,7 +139,7 @@ export class MemoryService implements IMemoryService {
 
     try {
       const json = JSON.stringify(llmChatMessage);
-      const embedding = await this.#embed(json);
+      const embedding = await this.#embedToVector(json);
       const database = await this.#getDatabase();
       const embeddingModel = this.#getEmbeddingModel();
 
@@ -165,7 +164,7 @@ export class MemoryService implements IMemoryService {
     }
   }
 
-  async retrieve(llmChatMessage: LlmChatMessage): Promise<OllamaMessage[]> {
+  async retrieve(llmChatMessage: LlmChatMessage): Promise<LlmMessage[]> {
     if (!this.isEnabled) {
       return [];
     }
@@ -178,8 +177,8 @@ export class MemoryService implements IMemoryService {
 
     try {
       const json = JSON.stringify(llmChatMessage);
-      const embedding = await this.#embed(json);
-      const topK = this.#configurationService.ollamaTopK;
+      const embedding = await this.#embedToVector(json);
+      const topK = this.#configurationService.llmTopK;
       const embeddingModel = this.#getEmbeddingModel();
       const database = await this.#getDatabase();
       const records = database.queryMemories(embedding, serverId, embeddingModel, topK);
@@ -189,8 +188,8 @@ export class MemoryService implements IMemoryService {
       }
 
       const memoryText = records.map((record: MemoryRecord) => record.content).join('\n\n');
-      const systemMessage: OllamaMessage = {
-        role: OllamaRole.System,
+      const systemMessage: LlmMessage = {
+        role: LlmRole.System,
         content: `The following are relevant memories from past conversations in this server:\n\n${memoryText}`
       };
 
@@ -202,21 +201,55 @@ export class MemoryService implements IMemoryService {
   }
 
   #getEmbeddingModel(): string {
-    const model = this.#configurationService.ollamaEmbeddingModel;
+    const model = this.#configurationService.llmEmbeddingModel;
     if (model === null) {
       throw new Error('Embedding model is not configured but LTM is enabled.');
     }
     return model;
   }
 
-  async #embed(text: string): Promise<number[]> {
-    const client: OllamaClient = this.#services.ollamaClient;
-    return await client.embed(text);
+  async #embedToVector(text: string): Promise<number[]> {
+    const client: ILlmClient = this.#services.llmClient;
+    const chunks = this.#splitEmbeddingInput(text);
+
+    if (chunks.length === 1) {
+      return await client.embed(chunks[0]);
+    }
+
+    const vectors = await client.embedBatch(chunks);
+
+    if (vectors.length !== chunks.length) {
+      throw new Error(`The LLM API returned ${vectors.length} embeddings for ${chunks.length} embedding input chunks.`);
+    }
+
+    return vectors.length === 1 ? vectors[0] : this.#poolVectors(vectors);
   }
 
-  async #embedBatch(texts: string[]): Promise<number[][]> {
-    const client: OllamaClient = this.#services.ollamaClient;
-    return await client.embedBatch(texts);
+  #splitEmbeddingInput(text: string): string[] {
+    const limit = Math.max(1, this.#configurationService.llmEmbeddingInputLimit);
+    const chunks: string[] = [];
+
+    for (let offset = 0; offset < text.length; offset += limit) {
+      chunks.push(text.slice(offset, offset + limit));
+    }
+
+    return chunks;
+  }
+
+  #poolVectors(vectors: number[][]): number[] {
+    const pooled = new Array<number>(vectors[0].length).fill(0);
+
+    for (const vector of vectors) {
+      if (vector.length !== pooled.length) {
+        throw new Error('The LLM API returned embeddings of inconsistent dimensions for one input.');
+      }
+
+      for (let index = 0; index < pooled.length; index++) {
+        pooled[index] += vector[index];
+      }
+    }
+
+    return pooled.map((value) => value / vectors.length);
   }
 
   /**
@@ -282,13 +315,24 @@ export class MemoryService implements IMemoryService {
         break;
       }
 
-      const embeddings = await this.#embedBatch(records.map((record) => record.llmChatMessageJson));
+      const chunkLists = records.map((record) => this.#splitEmbeddingInput(record.llmChatMessageJson));
+      const client: ILlmClient = this.#services.llmClient;
+      const flatChunks = chunkLists.flat();
+      const chunkVectors = await client.embedBatch(flatChunks);
+
+      if (chunkVectors.length !== flatChunks.length) {
+        throw new Error(`The LLM API returned ${chunkVectors.length} embeddings for ${flatChunks.length} embedding input chunks.`);
+      }
+
+      let offset = 0;
 
       for (let index = 0; index < records.length; index++) {
         const record = records[index];
-        const embedding = embeddings[index];
+        const vectors = chunkVectors.slice(offset, offset + chunkLists[index].length);
+        const embedding = vectors.length === 1 ? vectors[0] : this.#poolVectors(vectors);
+        offset += chunkLists[index].length;
 
-        if (embedding === undefined) {
+        if (embedding === undefined || embedding.length === 0) {
           this.#logger.error(`Re-embed batch returned no embedding for memory ${record.id}; skipping.`);
           failed++;
           continue;
@@ -327,7 +371,7 @@ export class MemoryService implements IMemoryService {
       return this.#embeddingDimensions;
     }
 
-    const embedding = await this.#embed('dimension probe');
+    const embedding = await this.#embedToVector('dimension probe');
     this.#embeddingDimensions = embedding.length;
     this.#logger.info(`Detected embedding dimensions: ${this.#embeddingDimensions}`);
 

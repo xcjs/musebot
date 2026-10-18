@@ -1,8 +1,8 @@
 import { Message as DiscordMessage } from 'discord.js';
-import { Message as OllamaMessage } from 'ollama';
 
 import { IBotServiceContainer } from '../../../../IBotServiceContainer.js';
-import { LlmChatMessage } from '../../../llm/ollama/models/LlmChatMessage.js';
+import { LlmChatMessage } from '../../../llm/models/LlmChatMessage.js';
+import { LlmMessage } from '../../../llm/models/LlmMessage.js';
 import { IMemoryService } from '../../../llm/services/IMemoryService.js';
 import { IInputChatMessageFilter } from '../../IInputChatMessageFilter.js';
 
@@ -13,7 +13,7 @@ export class DiscordMemoryInputFilter implements IInputChatMessageFilter<Discord
     this.#memoryService = services.getMemoryService();
   }
 
-  async process(llmChatMessage: LlmChatMessage, chatMessage: DiscordMessage, context: OllamaMessage[]): Promise<OllamaMessage[]> {
+  async process(llmChatMessage: LlmChatMessage, chatMessage: DiscordMessage, context: LlmMessage[]): Promise<LlmMessage[]> {
     if (!this.#memoryService.isEnabled) {
       return context;
     }

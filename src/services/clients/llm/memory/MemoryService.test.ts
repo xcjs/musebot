@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals
 import { createMockLogger } from '../../../../test-utils/mockBotServiceContainer.js';
 import { SupportedFeature } from '../../../features/enum/SupportedFeature.js';
 import { IBotServiceContainer } from '../../../IBotServiceContainer.js';
-import { LlmChatMessage } from '../ollama/models/LlmChatMessage.js';
+import { LlmChatMessage } from '../models/LlmChatMessage.js';
 import { MemoryDatabase } from './MemoryDatabase.js';
 import { MemoryService } from './MemoryService.js';
 
@@ -35,24 +35,25 @@ function createLlmChatMessage(overrides: Partial<LlmChatMessage> = {}): LlmChatM
 describe('MemoryService', () => {
   let dbDir: string;
   let originalCwd: string;
-  let ollamaClient: { embed: jest.Mock; embedBatch: jest.Mock };
+  let llmClient: { embed: jest.Mock; embedBatch: jest.Mock };
 
-  function buildServices(embeddingModel: string): IBotServiceContainer {
-    ollamaClient = {
+  function buildServices(embeddingModel: string, embeddingInputLimit = 2000): IBotServiceContainer {
+    llmClient = {
       embed: jest.fn((): Promise<number[]> => Promise.resolve(EMBEDDING)),
       embedBatch: jest.fn((inputs: string[]): Promise<number[][]> => Promise.resolve(inputs.map(() => EMBEDDING))),
     };
 
     return {
       configurationService: {
-        ollamaEmbeddingModel: embeddingModel,
-        ollamaTopK: 5,
+        llmEmbeddingModel: embeddingModel,
+        llmEmbeddingInputLimit: embeddingInputLimit,
+        llmTopK: 5,
         botId: 'bot-1',
       },
       featureService: {
         hasFeature: jest.fn((feature: SupportedFeature): boolean => feature === SupportedFeature.LongTermMemory),
       },
-      ollamaClient,
+      llmClient,
       getLogger: (): ReturnType<typeof createMockLogger> => createMockLogger(),
     } as unknown as IBotServiceContainer;
   }
@@ -85,7 +86,7 @@ describe('MemoryService', () => {
     const result = await service.retrieve(createLlmChatMessage({ messageId: 'dm-query' }));
 
     expect(result).toHaveLength(1);
-    expect(ollamaClient.embedBatch).toHaveBeenCalledWith([expect.stringContaining('"messageId":"dm-1"')]);
+    expect(llmClient.embedBatch).toHaveBeenCalledWith([expect.stringContaining('"messageId":"dm-1"')]);
   });
 
   it('embeds the full serialized LlmChatMessage JSON instead of only the message text', async () => {
@@ -95,11 +96,82 @@ describe('MemoryService', () => {
     const message = createLlmChatMessage();
     await service.store(message);
 
-    const embedInputs = ollamaClient.embed.mock.calls.map((args: unknown[]) => args[0] as string)
+    const embedInputs = llmClient.embed.mock.calls.map((args: unknown[]) => args[0] as string)
       .filter((input: string) => input !== 'dimension probe');
     expect(embedInputs).toHaveLength(1);
 
     expect(JSON.parse(embedInputs[0])).toEqual(message);
+  });
+
+  it('chunks oversized embed inputs and stores their pooled embedding', async () => {
+    llmClient.embedBatch = jest.fn((inputs: string[]): Promise<number[][]> =>
+      Promise.resolve(inputs.map((_, index) => {
+        const vector = new Array<number>(4).fill(1);
+        vector[0] = index + 1;
+        return vector;
+      })));
+
+    const service = new MemoryService(buildServices('model-a'));
+    await service.setConsent('user-1');
+
+    const message = createLlmChatMessage({ message: 'x'.repeat(5000) });
+    const json = JSON.stringify(message);
+    await service.store(message);
+
+    const batches = llmClient.embedBatch.mock.calls.map((args: unknown[]) => args[0] as string[]);
+    expect(batches).toHaveLength(1);
+
+    const chunks = batches[0];
+    expect(chunks.map((chunk: string) => chunk.length)).toEqual([2000, 2000, json.length - 4000]);
+    expect(chunks.join('')).toBe(json);
+    expect(llmClient.embed.mock.calls.filter((args: unknown[]) => args[0] !== 'dimension probe'))
+      .toHaveLength(0);
+
+    // Mean of [1,1,1,1], [2,1,1,1], [3,1,1,1] is exactly [2,1,1,1].
+    const pooled = [2, 1, 1, 1];
+    const database = new MemoryDatabase(join('workflows', 'bot-1', 'txt2txt', 'memory.db'), 4, createMockLogger());
+    try {
+      expect(database.queryMemories(pooled, 'server-1', 'model-a', 5)).toHaveLength(1);
+    } finally {
+      database.close();
+    }
+  });
+
+  it('uses llm.embeddingInputLimit as the chunk size', async (): Promise<void> => {
+    const service = new MemoryService(buildServices('model-a', 150));
+    await service.setConsent('user-1');
+
+    const message = createLlmChatMessage({ message: 'x'.repeat(5000) });
+    const json = JSON.stringify(message);
+    await service.store(message);
+
+    const batches = llmClient.embedBatch.mock.calls.map((args: unknown[]) => args[0] as string[]);
+    expect(batches).toHaveLength(1);
+
+    const chunks = batches[0];
+    expect(chunks.length).toBe(Math.ceil(json.length / 150));
+    expect(chunks[0].length).toBe(150);
+    expect(chunks.join('')).toBe(json);
+  });
+
+  it('chunks oversized inputs during migration re-embedding', async () => {
+    const seedDatabase = new MemoryDatabase(
+      join('workflows', 'bot-1', 'txt2txt', 'memory.db'), 4, createMockLogger());
+    const message = createLlmChatMessage();
+    const oversizedJson = JSON.stringify(message) + ' '.repeat(4000);
+    seedDatabase.storeMemory(oversizedJson, message.message, 'user-1', 'server-1', false, 'model-a', 'dm-1', EMBEDDING);
+    seedDatabase.close();
+
+    const service = new MemoryService(buildServices('model-b'));
+
+    await service.waitForInitialMigration();
+
+    const batchInputs = llmClient.embedBatch.mock.calls.map((args: unknown[]) => args[0] as string[]);
+    expect(batchInputs.length).toBeGreaterThan(0);
+    expect(batchInputs[0].length).toBe(3);
+    expect(batchInputs[0][0].length).toBe(2000);
+    expect(batchInputs[0][1].length).toBe(2000);
+    expect(batchInputs[0].join('')).toBe(oversizedJson);
   });
 
   it('stores the message datetime rather than the insertion time as createdAt', async () => {
@@ -135,7 +207,7 @@ describe('MemoryService', () => {
       raw.close();
     }
 
-    expect(ollamaClient.embedBatch).toHaveBeenCalledWith([JSON.stringify(seedMessage)]);
+    expect(llmClient.embedBatch).toHaveBeenCalledWith([JSON.stringify(seedMessage)]);
   });
 
   it('batches embedding requests during migration', async () => {
@@ -151,23 +223,23 @@ describe('MemoryService', () => {
 
     const service = new MemoryService(buildServices('model-a'));
     await service.waitForInitialMigration();
-    await serviceProbeForBatchedMigration(ollamaClient);
+    await serviceProbeForBatchedMigration(llmClient);
 
-    const batchCalls = ollamaClient.embedBatch.mock.calls.map((args: unknown[]) => args[0] as string[]);
+    const batchCalls = llmClient.embedBatch.mock.calls.map((args: unknown[]) => args[0] as string[]);
     expect(batchCalls.length).toBeGreaterThanOrEqual(1);
     expect(batchCalls[0].length).toBe(5);
-    expect(ollamaClient.embed.mock.calls.filter((args: unknown[]) => args[0] !== 'dimension probe'))
+    expect(llmClient.embed.mock.calls.filter((args: unknown[]) => args[0] !== 'dimension probe'))
       .toHaveLength(0);
   });
 
   it('shares one database promise across concurrent callers', async () => {
     let resolveEmbed: ((value: number[]) => void) | undefined;
-    ollamaClient.embed = jest.fn((): Promise<number[]> => new Promise<number[]>((resolve) => {
+    llmClient.embed = jest.fn((): Promise<number[]> => new Promise<number[]>((resolve) => {
       resolveEmbed = resolve;
     }));
 
     const services = buildServices('model-a');
-    services.ollamaClient = ollamaClient as never;
+    services.llmClient = llmClient as never;
     const service = new MemoryService(services);
 
     const first = service.hasConsent('user-1');
@@ -176,7 +248,7 @@ describe('MemoryService', () => {
     resolveEmbed?.(EMBEDDING);
     await Promise.all([first, second]);
 
-    expect(ollamaClient.embed).toHaveBeenCalledTimes(1);
+    expect(llmClient.embed).toHaveBeenCalledTimes(1);
   });
 
   it('closes the database on shutdown', async () => {
@@ -194,9 +266,9 @@ describe('MemoryService', () => {
   });
 });
 
-async function serviceProbeForBatchedMigration(ollamaClient: { embedBatch: jest.Mock }): Promise<void> {
+async function serviceProbeForBatchedMigration(llmClient: { embedBatch: jest.Mock }): Promise<void> {
   for (let i = 0; i < 50; i++) {
-    if (ollamaClient.embedBatch.mock.calls.length > 0) {
+    if (llmClient.embedBatch.mock.calls.length > 0) {
       return;
     }
     await new Promise(resolve => setTimeout(resolve, 10));

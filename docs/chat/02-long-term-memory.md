@@ -29,9 +29,9 @@ opts in once and their memories are accessible across all servers.
 
 ### Embedding Model
 
-LTM requires an embedding model installed in your Ollama instance. Embedding
-models convert text into high-dimensional vectors for similarity search. You
-can browse available embedding models at
+LTM requires an embedding model available on your LLM host. Embedding
+models convert text into high-dimensional vectors for similarity search. With
+Ollama, you can browse available embedding models at
 [https://ollama.com/search](https://ollama.com/search) (filter by "embedding").
 
 A popular choice is `nomic-embed-text`:
@@ -53,7 +53,7 @@ runs locally alongside Musebot.
 
 ## Configuration
 
-To enable LTM, add the `embeddingModel` field to the `ollama` block in your
+To enable LTM, add the `embeddingModel` field to the `llm` block in your
 `config.jsonc`:
 
 ```jsonc
@@ -61,8 +61,8 @@ To enable LTM, add the `embeddingModel` field to the `ollama` block in your
   "bots": [
     {
       // ...
-      "ollama": {
-        "hosts": ["http://localhost:11434/"],
+      "llm": {
+        "hosts": [{ "url": "http://localhost:11434/v1" }],
         "models": ["gemma4:12b"],
         "systemPrompt": "You are a helpful assistant.",
         "streamsResponse": false,
@@ -82,10 +82,10 @@ The optional `topK` field controls how many memories are retrieved per request:
 
 | Field | Required | Type | Default | Description |
 | --- | --- | --- | --- | --- |
-| `ollama.embeddingModel` | No | `String` | *(unset)* | Ollama embedding model name. Presence enables LTM. |
-| `ollama.topK` | No | `Integer` | `5` | Number of similar memories to retrieve per request. |
+| `llm.embeddingModel` | No | `String` | *(unset)* | Embedding model name. Presence enables LTM. |
+| `llm.topK` | No | `Integer` | `5` | Number of similar memories to retrieve per request. |
 
-When `ollama.embeddingModel` is omitted, LTM is fully disabled and no
+When `llm.embeddingModel` is omitted, LTM is fully disabled and no
 database is created.
 
 ## User Consent & Slash Commands
@@ -118,7 +118,7 @@ converse, even in channels where the bot doesn't respond.
 When a message contains image attachments or web links, Musebot interprets the
 content before storing it:
 
-* **Image attachments** — If the [Vision](01-ollama.md#vision) feature is
+* **Image attachments** — If the [Vision](01-llm.md#vision) feature is
   enabled, each image is sent to the vision-capable model and a text
   description (the "interpretation") is generated and stored as part of the
   `LlmChatMessage`'s `attachments` array. Image-only messages (no text body)
@@ -166,7 +166,7 @@ When Musebot starts up, it automatically:
 
 Each stored memory records the embedding model used to generate its vector.
 When querying, only memories matching the currently configured
-`ollama.embeddingModel` are considered — this prevents vector space mismatches
+`llm.embeddingModel` are considered — this prevents vector space mismatches
 between different embedding models.
 
 If you change the embedding model, Musebot automatically detects memories
@@ -187,8 +187,8 @@ Old vectors are deleted and replaced; the relational record is preserved.
   memories (attributed to the triggering user) so the LLM can recall past
   conversations holistically.
 - **Data is local.** The SQLite database lives on the same machine as Musebot.
-  No data is sent to third-party services beyond Ollama (for embedding
-  generation).
+  No data is sent to third-party services beyond your configured LLM host
+  (for embedding generation).
 
 ## Technical Details
 

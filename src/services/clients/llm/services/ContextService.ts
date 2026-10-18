@@ -1,6 +1,6 @@
 ﻿import { IBotServiceContainer } from '../../../IBotServiceContainer.js';
 import { ILogger } from '../../../ILogger.js';
-import { ContextMessage } from '../ollama/models/ContextMessage.js';
+import { ContextMessage } from '../models/ContextMessage.js';
 import { IContextService } from './IContextService.js';
 
 export class ContextService<ChatMessageType, LlmMessageType> implements IContextService<ChatMessageType, LlmMessageType> {

@@ -1,5 +1,5 @@
 ﻿import { TaskQueueStrategy } from '../enums/TaskQueueStrategy.js';
-import { OllamaTaskChannelPostProcessor } from './clients/llm/ollama/tasks/OllamaTaskChannelPostProcessor.js';
+import { LlmTaskChannelPostProcessor } from './clients/llm/tasks/LlmTaskChannelPostProcessor.js';
 import { ComfyUiTaskChannelPostProcessor } from './clients/media/comfy-ui/services/ComfyUiTaskChannelPostProcessor.js';
 import { IGlobalConfiguration } from './environment-settings/IGlobalConfiguration.js';
 import { IBotServiceContainer } from './IBotServiceContainer.js';
@@ -38,7 +38,7 @@ export class GlobalServiceContainer implements IGlobalServiceContainer {
 
   getTaskChannelPostProcessor(services: IBotServiceContainer, channelName: string): ITaskChannelPostProcessor {
     if(channelName.startsWith(ResourceType.LargeLanguageModel)) {
-      return new OllamaTaskChannelPostProcessor(services);
+      return new LlmTaskChannelPostProcessor(services);
     } else if(channelName.startsWith(ResourceType.Media)) {
       return new ComfyUiTaskChannelPostProcessor(services);
     } else if(channelName.startsWith(ResourceType.GenerativeAI)) {

@@ -4,24 +4,26 @@ import {
   Message as DiscordMessage,
   MessageReaction,
   User} from 'discord.js';
-import { GenerateRequest, GenerateResponse } from 'ollama';
 
 import { BotInteraction } from '../enums/BotInteraction.js';
 import { IHttpExchange } from '../models/IHttpExchange.js';
 import { IHttpExchangeWithAttachedData } from '../models/IHttpExchangeWithAttachedData.js';
 import { ComfyUiReplyService } from './clients/chat/discord/comfy-ui/ComfyUiReplyService.js';
 import { IActionRowBuilderFactory } from './clients/chat/discord/components/IActionRowBuilderFactory.js';
-import { OllamaReplyService } from './clients/chat/discord/ollama/OllamaReplyService.js';
-import { OllamaStreamingReplyService } from './clients/chat/discord/ollama/OllamaStreamingReplyService.js';
+import { LlmReplyService } from './clients/chat/discord/llm/LlmReplyService.js';
+import { LlmStreamingReplyService } from './clients/chat/discord/llm/LlmStreamingReplyService.js';
 import { IChatMessageFactory } from './clients/chat/IChatMessageFactory.js';
 import { IGenerativeChatClient } from './clients/chat/IGenerativeChatClient.js';
 import { IInputChatMessageFilter } from './clients/chat/IInputChatMessageFilter.js';
 import { IOutputChatMessageFilter } from './clients/chat/IOutputChatMessageFilter.js';
 import { IReplyService } from './clients/chat/IReplyService.js';
 import { ITypingService } from './clients/chat/ITypingService.js';
-import { IStructuredRequestData } from './clients/llm/ollama/models/IStructuredRequestData.js';
-import { LlmChatMessage } from './clients/llm/ollama/models/LlmChatMessage.js';
-import { OllamaClient } from './clients/llm/ollama/OllamaClient.js';
+import { ILlmClient } from './clients/llm/ILlmClient.js';
+import { LlmHostFlavorRegistry } from './clients/llm/LlmHostFlavorRegistry.js';
+import { ILlmRequest } from './clients/llm/models/ILlmRequest.js';
+import { IStructuredRequestData } from './clients/llm/models/IStructuredRequestData.js';
+import { LlmChatMessage } from './clients/llm/models/LlmChatMessage.js';
+import { LlmGenerateResult } from './clients/llm/models/LlmGenerateResult.js';
 import { IContextCompressionService } from './clients/llm/services/IContextCompressionService.js';
 import { IContextMessageFactory } from './clients/llm/services/IContextMessageFactory.js';
 import { IContextService } from './clients/llm/services/IContextService.js';
@@ -57,6 +59,7 @@ export interface IBotServiceContainer {
   workflowService: IWorkflowService;
   parallelizationStrategy: IParallelizationStrategy;
   webContentService: WebContentService;
+  llmHostFlavorRegistry: LlmHostFlavorRegistry;
 
   getWorkflowMutator(interactionType: BotInteraction, workflow: IWorkflow): IWorkflowMutator;
 
@@ -64,9 +67,9 @@ export interface IBotServiceContainer {
   contentTypeService: IContentTypeService;
   comfyUiClient: ComfyUiClient;
   comfyUiReplyService: ComfyUiReplyService;
-  ollamaClient: OllamaClient;
-  ollamaReplyService: OllamaReplyService;
-  ollamaStreamingReplyService: OllamaStreamingReplyService;
+  llmClient: ILlmClient;
+  llmReplyService: LlmReplyService;
+  llmStreamingReplyService: LlmStreamingReplyService;
   actionRowBuilderFactory: IActionRowBuilderFactory;
 
   // Factories --------------------------------------------------------------/
@@ -83,9 +86,9 @@ export interface IBotServiceContainer {
   getContextMessageFactory<ChatMessageType, LlmMessageType>(): IContextMessageFactory<ChatMessageType, LlmMessageType>;
   getContextService<ChatMessageType, LlmMessageType>(): IContextService<ChatMessageType, LlmMessageType>
   getContextCompressionService(): IContextCompressionService;
-  getLlmGenerateTask(prompt: string, temperature: number | undefined): BaseTask<IHttpExchange<GenerateRequest, GenerateResponse>>;
+  getLlmGenerateTask(prompt: string, temperature: number | undefined): BaseTask<IHttpExchange<ILlmRequest, LlmGenerateResult>>;
   getLlmGenerateStructuredTask<T>(prompt: string, structuredRequestData: IStructuredRequestData | undefined)
-    : BaseTask<IHttpExchangeWithAttachedData<GenerateRequest, GenerateResponse, T>>;
+    : BaseTask<IHttpExchangeWithAttachedData<ILlmRequest, LlmGenerateResult, T>>;
   getEmbedTask(llmChatMessage: LlmChatMessage, ownerUserId?: string): BaseTask<void>;
   getEmojiReactionTask(reaction: MessageReaction, user: User): BaseTask<unknown>;
 
