@@ -33,13 +33,6 @@ All notable changes to Musebot are documented in this file.
   default 2000 characters), each chunk is embedded, and the chunk vectors are
   pooled (averaged) into the stored embedding of the conversation row.
 
-### Fixed
-
-- llama.cpp router hosts now detect model load state from OpenAI-style
-  `/models` responses (`{ "data": [{ "id", "status" }] }`) in addition to the
-  native `{ "models": [{ "model", "status" }] }` shape, so lifecycle unload
-  verification works against OpenAI-compatible routers.
-
 ## [10.0.0] — 2026-10-08
 
 ### Breaking Changes
@@ -55,6 +48,13 @@ All notable changes to Musebot are documented in this file.
 ### Removed
 
 - The `ollama` npm dependency — the bot talks to OpenAI-compatible hosts directly and no longer bundles the Ollama client SDK
+
+### Fixed
+
+- llama.cpp router hosts now detect model load state from OpenAI-style
+  `/models` responses (`{ "data": [{ "id", "status" }] }`) in addition to the
+  native `{ "models": [{ "model", "status" }] }` shape, so lifecycle unload
+  verification works against OpenAI-compatible routers.
 
 ## [9.6.0] — 2026-08-28
 
