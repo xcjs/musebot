@@ -2,8 +2,6 @@
 
 All notable changes to Musebot are documented in this file.
 
-## [Unreleased]
-
 ## [10.0.0] — 2026-10-08
 
 ### Breaking Changes
