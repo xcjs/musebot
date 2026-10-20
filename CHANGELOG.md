@@ -2,6 +2,12 @@
 
 All notable changes to Musebot are documented in this file.
 
+## [10.0.1] — 2026-10-20
+
+### Fixed
+
+- LLM requests now contain at most one `system` message, and it is always the first message: any additional context stored with the system role (such as context-window summaries) is merged into the leading system prompt. Some OpenAI-compatible providers reject or mishandle multiple system messages.
+
 ## [10.0.0] — 2026-10-08
 
 ### Breaking Changes
