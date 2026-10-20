@@ -382,7 +382,27 @@ export class LlmClient implements ILlmClient {
   }
 
   #toWireRequest(request: ILlmRequest): LlmWireChatCompletionRequest {
-    return { ...request, messages: this.#toWireMessages(request.messages) };
+    return { ...request, messages: this.#toWireMessages(this.#consolidateSystemMessages(request.messages)) };
+  }
+
+  #consolidateSystemMessages(messages: LlmMessage[]): LlmMessage[] {
+    const systemMessages = messages.filter((message) => message.role === LlmRole.System);
+
+    if (systemMessages.length === 0 || (systemMessages.length === 1 && messages[0].role === LlmRole.System)) {
+      return messages;
+    }
+
+    const nonSystemMessages = messages.filter((message) => message.role !== LlmRole.System);
+    const mergedContent = systemMessages
+      .map((message) => message.content)
+      .filter((content) => content.trim().length > 0)
+      .join('\n\n');
+
+    if (systemMessages.length > 1) {
+      this.#logger.debug(`Consolidated ${systemMessages.length} system messages into one leading system message.`);
+    }
+
+    return [{ role: LlmRole.System, content: mergedContent }, ...nonSystemMessages];
   }
 
   #toWireMessages(messages: LlmMessage[]): LlmWireMessage[] {

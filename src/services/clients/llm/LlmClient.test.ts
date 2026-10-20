@@ -410,6 +410,84 @@ describe('LlmClient', (): void => {
     });
   });
 
+  describe('system message consolidation', (): void => {
+    beforeEach((): void => {
+      client = makeClient();
+    });
+
+    it('merges multiple system messages into a single leading system message', async (): Promise<void> => {
+      fetchMock.mockResolvedValue(mockJsonResponse({ choices: [{ message: { role: 'assistant', content: 'ok' } }] }));
+
+      const context: LlmMessage[] = [
+        { role: LlmRole.System, content: 'You are a helpful assistant.' },
+        { role: LlmRole.User, content: 'hello' },
+        { role: LlmRole.System, content: 'Summary of earlier conversation.' },
+        { role: LlmRole.Assistant, content: 'earlier reply' }
+      ];
+
+      await client.sendMessage('next prompt', context);
+
+      const [, init] = fetchMock.mock.calls[0];
+      const body = JSON.parse(init.body as string) as LlmWireChatCompletionRequest;
+      expect(body.messages).toEqual([
+        { role: 'system', content: 'You are a helpful assistant.\n\nSummary of earlier conversation.' },
+        { role: 'user', content: 'hello' },
+        { role: 'assistant', content: 'earlier reply' },
+        { role: 'user', content: 'next prompt' }
+      ]);
+    });
+
+    it('skips empty system message content when consolidating', async (): Promise<void> => {
+      fetchMock.mockResolvedValue(mockJsonResponse({ choices: [{ message: { role: 'assistant', content: 'ok' } }] }));
+
+      const context: LlmMessage[] = [
+        { role: LlmRole.System, content: 'You are a helpful assistant.' },
+        { role: LlmRole.System, content: '   ' },
+        { role: LlmRole.System, content: 'Summary.' }
+      ];
+
+      await client.sendMessage('hi', context);
+
+      const [, init] = fetchMock.mock.calls[0];
+      const body = JSON.parse(init.body as string) as LlmWireChatCompletionRequest;
+      expect(body.messages[0]).toEqual({ role: 'system', content: 'You are a helpful assistant.\n\nSummary.' });
+    });
+
+    it('moves a single system message to the front when it is not already first', async (): Promise<void> => {
+      fetchMock.mockResolvedValue(mockJsonResponse({ choices: [{ message: { role: 'assistant', content: 'ok' } }] }));
+
+      const context: LlmMessage[] = [
+        { role: LlmRole.User, content: 'hello' },
+        { role: LlmRole.System, content: 'You are a helpful assistant.' }
+      ];
+
+      await client.sendMessage('hi', context);
+
+      const [, init] = fetchMock.mock.calls[0];
+      const body = JSON.parse(init.body as string) as LlmWireChatCompletionRequest;
+      expect(body.messages.map((message) => message.role)).toEqual(['system', 'user', 'user']);
+    });
+
+    it('leaves messages untouched when one system message is already first', async (): Promise<void> => {
+      fetchMock.mockResolvedValue(mockJsonResponse({ choices: [{ message: { role: 'assistant', content: 'ok' } }] }));
+
+      const context: LlmMessage[] = [
+        { role: LlmRole.System, content: 'You are a helpful assistant.' },
+        { role: LlmRole.User, content: 'hello' }
+      ];
+
+      await client.sendMessage('hi', context);
+
+      const [, init] = fetchMock.mock.calls[0];
+      const body = JSON.parse(init.body as string) as LlmWireChatCompletionRequest;
+      expect(body.messages).toEqual([
+        { role: 'system', content: 'You are a helpful assistant.' },
+        { role: 'user', content: 'hello' },
+        { role: 'user', content: 'hi' }
+      ]);
+    });
+  });
+
   describe('sendMessage()', (): void => {
     beforeEach((): void => {
       client = makeClient();
