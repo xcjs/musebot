@@ -324,11 +324,15 @@
   },
   "197": {
   "inputs": {
-      "unet_name": "LTX-2/ltx-2-19b-dev_Q8_0.gguf"
+      "unet_name": "LTX-2/ltx-2-19b-dev_Q8_0.gguf",
+      "device": "cuda:0",
+      "virtual_vram_gb": 14,
+      "use_other_vram": true,
+      "expert_mode_allocations": ""
   },
-  "class_type": "UnetLoaderGGUF",
+  "class_type": "UnetLoaderGGUFDisTorchMultiGPU",
   "_meta": {
-      "title": "Unet Loader (GGUF)"
+      "title": "Unet Loader (GGUF, DisTorch multi-GPU) — single-GPU residency ~14GiB OOMs on 16GB under comfy 0.43"
   }
   },
   "199": {
