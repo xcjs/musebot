@@ -261,9 +261,33 @@ Both settings are optional and live under `llm` in `config.jsonc`:
 
   // The threshold (as a fraction of the context window) at which compression
   // triggers. For example, 0.75 means compression at 75% of the window.
-  // "contextCompressionThreshold": 0.75
+  // "contextCompressionThreshold": 0.75,
+
+  // The maximum time in minutes to wait for a non-streamed LLM response.
+  // Default 0 = wait however long the generation takes (reasoning models
+  // can legitimately think for a long time). Set a positive value to cap it.
+  // "timeoutMinutes": 0
 }
 ```
+
+### Timeouts
+
+By default Musebot **waits for non-streamed LLM responses however long they
+take**. Non-streamed completions send no response headers until the entire
+generation finishes, and reasoning models can legitimately think for many
+minutes — aborting mid-generation wastes the server's compute and left the
+request queue retrying a doomed request forever. Undici's built-in ~300 s
+headers/body timeouts apply to every request Musebot sends through a
+per-request dispatcher configured for the LLM client, so they are disabled
+(resolved from the `llm.timeoutMinutes` setting).
+
+Set `llm.timeoutMinutes` to a positive number of minutes to cap each request
+(e.g. `"timeoutMinutes": 10`); the request then errors out and is retried
+according to the task queue settings. `0` (the default) means no timeout.
+
+Note that this setting only affects the OpenAI-compatible LLM client and the
+Ollama lifecycle probes. The ComfyUI media client has its own independent
+timeout (`comfyUi.timeoutMinutes`).
 
 ## Streaming
 

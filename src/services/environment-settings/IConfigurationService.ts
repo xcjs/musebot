@@ -35,6 +35,7 @@ export interface IConfigurationService {
   llmModelConfigs: ILlmModel[];
   llmSystemPrompt: string;
   llmStreamsResponse: boolean;
+  llmTimeoutMinutes: number;
   llmEmbeddingModel: string | null;
   llmTopK: number;
 

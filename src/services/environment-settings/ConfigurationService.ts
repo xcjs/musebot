@@ -185,6 +185,11 @@ export class ConfigurationService implements IConfigurationService {
       ?? false;
   }
 
+  get llmTimeoutMinutes(): number {
+    return this.#botConfig.llm?.timeoutMinutes
+      ?? 0;
+  }
+
   get llmEmbeddingModel(): string | null {
     return this.#botConfig.llm?.embeddingModel
       ?? null;
@@ -300,6 +305,7 @@ Detected environment variables: ${envVarList}`);
     this.#log.info(`bots[].llm.models.modalities: ${this.llmModelConfigs.map(model => `${model.name} (in: ${model.inputModalities.join('/')} out: ${model.outputModalities.join('/')})`).join(', ')}`);
     this.#log.info(`bots[].llm.systemPrompt: ${this.llmSystemPrompt}`);
     this.#log.info(`bots[].llm.streamsResponse: ${this.llmStreamsResponse}`);
+    this.#log.info(`bots[].llm.timeoutMinutes: ${this.llmTimeoutMinutes === 0 ? '(not set)' : this.llmTimeoutMinutes}`);
     this.#log.info(`bots[].llm.embeddingModel: ${this.llmEmbeddingModel ?? '(not set)'}`);
     this.#log.info(`bots[].llm.topK: ${this.llmTopK}`);
     this.#log.info(`bots[].llm.contextWindow: ${this.llmContextWindow ?? '(not set)'}`);

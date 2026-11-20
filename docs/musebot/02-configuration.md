@@ -212,6 +212,24 @@ earlier release.
 * **Default:** `false`
 * **Values:** `true`, `false`
 
+#### `llm.timeoutMinutes`
+
+* **Description:** The maximum time **in minutes** that Musebot will wait for a
+  non-streamed LLM request before aborting it. Non-streamed completions send
+  no response until the entire generation finishes, so reasoning models can
+  legitimately take longer than a typical request — by default Musebot waits
+  however long the generation takes rather than aborting it mid-flight (which
+  wasted the generation's compute and triggered endless task retries). Set a
+  positive value to cap each request: when the cap elapses, the request fails
+  and is retried according to the task queue settings. Streaming responses
+  are additionally bounded by this value. Applies to chat, structured, and
+  embedding requests on the OpenAI-compatible protocol and to Ollama
+  lifecycle probes.
+* **Required:** No
+* **Type:** `Integer`
+* **Default:** `0` *(wait indefinitely)*
+* **Values:** `0` (no timeout) or a positive number of minutes
+
 #### `llm.embeddingModel`
 
 * **Description:** The name of a model to use for generating text embeddings.

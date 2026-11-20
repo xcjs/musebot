@@ -87,4 +87,22 @@ describe('OllamaLifecycleStrategy', () => {
 
     expect(await strategy.hasVisionCapability('test-model')).toBe(true);
   });
+
+  it('every request carries an undici dispatcher resolved from timeoutMinutes (0 = disabled)', async (): Promise<void> => {
+    fetchMock.mockResolvedValue(mockResponse(200, {}));
+
+    const zero = new OllamaLifecycleStrategy(makeHost('http://localhost:11434'), 'm', mockLogger as never, 10, 0);
+    const capped = new OllamaLifecycleStrategy(makeHost('http://localhost:11434'), 'm', mockLogger as never, 10, 7);
+
+    await zero.free();
+    await capped.isModelLoaded();
+    await zero.getContextWindow();
+
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    for (const call of fetchMock.mock.calls) {
+      const init = call[1] as RequestInit & { dispatcher?: { constructor: { name: string } } };
+      expect(init.dispatcher).toBeDefined();
+      expect(init.dispatcher!.constructor.name).toBe('Agent');
+    }
+  });
 });

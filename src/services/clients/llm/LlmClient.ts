@@ -5,6 +5,7 @@ import { trimTrailingJsonContent } from '../../../utilities/string-utilities.js'
 import { IConfigurationService } from '../../environment-settings/IConfigurationService.js';
 import { IBotServiceContainer } from '../../IBotServiceContainer.js';
 import { ILogger } from '../../ILogger.js';
+import { Agent as UndiciAgent, Dispatcher } from 'undici';
 import { LlmHostFlavor } from './enums/LlmHostFlavor.js';
 import { LlmModality } from './enums/LlmModality.js';
 import { LlmRole } from './enums/LlmRole.js';
@@ -38,6 +39,7 @@ export class LlmClient implements ILlmClient {
 
   readonly #host: ILlmHost;
   readonly #model: string;
+  readonly #llmDispatcher: UndiciAgent;
   readonly #lifecycleStrategy: ILlmLifecycleStrategy;
 
   get host(): URL {
@@ -63,6 +65,14 @@ export class LlmClient implements ILlmClient {
     this.#logger.info(`Selected host: ${host.url}`);
 
     this.#model = this.#selectModel(this.#configurationService.llmModels);
+
+    const timeoutMinutes = this.#configurationService.llmTimeoutMinutes;
+    this.#llmDispatcher = this.#buildLlmDispatcher(timeoutMinutes);
+    if (timeoutMinutes > 0) {
+      this.#logger.info(`LLM request timeout: ${timeoutMinutes} minute(s).`);
+    } else {
+      this.#logger.info('LLM request timeout: none (wait for non-streamed generations however long they take).');
+    }
 
     this.#lifecycleStrategy = this.#selectStrategy(services, host);
   }
@@ -305,8 +315,9 @@ export class LlmClient implements ILlmClient {
       const response = await fetch(showUrl, {
         method: 'POST',
         headers: this.#headers(),
-        body: JSON.stringify(request)
-      });
+        body: JSON.stringify(request),
+        dispatcher: this.#llmDispatcher
+      } as RequestInit & { dispatcher: Dispatcher });
 
       if (!response.ok) {
         throw new Error(`The LLM API at ${showUrl} responded with status ${response.status}.`);
@@ -445,10 +456,28 @@ export class LlmClient implements ILlmClient {
   }
 
   async #fetchResponse(path: string, request: ILlmEmbeddingsRequest | LlmWireChatCompletionRequest | ILlmShowRequest): Promise<Response> {
+    // Non-streamed completions produce no response headers until the entire
+    // generation finishes (llama.cpp and similar hosts), which can take
+    // arbitrarily long for reasoning models. undici's default ~300 s
+    // headers/body timeouts would abort the request mid-generation
+    // (TypeError: fetch failed) while the server keeps burning tokens —
+    // so Musebot waits for the response (llm.timeoutMinutes, default 0 =
+    // wait indefinitely; 0 genuinely disables both undici timeouts).
     return await fetch(`${this.#endpointBase}${path}`, {
       method: 'POST',
       headers: this.#headers(),
-      body: JSON.stringify(request)
+      body: JSON.stringify(request),
+      dispatcher: this.#llmDispatcher
+    } as RequestInit & { dispatcher: Dispatcher });
+  }
+
+  // Undici Agent for LLM calls with headers+body timeouts resolved from
+  // llm.timeoutMinutes (default 0 = no timeout: wait however long the
+  // generation takes). Scoped per-request; the global dispatcher is untouched.
+  #buildLlmDispatcher(timeoutMinutes: number): UndiciAgent {
+    return new UndiciAgent({
+      headersTimeout: timeoutMinutes > 0 ? timeoutMinutes * 60 * 1000 : 0,
+      bodyTimeout: timeoutMinutes > 0 ? timeoutMinutes * 60 * 1000 : 0
     });
   }
 
@@ -541,7 +570,8 @@ export class LlmClient implements ILlmClient {
           host,
           this.#model,
           this.#logger,
-          this.#configurationService.taskRetryDelayMilliseconds);
+          this.#configurationService.taskRetryDelayMilliseconds,
+          this.#configurationService.llmTimeoutMinutes);
       case LlmHostFlavor.LlamaCppRouter:
         return new LlamaCppRouterLifecycleStrategy(host, this.#model, this.#logger);
       case LlmHostFlavor.LlamaCppSingle:
