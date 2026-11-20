@@ -2,6 +2,16 @@
 
 All notable changes to Musebot are documented in this file.
 
+## [Unreleased]
+
+### Added
+
+- Per-model output token cap: new optional `maxOutputTokens` on `llm.models` entries. When set, Musebot sends `max_tokens` on every chat request (streaming and non-streaming), bounding runaway generations at the client (e.g. reasoning models stuck in a think-block loop that previously generated unbounded tokens until the HTTP client timed out). Models without the setting behave exactly as before.
+
+### Fixed
+
+- Streaming chat requests now carry the per-model `max_tokens` cap when one is configured, so streamed replies cannot exceed the bound either.
+
 ## [10.0.1] — 2026-10-20
 
 ### Fixed

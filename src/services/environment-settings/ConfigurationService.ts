@@ -157,7 +157,8 @@ export class ConfigurationService implements IConfigurationService {
       return {
         name: config.name,
         inputModalities: (config.inputModalities ?? [LlmModality.Text]).map(m => this.#toLlmModality(m)),
-        outputModalities: (config.outputModalities ?? [LlmModality.Text]).map(m => this.#toLlmModality(m))
+        outputModalities: (config.outputModalities ?? [LlmModality.Text]).map(m => this.#toLlmModality(m)),
+        maxOutputTokens: config.maxOutputTokens ?? null
       };
     });
   }
@@ -297,7 +298,7 @@ Detected environment variables: ${envVarList}`);
 
     this.#log.info(`bots[].llm.hosts: ${this.llmHosts.map(host => host.url.toString()).join(', ')}`);
     this.#log.info(`bots[].llm.models: ${this.llmModels.join(', ')}`);
-    this.#log.info(`bots[].llm.models.modalities: ${this.llmModelConfigs.map(model => `${model.name} (in: ${model.inputModalities.join('/')} out: ${model.outputModalities.join('/')})`).join(', ')}`);
+    this.#log.info(`bots[].llm.models.modalities: ${this.llmModelConfigs.map(model => `${model.name} (in: ${model.inputModalities.join('/')} out: ${model.outputModalities.join('/')}${model.maxOutputTokens !== null ? ` max: ${model.maxOutputTokens}` : ''})`).join(', ')}`);
     this.#log.info(`bots[].llm.systemPrompt: ${this.llmSystemPrompt}`);
     this.#log.info(`bots[].llm.streamsResponse: ${this.llmStreamsResponse}`);
     this.#log.info(`bots[].llm.embeddingModel: ${this.llmEmbeddingModel ?? '(not set)'}`);

@@ -55,7 +55,7 @@ function createMockConfigurationService(overrides: Partial<IConfigurationService
     randomPrompts: [],
     llmHosts: [{ url: new URL('http://localhost:11434/v1'), token: null, isLocal: true }],
     llmModels: ['test-model'],
-    llmModelConfigs: [{ name: 'test-model', inputModalities: [LlmModality.Text], outputModalities: [LlmModality.Text] }],
+    llmModelConfigs: [{ name: 'test-model', inputModalities: [LlmModality.Text], outputModalities: [LlmModality.Text], maxOutputTokens: null }],
     llmSystemPrompt: '',
     llmStreamsResponse: false,
     llmEmbeddingModel: 'embed-model',
@@ -242,7 +242,7 @@ describe('LlmClient', (): void => {
 
       client = makeClient({ flavor: LlmHostFlavor.Ollama, isLocal: false }, {
         llmModelConfigs: [
-          { name: 'test-model', inputModalities: [LlmModality.Text], outputModalities: [LlmModality.Text] }
+          { name: 'test-model', inputModalities: [LlmModality.Text], outputModalities: [LlmModality.Text], maxOutputTokens: null }
         ]
       });
 
@@ -256,7 +256,7 @@ describe('LlmClient', (): void => {
 
       client = makeClient({ flavor: LlmHostFlavor.Ollama, isLocal: false }, {
         llmModelConfigs: [
-          { name: 'test-model', inputModalities: [LlmModality.Text, LlmModality.Image], outputModalities: [LlmModality.Text] }
+          { name: 'test-model', inputModalities: [LlmModality.Text, LlmModality.Image], outputModalities: [LlmModality.Text], maxOutputTokens: null }
         ]
       });
 
@@ -314,6 +314,30 @@ describe('LlmClient', (): void => {
       const [, init] = fetchMock.mock.calls[0];
       const body = JSON.parse(init.body as string) as LlmWireChatCompletionRequest;
       expect(body.temperature).toBeUndefined();
+    });
+
+    it('omits max_tokens when the model declares no cap', async (): Promise<void> => {
+      fetchMock.mockResolvedValue(mockJsonResponse({ choices: [{ message: { role: 'assistant', content: 'ok' } }] }));
+
+      await client.generate('Hi');
+
+      const [, init] = fetchMock.mock.calls[0];
+      const body = JSON.parse(init.body as string) as LlmWireChatCompletionRequest;
+      expect(body.max_tokens).toBeUndefined();
+    });
+
+    it('sends max_tokens when the configured model declares a cap', async (): Promise<void> => {
+      client = makeClient(undefined, {
+        llmModels: ['test-model'],
+        llmModelConfigs: [{ name: 'test-model', inputModalities: [LlmModality.Text], outputModalities: [LlmModality.Text], maxOutputTokens: 16384 }]
+      });
+      fetchMock.mockResolvedValue(mockJsonResponse({ choices: [{ message: { role: 'assistant', content: 'ok' } }] }));
+
+      await client.generate('Hi');
+
+      const [, init] = fetchMock.mock.calls[0];
+      const body = JSON.parse(init.body as string) as LlmWireChatCompletionRequest;
+      expect(body.max_tokens).toBe(16384);
     });
 
     it('appends only the endpoint to the host as configured (config carries the /v1 route)', async (): Promise<void> => {
@@ -590,6 +614,27 @@ describe('LlmClient', (): void => {
       expect(chunks[chunks.length - 1].promptTokens).toBe(3);
       expect(chunks[chunks.length - 1].completionTokens).toBe(2);
       expect((result as { data: LlmMessage[] }).data).toBe(context);
+    });
+
+    it('caps the streaming message request with the configured max_tokens', async (): Promise<void> => {
+      client = makeClient(undefined, {
+        llmModels: ['test-model'],
+        llmModelConfigs: [{ name: 'test-model', inputModalities: [LlmModality.Text], outputModalities: [LlmModality.Text], maxOutputTokens: 8192 }]
+      });
+
+      const sseBody = [
+        'data: {"choices":[{"delta":{"content":"Hel"}}]}\\n\\n',
+        'data: [DONE]\\n\\n'
+      ];
+      fetchMock.mockResolvedValue(sseResponse(sseBody));
+
+      const result = await client.sendMessageAndGetStream('Hi', []);
+
+      const [, init] = fetchMock.mock.calls[0];
+      const body = JSON.parse(init.body as string) as LlmWireChatCompletionRequest;
+      expect(body.max_tokens).toBe(8192);
+      expect(body.stream).toBe(true);
+      expect(result).not.toBeNull();
     });
 
     it('handles chunks split across network reads', async (): Promise<void> => {

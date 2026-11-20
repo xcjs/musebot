@@ -6,6 +6,7 @@ export interface ILlmRequest {
   model: string;
   messages: LlmMessage[];
   temperature?: number;
+  max_tokens?: number;
   response_format?: ILlmResponseFormat;
   stream?: boolean;
   stream_options?: ILlmStreamOptions;

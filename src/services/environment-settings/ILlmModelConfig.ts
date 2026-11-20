@@ -4,4 +4,5 @@ export interface ILlmModelConfig {
   name: string;
   inputModalities?: LlmModality[];
   outputModalities?: LlmModality[];
+  maxOutputTokens?: number;
 }

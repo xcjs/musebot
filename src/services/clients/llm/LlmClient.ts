@@ -38,6 +38,7 @@ export class LlmClient implements ILlmClient {
 
   readonly #host: ILlmHost;
   readonly #model: string;
+  readonly #maxOutputTokens: number | null;
   readonly #lifecycleStrategy: ILlmLifecycleStrategy;
 
   get host(): URL {
@@ -63,6 +64,14 @@ export class LlmClient implements ILlmClient {
     this.#logger.info(`Selected host: ${host.url}`);
 
     this.#model = this.#selectModel(this.#configurationService.llmModels);
+
+    const modelConfig = this.#configurationService.llmModelConfigs
+      .find(config => config.name === this.#model);
+    this.#maxOutputTokens = modelConfig?.maxOutputTokens ?? null;
+
+    if (this.#maxOutputTokens !== null) {
+      this.#logger.info(`Output token cap for '${this.#model}': ${this.#maxOutputTokens}.`);
+    }
 
     this.#lifecycleStrategy = this.#selectStrategy(services, host);
   }
@@ -477,6 +486,10 @@ export class LlmClient implements ILlmClient {
 
     if (temperature !== undefined) {
       request.temperature = temperature;
+    }
+
+    if (this.#maxOutputTokens !== null) {
+      request.max_tokens = this.#maxOutputTokens;
     }
 
     return request;
