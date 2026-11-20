@@ -6,6 +6,14 @@ export class DiscordConstants {
   public static readonly MaxMediaAttachmentsPerMessage = 10;
   public static readonly StateFileName = 'Prompt.dat';
   public static readonly MaxButtonsPerActionRow = 5;
-  public static readonly MaxRequestsPerSecond = 50;
+
+  /**
+   * Discord's message-edit bucket allows 5 edits per 5 seconds per channel
+   * (~1 edit per second sustained). Streaming LLM output paced above this
+   * rate accumulates a 429 backlog inside discord.js, which stalls each
+   * awaited edit and manifests as the stream freezing mid-response.
+   */
+  public static readonly MaxStreamingEditsPerSecond = 1;
+
   public static readonly ShardCountAuto = 'auto';
 }

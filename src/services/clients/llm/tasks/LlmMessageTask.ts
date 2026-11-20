@@ -129,6 +129,7 @@ export class LlmMessageTask extends LlmBaseTask<void> {
 
     let averageResponseInMs = 0;
     let endTime = performance.now();
+    const minimumEditIntervalMs = 1000 / DiscordConstants.MaxStreamingEditsPerSecond;
 
     let fullResponse = '';
     let responseBatch = '';
@@ -145,9 +146,11 @@ export class LlmMessageTask extends LlmBaseTask<void> {
       responseBatch += response.content;
 
       if (!response.done) {
-        // Ensure we're not sending requests faster than Discord can
-        // allow or process them.
-        if (startTime - endTime <= (DiscordConstants.MaxRequestsPerSecond / 1000)
+        // Ensure we're not sending edits faster than Discord's message-edit
+        // rate limit (5 edits per 5 seconds per channel) can process them.
+        // Token chunks can arrive far faster than Discord will accept edits,
+        // so edit pacing must be decoupled from the token arrival rate.
+        if (startTime - endTime < minimumEditIntervalMs
           || startTime - endTime < averageResponseInMs
         ) {
           continue;

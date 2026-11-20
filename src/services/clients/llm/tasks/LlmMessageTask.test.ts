@@ -285,4 +285,55 @@ describe('LlmMessageTask', () => {
       expect(mocks.compress).toHaveBeenCalledTimes(2);
     });
   });
+
+  describe('process() streaming edit pacing', (): void => {
+    it('paces streaming edits so a fast token stream cannot flood Discord, without losing content', async (): Promise<void> => {
+      jest.useFakeTimers();
+
+      try {
+        const chunkCount = 300;
+        const chunkIntervalMs = 5;
+        const fullContent = 'a'.repeat(chunkCount) + 'DONE';
+
+        const mocks = buildMockServices(true);
+
+        async function* fastStream(): AsyncGenerator<LlmStreamChunk> {
+          for (let i = 0; i < chunkCount; i++) {
+            await new Promise<void>((resolve) => setTimeout(resolve, chunkIntervalMs));
+            yield { content: 'a', done: false } as LlmStreamChunk;
+          }
+
+          yield { content: 'DONE', done: true, promptTokens: 10, completionTokens: 5 } as LlmStreamChunk;
+        }
+
+        mocks.sendMessageAndGetStream.mockImplementationOnce(() => Promise.resolve({
+          exchange: { request: { model: 'test', messages: [] }, response: fastStream() },
+          data: [],
+        } as unknown));
+
+        const task = new LlmMessageTask(mocks.container, mockDiscordMessage);
+        const processed = task.process();
+
+        await jest.advanceTimersByTimeAsync(chunkCount * chunkIntervalMs + 100);
+        await processed;
+
+        const flushed = mocks.llmStreamingReplyServiceReply.mock.calls.map(
+          (call: unknown[]) => call[1] as string
+        );
+
+        // Discord's message-edit bucket allows at most ~5 edits per 5 seconds
+        // per channel, so an edit roughly every 1000ms is the sustainable
+        // ceiling while streaming.
+        const minimumEditIntervalMs = 1000;
+        const maxFlushes = Math.ceil(chunkCount * chunkIntervalMs / minimumEditIntervalMs) + 1;
+
+        expect(flushed.length).toBeLessThanOrEqual(maxFlushes);
+
+        // Every character of every chunk must land in exactly one flushed batch.
+        expect(flushed.join('')).toBe(fullContent);
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+  });
 });
