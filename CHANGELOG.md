@@ -2,6 +2,12 @@
 
 All notable changes to Musebot are documented in this file.
 
+## [Unreleased]
+
+### Fixed
+
+- **LLM client now waits for non-streamed responses however long they take.** undici's default ~300 s headers/body timeouts abort non-streamed chat completions mid-generation (llama.cpp sends no response headers until the entire completion finishes), which turned any long reasoning-model generation into a wasted request plus an endless TaskQueue retry loop (incident 2026-11-19: 14 aborted attempts in ~75 minutes, each burning ~5 minutes of GPU time). The LLM client now issues requests through a dedicated undici Agent with `headersTimeout: 0, bodyTimeout: 0` — timeouts disabled for LLM calls only, no global dispatcher changes.
+
 ## [10.0.1] — 2026-10-20
 
 ### Fixed

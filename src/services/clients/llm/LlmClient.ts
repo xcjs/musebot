@@ -5,6 +5,7 @@ import { trimTrailingJsonContent } from '../../../utilities/string-utilities.js'
 import { IConfigurationService } from '../../environment-settings/IConfigurationService.js';
 import { IBotServiceContainer } from '../../IBotServiceContainer.js';
 import { ILogger } from '../../ILogger.js';
+import { Agent as UndiciAgent, Dispatcher } from 'undici';
 import { LlmHostFlavor } from './enums/LlmHostFlavor.js';
 import { LlmModality } from './enums/LlmModality.js';
 import { LlmRole } from './enums/LlmRole.js';
@@ -445,12 +446,27 @@ export class LlmClient implements ILlmClient {
   }
 
   async #fetchResponse(path: string, request: ILlmEmbeddingsRequest | LlmWireChatCompletionRequest | ILlmShowRequest): Promise<Response> {
+    // Non-streamed completions produce no response headers until the entire
+    // generation finishes (llama.cpp and similar hosts), which can take
+    // arbitrarily long for reasoning models. undici's default ~300 s
+    // headers/body timeouts would abort the request mid-generation
+    // (TypeError: fetch failed) while the server keeps burning tokens —
+    // so Musebot waits for the response instead (timeouts disabled here,
+    // LLM calls only; no global dispatcher changes).
     return await fetch(`${this.#endpointBase}${path}`, {
       method: 'POST',
       headers: this.#headers(),
-      body: JSON.stringify(request)
-    });
+      body: JSON.stringify(request),
+      dispatcher: LlmClient.#llmDispatcher
+    } as RequestInit & { dispatcher: Dispatcher });
   }
+
+  // Undici Agent with headers+body timeouts disabled (0 = no timeout):
+  // Musebot waits for non-streamed LLM responses however long they take.
+  static readonly #llmDispatcher: UndiciAgent = new UndiciAgent({
+    headersTimeout: 0,
+    bodyTimeout: 0
+  });
 
   get #endpointBase(): string {
     const href = this.#host.url.href;

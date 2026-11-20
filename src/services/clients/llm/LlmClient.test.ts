@@ -316,6 +316,18 @@ describe('LlmClient', (): void => {
       expect(body.temperature).toBeUndefined();
     });
 
+    it('passes an undici dispatcher with timeouts disabled so non-streamed generations are waited out', async (): Promise<void> => {
+      fetchMock.mockResolvedValue(mockJsonResponse({ choices: [{ message: { role: 'assistant', content: 'ok' } }] }));
+
+      await client.generate('Hi');
+
+      const [, init] = fetchMock.mock.calls[0];
+      const initRecord = init as RequestInit & { dispatcher?: { constructor: { name: string } } };
+      expect(initRecord.dispatcher).toBeDefined();
+      // undici Agent instances report 'Dispatcher' as their constructor name's base
+      expect(initRecord.dispatcher!.constructor.name).toBe('Agent');
+    });
+
     it('appends only the endpoint to the host as configured (config carries the /v1 route)', async (): Promise<void> => {
       client = makeClient({ flavor: LlmHostFlavor.Ollama, isLocal: true }, {
         llmHosts: [{ url: new URL('http://localhost:11434'), token: null, isLocal: true }]
