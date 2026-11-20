@@ -2,7 +2,11 @@
 
 All notable changes to Musebot are documented in this file.
 
-## [Unreleased]
+## [10.1.0] — 2026-11-19
+
+### Added
+
+- New `llm.timeoutMinutes` config (default `0` — wait indefinitely) capping how long Musebot waits for a non-streamed LLM response. The cap applies per request to the OpenAI-compatible client and the Ollama lifecycle probes and is resolved per bot at startup. Defaults keep the wait-for-the-response behavior; set a positive value (e.g. `10`) to bound runaway generations host-side. Previously the cap was hard-coded to "no timeout"; before that undici's ~300 s default applied, which aborted long reasoning-model generations (see Fixed below). Documented in `docs/musebot/02-configuration.md` and `docs/chat/01-llm.md`.
 
 ### Fixed
 

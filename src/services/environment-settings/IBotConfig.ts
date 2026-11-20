@@ -32,6 +32,7 @@ export interface IBotConfig {
     models: Array<string | ILlmModelConfig>;
     systemPrompt: string | string[];
     streamsResponse: boolean;
+    timeoutMinutes?: number;
     embeddingModel?: string;
     embeddingInputLimit?: number;
     topK?: number;

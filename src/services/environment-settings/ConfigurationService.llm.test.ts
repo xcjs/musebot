@@ -135,6 +135,26 @@ describe('ConfigurationService (llm section)', () => {
     expect(service.llmContextCompressionThreshold).toBe(0.75);
   });
 
+  it('defaults llmTimeoutMinutes to 0 (wait indefinitely) when not set', () => {
+    const service = new ConfigurationService(validChatBotConfig as unknown as IBotConfig);
+
+    expect(service.llmTimeoutMinutes).toBe(0);
+  });
+
+  it('returns configured llmTimeoutMinutes when set', () => {
+    const configWithTimeout = {
+      ...validChatBotConfig,
+      llm: {
+        ...validChatBotConfig.llm,
+        timeoutMinutes: 10
+      }
+    };
+
+    const service = new ConfigurationService(configWithTimeout as unknown as IBotConfig);
+
+    expect(service.llmTimeoutMinutes).toBe(10);
+  });
+
   it('returns model names for mixed string and object entries', () => {
     const mixedConfig = {
       ...validChatBotConfig,

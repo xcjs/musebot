@@ -202,6 +202,16 @@
         // Type:     Boolean
         "streamsResponse": false,
 
+        // The maximum time in minutes to wait for a non-streamed LLM response.
+        // Reasoning models can think for a very long time before sending any
+        // response — Musebot waits for the generation to finish rather than
+        // aborting it. Set a positive value to cap how long a request may take
+        // before it errors out and is retried.
+        // Required: Optional
+        // Default:  0
+        // Type:     Integer
+        // "timeoutMinutes": 0,
+
         // The name of an embedding model to use for long-term memory (LTM).
         // When set, LTM is enabled — Musebot stores conversation messages as
         // vector embeddings and retrieves relevant context from past conversations.

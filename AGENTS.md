@@ -200,6 +200,7 @@ Key settings (from `IBotConfig`):
 | `bots[].llm.models`                        | Array of model names or `{ name, inputModalities?, outputModalities? }` objects (modalities case-insensitive: text/image/video/audio, default `text`) |
 | `bots[].llm.systemPrompt`                  | System prompt for LLM conversations            |
 | `bots[].llm.streamsResponse`               | Whether the LLM streams responses              |
+| `bots[].llm.timeoutMinutes`                | Max minutes to wait for a non-streamed LLM response (0 = wait indefinitely) |
 | `bots[].llm.embeddingModel`                | Embedding model name (enables long-term memory) |
 | `bots[].llm.embeddingInputLimit`           | Embedding input chunk size in characters — oversized inputs are chunked and pooled, not truncated (default 2000) |
 | `bots[].llm.topK`                          | Number of similar memories retrieved per prompt |

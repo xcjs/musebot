@@ -58,6 +58,7 @@ function createMockConfigurationService(overrides: Partial<IConfigurationService
     llmModelConfigs: [{ name: 'test-model', inputModalities: [LlmModality.Text], outputModalities: [LlmModality.Text] }],
     llmSystemPrompt: '',
     llmStreamsResponse: false,
+    llmTimeoutMinutes: 0,
     llmEmbeddingModel: 'embed-model',
     llmTopK: 5,
     llmContextWindow: null,

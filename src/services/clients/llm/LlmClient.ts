@@ -39,6 +39,7 @@ export class LlmClient implements ILlmClient {
 
   readonly #host: ILlmHost;
   readonly #model: string;
+  readonly #llmDispatcher: UndiciAgent;
   readonly #lifecycleStrategy: ILlmLifecycleStrategy;
 
   get host(): URL {
@@ -64,6 +65,14 @@ export class LlmClient implements ILlmClient {
     this.#logger.info(`Selected host: ${host.url}`);
 
     this.#model = this.#selectModel(this.#configurationService.llmModels);
+
+    const timeoutMinutes = this.#configurationService.llmTimeoutMinutes;
+    this.#llmDispatcher = this.#buildLlmDispatcher(timeoutMinutes);
+    if (timeoutMinutes > 0) {
+      this.#logger.info(`LLM request timeout: ${timeoutMinutes} minute(s).`);
+    } else {
+      this.#logger.info('LLM request timeout: none (wait for non-streamed generations however long they take).');
+    }
 
     this.#lifecycleStrategy = this.#selectStrategy(services, host);
   }
@@ -306,8 +315,9 @@ export class LlmClient implements ILlmClient {
       const response = await fetch(showUrl, {
         method: 'POST',
         headers: this.#headers(),
-        body: JSON.stringify(request)
-      });
+        body: JSON.stringify(request),
+        dispatcher: this.#llmDispatcher
+      } as RequestInit & { dispatcher: Dispatcher });
 
       if (!response.ok) {
         throw new Error(`The LLM API at ${showUrl} responded with status ${response.status}.`);
@@ -451,22 +461,25 @@ export class LlmClient implements ILlmClient {
     // arbitrarily long for reasoning models. undici's default ~300 s
     // headers/body timeouts would abort the request mid-generation
     // (TypeError: fetch failed) while the server keeps burning tokens —
-    // so Musebot waits for the response instead (timeouts disabled here,
-    // LLM calls only; no global dispatcher changes).
+    // so Musebot waits for the response (llm.timeoutMinutes, default 0 =
+    // wait indefinitely; 0 genuinely disables both undici timeouts).
     return await fetch(`${this.#endpointBase}${path}`, {
       method: 'POST',
       headers: this.#headers(),
       body: JSON.stringify(request),
-      dispatcher: LlmClient.#llmDispatcher
+      dispatcher: this.#llmDispatcher
     } as RequestInit & { dispatcher: Dispatcher });
   }
 
-  // Undici Agent with headers+body timeouts disabled (0 = no timeout):
-  // Musebot waits for non-streamed LLM responses however long they take.
-  static readonly #llmDispatcher: UndiciAgent = new UndiciAgent({
-    headersTimeout: 0,
-    bodyTimeout: 0
-  });
+  // Undici Agent for LLM calls with headers+body timeouts resolved from
+  // llm.timeoutMinutes (default 0 = no timeout: wait however long the
+  // generation takes). Scoped per-request; the global dispatcher is untouched.
+  #buildLlmDispatcher(timeoutMinutes: number): UndiciAgent {
+    return new UndiciAgent({
+      headersTimeout: timeoutMinutes > 0 ? timeoutMinutes * 60 * 1000 : 0,
+      bodyTimeout: timeoutMinutes > 0 ? timeoutMinutes * 60 * 1000 : 0
+    });
+  }
 
   get #endpointBase(): string {
     const href = this.#host.url.href;
@@ -557,7 +570,8 @@ export class LlmClient implements ILlmClient {
           host,
           this.#model,
           this.#logger,
-          this.#configurationService.taskRetryDelayMilliseconds);
+          this.#configurationService.taskRetryDelayMilliseconds,
+          this.#configurationService.llmTimeoutMinutes);
       case LlmHostFlavor.LlamaCppRouter:
         return new LlamaCppRouterLifecycleStrategy(host, this.#model, this.#logger);
       case LlmHostFlavor.LlamaCppSingle:

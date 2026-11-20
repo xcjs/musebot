@@ -1,3 +1,5 @@
+import { Agent as UndiciAgent, Dispatcher } from 'undici';
+
 import { ILogger } from '../../../ILogger.js';
 import { ILlmHost } from '../models/ILlmHost.js';
 import { ILlmLifecycleStrategy } from './ILlmLifecycleStrategy.js';
@@ -9,12 +11,22 @@ export class OllamaLifecycleStrategy implements ILlmLifecycleStrategy {
   readonly #model: string;
   readonly #logger: ILogger;
   readonly #intervalMs: number;
+  readonly #dispatcher: UndiciAgent;
 
-  constructor(host: ILlmHost, model: string, logger: ILogger, intervalMs: number) {
+  constructor(host: ILlmHost, model: string, logger: ILogger, intervalMs: number, timeoutMinutes: number = 0) {
     this.#host = host;
     this.#model = model;
     this.#logger = logger;
     this.#intervalMs = intervalMs;
+    this.#dispatcher = OllamaLifecycleStrategy.#buildDispatcher(timeoutMinutes);
+  }
+
+  static #buildDispatcher(timeoutMinutes: number): UndiciAgent {
+    const timeoutMs = timeoutMinutes > 0 ? timeoutMinutes * 60 * 1000 : 0;
+    return new UndiciAgent({
+      headersTimeout: timeoutMs,
+      bodyTimeout: timeoutMs
+    });
   }
 
   #headers(json: boolean): Record<string, string> {
@@ -33,8 +45,9 @@ export class OllamaLifecycleStrategy implements ILlmLifecycleStrategy {
       const response = await fetch(new URL('/api/generate', this.#host.url), {
         method: 'POST',
         headers: this.#headers(true),
-        body: JSON.stringify({ model: this.#model, keep_alive: 0 })
-      });
+        body: JSON.stringify({ model: this.#model, keep_alive: 0 }),
+        dispatcher: this.#dispatcher
+      } as RequestInit & { dispatcher: Dispatcher });
 
       return response.ok;
     } catch (error) {
@@ -46,8 +59,9 @@ export class OllamaLifecycleStrategy implements ILlmLifecycleStrategy {
   async isModelLoaded(): Promise<boolean> {
     try {
       const response = await fetch(new URL('/api/ps', this.#host.url), {
-        headers: this.#headers(false)
-      });
+        headers: this.#headers(false),
+        dispatcher: this.#dispatcher
+      } as RequestInit & { dispatcher: Dispatcher });
       if (!response.ok) {
         return false;
       }
@@ -84,8 +98,9 @@ export class OllamaLifecycleStrategy implements ILlmLifecycleStrategy {
       const response = await fetch(new URL('/api/show', this.#host.url), {
         method: 'POST',
         headers: this.#headers(true),
-        body: JSON.stringify({ model: this.#model })
-      });
+        body: JSON.stringify({ model: this.#model }),
+        dispatcher: this.#dispatcher
+      } as RequestInit & { dispatcher: Dispatcher });
 
       if (!response.ok) {
         return null;
@@ -110,8 +125,9 @@ export class OllamaLifecycleStrategy implements ILlmLifecycleStrategy {
       const response = await fetch(new URL('/api/show', this.#host.url), {
         method: 'POST',
         headers: this.#headers(true),
-        body: JSON.stringify({ model })
-      });
+        body: JSON.stringify({ model }),
+        dispatcher: this.#dispatcher
+      } as RequestInit & { dispatcher: Dispatcher });
 
       if (!response.ok) {
         return false;
