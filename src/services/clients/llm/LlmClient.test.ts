@@ -326,7 +326,7 @@ describe('LlmClient', (): void => {
       const initRecord = init as RequestInit & { dispatcher?: { constructor: { name: string } } };
       expect(initRecord.dispatcher).toBeDefined();
       // undici Agent instances report 'Dispatcher' as their constructor name's base
-      expect(initRecord.dispatcher!.constructor.name).toBe('Agent');
+      expect(initRecord.dispatcher.constructor.name).toBe('Agent');
     });
 
     it('appends only the endpoint to the host as configured (config carries the /v1 route)', async (): Promise<void> => {

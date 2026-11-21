@@ -1,3 +1,5 @@
+import { Agent as UndiciAgent, Dispatcher } from 'undici';
+
 import { IHttpExchange } from '../../../models/IHttpExchange.js';
 import { IHttpExchangeWithAttachedData } from '../../../models/IHttpExchangeWithAttachedData.js';
 import { getRandomArrayEntry, getRandomInt } from '../../../utilities/random-utilities.js';
@@ -5,7 +7,6 @@ import { trimTrailingJsonContent } from '../../../utilities/string-utilities.js'
 import { IConfigurationService } from '../../environment-settings/IConfigurationService.js';
 import { IBotServiceContainer } from '../../IBotServiceContainer.js';
 import { ILogger } from '../../ILogger.js';
-import { Agent as UndiciAgent, Dispatcher } from 'undici';
 import { LlmHostFlavor } from './enums/LlmHostFlavor.js';
 import { LlmModality } from './enums/LlmModality.js';
 import { LlmRole } from './enums/LlmRole.js';

@@ -102,7 +102,7 @@ describe('OllamaLifecycleStrategy', () => {
     for (const call of fetchMock.mock.calls) {
       const init = call[1] as RequestInit & { dispatcher?: { constructor: { name: string } } };
       expect(init.dispatcher).toBeDefined();
-      expect(init.dispatcher!.constructor.name).toBe('Agent');
+      expect(init.dispatcher.constructor.name).toBe('Agent');
     }
   });
 });
