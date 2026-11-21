@@ -61,6 +61,11 @@ export abstract class LlmBaseTask<T> extends BaseTask<T> {
         || this.#featureService.hasFeature(SupportedFeature.Txt2Music)
         || this.#featureService.hasFeature(SupportedFeature.Txt2Vid))
     ) {
+      if (this.isCompanionChannelBusy(ResourceType.Media, this.#comfyUiClient.host)) {
+        this.logger.info('Skipping the ComfyUI free(); a render is currently in progress.');
+        return;
+      }
+
       const freed = await this.#comfyUiClient.free();
       if (!freed) {
         throw new Error('ComfyUI VRAM could not be freed; aborting to prevent LLM VRAM contention.');

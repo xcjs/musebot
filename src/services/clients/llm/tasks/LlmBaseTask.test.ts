@@ -7,6 +7,7 @@ import type { IBotServiceContainer } from '../../../IBotServiceContainer.js';
 import type { ILogger } from '../../../ILogger.js';
 import type { IParallelizationStrategy } from '../../../parallelization/IParallelizationStrategy.js';
 import type { ITaskChannelPostProcessor } from '../../../parallelization/ITaskChannelPostProcessor.js';
+import type { ITaskQueue } from '../../../tasks/ITaskQueue.js';
 import type { ComfyUiClient } from '../../media/comfy-ui/ComfyUiClient.js';
 import type { ILlmClient } from '../ILlmClient.js';
 import { LlmBaseTask } from './LlmBaseTask.js';
@@ -50,6 +51,14 @@ function createMockLlmClient(): jest.Mocked<ILlmClient> {
   } as unknown as jest.Mocked<ILlmClient>;
 }
 
+function createMockTaskQueue(isChannelActive: (channelName: string) => boolean = (): boolean => false): ITaskQueue {
+  return {
+    isActive: false,
+    isChannelActive: jest.fn(isChannelActive),
+    add: jest.fn(),
+  } as unknown as ITaskQueue;
+}
+
 class TestableLlmTask extends LlmBaseTask<unknown> {
   override async process(): Promise<void> {
     await super.process();
@@ -61,12 +70,13 @@ function createMockServices(
   logger: jest.Mocked<ILogger>,
   featureService: jest.Mocked<IFeatureService>,
   comfyUiClient: jest.Mocked<ComfyUiClient>,
-  llmClient: jest.Mocked<ILlmClient>
+  llmClient: jest.Mocked<ILlmClient>,
+  taskQueue: ITaskQueue
 ): IBotServiceContainer {
   return {
     configurationService: config,
     featureService,
-    taskQueue: null as never,
+    taskQueue,
     typingService: null as never,
     discordClient: null as never,
     generativeChatClient: null as never,
@@ -74,7 +84,13 @@ function createMockServices(
     workflowService: null as never,
     webContentService: null as never,
     llmHostFlavorRegistry: null as never,
-    parallelizationStrategy: { getTaskChannel: jest.fn(() => 'test') } as unknown as IParallelizationStrategy,
+    parallelizationStrategy: {
+      getTaskChannel: jest.fn((
+        _resourceType: unknown,
+        isChild: boolean,
+        resourceUrl: URL | null
+      ): string => resourceUrl === null ? 'test' : (isChild ? `child_${resourceUrl.host}` : resourceUrl.host)),
+    } as unknown as IParallelizationStrategy,
     getLogger: jest.fn(() => logger),
     getTaskChannelPostProcessor: (() => null as never) as unknown as () => ITaskChannelPostProcessor,
     getContextMessageFactory: () => null as never,
@@ -116,6 +132,7 @@ describe('LlmBaseTask', () => {
   let mockFeatureService: jest.Mocked<IFeatureService>;
   let mockComfyUiClient: jest.Mocked<ComfyUiClient>;
   let mockLlmClient: jest.Mocked<ILlmClient>;
+  let mockTaskQueue: ITaskQueue;
   let task: TestableLlmTask;
 
   beforeEach((): void => {
@@ -124,9 +141,10 @@ describe('LlmBaseTask', () => {
     mockFeatureService = createMockFeatureService(true);
     mockComfyUiClient = createMockComfyUiClient(true);
     mockLlmClient = createMockLlmClient();
+    mockTaskQueue = createMockTaskQueue();
 
     task = new TestableLlmTask(createMockServices(
-      mockConfig, mockLogger, mockFeatureService, mockComfyUiClient, mockLlmClient
+      mockConfig, mockLogger, mockFeatureService, mockComfyUiClient, mockLlmClient, mockTaskQueue
     ));
   });
 
@@ -150,18 +168,31 @@ describe('LlmBaseTask', () => {
     it('should not call comfyUi.free() when not in serial mode', async (): Promise<void> => {
       const parallelConfig = createMockConfig({ taskQueueStrategy: TaskQueueStrategy.Parallel });
       task = new TestableLlmTask(createMockServices(
-        parallelConfig, mockLogger, mockFeatureService, mockComfyUiClient, mockLlmClient
+        parallelConfig, mockLogger, mockFeatureService, mockComfyUiClient, mockLlmClient, mockTaskQueue
       ));
 
       await task.preProcess();
 
       expect(mockComfyUiClient.free).not.toHaveBeenCalled();
+      expect(mockTaskQueue.isChannelActive).not.toHaveBeenCalled();
     });
 
     it('should not call comfyUi.free() when no media features are available', async (): Promise<void> => {
       const noMedia = createMockFeatureService(false);
       task = new TestableLlmTask(createMockServices(
-        mockConfig, mockLogger, noMedia, mockComfyUiClient, mockLlmClient
+        mockConfig, mockLogger, noMedia, mockComfyUiClient, mockLlmClient, mockTaskQueue
+      ));
+
+      await task.preProcess();
+
+      expect(mockComfyUiClient.free).not.toHaveBeenCalled();
+      expect(mockTaskQueue.isChannelActive).not.toHaveBeenCalled();
+    });
+
+    it('should not call comfyUi.free() while a render is in progress', async (): Promise<void> => {
+      mockTaskQueue = createMockTaskQueue((): boolean => true);
+      task = new TestableLlmTask(createMockServices(
+        mockConfig, mockLogger, mockFeatureService, mockComfyUiClient, mockLlmClient, mockTaskQueue
       ));
 
       await task.preProcess();

@@ -43,6 +43,10 @@ export class TaskQueue implements ITaskQueue {
     void this.#processQueue();
   }
 
+  isChannelActive(channelName: string): boolean {
+    return this.#channels.some(channel => channel.name === channelName && channel.isActive);
+  }
+
   async #processQueue(): Promise<void> {
     let tasks = this.#getNextTasks();
 
