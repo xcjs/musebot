@@ -633,7 +633,20 @@ describe('LlmClient', (): void => {
       expect(error).toBeInstanceOf(Error);
       expect(error.message).toBe('Failed to send the LLM a message and retrieve a stream.');
       expect(error.cause).toBeInstanceOf(Error);
-      expect((error.cause as Error).message).toBe('The LLM API at http://localhost:11434/v1/chat/completions responded with status 500.');
+      expect((error.cause as Error).message)
+        .toBe('The LLM API at http://localhost:11434/v1/chat/completions responded with status 500: {"error":"server exploded"}');
+    });
+
+    it('truncates long error bodies in the status error message', async (): Promise<void> => {
+      fetchMock.mockResolvedValue(mockJsonResponse({ error: 'x'.repeat(600) }, 400));
+
+      const rejection = await client.sendMessageAndGetStream('Hi', [])
+        .catch((reason: unknown): Error => reason as Error);
+      const error = rejection as Error;
+
+      expect(error.message).toBe('Failed to send the LLM a message and retrieve a stream.');
+      expect((error.cause as Error).message)
+        .toBe(`The LLM API at http://localhost:11434/v1/chat/completions responded with status 400: ${'{"error":"' + 'x'.repeat(490)}`);
     });
 
     it('yields a terminal done chunk with usage when the stream ends without [DONE]', async (): Promise<void> => {

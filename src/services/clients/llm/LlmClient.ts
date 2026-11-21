@@ -199,7 +199,7 @@ export class LlmClient implements ILlmClient {
       const response = await this.#fetchResponse(path, this.#toWireRequest(request));
 
       if (!response.ok) {
-        throw new Error(`The LLM API at ${this.#endpointBase}${path} responded with status ${response.status}.`);
+        throw new Error(await this.#statusMessage(`${this.#endpointBase}${path}`, response));
       }
 
       if (response.body === null) {
@@ -321,7 +321,7 @@ export class LlmClient implements ILlmClient {
       } as RequestInit & { dispatcher: Dispatcher });
 
       if (!response.ok) {
-        throw new Error(`The LLM API at ${showUrl} responded with status ${response.status}.`);
+        throw new Error(await this.#statusMessage(showUrl.href, response));
       }
 
       return await response.json() as LlmShowResponse;
@@ -450,10 +450,28 @@ export class LlmClient implements ILlmClient {
     const response = await this.#fetchResponse(path, request);
 
     if (!response.ok) {
-      throw new Error(`The LLM API at ${this.#endpointBase}${path} responded with status ${response.status}.`);
+      throw new Error(await this.#statusMessage(`${this.#endpointBase}${path}`, response));
     }
 
     return await response.json() as TResponse;
+  }
+
+  /**
+   * Builds an error message for a non-OK LLM response, including a truncated
+   * copy of the response body: hosts (Ollama, llama.cpp, ...) explain why a
+   * request was rejected there. The body is capped to keep HTML/JSON error
+   * pages from flooding the log.
+   */
+  async #statusMessage(url: string, response: Response): Promise<string> {
+    let body: string;
+    try {
+      body = (await response.text()).slice(0, 500);
+    } catch (error) {
+      this.#logger.debug('The LLM response body could not be read for the error message:', error);
+      body = '<response body unreadable>';
+    }
+
+    return `The LLM API at ${url} responded with status ${response.status}: ${body}`;
   }
 
   async #fetchResponse(path: string, request: ILlmEmbeddingsRequest | LlmWireChatCompletionRequest | ILlmShowRequest): Promise<Response> {
