@@ -19,6 +19,13 @@ You must restart the bot for any changes to be applied.
 
 ### **Core Configuration**
 
+#### `botId`
+
+* **Description:** A unique identifier for this bot instance. It distinguishes
+  bots in log output when several instances run from the same deployment.
+* **Required:** Yes
+* **Type:** `String`
+
 #### `nodeEnvironment`
 
 * **Description:** The operating environment for the Node.js runtime.
