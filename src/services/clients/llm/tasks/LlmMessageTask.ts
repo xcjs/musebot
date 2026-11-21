@@ -133,6 +133,9 @@ export class LlmMessageTask extends LlmBaseTask<void> {
 
     let fullResponse = '';
     let responseBatch = '';
+    let reasoning = '';
+    let lastReasoningView: string | null = null;
+    let contentStarted = false;
 
     if(!exchange?.exchange?.response) {
       return;
@@ -142,8 +145,18 @@ export class LlmMessageTask extends LlmBaseTask<void> {
       const startTime = performance.now();
       let replies: DiscordMessage[] = [];
 
+      if (response.content.trim().length > 0) {
+        contentStarted = true;
+      }
+
       fullResponse += response.content;
       responseBatch += response.content;
+
+      // Reasoning deltas stop contributing to the view once the answer has
+      // started; the reasoning display is about to be replaced by it.
+      if (response.reasoning !== undefined && response.reasoning.length > 0 && !contentStarted) {
+        reasoning += response.reasoning;
+      }
 
       if (!response.done) {
         // Ensure we're not sending edits faster than Discord's message-edit
@@ -153,6 +166,29 @@ export class LlmMessageTask extends LlmBaseTask<void> {
         if (startTime - endTime < minimumEditIntervalMs
           || startTime - endTime < averageResponseInMs
         ) {
+          continue;
+        }
+
+        if (!contentStarted) {
+          // Reasoning phase: no answer text yet, so the message shows the
+          // recent reasoning as a sliding view. The next content flush below
+          // overwrites this view in place with the start of the answer.
+          if (reasoning.length === 0) {
+            continue;
+          }
+
+          const view = this.#renderReasoningView(reasoning);
+
+          if (view === lastReasoningView) {
+            continue;
+          }
+
+          lastReasoningView = view;
+          await this.llmStreamingReplyService.showReasoning(this.#message, view);
+
+          endTime = performance.now();
+          averageResponseInMs = (averageResponseInMs + endTime - startTime) / 2;
+          this.logger.debug(`The average streaming response time is ${averageResponseInMs}ms.`);
           continue;
         }
 
@@ -175,8 +211,21 @@ export class LlmMessageTask extends LlmBaseTask<void> {
         }
       }
 
-      replies = await this.llmStreamingReplyService.reply(this.#message, responseBatch, response.done);
-      responseBatch = '';
+      if (response.done && !contentStarted) {
+        // The stream ended during the reasoning phase: finalize the reasoning
+        // view — there is no answer text to send.
+        if (reasoning.length > 0) {
+          const finalView = this.#renderReasoningView(reasoning);
+
+          if (finalView !== lastReasoningView) {
+            lastReasoningView = finalView;
+            await this.llmStreamingReplyService.showReasoning(this.#message, finalView);
+          }
+        }
+      } else {
+        replies = await this.llmStreamingReplyService.reply(this.#message, responseBatch, response.done);
+        responseBatch = '';
+      }
 
       if (response.done) {
         const assistantMessage: LlmMessage = { role: LlmRole.Assistant, content: fullResponse };
@@ -207,6 +256,46 @@ export class LlmMessageTask extends LlmBaseTask<void> {
       averageResponseInMs = (averageResponseInMs + endTime - startTime) / 2;
       this.logger.debug(`The average streaming response time is ${averageResponseInMs}ms.`);
     }
+  }
+
+  // Renders the ephemeral reasoning view: a label above a quote-blocked tail
+  // of the most recent reasoning, always under Discord's 2000 character
+  // message limit. Rendered fresh on every flush so the sliding window
+  // follows the model's thinking.
+  #renderReasoningView(reasoning: string): string {
+    const reasoningLabel = '🤔 *Reasoning…*';
+    const maxReasoningViewChars = 1800;
+
+    if (reasoning.length === 0) {
+      return reasoningLabel;
+    }
+
+    // Neutralize code fences: a fence from outside the tail window would
+    // otherwise swallow the rest of the view into a code block.
+    const lines = reasoning.replace(/`{3,}/gu, '\u2026').split('\n');
+    const tailLines: string[] = [];
+    let budget = maxReasoningViewChars - reasoningLabel.length - 4;
+
+    for (let i = lines.length - 1; i >= 0 && budget > 0; i -= 1) {
+      const line = lines[i].length > 600 ? lines[i].slice(-600) : lines[i];
+      const cost = line.length + 3; // "> " prefix plus a trailing newline
+
+      if (cost > budget) {
+        if (tailLines.length === 0) {
+          tailLines.push(line.slice(-Math.max(0, budget - 2)));
+        }
+
+        break;
+      }
+
+      tailLines.push(line);
+      budget -= cost;
+    }
+
+    const overflow = tailLines.length < lines.length ? '\u2026' : '';
+    const quoted = tailLines.reverse().map((line) => `> ${line}`).join('\n');
+
+    return `${reasoningLabel}\n\n${overflow}${quoted}`;
   }
 
   async #storeMemories(llmChatMessage: LlmChatMessage, botResponseContent: string): Promise<void> {

@@ -41,6 +41,7 @@ interface MockServices {
   sendMessageAndGetStream: jest.Mock;
   llmReplyServiceReply: jest.Mock;
   llmStreamingReplyServiceReply: jest.Mock;
+  llmStreamingReplyServiceShowReasoning: jest.Mock;
   llmStreamingReplyServiceClearState: jest.Mock;
 }
 
@@ -98,6 +99,7 @@ function buildMockServices(streamsResponse: boolean, contextMessages: LlmMessage
 
   const llmReplyServiceReply = jest.fn<() => Promise<unknown[]>>().mockResolvedValue([]);
   const llmStreamingReplyServiceReply = jest.fn<() => Promise<unknown[]>>().mockResolvedValue([]);
+  const llmStreamingReplyServiceShowReasoning = jest.fn<() => Promise<void>>().mockResolvedValue(undefined);
   const llmStreamingReplyServiceClearState = jest.fn<() => Promise<void>>().mockResolvedValue(undefined);
 
   const config: IConfigurationService = {
@@ -171,6 +173,7 @@ function buildMockServices(streamsResponse: boolean, contextMessages: LlmMessage
   const llmReplyService = { reply: llmReplyServiceReply };
   const llmStreamingReplyService = {
     reply: llmStreamingReplyServiceReply,
+    showReasoning: llmStreamingReplyServiceShowReasoning,
     clearState: llmStreamingReplyServiceClearState,
   };
   const replyService = { replyWithError: jest.fn() };
@@ -229,6 +232,7 @@ function buildMockServices(streamsResponse: boolean, contextMessages: LlmMessage
     sendMessageAndGetStream,
     llmReplyServiceReply,
     llmStreamingReplyServiceReply,
+    llmStreamingReplyServiceShowReasoning,
     llmStreamingReplyServiceClearState,
   };
 }
@@ -334,6 +338,113 @@ describe('LlmMessageTask', () => {
       } finally {
         jest.useRealTimers();
       }
+    });
+  });
+
+  describe('process() streaming reasoning display', (): void => {
+    it('shows a sliding reasoning view and replaces it in place with the answer', async (): Promise<void> => {
+      jest.useFakeTimers();
+
+      try {
+        const reasoningChunkCount = 260;
+        const contentChunkCount = 30;
+        const chunkIntervalMs = 5;
+
+        const mocks = buildMockServices(true);
+
+        async function* reasoningStream(): AsyncGenerator<LlmStreamChunk> {
+          for (let i = 0; i < reasoningChunkCount; i++) {
+            await new Promise<void>((resolve) => setTimeout(resolve, chunkIntervalMs));
+            yield { content: '', done: false, reasoning: `Thought ${i}.\n` } as LlmStreamChunk;
+          }
+
+          for (let i = 0; i < contentChunkCount; i++) {
+            await new Promise<void>((resolve) => setTimeout(resolve, chunkIntervalMs));
+            yield { content: 'a', done: false } as LlmStreamChunk;
+          }
+
+          yield { content: 'DONE', done: true, promptTokens: 10, completionTokens: 5 } as LlmStreamChunk;
+        }
+
+        mocks.sendMessageAndGetStream.mockImplementationOnce(() => Promise.resolve({
+          exchange: { request: { model: 'test', messages: [] }, response: reasoningStream() },
+          data: [],
+        } as unknown));
+
+        const task = new LlmMessageTask(mocks.container, mockDiscordMessage);
+        const processed = task.process();
+
+        await jest.advanceTimersByTimeAsync((reasoningChunkCount + contentChunkCount) * chunkIntervalMs + 100);
+        await processed;
+
+        const reasoningViews = mocks.llmStreamingReplyServiceShowReasoning.mock.calls.map(
+          (call: unknown[]) => call[1] as string
+        );
+        const flushed = mocks.llmStreamingReplyServiceReply.mock.calls.map(
+          (call: unknown[]) => call[1] as string
+        );
+
+        // The reasoning phase spans ~1300ms of the paced edit budget: the
+        // sliding view is shown at the ~1s edit boundary. Reasoning edits
+        // share the same edit budget as content edits, so at most one
+        // reasoning view fits before the answer replaces it.
+        expect(reasoningViews.length).toBeGreaterThanOrEqual(1);
+        expect(reasoningViews.length).toBeLessThanOrEqual(2);
+
+        // The view is a sliding window: labeled, quote-blocked, holding the
+        // most recent reasoning, and always under Discord's message limit.
+        const lastView = reasoningViews[reasoningViews.length - 1];
+        expect(lastView.startsWith('🤔 *Reasoning…*')).toBe(true);
+        expect(lastView).toContain('> Thought 199.');
+        expect(lastView).not.toContain('> Thought 259.');
+        expect(lastView.length).toBeLessThanOrEqual(2000);
+
+        // Replace in place: reasoning views stop once the answer starts, the
+        // answer batches carry no reasoning text, and no reasoning-driven
+        // reply() flush leaks an empty answer over the reasoning view.
+        const firstReplyOrder = mocks.llmStreamingReplyServiceReply.mock.invocationCallOrder[0];
+
+        for (const order of mocks.llmStreamingReplyServiceShowReasoning.mock.invocationCallOrder) {
+          expect(order).toBeLessThan(firstReplyOrder);
+        }
+
+        expect(flushed.join('')).toBe('a'.repeat(contentChunkCount) + 'DONE');
+        expect(flushed.join('')).not.toContain('Thought');
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+
+    it('finalizes the reasoning view when the stream ends without answer content', async (): Promise<void> => {
+      const mocks = buildMockServices(true);
+
+      async function* reasoningOnlyStream(): AsyncGenerator<LlmStreamChunk> {
+        for (let i = 0; i < 3; i++) {
+          await Promise.resolve();
+          yield { content: '', done: false, reasoning: `Thought ${i}.\n` } as LlmStreamChunk;
+        }
+
+        yield { content: '', done: true, promptTokens: 4, completionTokens: 6 } as LlmStreamChunk;
+      }
+
+      mocks.sendMessageAndGetStream.mockImplementationOnce(() => Promise.resolve({
+        exchange: { request: { model: 'test', messages: [] }, response: reasoningOnlyStream() },
+        data: [],
+      } as unknown));
+
+      const task = new LlmMessageTask(mocks.container, mockDiscordMessage);
+      await task.process();
+
+      // No paced flush fits inside the sub-second reasoning phase, so the
+      // done path finalizes the reasoning view instead of sending an empty
+      // answer edit.
+      expect(mocks.llmStreamingReplyServiceReply).toHaveBeenCalledTimes(0);
+      expect(mocks.llmStreamingReplyServiceShowReasoning).toHaveBeenCalledTimes(1);
+
+      const view = mocks.llmStreamingReplyServiceShowReasoning.mock.calls[0][1] as string;
+
+      expect(view.startsWith('🤔 *Reasoning…*')).toBe(true);
+      expect(view).toContain('> Thought 2.');
     });
   });
 });

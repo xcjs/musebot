@@ -30,6 +30,7 @@ import { LlmMessage } from './models/LlmMessage.js';
 import { LlmShowResponse } from './models/LlmShowResponse.js';
 import { LlmStreamChunk } from './models/LlmStreamChunk.js';
 import { LlmStreamChunkResponse } from './models/LlmStreamChunkResponse.js';
+import { LlmStreamDelta } from './models/LlmStreamDelta.js';
 import { LlmTextContentPart } from './models/LlmTextContentPart.js';
 import { LlmWireChatCompletionRequest } from './models/LlmWireChatCompletionRequest.js';
 import { LlmWireMessage } from './models/LlmWireMessage.js';
@@ -369,18 +370,26 @@ export class LlmClient implements ILlmClient {
 
           try {
             const parsed = JSON.parse(payload) as LlmStreamChunkResponse;
-            const content = parsed.choices?.[0]?.delta?.content ?? '';
+            const delta = parsed.choices?.[0]?.delta;
+            const content = delta?.content ?? '';
+            const reasoning = this.#extractStreamReasoning(delta);
 
             if (parsed.usage !== undefined) {
               promptTokens = parsed.usage.prompt_tokens;
               completionTokens = parsed.usage.completion_tokens;
             }
 
-            if (content.length === 0) {
+            if (content.length === 0 && reasoning.length === 0) {
               continue;
             }
 
-            yield { content, done: false, promptTokens, completionTokens };
+            yield {
+              content,
+              done: false,
+              promptTokens,
+              completionTokens,
+              ...(reasoning.length > 0 ? { reasoning } : {})
+            };
           } catch (error) {
             this.#logger.warn('Failed to parse an SSE chunk from the LLM stream:', error);
           }
@@ -391,6 +400,25 @@ export class LlmClient implements ILlmClient {
     if (!sawDoneFrame) {
       yield { content: '', done: true, promptTokens, completionTokens };
     }
+  }
+
+  // Reasoning-capable models stream their thinking outside of `content`, as
+  // delta.reasoning_content (llama.cpp / DeepSeek convention) or
+  // delta.reasoning (OpenRouter convention).
+  #extractStreamReasoning(delta: LlmStreamDelta | undefined): string {
+    const reasoningContent = delta?.reasoning_content;
+
+    if (typeof reasoningContent === 'string' && reasoningContent.length > 0) {
+      return reasoningContent;
+    }
+
+    const reasoning = delta?.reasoning;
+
+    if (typeof reasoning === 'string' && reasoning.length > 0) {
+      return reasoning;
+    }
+
+    return '';
   }
 
   #toWireRequest(request: ILlmRequest): LlmWireChatCompletionRequest {

@@ -623,6 +623,32 @@ describe('LlmClient', (): void => {
       expect(chunks[chunks.length - 1].done).toBe(true);
     });
 
+    it('surfaces reasoning deltas from reasoning_content and reasoning fields', async (): Promise<void> => {
+      const sseBody = [
+        'data: {"choices":[{"delta":{"role":"assistant","reasoning_content":"step one"}}]}\n\n',
+        'data: {"choices":[{"delta":{"reasoning_content":"step two","content":""}}]}\n\n',
+        'data: {"choices":[{"delta":{"reasoning":"openrouter thought","content":"Hi"}}]}\n\n',
+        'data: {"choices":[{"delta":{"content":"there"}}]}\n\n',
+        'data: [DONE]\n\n'
+      ];
+      fetchMock.mockResolvedValue(sseResponse(sseBody));
+
+      const result = await client.sendMessageAndGetStream('Hi', []);
+
+      const chunks: LlmStreamChunk[] = [];
+      for await (const chunk of (result as { exchange: { response: AsyncIterable<LlmStreamChunk> } }).exchange.response) {
+        chunks.push(chunk);
+      }
+
+      expect(chunks).toEqual([
+        { content: '', done: false, reasoning: 'step one' },
+        { content: '', done: false, reasoning: 'step two' },
+        { content: 'Hi', done: false, reasoning: 'openrouter thought' },
+        { content: 'there', done: false },
+        { content: '', done: true }
+      ]);
+    });
+
     it('rejects with the HTTP status error as .cause when the response is non-ok', async (): Promise<void> => {
       fetchMock.mockResolvedValue(mockJsonResponse({ error: 'server exploded' }, 500));
 
