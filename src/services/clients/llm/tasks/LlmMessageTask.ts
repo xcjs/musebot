@@ -129,9 +129,13 @@ export class LlmMessageTask extends LlmBaseTask<void> {
 
     let averageResponseInMs = 0;
     let endTime = performance.now();
+    const minimumEditIntervalMs = 1000 / DiscordConstants.MaxStreamingEditsPerSecond;
 
     let fullResponse = '';
     let responseBatch = '';
+    let reasoning = '';
+    let lastReasoningView: string | null = null;
+    let contentStarted = false;
 
     if(!exchange?.exchange?.response) {
       return;
@@ -141,15 +145,54 @@ export class LlmMessageTask extends LlmBaseTask<void> {
       const startTime = performance.now();
       let replies: DiscordMessage[] = [];
 
+      if (response.content.trim().length > 0) {
+        contentStarted = true;
+      }
+
       fullResponse += response.content;
       responseBatch += response.content;
 
+      // Reasoning deltas stop contributing to the view once the answer has
+      // started; the reasoning display is about to be replaced by it.
+      if (response.reasoning !== undefined && response.reasoning.length > 0 && !contentStarted) {
+        reasoning += response.reasoning;
+      }
+
       if (!response.done) {
-        // Ensure we're not sending requests faster than Discord can
-        // allow or process them.
-        if (startTime - endTime <= (DiscordConstants.MaxRequestsPerSecond / 1000)
+        // Ensure we're not sending edits faster than Discord's message-edit
+        // rate limit (5 edits per 5 seconds per channel) can process them.
+        // Token chunks can arrive far faster than Discord will accept edits,
+        // so edit pacing must be decoupled from the token arrival rate.
+        if (startTime - endTime < minimumEditIntervalMs
           || startTime - endTime < averageResponseInMs
         ) {
+          continue;
+        }
+
+        if (!contentStarted) {
+          // Reasoning phase: no answer text yet, so the message shows the
+          // recent reasoning as a sliding view. The next content flush below
+          // overwrites this view in place with the start of the answer.
+          // A non-positive line cap disables the reasoning view outright:
+          // no edit is spent on reasoning displays at all.
+          if (reasoning.length === 0
+            || this.configurationService.llmReasoningViewLines <= 0
+          ) {
+            continue;
+          }
+
+          const view = this.#renderReasoningView(reasoning);
+
+          if (view === lastReasoningView) {
+            continue;
+          }
+
+          lastReasoningView = view;
+          await this.llmStreamingReplyService.showReasoning(this.#message, view);
+
+          endTime = performance.now();
+          averageResponseInMs = (averageResponseInMs + endTime - startTime) / 2;
+          this.logger.debug(`The average streaming response time is ${averageResponseInMs}ms.`);
           continue;
         }
 
@@ -172,8 +215,21 @@ export class LlmMessageTask extends LlmBaseTask<void> {
         }
       }
 
-      replies = await this.llmStreamingReplyService.reply(this.#message, responseBatch, response.done);
-      responseBatch = '';
+      if (response.done && !contentStarted) {
+        // The stream ended during the reasoning phase: finalize the reasoning
+        // view — there is no answer text to send.
+        if (reasoning.length > 0 && this.configurationService.llmReasoningViewLines > 0) {
+          const finalView = this.#renderReasoningView(reasoning);
+
+          if (finalView !== lastReasoningView) {
+            lastReasoningView = finalView;
+            await this.llmStreamingReplyService.showReasoning(this.#message, finalView);
+          }
+        }
+      } else {
+        replies = await this.llmStreamingReplyService.reply(this.#message, responseBatch, response.done);
+        responseBatch = '';
+      }
 
       if (response.done) {
         const assistantMessage: LlmMessage = { role: LlmRole.Assistant, content: fullResponse };
@@ -204,6 +260,71 @@ export class LlmMessageTask extends LlmBaseTask<void> {
       averageResponseInMs = (averageResponseInMs + endTime - startTime) / 2;
       this.logger.debug(`The average streaming response time is ${averageResponseInMs}ms.`);
     }
+  }
+
+  // Renders the ephemeral reasoning view: a label above a code-fenced tail
+  // of the most recent reasoning, always under Discord's 2000 character
+  // message limit and locked to the configured line count. Rendered fresh
+  // on every flush so the sliding window follows the model's thinking.
+  #renderReasoningView(reasoning: string): string {
+    const reasoningLabel = '🤔 *Thinking…*';
+    // Reasoning must survive alongside the eventual answer, so hold a small
+    // margin under Discord's message character limit.
+    const maxReasoningViewChars = DiscordConstants.ContentMaxLength - 200;
+    const maxReasoningViewLines = this.configurationService.llmReasoningViewLines;
+
+    if (reasoning.length === 0) {
+      return reasoningLabel;
+    }
+
+    // Neutralize code fences: the content is wrapped in a fence below, so a
+    // fence in the reasoning itself would otherwise terminate the block.
+    const lines = reasoning.replace(/`{3,}/gu, '\u2026').split('\n');
+    const tailLines: string[] = [];
+    // Fixed scaffold: "\n\n```markdown\n" after the label and "\n```" before
+    // the message end.
+    let budget = maxReasoningViewChars - reasoningLabel.length - 18;
+
+    for (let i = lines.length - 1; i >= 0 && budget > 0 && tailLines.length < maxReasoningViewLines; i -= 1) {
+      const line = lines[i].length > 600 ? lines[i].slice(-600) : lines[i];
+
+      // Blank lines (including the one a trailing newline leaves behind)
+      // render as dangling empty rows; skip them without spending budget.
+      if (line.length === 0) {
+        continue;
+      }
+
+      const cost = line.length + 1; // a trailing newline
+
+      if (cost > budget) {
+        if (tailLines.length === 0) {
+          tailLines.push(line.slice(-Math.max(0, budget - 2)));
+        }
+
+        break;
+      }
+
+      tailLines.push(line);
+      budget -= cost;
+    }
+
+    tailLines.reverse();
+
+    // Lock the view height: pad blank rows above the tail when reasoning is
+    // shorter than the configured line count, so the box never resizes
+    // mid-stream.
+    const paddingRows = Math.min(Math.max(0, maxReasoningViewLines - tailLines.length), budget);
+    const body: string[] = [];
+
+    for (let i = 0; i < paddingRows; i += 1) {
+      body.push('');
+    }
+
+    for (const line of tailLines) {
+      body.push(line);
+    }
+
+    return `${reasoningLabel}\n\n\`\`\`markdown\n${body.join('\n')}\n\`\`\``;
   }
 
   async #storeMemories(llmChatMessage: LlmChatMessage, botResponseContent: string): Promise<void> {

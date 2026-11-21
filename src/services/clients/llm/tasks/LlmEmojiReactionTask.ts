@@ -99,7 +99,7 @@ export class LlmEmojiReactionTask extends LlmBaseTask<void> {
       responseBatch += response.content;
 
       if (performance.now() - startTime >= 1000
-        / DiscordConstants.MaxRequestsPerSecond || response.done) {
+        / DiscordConstants.MaxStreamingEditsPerSecond || response.done) {
         this.logger.info('Flushing response batch.');
 
         replies = await this.llmStreamingReplyService.reply(this.#reaction.message as DiscordMessage, responseBatch, !!response.done);

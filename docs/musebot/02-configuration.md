@@ -19,6 +19,13 @@ You must restart the bot for any changes to be applied.
 
 ### **Core Configuration**
 
+#### `botId`
+
+* **Description:** A unique identifier for this bot instance. It distinguishes
+  bots in log output when several instances run from the same deployment.
+* **Required:** Yes
+* **Type:** `String`
+
 #### `nodeEnvironment`
 
 * **Description:** The operating environment for the Node.js runtime.
@@ -255,6 +262,18 @@ earlier release.
 * **Required:** No
 * **Type:** `Integer`
 * **Default:** `2000`
+
+#### `llm.reasoningViewLines`
+
+* **Description:** How many lines of the model's reasoning stay visible in the
+  sliding "Thinking…" view while a reply streams. The view renders as a
+  ```` ```markdown ```` code block locked at this height, padded with blank
+  rows above while the reasoning is shorter. Applies to streaming models
+  that emit reasoning. Set it to `0` to disable the reasoning view
+  entirely.
+* **Required:** No
+* **Type:** `Integer`
+* **Default:** `25`
 
 #### `llm.topK`
 

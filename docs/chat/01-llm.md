@@ -299,6 +299,16 @@ usage on the final chunk. If the provider omits usage from its stream, Musebot
 falls back to a character-based token estimate (calibrated against actual usage
 samples when available). **Note:** This is an experimental feature.
 
+**Streaming reasoning.** When the model emits reasoning alongside its answer,
+Musebot shows a **🤔 *Thinking…*** message while it works: a fenced code
+block locked at a fixed height that holds the most recent reasoning as it
+streams — content grows downward, then scrolls from the tail once the
+reasoning exceeds the view — and is fully replaced by the answer once
+content starts flowing. How many lines stay visible is configurable via
+`llm.reasoningViewLines` (default `25`); set it to `0` to disable the
+reasoning display entirely. Details in
+[docs/musebot/02-configuration.md](../musebot/02-configuration.md).
+
 ## Authentication
 
 Each host accepts an optional `token` field:

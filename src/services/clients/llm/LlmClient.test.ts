@@ -20,6 +20,21 @@ import { LlmMessage } from './models/LlmMessage.js';
 import { LlmStreamChunk } from './models/LlmStreamChunk.js';
 import { LlmWireChatCompletionRequest } from './models/LlmWireChatCompletionRequest.js';
 
+// LlmClient and OllamaLifecycleStrategy import fetch from the undici module rather
+// than globalThis (undici#5360: a streaming fetch and its dispatcher must come from
+// the same undici module), so the mock must intercept the module export. The
+// `Agent` export stays real so dispatcher-identity assertions still hold. The
+// global.fetch stub is kept for the lifecycle strategies that still use it.
+const fetchMock = jest.fn<typeof fetch>();
+
+jest.mock('undici', (): unknown => {
+  const actual = jest.requireActual<Record<string, unknown>>('undici');
+  return {
+    ...actual,
+    fetch: (...args: Parameters<typeof fetch>): Promise<Response> => fetchMock(...args),
+  };
+});
+
 function createMockLogger(): jest.Mocked<ILogger> {
   return {
     debug: jest.fn(),
@@ -61,6 +76,7 @@ function createMockConfigurationService(overrides: Partial<IConfigurationService
     llmTimeoutMinutes: 0,
     llmEmbeddingModel: 'embed-model',
     llmTopK: 5,
+    llmReasoningViewLines: 25,
     llmContextWindow: null,
     llmContextCompressionThreshold: 0.75,
     llmEmbeddingInputLimit: 2000,
@@ -143,12 +159,11 @@ const visionPrompt = 'You are a visual assistant. Describe what you see in the a
 
 describe('LlmClient', (): void => {
   let mockLogger: jest.Mocked<ILogger>;
-  let fetchMock: jest.Mock<typeof fetch>;
   let client: LlmClient;
 
   beforeEach((): void => {
     mockLogger = createMockLogger();
-    fetchMock = jest.fn<typeof fetch>();
+    fetchMock.mockReset();
     global.fetch = fetchMock as unknown as typeof fetch;
   });
 
@@ -326,7 +341,7 @@ describe('LlmClient', (): void => {
       const initRecord = init as RequestInit & { dispatcher?: { constructor: { name: string } } };
       expect(initRecord.dispatcher).toBeDefined();
       // undici Agent instances report 'Dispatcher' as their constructor name's base
-      expect(initRecord.dispatcher!.constructor.name).toBe('Agent');
+      expect(initRecord.dispatcher.constructor.name).toBe('Agent');
     });
 
     it('appends only the endpoint to the host as configured (config carries the /v1 route)', async (): Promise<void> => {
@@ -623,6 +638,32 @@ describe('LlmClient', (): void => {
       expect(chunks[chunks.length - 1].done).toBe(true);
     });
 
+    it('surfaces reasoning deltas from reasoning_content and reasoning fields', async (): Promise<void> => {
+      const sseBody = [
+        'data: {"choices":[{"delta":{"role":"assistant","reasoning_content":"step one"}}]}\n\n',
+        'data: {"choices":[{"delta":{"reasoning_content":"step two","content":""}}]}\n\n',
+        'data: {"choices":[{"delta":{"reasoning":"openrouter thought","content":"Hi"}}]}\n\n',
+        'data: {"choices":[{"delta":{"content":"there"}}]}\n\n',
+        'data: [DONE]\n\n'
+      ];
+      fetchMock.mockResolvedValue(sseResponse(sseBody));
+
+      const result = await client.sendMessageAndGetStream('Hi', []);
+
+      const chunks: LlmStreamChunk[] = [];
+      for await (const chunk of (result as { exchange: { response: AsyncIterable<LlmStreamChunk> } }).exchange.response) {
+        chunks.push(chunk);
+      }
+
+      expect(chunks).toEqual([
+        { content: '', done: false, reasoning: 'step one' },
+        { content: '', done: false, reasoning: 'step two' },
+        { content: 'Hi', done: false, reasoning: 'openrouter thought' },
+        { content: 'there', done: false },
+        { content: '', done: true }
+      ]);
+    });
+
     it('rejects with the HTTP status error as .cause when the response is non-ok', async (): Promise<void> => {
       fetchMock.mockResolvedValue(mockJsonResponse({ error: 'server exploded' }, 500));
 
@@ -633,7 +674,20 @@ describe('LlmClient', (): void => {
       expect(error).toBeInstanceOf(Error);
       expect(error.message).toBe('Failed to send the LLM a message and retrieve a stream.');
       expect(error.cause).toBeInstanceOf(Error);
-      expect((error.cause as Error).message).toBe('The LLM API at http://localhost:11434/v1/chat/completions responded with status 500.');
+      expect((error.cause as Error).message)
+        .toBe('The LLM API at http://localhost:11434/v1/chat/completions responded with status 500: {"error":"server exploded"}');
+    });
+
+    it('truncates long error bodies in the status error message', async (): Promise<void> => {
+      fetchMock.mockResolvedValue(mockJsonResponse({ error: 'x'.repeat(600) }, 400));
+
+      const rejection = await client.sendMessageAndGetStream('Hi', [])
+        .catch((reason: unknown): Error => reason as Error);
+      const error = rejection as Error;
+
+      expect(error.message).toBe('Failed to send the LLM a message and retrieve a stream.');
+      expect((error.cause as Error).message)
+        .toBe(`The LLM API at http://localhost:11434/v1/chat/completions responded with status 400: ${'{"error":"' + 'x'.repeat(490)}`);
     });
 
     it('yields a terminal done chunk with usage when the stream ends without [DONE]', async (): Promise<void> => {

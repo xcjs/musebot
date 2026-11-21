@@ -22,7 +22,7 @@ export class DiscordCodeBlockSplitFilter implements IOutputChatMessageFilter {
       let content = messages[i].content;
 
       if (inCodeBlock) {
-        content = `${this.#codeFence}${languageTag}\n${content}`;
+        content = this.#openCodeBlock(content, languageTag);
       }
 
       const fenceState = this.#getFenceState(content);
@@ -44,6 +44,16 @@ export class DiscordCodeBlockSplitFilter implements IOutputChatMessageFilter {
 
   async processStreaming(messages: IChatMessage[], _isDone: boolean): Promise<IChatMessage[]> {
     return await this.process(messages);
+  }
+
+  #openCodeBlock(content: string, languageTag: string): string {
+    const fencePrefix = `${this.#codeFence}${languageTag}\n`;
+
+    if (content.length + fencePrefix.length <= DiscordConstants.ContentMaxLength) {
+      return `${fencePrefix}${content}`;
+    }
+
+    return `${fencePrefix}${this.#trimToFit(content, DiscordConstants.ContentMaxLength - fencePrefix.length)}`;
   }
 
   #closeCodeBlock(content: string): string {

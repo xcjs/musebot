@@ -44,6 +44,21 @@ export class LlmStreamingReplyService {
     return this.#replies;
   }
 
+  // Reasoning-capable models stream their thinking before the answer. The
+  // reasoning view is ephemeral: it is shown in place of the answer message
+  // and is fully replaced once answer content starts flowing (reply()
+  // accumulates answer content from zero and rewrites the same messages).
+  // Nothing accumulates here and no output filters run — the view is
+  // display-only.
+  async showReasoning(message: Message, view: string): Promise<void> {
+    const chatMessages: IChatMessage[] = [{
+      content: view,
+      attachments: []
+    }];
+
+    this.#replies = await this.#factory.updateMessages(message, this.#replies, chatMessages);
+  }
+
   clearState(): void {
     this.#replies = [];
     this.#accumulatedContent = '';

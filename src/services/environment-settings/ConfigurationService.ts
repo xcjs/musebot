@@ -213,6 +213,11 @@ export class ConfigurationService implements IConfigurationService {
       ?? 2000;
   }
 
+  get llmReasoningViewLines(): number {
+    return this.#botConfig.llm?.reasoningViewLines
+      ?? 25;
+  }
+
   get applicationName(): string {
     return toTitleCase(this.packageName);
   }
@@ -311,6 +316,7 @@ Detected environment variables: ${envVarList}`);
     this.#log.info(`bots[].llm.contextWindow: ${this.llmContextWindow ?? '(not set)'}`);
     this.#log.info(`bots[].llm.contextCompressionThreshold: ${this.llmContextCompressionThreshold}`);
     this.#log.info(`bots[].llm.embeddingInputLimit: ${this.llmEmbeddingInputLimit}`);
+    this.#log.info(`bots[].llm.reasoningViewLines: ${this.llmReasoningViewLines}`);
 
     this.#log.info(`bots[].multiModal.randomPrompts: ${this.randomPrompts.join(' | ')}`);
 

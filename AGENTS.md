@@ -203,6 +203,7 @@ Key settings (from `IBotConfig`):
 | `bots[].llm.timeoutMinutes`                | Max minutes to wait for a non-streamed LLM response (0 = wait indefinitely) |
 | `bots[].llm.embeddingModel`                | Embedding model name (enables long-term memory) |
 | `bots[].llm.embeddingInputLimit`           | Embedding input chunk size in characters — oversized inputs are chunked and pooled, not truncated (default 2000) |
+| `bots[].llm.reasoningViewLines`            | Visible reasoning view line cap during streaming (default 25) |
 | `bots[].llm.topK`                          | Number of similar memories retrieved per prompt |
 | `bots[].llm.contextWindow`                 | Max context window in tokens (optional override; when unset, read from the host's catalog — Ollama `/api/show` or an OpenAI-compatible `/models` — falling back to 4096) |
 | `bots[].llm.contextCompressionThreshold`   | Fraction of the window that triggers compression |

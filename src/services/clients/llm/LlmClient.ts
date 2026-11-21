@@ -1,3 +1,5 @@
+import { Agent as UndiciAgent, fetch as undiciFetch, type Response as UndiciResponse } from 'undici';
+
 import { IHttpExchange } from '../../../models/IHttpExchange.js';
 import { IHttpExchangeWithAttachedData } from '../../../models/IHttpExchangeWithAttachedData.js';
 import { getRandomArrayEntry, getRandomInt } from '../../../utilities/random-utilities.js';
@@ -5,7 +7,6 @@ import { trimTrailingJsonContent } from '../../../utilities/string-utilities.js'
 import { IConfigurationService } from '../../environment-settings/IConfigurationService.js';
 import { IBotServiceContainer } from '../../IBotServiceContainer.js';
 import { ILogger } from '../../ILogger.js';
-import { Agent as UndiciAgent, Dispatcher } from 'undici';
 import { LlmHostFlavor } from './enums/LlmHostFlavor.js';
 import { LlmModality } from './enums/LlmModality.js';
 import { LlmRole } from './enums/LlmRole.js';
@@ -29,6 +30,7 @@ import { LlmMessage } from './models/LlmMessage.js';
 import { LlmShowResponse } from './models/LlmShowResponse.js';
 import { LlmStreamChunk } from './models/LlmStreamChunk.js';
 import { LlmStreamChunkResponse } from './models/LlmStreamChunkResponse.js';
+import { LlmStreamDelta } from './models/LlmStreamDelta.js';
 import { LlmTextContentPart } from './models/LlmTextContentPart.js';
 import { LlmWireChatCompletionRequest } from './models/LlmWireChatCompletionRequest.js';
 import { LlmWireMessage } from './models/LlmWireMessage.js';
@@ -198,7 +200,7 @@ export class LlmClient implements ILlmClient {
       const response = await this.#fetchResponse(path, this.#toWireRequest(request));
 
       if (!response.ok) {
-        throw new Error(`The LLM API at ${this.#endpointBase}${path} responded with status ${response.status}.`);
+        throw new Error(await this.#statusMessage(`${this.#endpointBase}${path}`, response));
       }
 
       if (response.body === null) {
@@ -208,7 +210,7 @@ export class LlmClient implements ILlmClient {
       return {
         exchange: {
           request,
-          response: this.#streamChunks(response.body.getReader())
+          response: this.#streamChunks(response.body.getReader() as import('node:stream/web').ReadableStreamDefaultReader<Uint8Array>)
         },
         data: context
       };
@@ -312,15 +314,15 @@ export class LlmClient implements ILlmClient {
 
     try {
       const showUrl = new URL('/api/show', this.#host.url);
-      const response = await fetch(showUrl, {
+      const response = await undiciFetch(showUrl, {
         method: 'POST',
         headers: this.#headers(),
         body: JSON.stringify(request),
         dispatcher: this.#llmDispatcher
-      } as RequestInit & { dispatcher: Dispatcher });
+      });
 
       if (!response.ok) {
-        throw new Error(`The LLM API at ${showUrl} responded with status ${response.status}.`);
+        throw new Error(await this.#statusMessage(showUrl.href, response));
       }
 
       return await response.json() as LlmShowResponse;
@@ -330,7 +332,7 @@ export class LlmClient implements ILlmClient {
     }
   }
 
-  async *#streamChunks(reader: ReadableStreamDefaultReader<Uint8Array>): AsyncGenerator<LlmStreamChunk> {
+  async *#streamChunks(reader: import('node:stream/web').ReadableStreamDefaultReader<Uint8Array>): AsyncGenerator<LlmStreamChunk> {
     const decoder = new TextDecoder();
     let buffer = '';
     let promptTokens: number | undefined;
@@ -368,18 +370,26 @@ export class LlmClient implements ILlmClient {
 
           try {
             const parsed = JSON.parse(payload) as LlmStreamChunkResponse;
-            const content = parsed.choices?.[0]?.delta?.content ?? '';
+            const delta = parsed.choices?.[0]?.delta;
+            const content = delta?.content ?? '';
+            const reasoning = this.#extractStreamReasoning(delta);
 
             if (parsed.usage !== undefined) {
               promptTokens = parsed.usage.prompt_tokens;
               completionTokens = parsed.usage.completion_tokens;
             }
 
-            if (content.length === 0) {
+            if (content.length === 0 && reasoning.length === 0) {
               continue;
             }
 
-            yield { content, done: false, promptTokens, completionTokens };
+            yield {
+              content,
+              done: false,
+              promptTokens,
+              completionTokens,
+              ...(reasoning.length > 0 ? { reasoning } : {})
+            };
           } catch (error) {
             this.#logger.warn('Failed to parse an SSE chunk from the LLM stream:', error);
           }
@@ -390,6 +400,25 @@ export class LlmClient implements ILlmClient {
     if (!sawDoneFrame) {
       yield { content: '', done: true, promptTokens, completionTokens };
     }
+  }
+
+  // Reasoning-capable models stream their thinking outside of `content`, as
+  // delta.reasoning_content (llama.cpp / DeepSeek convention) or
+  // delta.reasoning (OpenRouter convention).
+  #extractStreamReasoning(delta: LlmStreamDelta | undefined): string {
+    const reasoningContent = delta?.reasoning_content;
+
+    if (typeof reasoningContent === 'string' && reasoningContent.length > 0) {
+      return reasoningContent;
+    }
+
+    const reasoning = delta?.reasoning;
+
+    if (typeof reasoning === 'string' && reasoning.length > 0) {
+      return reasoning;
+    }
+
+    return '';
   }
 
   #toWireRequest(request: ILlmRequest): LlmWireChatCompletionRequest {
@@ -449,13 +478,31 @@ export class LlmClient implements ILlmClient {
     const response = await this.#fetchResponse(path, request);
 
     if (!response.ok) {
-      throw new Error(`The LLM API at ${this.#endpointBase}${path} responded with status ${response.status}.`);
+      throw new Error(await this.#statusMessage(`${this.#endpointBase}${path}`, response));
     }
 
     return await response.json() as TResponse;
   }
 
-  async #fetchResponse(path: string, request: ILlmEmbeddingsRequest | LlmWireChatCompletionRequest | ILlmShowRequest): Promise<Response> {
+  /**
+   * Builds an error message for a non-OK LLM response, including a truncated
+   * copy of the response body: hosts (Ollama, llama.cpp, ...) explain why a
+   * request was rejected there. The body is capped to keep HTML/JSON error
+   * pages from flooding the log.
+   */
+  async #statusMessage(url: string, response: UndiciResponse): Promise<string> {
+    let body: string;
+    try {
+      body = (await response.text()).slice(0, 500);
+    } catch (error) {
+      this.#logger.debug('The LLM response body could not be read for the error message:', error);
+      body = '<response body unreadable>';
+    }
+
+    return `The LLM API at ${url} responded with status ${response.status}: ${body}`;
+  }
+
+  async #fetchResponse(path: string, request: ILlmEmbeddingsRequest | LlmWireChatCompletionRequest | ILlmShowRequest): Promise<UndiciResponse> {
     // Non-streamed completions produce no response headers until the entire
     // generation finishes (llama.cpp and similar hosts), which can take
     // arbitrarily long for reasoning models. undici's default ~300 s
@@ -463,12 +510,12 @@ export class LlmClient implements ILlmClient {
     // (TypeError: fetch failed) while the server keeps burning tokens —
     // so Musebot waits for the response (llm.timeoutMinutes, default 0 =
     // wait indefinitely; 0 genuinely disables both undici timeouts).
-    return await fetch(`${this.#endpointBase}${path}`, {
+    return await undiciFetch(`${this.#endpointBase}${path}`, {
       method: 'POST',
       headers: this.#headers(),
       body: JSON.stringify(request),
       dispatcher: this.#llmDispatcher
-    } as RequestInit & { dispatcher: Dispatcher });
+    });
   }
 
   // Undici Agent for LLM calls with headers+body timeouts resolved from

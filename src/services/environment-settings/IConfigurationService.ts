@@ -42,6 +42,7 @@ export interface IConfigurationService {
   get llmContextWindow(): number | null;
   get llmContextCompressionThreshold(): number;
   get llmEmbeddingInputLimit(): number;
+  get llmReasoningViewLines(): number;
 
   applicationName: string;
   isProduction: boolean;

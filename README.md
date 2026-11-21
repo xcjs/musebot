@@ -81,6 +81,15 @@ npm install
 npm start
 ```
 
+The repository pins its Node.js version in `.nvmrc` (Node 24, matching the
+Docker and `pkg` release targets); run `nvm use` or `nvm install` to select
+it.
+
+After switching Node.js versions, rebuild the native SQLite binary against
+the running Node with `npm rebuild better-sqlite3` (or rerun
+`npm install`), since the version compiled into `node_modules` must match
+the Node ABI.
+
 A debugging configuration is provided for Visual Studio Code.
 
 ## Configuration

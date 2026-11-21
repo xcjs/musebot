@@ -1,0 +1,94 @@
+# Reasoning view polish — design (small change)
+
+Date: 2026-11-20
+Feature touched: `9d1ef0c6` — sliding reasoning view for streaming reasoning models.
+
+## Intent
+
+Two fixes requested while watching the reasoning scroll in Discord:
+
+1. The first quoted line renders as `…>` — the overflow ellipsis is inlined
+   with no newline before the quote block in `#renderReasoningView` (line 298
+   of `LlmMessageTask.ts`). **Remove the overflow ellipsis entirely** — no
+   overflow marker; the view is label + quote block only. The
+   label already conveys "thinking in progress"; a second, stray ellipsis at
+   the top of nearly every view is clutter.
+2. Cap how many reasoning lines are visible, ~20–30, **configurable**:
+   `bots[].llm.reasoningViewLines`, default **25** (middle of the requested
+   range).
+3. Rename the label `🤔 *Reasoning…*` → `🤔 *Thinking…*` (emoji unchanged;
+   typographic ellipsis kept for consistency with the existing style).
+
+## Goals / non-goals
+
+- Goals: clean first line under the label; bounded, tunable window size;
+  hard Discord 2000-char limit still respected.
+- Non-goals: no change to pacing/edit cadence, no change to how reasoning
+  is captured, no new filters.
+
+## Approaches considered
+
+- **Line cap + config (chosen)** — slots into the existing tail loop
+  (`tailLines.length < maxReasoningViewLines` in the loop condition). The
+  char budget (`DiscordConstants.ContentMaxLength - 200`) and 600-char
+  per-line slice stay as hard guards because 25 long lines can exceed the
+  char budget. Config knob matches
+  existing `llm.*` patterns (`llm.timeoutMinutes`, `llm.embeddingInputLimit`).
+- Hardcoded 25 — rejected: user chose configurable.
+- Keep ellipsis but on its own quote line (`> …`) — rejected: explicitly
+  requested removal.
+
+## Changes
+
+1. `src/services/environment-settings/IBotConfig.ts` — add optional
+   `llm.reasoningViewLines?: number;` with doc comment.
+2. `src/services/environment-settings/IConfigurationService.ts` — add
+   `llmReasoningViewLines: number;` with doc comment.
+3. `src/services/environment-settings/ConfigurationService.ts` — getter
+   `this.#botConfig.llm?.reasoningViewLines ?? 25;` + log line next to the
+   other llm knobs.
+4. `src/services/clients/llm/tasks/LlmMessageTask.ts` `#renderReasoningView` —
+   drop the `overflow` ellipsis; add the line cap to the loop condition,
+   reading `this.configurationService.llmReasoningViewLines` (the task
+   already holds `configurationService` via `BaseTask`); rename the label
+   to `*Thinking…*`.
+5. Tests: extend `LlmMessageTask.test.ts` (no stray ellipsis after the label;
+   visible-quoted-line count ≤ configured limit, with a reasoning stream long
+   enough to cut; label prefix assertions now use `*Thinking…*`) and
+   `ConfigurationService.test.ts` (default 25 when unset, honors override).
+
+## Builder notes
+
+- View shape after the change: `{label}\n\n{quoted tail}` — nothing else
+  between label and quote block.
+- Config default: 25. Users may set any positive integer; values are
+  additionally bounded by the char budget, so pathological one-line values
+  (e.g. 1000) just collapse back to the char budget.
+
+## Follow-up (same-day, after live testing)
+
+Two more issues observed in Discord, both applied directly with TDD:
+
+4. **Discord wraps long quote lines** — the `> ` quote block reflows long
+   reasoning lines instead of scrolling horizontally. **Wrap the view body
+   in a ```` ```markdown ```` code block instead** (code blocks keep
+   horizontal scroll, no reflow). The existing backtick-run neutralization
+   (runs of 3+ backticks → `…`), previously an optimization, becomes load
+   bearing: it protects the outer fence from embedded fences.
+5. **Lock the view height at the configured line count** — pad with blank
+   rows at the **top** while reasoning is shorter than the cap, so the box
+   never resizes as reasoning streams (content grows downward into the
+   reserved space).
+
+6. **A non-positive `reasoningViewLines` disables the reasoning view** —
+   no `showReasoning` edit is made at all (both the streaming and finalize
+   call sites gate on the cap being positive). Previously `0` degraded to
+   an empty fenced label block.
+
+Resulting view shape: `` `{label}\n\n```markdown\n{padded tail}\n``` ``
+(blank-row padding first; the per-line cost drops from 3 chars of `> `
+prefix to 1 char of newline; the char budget reserves the full 18-char
+fence scaffold). Tests pin the fence prefix/suffix, the exact cap count of
+non-blank body lines, zero blank rows when capped, the locked height
+with top padding at default cap 25 with a 5-line stream, and zero
+`showReasoning` calls when the cap is `0`.

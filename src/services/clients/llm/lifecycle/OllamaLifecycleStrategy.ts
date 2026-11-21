@@ -1,4 +1,4 @@
-import { Agent as UndiciAgent, Dispatcher } from 'undici';
+import { Agent as UndiciAgent, fetch as undiciFetch } from 'undici';
 
 import { ILogger } from '../../../ILogger.js';
 import { ILlmHost } from '../models/ILlmHost.js';
@@ -42,12 +42,12 @@ export class OllamaLifecycleStrategy implements ILlmLifecycleStrategy {
 
   async free(): Promise<boolean> {
     try {
-      const response = await fetch(new URL('/api/generate', this.#host.url), {
+      const response = await undiciFetch(new URL('/api/generate', this.#host.url), {
         method: 'POST',
         headers: this.#headers(true),
         body: JSON.stringify({ model: this.#model, keep_alive: 0 }),
         dispatcher: this.#dispatcher
-      } as RequestInit & { dispatcher: Dispatcher });
+      });
 
       return response.ok;
     } catch (error) {
@@ -58,10 +58,10 @@ export class OllamaLifecycleStrategy implements ILlmLifecycleStrategy {
 
   async isModelLoaded(): Promise<boolean> {
     try {
-      const response = await fetch(new URL('/api/ps', this.#host.url), {
+      const response = await undiciFetch(new URL('/api/ps', this.#host.url), {
         headers: this.#headers(false),
         dispatcher: this.#dispatcher
-      } as RequestInit & { dispatcher: Dispatcher });
+      });
       if (!response.ok) {
         return false;
       }
@@ -95,12 +95,12 @@ export class OllamaLifecycleStrategy implements ILlmLifecycleStrategy {
 
   async getContextWindow(): Promise<number | null> {
     try {
-      const response = await fetch(new URL('/api/show', this.#host.url), {
+      const response = await undiciFetch(new URL('/api/show', this.#host.url), {
         method: 'POST',
         headers: this.#headers(true),
         body: JSON.stringify({ model: this.#model }),
         dispatcher: this.#dispatcher
-      } as RequestInit & { dispatcher: Dispatcher });
+      });
 
       if (!response.ok) {
         return null;
@@ -122,12 +122,12 @@ export class OllamaLifecycleStrategy implements ILlmLifecycleStrategy {
 
   async hasVisionCapability(model: string = this.#model): Promise<boolean> {
     try {
-      const response = await fetch(new URL('/api/show', this.#host.url), {
+      const response = await undiciFetch(new URL('/api/show', this.#host.url), {
         method: 'POST',
         headers: this.#headers(true),
         body: JSON.stringify({ model }),
         dispatcher: this.#dispatcher
-      } as RequestInit & { dispatcher: Dispatcher });
+      });
 
       if (!response.ok) {
         return false;

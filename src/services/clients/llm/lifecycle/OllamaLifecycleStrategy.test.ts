@@ -3,6 +3,19 @@ import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { ILlmHost } from '../models/ILlmHost.js';
 import { OllamaLifecycleStrategy } from './OllamaLifecycleStrategy.js';
 
+// Production code imports fetch from the undici module rather than globalThis
+// (undici#5360: a streaming fetch and its dispatcher must come from the same
+// undici module), so the mock must intercept the module export, not global.fetch.
+const fetchMock = jest.fn<typeof fetch>();
+
+jest.mock('undici', (): unknown => {
+  const actual = jest.requireActual<Record<string, unknown>>('undici');
+  return {
+    ...actual,
+    fetch: (...args: Parameters<typeof fetch>): Promise<Response> => fetchMock(...args),
+  };
+});
+
 const mockLogger = {
   debug: jest.fn(), info: jest.fn(), success: jest.fn(), warn: jest.fn(), error: jest.fn(), fatal: jest.fn()
 };
@@ -17,11 +30,9 @@ function mockResponse(status: number, body: unknown): Response {
 
 describe('OllamaLifecycleStrategy', () => {
   let strategy: OllamaLifecycleStrategy;
-  let fetchMock: jest.Mock<typeof fetch>;
 
   beforeEach((): void => {
-    fetchMock = jest.fn<typeof fetch>();
-    global.fetch = fetchMock as unknown as typeof fetch;
+    fetchMock.mockReset();
     strategy = new OllamaLifecycleStrategy(
       makeHost('http://localhost:11434'),
       'test-model',
@@ -102,7 +113,7 @@ describe('OllamaLifecycleStrategy', () => {
     for (const call of fetchMock.mock.calls) {
       const init = call[1] as RequestInit & { dispatcher?: { constructor: { name: string } } };
       expect(init.dispatcher).toBeDefined();
-      expect(init.dispatcher!.constructor.name).toBe('Agent');
+      expect(init.dispatcher.constructor.name).toBe('Agent');
     }
   });
 });

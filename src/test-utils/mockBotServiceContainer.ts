@@ -110,6 +110,7 @@ export function createMockGlobalContainer(config?: MockServiceContainerConfig): 
       llmContextWindow: null,
       llmContextCompressionThreshold: 0.75,
       llmEmbeddingInputLimit: 2000,
+      llmReasoningViewLines: 25,
       applicationName: 'Musebot',
       isProduction: false
     },
@@ -166,6 +167,7 @@ export function createMockServiceContainer(config?: MockServiceContainerConfig):
     llmContextWindow: null,
     llmContextCompressionThreshold: 0.75,
     llmEmbeddingInputLimit: 2000,
+    llmReasoningViewLines: 25,
     applicationName: 'Musebot',
     isProduction: false
   };
