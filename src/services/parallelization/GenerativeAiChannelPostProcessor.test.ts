@@ -30,14 +30,16 @@ function createMockFeatureService(hasTxt2Txt: boolean, hasMedia: boolean): jest.
   } as unknown as jest.Mocked<IFeatureService>;
 }
 
-function createMockLlmClient(freeResult: boolean): jest.Mocked<ILlmClient> {
+function createMockLlmClient(freeResult: boolean, hostUrl: string = 'http://127.0.0.1:11434'): jest.Mocked<ILlmClient> {
   return {
+    host: new URL(hostUrl),
     free: jest.fn<() => Promise<boolean>>().mockResolvedValue(freeResult),
   } as unknown as jest.Mocked<ILlmClient>;
 }
 
-function createMockComfyUiClient(freeResult: boolean): jest.Mocked<ComfyUiClient> {
+function createMockComfyUiClient(freeResult: boolean, hostUrl: string = 'http://gpu.internal:7860'): jest.Mocked<ComfyUiClient> {
   return {
+    host: new URL(hostUrl),
     free: jest.fn<() => Promise<boolean>>().mockResolvedValue(freeResult),
   } as unknown as jest.Mocked<ComfyUiClient>;
 }
@@ -140,6 +142,43 @@ describe('GenerativeAiChannelPostProcessor', () => {
 
       expect(mockComfyUiClient.free).toHaveBeenCalledTimes(1);
       expect(mockLlmClient.free).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('postProcess() scoped to a channel hostname', () => {
+    it('should free ComfyUI but not the LLM when the channel is scoped to the ComfyUI host', async (): Promise<void> => {
+      processor = new GenerativeAiChannelPostProcessor(createMockServices(
+        mockLogger, mockFeatureService, mockLlmClient, mockComfyUiClient
+      ), 'gpu.internal');
+
+      await processor.postProcess();
+
+      expect(mockComfyUiClient.free).toHaveBeenCalledTimes(1);
+      expect(mockLlmClient.free).not.toHaveBeenCalled();
+    });
+
+    it('should free the LLM but not ComfyUI when the channel is scoped to the LLM host', async (): Promise<void> => {
+      processor = new GenerativeAiChannelPostProcessor(createMockServices(
+        mockLogger, mockFeatureService, mockLlmClient, mockComfyUiClient
+      ), '127.0.0.1');
+
+      await processor.postProcess();
+
+      expect(mockLlmClient.free).toHaveBeenCalledTimes(1);
+      expect(mockComfyUiClient.free).not.toHaveBeenCalled();
+    });
+
+    it('should free both when the channel host is shared by both clients', async (): Promise<void> => {
+      const sharedLlmClient = createMockLlmClient(true, 'http://gpu.internal:11434');
+      const sharedComfyUiClient = createMockComfyUiClient(true, 'http://gpu.internal:7860');
+      processor = new GenerativeAiChannelPostProcessor(createMockServices(
+        mockLogger, mockFeatureService, sharedLlmClient, sharedComfyUiClient
+      ), 'gpu.internal');
+
+      await processor.postProcess();
+
+      expect(sharedComfyUiClient.free).toHaveBeenCalledTimes(1);
+      expect(sharedLlmClient.free).toHaveBeenCalledTimes(1);
     });
   });
 });
