@@ -173,7 +173,11 @@ export class LlmMessageTask extends LlmBaseTask<void> {
           // Reasoning phase: no answer text yet, so the message shows the
           // recent reasoning as a sliding view. The next content flush below
           // overwrites this view in place with the start of the answer.
-          if (reasoning.length === 0) {
+          // A non-positive line cap disables the reasoning view outright:
+          // no edit is spent on reasoning displays at all.
+          if (reasoning.length === 0
+            || this.configurationService.llmReasoningViewLines <= 0
+          ) {
             continue;
           }
 
@@ -214,7 +218,7 @@ export class LlmMessageTask extends LlmBaseTask<void> {
       if (response.done && !contentStarted) {
         // The stream ended during the reasoning phase: finalize the reasoning
         // view — there is no answer text to send.
-        if (reasoning.length > 0) {
+        if (reasoning.length > 0 && this.configurationService.llmReasoningViewLines > 0) {
           const finalView = this.#renderReasoningView(reasoning);
 
           if (finalView !== lastReasoningView) {

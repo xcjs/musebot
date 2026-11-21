@@ -519,5 +519,29 @@ describe('LlmMessageTask', () => {
       expect(bodyLines[0]).toBe('');
       expect(bodyLines[bodyLines.length - 1]).toBe('Thought 4.');
     });
+
+    it('disables the reasoning view entirely when reasoningViewLines is 0', async (): Promise<void> => {
+      const mocks = buildMockServices(true, [], 0);
+
+      async function* disabledReasoningStream(): AsyncGenerator<LlmStreamChunk> {
+        for (let i = 0; i < 5; i++) {
+          await Promise.resolve();
+          yield { content: '', done: false, reasoning: `Thought ${i}.\n` } as LlmStreamChunk;
+        }
+
+        yield { content: '', done: true, promptTokens: 4, completionTokens: 6 } as LlmStreamChunk;
+      }
+
+      mocks.sendMessageAndGetStream.mockImplementationOnce(() => Promise.resolve({
+        exchange: { request: { model: 'test', messages: [] }, response: disabledReasoningStream() },
+        data: [],
+      } as unknown));
+
+      const task = new LlmMessageTask(mocks.container, mockDiscordMessage);
+      await task.process();
+
+      // Zero disables the reasoning view: no edits spent on reasoning at all.
+      expect(mocks.llmStreamingReplyServiceShowReasoning).toHaveBeenCalledTimes(0);
+    });
   });
 });

@@ -262,7 +262,8 @@ earlier release.
   sliding "Thinking…" view while a reply streams. The view renders as a
   ```` ```markdown ```` code block locked at this height, padded with blank
   rows above while the reasoning is shorter. Applies to streaming models
-  that emit reasoning.
+  that emit reasoning. Set it to `0` to disable the reasoning view
+  entirely.
 * **Required:** No
 * **Type:** `Integer`
 * **Default:** `25`

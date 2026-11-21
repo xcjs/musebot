@@ -80,9 +80,15 @@ Two more issues observed in Discord, both applied directly with TDD:
    never resizes as reasoning streams (content grows downward into the
    reserved space).
 
+6. **A non-positive `reasoningViewLines` disables the reasoning view** —
+   no `showReasoning` edit is made at all (both the streaming and finalize
+   call sites gate on the cap being positive). Previously `0` degraded to
+   an empty fenced label block.
+
 Resulting view shape: `` `{label}\n\n```markdown\n{padded tail}\n``` ``
 (blank-row padding first; the per-line cost drops from 3 chars of `> `
 prefix to 1 char of newline; the char budget reserves the full 18-char
 fence scaffold). Tests pin the fence prefix/suffix, the exact cap count of
-non-blank body lines, zero blank rows when capped, and the locked height
-with top padding at default cap 25 with a 5-line stream.
+non-blank body lines, zero blank rows when capped, the locked height
+with top padding at default cap 25 with a 5-line stream, and zero
+`showReasoning` calls when the cap is `0`.

@@ -239,6 +239,7 @@
         // Required: Optional
         // Default:  25
         // Type:     Integer
+        // Set it to 0 to disable the reasoning view entirely.
         // "reasoningViewLines": 25,
 
         // The number of similar memories to retrieve from the vector store when
