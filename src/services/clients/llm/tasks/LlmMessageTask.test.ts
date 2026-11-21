@@ -543,5 +543,29 @@ describe('LlmMessageTask', () => {
       // Zero disables the reasoning view: no edits spent on reasoning at all.
       expect(mocks.llmStreamingReplyServiceShowReasoning).toHaveBeenCalledTimes(0);
     });
+
+    it('keeps reasoning that arrives in the same delta as the first answer content', async (): Promise<void> => {
+      const mocks = buildMockServices(true);
+
+      async function* sameDeltaStream(): AsyncGenerator<LlmStreamChunk> {
+        await Promise.resolve();
+        yield { content: 'Hi', done: false, reasoning: 'openrouter thought' } as LlmStreamChunk;
+        yield { content: '', done: true, promptTokens: 4, completionTokens: 6 } as LlmStreamChunk;
+      }
+
+      mocks.sendMessageAndGetStream.mockImplementationOnce(() => Promise.resolve({
+        exchange: { request: { model: 'test', messages: [] }, response: sameDeltaStream() },
+        data: [],
+      } as unknown));
+
+      const task = new LlmMessageTask(mocks.container, mockDiscordMessage);
+      await task.process();
+
+      // A delta carrying both reasoning and the first content must still add
+      // its reasoning to the view before the answer replaces it.
+      expect(mocks.llmStreamingReplyServiceShowReasoning).toHaveBeenCalledTimes(1);
+      const view = mocks.llmStreamingReplyServiceShowReasoning.mock.calls[0][1] as string;
+      expect(view).toContain('openrouter thought');
+    });
   });
 });
