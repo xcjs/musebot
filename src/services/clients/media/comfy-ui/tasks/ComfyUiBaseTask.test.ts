@@ -7,6 +7,7 @@ import type { IBotServiceContainer } from '../../../../IBotServiceContainer.js';
 import type { ILogger } from '../../../../ILogger.js';
 import type { IParallelizationStrategy } from '../../../../parallelization/IParallelizationStrategy.js';
 import type { ITaskChannelPostProcessor } from '../../../../parallelization/ITaskChannelPostProcessor.js';
+import type { ITaskQueue } from '../../../../tasks/ITaskQueue.js';
 import type { ComfyUiClient } from '../ComfyUiClient.js';
 import type { IWorkflowService } from '../services/IWorkflowService.js';
 import { ComfyUiBaseTask } from './ComfyUiBaseTask.js';
@@ -37,11 +38,20 @@ function createMockComfyUiClient(freeResult: boolean): jest.Mocked<ComfyUiClient
   } as unknown as jest.Mocked<ComfyUiClient>;
 }
 
-function createMockLlmClient(): { free: jest.MockedFunction<() => Promise<boolean>>; waitForModelUnload: jest.MockedFunction<() => Promise<boolean>> } {
+function createMockLlmClient(): { host: URL; free: jest.MockedFunction<() => Promise<boolean>>; waitForModelUnload: jest.MockedFunction<() => Promise<boolean>> } {
   return {
+    host: new URL('http://127.0.0.1:11434'),
     free: jest.fn<() => Promise<boolean>>().mockResolvedValue(true),
     waitForModelUnload: jest.fn<() => Promise<boolean>>().mockResolvedValue(true)
   };
+}
+
+function createMockTaskQueue(isChannelActive: (channelName: string) => boolean = (): boolean => false): ITaskQueue {
+  return {
+    isActive: false,
+    isChannelActive: jest.fn(isChannelActive),
+    add: jest.fn(),
+  } as unknown as ITaskQueue;
 }
 
 function createMockWorkflowService(): jest.Mocked<IWorkflowService> {
@@ -61,13 +71,15 @@ function createMockServices(
   logger: jest.Mocked<ILogger>,
   featureService: jest.Mocked<IFeatureService>,
   comfyUiClient: jest.Mocked<ComfyUiClient>,
-  llmClient: { free: jest.MockedFunction<() => Promise<boolean>>; waitForModelUnload: jest.MockedFunction<() => Promise<boolean>> },
-  workflowService: jest.Mocked<IWorkflowService>
+  llmClient: { host: URL; free: jest.MockedFunction<() => Promise<boolean>>; waitForModelUnload: jest.MockedFunction<() => Promise<boolean>> },
+  workflowService: jest.Mocked<IWorkflowService>,
+  taskQueue: ITaskQueue,
+  getTaskChannel?: (resourceType: unknown, isChild: boolean, resourceUrl: URL | null) => string
 ): IBotServiceContainer {
   return {
     configurationService: config,
     featureService,
-    taskQueue: null as never,
+    taskQueue,
     typingService: null as never,
     discordClient: null as never,
     generativeChatClient: null as never,
@@ -75,7 +87,13 @@ function createMockServices(
     workflowService,
     webContentService: null as never,
     llmHostFlavorRegistry: null as never,
-    parallelizationStrategy: { getTaskChannel: jest.fn(() => 'test') } as unknown as IParallelizationStrategy,
+    parallelizationStrategy: {
+      getTaskChannel: jest.fn(getTaskChannel ?? ((
+        _resourceType: unknown,
+        isChild: boolean,
+        resourceUrl: URL | null
+      ): string => resourceUrl === null ? 'test' : (isChild ? `child_${resourceUrl.host}` : resourceUrl.host))),
+    } as unknown as IParallelizationStrategy,
     getLogger: jest.fn(() => logger),
     getTaskChannelPostProcessor: (() => null as never) as unknown as () => ITaskChannelPostProcessor,
     getContextMessageFactory: () => null as never,
@@ -116,8 +134,9 @@ describe('ComfyUiBaseTask', () => {
   let mockConfig: IConfigurationService;
   let mockFeatureService: jest.Mocked<IFeatureService>;
   let mockComfyUiClient: jest.Mocked<ComfyUiClient>;
-  let mockLlmClient: { free: jest.MockedFunction<() => Promise<boolean>>; waitForModelUnload: jest.MockedFunction<() => Promise<boolean>> };
+  let mockLlmClient: { host: URL; free: jest.MockedFunction<() => Promise<boolean>>; waitForModelUnload: jest.MockedFunction<() => Promise<boolean>> };
   let mockWorkflowService: jest.Mocked<IWorkflowService>;
+  let mockTaskQueue: ITaskQueue;
   let task: TestableComfyUiTask;
 
   beforeEach((): void => {
@@ -127,9 +146,10 @@ describe('ComfyUiBaseTask', () => {
     mockComfyUiClient = createMockComfyUiClient(true);
     mockLlmClient = createMockLlmClient();
     mockWorkflowService = createMockWorkflowService();
+    mockTaskQueue = createMockTaskQueue();
 
     task = new TestableComfyUiTask(createMockServices(
-      mockConfig, mockLogger, mockFeatureService, mockComfyUiClient, mockLlmClient, mockWorkflowService
+      mockConfig, mockLogger, mockFeatureService, mockComfyUiClient, mockLlmClient, mockWorkflowService, mockTaskQueue
     ));
   });
 
@@ -138,38 +158,63 @@ describe('ComfyUiBaseTask', () => {
   });
 
   describe('preProcess()', () => {
-    it('should call llm.waitForModelUnload() and not throw when it returns true', async (): Promise<void> => {
+    it('should not unload the LLM model when the LLM channel is idle', async (): Promise<void> => {
       await task.preProcess();
 
-      expect(mockLlmClient.waitForModelUnload).toHaveBeenCalledTimes(1);
+      expect(mockLlmClient.waitForModelUnload).not.toHaveBeenCalled();
+      expect(mockLlmClient.free).not.toHaveBeenCalled();
+      expect(mockTaskQueue.isChannelActive).toHaveBeenCalledWith('127.0.0.1:11434');
+      expect(mockTaskQueue.isChannelActive).toHaveBeenCalledWith('child_127.0.0.1:11434');
     });
 
-    it('should throw when llm.waitForModelUnload() returns false', async (): Promise<void> => {
-      mockLlmClient.waitForModelUnload.mockResolvedValue(false);
+    it('should wait for a streaming LLM response to finish instead of unloading the model', async (): Promise<void> => {
+      let busyChecks = 0;
+      mockTaskQueue = createMockTaskQueue((channelName: string): boolean => channelName === '127.0.0.1:11434' && ++busyChecks <= 1);
+      task = new TestableComfyUiTask(createMockServices(
+        mockConfig, mockLogger, mockFeatureService, mockComfyUiClient, mockLlmClient, mockWorkflowService, mockTaskQueue
+      ));
 
-      await expect(task.preProcess()).rejects.toThrow('LLM model could not be unloaded');
+      await task.preProcess();
+
+      expect(mockLlmClient.waitForModelUnload).not.toHaveBeenCalled();
+      expect(mockLlmClient.free).not.toHaveBeenCalled();
     });
 
-    it('should not call llm.waitForModelUnload() when not in serial mode', async (): Promise<void> => {
+    it('should not wait when the LLM channel is the same as this task channel (forceSerialAcrossHosts)', async (): Promise<void> => {
+      mockTaskQueue = createMockTaskQueue((): boolean => true);
+      task = new TestableComfyUiTask(createMockServices(
+        mockConfig, mockLogger, mockFeatureService, mockComfyUiClient, mockLlmClient, mockWorkflowService, mockTaskQueue,
+        (): string => 'test'
+      ));
+
+      await task.preProcess();
+
+      expect(mockLlmClient.waitForModelUnload).not.toHaveBeenCalled();
+      expect(mockTaskQueue.isChannelActive).not.toHaveBeenCalled();
+    });
+
+    it('should not check the LLM channel when not in serial mode', async (): Promise<void> => {
       const parallelConfig = createMockConfig({ taskQueueStrategy: TaskQueueStrategy.Parallel });
       task = new TestableComfyUiTask(createMockServices(
-        parallelConfig, mockLogger, mockFeatureService, mockComfyUiClient, mockLlmClient, mockWorkflowService
+        parallelConfig, mockLogger, mockFeatureService, mockComfyUiClient, mockLlmClient, mockWorkflowService, mockTaskQueue
       ));
 
       await task.preProcess();
 
       expect(mockLlmClient.waitForModelUnload).not.toHaveBeenCalled();
+      expect(mockTaskQueue.isChannelActive).not.toHaveBeenCalled();
     });
 
-    it('should not call llm.waitForModelUnload() when Txt2Txt feature is unavailable', async (): Promise<void> => {
+    it('should not check the LLM channel when Txt2Txt feature is unavailable', async (): Promise<void> => {
       const noTxt2Txt = createMockFeatureService(false);
       task = new TestableComfyUiTask(createMockServices(
-        mockConfig, mockLogger, noTxt2Txt, mockComfyUiClient, mockLlmClient, mockWorkflowService
+        mockConfig, mockLogger, noTxt2Txt, mockComfyUiClient, mockLlmClient, mockWorkflowService, mockTaskQueue
       ));
 
       await task.preProcess();
 
       expect(mockLlmClient.waitForModelUnload).not.toHaveBeenCalled();
+      expect(mockTaskQueue.isChannelActive).not.toHaveBeenCalled();
     });
   });
 

@@ -46,11 +46,10 @@ export abstract class ComfyUiBaseTask extends BaseTask<void> {
     await super.preProcess();
 
     if (this.configurationService.taskQueueStrategy === TaskQueueStrategy.Serial
-      && this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
-      const freed = await this.#llmClient.waitForModelUnload();
-      if (!freed) {
-        throw new Error('The LLM model could not be unloaded; aborting to prevent ComfyUI VRAM contention.');
-      }
+      && this.#featureService.hasFeature(SupportedFeature.Txt2Txt)
+      && this.isCompanionChannelBusy(ResourceType.LargeLanguageModel, this.#llmClient.host)) {
+      this.logger.info('Waiting for the LLM response to finish before starting this render.');
+      await this.waitForCompanionChannelDrain(ResourceType.LargeLanguageModel, this.#llmClient.host);
     }
   }
 

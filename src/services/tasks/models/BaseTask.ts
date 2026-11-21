@@ -5,6 +5,7 @@ import { ILogger } from '../../ILogger.js';
 import { IParallelizationStrategy } from '../../parallelization/IParallelizationStrategy.js';
 import { ResourceType } from '../../parallelization/ResourceType.js';
 import { TaskStatus } from '../enums/TaskStatus.js';
+import { ITaskQueue } from '../ITaskQueue.js';
 
 export abstract class BaseTask<T> {
   get id(): UUID {
@@ -76,6 +77,27 @@ export abstract class BaseTask<T> {
     this.#onFailure?.(error);
   }
 
+  protected companionChannelNames(resourceType: ResourceType, resourceUrl: URL): string[] {
+    return [
+      this.parallelizationStrategy.getTaskChannel(resourceType, false, resourceUrl),
+      this.parallelizationStrategy.getTaskChannel(resourceType, true, resourceUrl)
+    ];
+  }
+
+  protected isCompanionChannelBusy(resourceType: ResourceType, resourceUrl: URL): boolean {
+    const ownChannel = this.taskChannel;
+
+    return this.companionChannelNames(resourceType, resourceUrl)
+      .some(name => name !== ownChannel && this.#taskQueue.isChannelActive(name));
+  }
+
+  protected async waitForCompanionChannelDrain(resourceType: ResourceType, resourceUrl: URL, intervalMs: number = 1000): Promise<void> {
+    while (this.isCompanionChannelBusy(resourceType, resourceUrl)) {
+      this.logger.info(`A ${resourceType} response is currently in progress; waiting for it to finish.`);
+      await new Promise(resolve => setTimeout(resolve, intervalMs));
+    }
+  }
+
   get lastError(): Error | null {
     return this.#lastError;
   }
@@ -95,6 +117,7 @@ export abstract class BaseTask<T> {
   readonly #createdTime: Date;
   #startedTime: Date | null = null;
   #lastError: Error | null = null;
+  readonly #taskQueue: ITaskQueue;
 
   constructor(services: IBotServiceContainer) {
     this.services = services;
@@ -105,6 +128,7 @@ export abstract class BaseTask<T> {
     this.#id = randomUUID();
     this.#createdTime = new Date();
     this.#maxAttempts = services.configurationService.maxTaskAttempts;
+    this.#taskQueue = services.taskQueue;
   }
 
   async preProcess(): Promise<void> {

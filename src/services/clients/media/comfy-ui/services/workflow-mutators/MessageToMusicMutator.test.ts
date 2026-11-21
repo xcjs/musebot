@@ -90,6 +90,7 @@ function createMockReplyService(promptWithoutMentions: string): jest.Mocked<IRep
 function createMockTaskQueue(): jest.Mocked<ITaskQueue> {
   return {
     isActive: false,
+    isChannelActive: jest.fn<(channelName: string) => boolean>().mockReturnValue(false),
     add: jest.fn<(task: BaseTask<unknown>) => void>(),
   } as unknown as jest.Mocked<ITaskQueue>;
 }

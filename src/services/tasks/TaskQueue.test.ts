@@ -95,6 +95,26 @@ describe('TaskQueue', () => {
     });
   });
 
+  describe('isChannelActive()', () => {
+    it('should return false when no channels exist', function (this: void): void {
+      const queue = new TaskQueue(mockGlobalServices);
+      expect(queue.isChannelActive('testChannel')).toBe(false);
+    });
+
+    it('should return true when the named channel is busy', async function (this: void): Promise<void> {
+      const queue = new TaskQueue(mockGlobalServices);
+      const processMock = (): Promise<void> => new Promise<void>(() => {});
+      const task = new MockTask(mockBotServices, 'testChannel', undefined, processMock);
+
+      queue.add(task);
+      await drainMicrotasks();
+
+      expect(task.taskStatus).toBe(TaskStatus.Busy);
+      expect(queue.isChannelActive('testChannel')).toBe(true);
+      expect(queue.isChannelActive('otherChannel')).toBe(false);
+    });
+  });
+
   describe('add()', () => {
     it('should add a task to the queue', function (this: void): void {
       const queue = new TaskQueue(mockGlobalServices);

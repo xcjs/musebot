@@ -54,6 +54,7 @@ describe('TypingService', () => {
 
     mockTaskQueue = {
       isActive: false,
+      isChannelActive: jest.fn<(_channelName: string) => boolean>().mockReturnValue(false),
       add: jest.fn()
     };
 
