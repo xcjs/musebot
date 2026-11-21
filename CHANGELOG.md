@@ -2,6 +2,12 @@
 
 All notable changes to Musebot are documented in this file.
 
+## [10.1.1] — 2026-11-21
+
+### Fixed
+
+- **Serial mode no longer stalls or kills LLM responses from task-level cross-frees.** With the channel post-processor now hostname-scoped (10.1.0), task-level preProcess hooks were the remaining serial-mode interrupt: a queued render began with `llmClient.waitForModelUnload()`, which on Ollama and llama.cpp-router hosts unloads the model first (killing any in-flight streaming response) before polling for the unload, and on llama.cpp single hosts polls `/props` for `is_sleeping` in a `while(true)` loop that never yields while a response keeps streaming; conversely, every LLM task called `comfyUiClient.free()` before starting, clearing the ComfyUI pending queue even while another render was queued (incident 2026-11-21: image renders interrupted again). Media tasks now check the companion `GenerativeAI` channel through the new `TaskQueue.isChannelActive()` and simply wait for the LLM channel to drain instead of demanding an unload, and LLM tasks skip the ComfyUI `free()` while a render is in progress; `forceSerialAcrossHosts` channels and idle companion channels behave exactly as before.
+
 ## [10.1.0] — 2026-11-19
 
 ### Added
