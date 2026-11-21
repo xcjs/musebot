@@ -6,6 +6,13 @@ import { Agent, Dispatcher1Wrapper } from 'undici';
 
 import { installUndiciFormDataGlobal } from './undici-utilities.js';
 
+// Fragile by design (undici 8.13.1): this test reconstructs the crashing
+// environment via the `Dispatcher1Wrapper` export and the legacy
+// `undici.globalDispatcher.1` symbol, both of which are undici version
+// details rather than stable API. If a future undici upgrade breaks this
+// file at import or lookup, re-derive both from that version's
+// lib/global.js and lib/dispatcher/dispatcher1-wrapper.js.
+
 // The crashing environment: musebot's undici (this npm install) seeds the
 // legacy global dispatcher slot with a v2 dispatcher wrapped for legacy (v1)
 // consumers, while @discordjs/rest's bundled older undici reads that slot

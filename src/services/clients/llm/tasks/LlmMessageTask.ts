@@ -145,18 +145,20 @@ export class LlmMessageTask extends LlmBaseTask<void> {
       const startTime = performance.now();
       let replies: DiscordMessage[] = [];
 
+      // Reasoning deltas stop contributing to the view once the answer has
+      // started; the reasoning display is about to be replaced by it. The
+      // append runs before the content latch below, so a delta carrying both
+      // reasoning and the first answer content still lands its reasoning.
+      if (response.reasoning !== undefined && response.reasoning.length > 0 && !contentStarted) {
+        reasoning += response.reasoning;
+      }
+
       if (response.content.trim().length > 0) {
         contentStarted = true;
       }
 
       fullResponse += response.content;
       responseBatch += response.content;
-
-      // Reasoning deltas stop contributing to the view once the answer has
-      // started; the reasoning display is about to be replaced by it.
-      if (response.reasoning !== undefined && response.reasoning.length > 0 && !contentStarted) {
-        reasoning += response.reasoning;
-      }
 
       if (!response.done) {
         // Ensure we're not sending edits faster than Discord's message-edit
@@ -227,6 +229,17 @@ export class LlmMessageTask extends LlmBaseTask<void> {
           }
         }
       } else {
+        // A delta that carried reasoning alongside the first answer content
+        // may hold reasoning the view never showed; surface it right before
+        // the answer edit lands and replaces it.
+        if (response.done && contentStarted && reasoning.length > 0
+          && this.configurationService.llmReasoningViewLines > 0
+          && lastReasoningView === null) {
+          const finalView = this.#renderReasoningView(reasoning);
+          lastReasoningView = finalView;
+          await this.llmStreamingReplyService.showReasoning(this.#message, finalView);
+        }
+
         replies = await this.llmStreamingReplyService.reply(this.#message, responseBatch, response.done);
         responseBatch = '';
       }
