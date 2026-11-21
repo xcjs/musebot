@@ -20,6 +20,21 @@ import { LlmMessage } from './models/LlmMessage.js';
 import { LlmStreamChunk } from './models/LlmStreamChunk.js';
 import { LlmWireChatCompletionRequest } from './models/LlmWireChatCompletionRequest.js';
 
+// LlmClient and OllamaLifecycleStrategy import fetch from the undici module rather
+// than globalThis (undici#5360: a streaming fetch and its dispatcher must come from
+// the same undici module), so the mock must intercept the module export. The
+// `Agent` export stays real so dispatcher-identity assertions still hold. The
+// global.fetch stub is kept for the lifecycle strategies that still use it.
+const fetchMock = jest.fn<typeof fetch>();
+
+jest.mock('undici', (): unknown => {
+  const actual = jest.requireActual<Record<string, unknown>>('undici');
+  return {
+    ...actual,
+    fetch: (...args: Parameters<typeof fetch>): Promise<Response> => fetchMock(...args),
+  };
+});
+
 function createMockLogger(): jest.Mocked<ILogger> {
   return {
     debug: jest.fn(),
@@ -143,12 +158,11 @@ const visionPrompt = 'You are a visual assistant. Describe what you see in the a
 
 describe('LlmClient', (): void => {
   let mockLogger: jest.Mocked<ILogger>;
-  let fetchMock: jest.Mock<typeof fetch>;
   let client: LlmClient;
 
   beforeEach((): void => {
     mockLogger = createMockLogger();
-    fetchMock = jest.fn<typeof fetch>();
+    fetchMock.mockReset();
     global.fetch = fetchMock as unknown as typeof fetch;
   });
 

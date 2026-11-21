@@ -1,4 +1,4 @@
-import { Agent as UndiciAgent, Dispatcher } from 'undici';
+import { Agent as UndiciAgent, fetch as undiciFetch, type Response as UndiciResponse } from 'undici';
 
 import { IHttpExchange } from '../../../models/IHttpExchange.js';
 import { IHttpExchangeWithAttachedData } from '../../../models/IHttpExchangeWithAttachedData.js';
@@ -210,7 +210,7 @@ export class LlmClient implements ILlmClient {
       return {
         exchange: {
           request,
-          response: this.#streamChunks(response.body.getReader())
+          response: this.#streamChunks(response.body.getReader() as import('node:stream/web').ReadableStreamDefaultReader<Uint8Array>)
         },
         data: context
       };
@@ -314,12 +314,12 @@ export class LlmClient implements ILlmClient {
 
     try {
       const showUrl = new URL('/api/show', this.#host.url);
-      const response = await fetch(showUrl, {
+      const response = await undiciFetch(showUrl, {
         method: 'POST',
         headers: this.#headers(),
         body: JSON.stringify(request),
         dispatcher: this.#llmDispatcher
-      } as RequestInit & { dispatcher: Dispatcher });
+      });
 
       if (!response.ok) {
         throw new Error(await this.#statusMessage(showUrl.href, response));
@@ -332,7 +332,7 @@ export class LlmClient implements ILlmClient {
     }
   }
 
-  async *#streamChunks(reader: ReadableStreamDefaultReader<Uint8Array>): AsyncGenerator<LlmStreamChunk> {
+  async *#streamChunks(reader: import('node:stream/web').ReadableStreamDefaultReader<Uint8Array>): AsyncGenerator<LlmStreamChunk> {
     const decoder = new TextDecoder();
     let buffer = '';
     let promptTokens: number | undefined;
@@ -490,7 +490,7 @@ export class LlmClient implements ILlmClient {
    * request was rejected there. The body is capped to keep HTML/JSON error
    * pages from flooding the log.
    */
-  async #statusMessage(url: string, response: Response): Promise<string> {
+  async #statusMessage(url: string, response: UndiciResponse): Promise<string> {
     let body: string;
     try {
       body = (await response.text()).slice(0, 500);
@@ -502,7 +502,7 @@ export class LlmClient implements ILlmClient {
     return `The LLM API at ${url} responded with status ${response.status}: ${body}`;
   }
 
-  async #fetchResponse(path: string, request: ILlmEmbeddingsRequest | LlmWireChatCompletionRequest | ILlmShowRequest): Promise<Response> {
+  async #fetchResponse(path: string, request: ILlmEmbeddingsRequest | LlmWireChatCompletionRequest | ILlmShowRequest): Promise<UndiciResponse> {
     // Non-streamed completions produce no response headers until the entire
     // generation finishes (llama.cpp and similar hosts), which can take
     // arbitrarily long for reasoning models. undici's default ~300 s
@@ -510,12 +510,12 @@ export class LlmClient implements ILlmClient {
     // (TypeError: fetch failed) while the server keeps burning tokens —
     // so Musebot waits for the response (llm.timeoutMinutes, default 0 =
     // wait indefinitely; 0 genuinely disables both undici timeouts).
-    return await fetch(`${this.#endpointBase}${path}`, {
+    return await undiciFetch(`${this.#endpointBase}${path}`, {
       method: 'POST',
       headers: this.#headers(),
       body: JSON.stringify(request),
       dispatcher: this.#llmDispatcher
-    } as RequestInit & { dispatcher: Dispatcher });
+    });
   }
 
   // Undici Agent for LLM calls with headers+body timeouts resolved from
