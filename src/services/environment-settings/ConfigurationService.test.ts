@@ -322,6 +322,42 @@ describe('ConfigurationService', () => {
       expect(service.llmContextWindow).toBe(8192);
     });
 
+    it('should default llmReasoningViewLines to 25 when not set', (): void => {
+      const configWithoutReasoningViewLines = {
+        ...validChatBotConfig,
+        llm: {
+          ...validChatBotConfig.llm,
+          reasoningViewLines: undefined
+        }
+      };
+
+      (ConfigLoader.load as jest.Mock).mockReturnValue({
+        global: globalConfig,
+        bots: [configWithoutReasoningViewLines]
+      });
+
+      const service = new ConfigurationService(configWithoutReasoningViewLines as unknown as IBotConfig);
+      expect(service.llmReasoningViewLines).toBe(25);
+    });
+
+    it('should return configured reasoningViewLines when set', (): void => {
+      const configWithReasoningViewLines = {
+        ...validChatBotConfig,
+        llm: {
+          ...validChatBotConfig.llm,
+          reasoningViewLines: 12
+        }
+      };
+
+      (ConfigLoader.load as jest.Mock).mockReturnValue({
+        global: globalConfig,
+        bots: [configWithReasoningViewLines]
+      });
+
+      const service = new ConfigurationService(configWithReasoningViewLines as unknown as IBotConfig);
+      expect(service.llmReasoningViewLines).toBe(12);
+    });
+
     it('should default llmContextCompressionThreshold to 0.75 when not set', () => {
       const configWithoutThreshold = {
         ...validChatBotConfig,

@@ -38,6 +38,8 @@ export interface IBotConfig {
     topK?: number;
     contextWindow?: number;
     contextCompressionThreshold?: number;
+    /** Maximum number of reasoning lines shown in the streaming reasoning view (default 25). */
+    reasoningViewLines?: number;
   };
 
   multiModal?: {
