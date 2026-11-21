@@ -259,9 +259,10 @@ earlier release.
 #### `llm.reasoningViewLines`
 
 * **Description:** How many lines of the model's reasoning stay visible in the
-  sliding "Thinking…" view while a reply streams. Reasoning older than this
-  scrolls away, keeping the view bounded. Applies to streaming models that
-  emit reasoning.
+  sliding "Thinking…" view while a reply streams. The view renders as a
+  ```` ```markdown ```` code block locked at this height, padded with blank
+  rows above while the reasoning is shorter. Applies to streaming models
+  that emit reasoning.
 * **Required:** No
 * **Type:** `Integer`
 * **Default:** `25`

@@ -392,13 +392,13 @@ describe('LlmMessageTask', () => {
         expect(reasoningViews.length).toBeGreaterThanOrEqual(1);
         expect(reasoningViews.length).toBeLessThanOrEqual(2);
 
-        // The view is a sliding window: labeled, quote-blocked, holding the
+        // The view is a sliding window: labeled, fenced, holding the
         // most recent reasoning, and always under Discord's message limit.
         const lastView = reasoningViews[reasoningViews.length - 1];
-        expect(lastView.startsWith('🤔 *Thinking…*')).toBe(true);
-    expect(lastView).not.toContain('\n\n…');
-        expect(lastView).toContain('> Thought 199.');
-        expect(lastView).not.toContain('> Thought 259.');
+        expect(lastView.startsWith('🤔 *Thinking…*\n\n```markdown\n')).toBe(true);
+        expect(lastView).not.toContain('\n\n…');
+        expect(lastView).toContain('Thought 199.');
+        expect(lastView).not.toContain('Thought 259.');
         expect(lastView.length).toBeLessThanOrEqual(2000);
 
         // Replace in place: reasoning views stop once the answer starts, the
@@ -445,8 +445,8 @@ describe('LlmMessageTask', () => {
 
       const view = mocks.llmStreamingReplyServiceShowReasoning.mock.calls[0][1] as string;
 
-      expect(view.startsWith('🤔 *Thinking…*')).toBe(true);
-      expect(view).toContain('> Thought 2.');
+      expect(view.startsWith('🤔 *Thinking…*\n\n```markdown\n')).toBe(true);
+      expect(view).toContain('Thought 2.');
     });
 
     it('caps the reasoning view to the configured line count', async (): Promise<void> => {
@@ -470,15 +470,54 @@ describe('LlmMessageTask', () => {
       await task.process();
 
       const view = mocks.llmStreamingReplyServiceShowReasoning.mock.calls[0][1] as string;
-      const quotedLineCount = view.split('\n').filter((line) => line.startsWith('> ')).length;
 
-      expect(quotedLineCount).toBe(10);
-      expect(view).toContain('> Thought 29.');
-      expect(view).not.toContain('> Thought 0.');
+      // The tail lives inside a ```markdown fence; quote prefixes are gone.
+      expect(view.startsWith('🤔 *Thinking…*\n\n```markdown\n')).toBe(true);
+      expect(view.endsWith('\n```')).toBe(true);
+
+      const fenceOpen = '```markdown\n';
+      const body = view.slice(view.indexOf(fenceOpen) + fenceOpen.length, view.lastIndexOf('\n```'));
+      const bodyLines = body.split('\n');
+
+      expect(bodyLines.length).toBe(10);
+      expect(bodyLines[bodyLines.length - 1]).toBe('Thought 29.');
+      expect(view).not.toContain('Thought 0.');
 
       // A trailing newline in reasoning must not render a dangling blank
-      // quote line, nor let it consume one of the capped slots.
-      expect(view.split('\n').filter((line) => line === '> ' || line === '>').length).toBe(0);
+      // row inside the fence, nor let it consume one of the capped slots.
+      expect(bodyLines.filter((line) => line.length === 0).length).toBe(0);
+    });
+
+    it('locks the reasoning view height at the configured line count', async (): Promise<void> => {
+      const mocks = buildMockServices(true);
+
+      async function* shortReasoningStream(): AsyncGenerator<LlmStreamChunk> {
+        for (let i = 0; i < 5; i++) {
+          await Promise.resolve();
+          yield { content: '', done: false, reasoning: `Thought ${i}.\n` } as LlmStreamChunk;
+        }
+
+        yield { content: '', done: true, promptTokens: 4, completionTokens: 6 } as LlmStreamChunk;
+      }
+
+      mocks.sendMessageAndGetStream.mockImplementationOnce(() => Promise.resolve({
+        exchange: { request: { model: 'test', messages: [] }, response: shortReasoningStream() },
+        data: [],
+      } as unknown));
+
+      const task = new LlmMessageTask(mocks.container, mockDiscordMessage);
+      await task.process();
+
+      // Fewer lines than the cap: the view still renders exactly cap-height
+      // rows, padded above the tail, so the box never resizes mid-stream.
+      const view = mocks.llmStreamingReplyServiceShowReasoning.mock.calls[0][1] as string;
+      const fenceOpen = '```markdown\n';
+      const body = view.slice(view.indexOf(fenceOpen) + fenceOpen.length, view.lastIndexOf('\n```'));
+      const bodyLines = body.split('\n');
+
+      expect(bodyLines.length).toBe(25);
+      expect(bodyLines[0]).toBe('');
+      expect(bodyLines[bodyLines.length - 1]).toBe('Thought 4.');
     });
   });
 });

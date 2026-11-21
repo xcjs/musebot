@@ -64,3 +64,25 @@ Two fixes requested while watching the reasoning scroll in Discord:
 - Config default: 25. Users may set any positive integer; values are
   additionally bounded by the char budget, so pathological one-line values
   (e.g. 1000) just collapse back to the char budget.
+
+## Follow-up (same-day, after live testing)
+
+Two more issues observed in Discord, both applied directly with TDD:
+
+4. **Discord wraps long quote lines** — the `> ` quote block reflows long
+   reasoning lines instead of scrolling horizontally. **Wrap the view body
+   in a ```` ```markdown ```` code block instead** (code blocks keep
+   horizontal scroll, no reflow). The existing backtick-run neutralization
+   (runs of 3+ backticks → `…`), previously an optimization, becomes load
+   bearing: it protects the outer fence from embedded fences.
+5. **Lock the view height at the configured line count** — pad with blank
+   rows at the **top** while reasoning is shorter than the cap, so the box
+   never resizes as reasoning streams (content grows downward into the
+   reserved space).
+
+Resulting view shape: `` `{label}\n\n```markdown\n{padded tail}\n``` ``
+(blank-row padding first; the per-line cost drops from 3 chars of `> `
+prefix to 1 char of newline; the char budget reserves the full 18-char
+fence scaffold). Tests pin the fence prefix/suffix, the exact cap count of
+non-blank body lines, zero blank rows when capped, and the locked height
+with top padding at default cap 25 with a 5-line stream.

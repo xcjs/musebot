@@ -258,10 +258,10 @@ export class LlmMessageTask extends LlmBaseTask<void> {
     }
   }
 
-  // Renders the ephemeral reasoning view: a label above a quote-blocked tail
+  // Renders the ephemeral reasoning view: a label above a code-fenced tail
   // of the most recent reasoning, always under Discord's 2000 character
-  // message limit. Rendered fresh on every flush so the sliding window
-  // follows the model's thinking.
+  // message limit and locked to the configured line count. Rendered fresh
+  // on every flush so the sliding window follows the model's thinking.
   #renderReasoningView(reasoning: string): string {
     const reasoningLabel = '🤔 *Thinking…*';
     // Reasoning must survive alongside the eventual answer, so hold a small
@@ -273,22 +273,24 @@ export class LlmMessageTask extends LlmBaseTask<void> {
       return reasoningLabel;
     }
 
-    // Neutralize code fences: a fence from outside the tail window would
-    // otherwise swallow the rest of the view into a code block.
+    // Neutralize code fences: the content is wrapped in a fence below, so a
+    // fence in the reasoning itself would otherwise terminate the block.
     const lines = reasoning.replace(/`{3,}/gu, '\u2026').split('\n');
     const tailLines: string[] = [];
-    let budget = maxReasoningViewChars - reasoningLabel.length - 4;
+    // Fixed scaffold: "\n\n```markdown\n" after the label and "\n```" before
+    // the message end.
+    let budget = maxReasoningViewChars - reasoningLabel.length - 18;
 
     for (let i = lines.length - 1; i >= 0 && budget > 0 && tailLines.length < maxReasoningViewLines; i -= 1) {
       const line = lines[i].length > 600 ? lines[i].slice(-600) : lines[i];
 
       // Blank lines (including the one a trailing newline leaves behind)
-      // render as dangling empty quote rows; skip them without spending budget.
+      // render as dangling empty rows; skip them without spending budget.
       if (line.length === 0) {
         continue;
       }
 
-      const cost = line.length + 3; // "> " prefix plus a trailing newline
+      const cost = line.length + 1; // a trailing newline
 
       if (cost > budget) {
         if (tailLines.length === 0) {
@@ -302,9 +304,23 @@ export class LlmMessageTask extends LlmBaseTask<void> {
       budget -= cost;
     }
 
-    const quoted = tailLines.reverse().map((line) => `> ${line}`).join('\n');
+    tailLines.reverse();
 
-    return `${reasoningLabel}\n\n${quoted}`;
+    // Lock the view height: pad blank rows above the tail when reasoning is
+    // shorter than the configured line count, so the box never resizes
+    // mid-stream.
+    const paddingRows = Math.min(Math.max(0, maxReasoningViewLines - tailLines.length), budget);
+    const body: string[] = [];
+
+    for (let i = 0; i < paddingRows; i += 1) {
+      body.push('');
+    }
+
+    for (const line of tailLines) {
+      body.push(line);
+    }
+
+    return `${reasoningLabel}\n\n\`\`\`markdown\n${body.join('\n')}\n\`\`\``;
   }
 
   async #storeMemories(llmChatMessage: LlmChatMessage, botResponseContent: string): Promise<void> {
