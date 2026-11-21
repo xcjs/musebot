@@ -475,6 +475,10 @@ describe('LlmMessageTask', () => {
       expect(quotedLineCount).toBe(10);
       expect(view).toContain('> Thought 29.');
       expect(view).not.toContain('> Thought 0.');
+
+      // A trailing newline in reasoning must not render a dangling blank
+      // quote line, nor let it consume one of the capped slots.
+      expect(view.split('\n').filter((line) => line === '> ' || line === '>').length).toBe(0);
     });
   });
 });

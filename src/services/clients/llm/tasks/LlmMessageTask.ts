@@ -281,6 +281,13 @@ export class LlmMessageTask extends LlmBaseTask<void> {
 
     for (let i = lines.length - 1; i >= 0 && budget > 0 && tailLines.length < maxReasoningViewLines; i -= 1) {
       const line = lines[i].length > 600 ? lines[i].slice(-600) : lines[i];
+
+      // Blank lines (including the one a trailing newline leaves behind)
+      // render as dangling empty quote rows; skip them without spending budget.
+      if (line.length === 0) {
+        continue;
+      }
+
       const cost = line.length + 3; // "> " prefix plus a trailing newline
 
       if (cost > budget) {

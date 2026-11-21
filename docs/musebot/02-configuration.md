@@ -256,6 +256,16 @@ earlier release.
 * **Type:** `Integer`
 * **Default:** `2000`
 
+#### `llm.reasoningViewLines`
+
+* **Description:** How many lines of the model's reasoning stay visible in the
+  sliding "Thinking…" view while a reply streams. Reasoning older than this
+  scrolls away, keeping the view bounded. Applies to streaming models that
+  emit reasoning.
+* **Required:** No
+* **Type:** `Integer`
+* **Default:** `25`
+
 #### `llm.topK`
 
 * **Description:** The number of similar memories to retrieve from the vector

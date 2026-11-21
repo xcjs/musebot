@@ -232,6 +232,15 @@
         // Type:     Integer
         // "embeddingInputLimit": 2000,
 
+        // How many lines of the model's reasoning stay visible in the sliding
+        // "Thinking…" view while the model streams. Reasoning older than this
+        // scrolls away, keeping the view bounded. Applies to streaming models
+        // that emit reasoning.
+        // Required: Optional
+        // Default:  25
+        // Type:     Integer
+        // "reasoningViewLines": 25,
+
         // The number of similar memories to retrieve from the vector store when
         // augmenting the LLM prompt. Only applies when embeddingModel is set.
         // Required: Optional
