@@ -81,6 +81,11 @@ npm install
 npm start
 ```
 
+After switching Node.js versions, rebuild the native SQLite binary against
+the running Node with `npm rebuild better-sqlite3` (or rerun
+`npm install`), since the version compiled into `node_modules` must match
+the Node ABI.
+
 A debugging configuration is provided for Visual Studio Code.
 
 ## Configuration
