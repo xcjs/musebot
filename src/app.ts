@@ -4,6 +4,13 @@ import { BotServiceContainer } from './services/BotServiceContainer.js';
 import { ConfigLoader } from './services/environment-settings/ConfigLoader.js';
 import { GlobalServiceContainer } from './services/GlobalServiceContainer.js';
 import { Logger } from './services/Logger.js';
+import { installUndiciFormDataGlobal } from './utilities/undici-utilities.js';
+
+// Install musebot's undici FormData as the global before any module reads the
+// global FormData — @discordjs/rest builds multipart bodies from it, and the
+// brand must match the undici version that dispatches them (see
+// installUndiciFormDataGlobal docs).
+installUndiciFormDataGlobal();
 
 const config = ConfigLoader.load();
 
