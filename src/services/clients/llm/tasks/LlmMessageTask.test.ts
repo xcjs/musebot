@@ -45,7 +45,7 @@ interface MockServices {
   llmStreamingReplyServiceClearState: jest.Mock;
 }
 
-function buildMockServices(streamsResponse: boolean, contextMessages: LlmMessage[] = []): MockServices {
+function buildMockServices(streamsResponse: boolean, contextMessages: LlmMessage[] = [], reasoningViewLines: number = 25): MockServices {
   const logger = createMockLogger();
 
   const compress = jest.fn<() => Promise<void>>().mockResolvedValue(undefined);
@@ -129,6 +129,7 @@ function buildMockServices(streamsResponse: boolean, contextMessages: LlmMessage
     llmStreamsResponse: streamsResponse,
     llmEmbeddingModel: null,
     llmTopK: 5,
+    llmReasoningViewLines: reasoningViewLines,
     llmContextWindow: 100000,
     llmContextCompressionThreshold: 0.75,
     applicationName: 'Musebot',
@@ -394,7 +395,8 @@ describe('LlmMessageTask', () => {
         // The view is a sliding window: labeled, quote-blocked, holding the
         // most recent reasoning, and always under Discord's message limit.
         const lastView = reasoningViews[reasoningViews.length - 1];
-        expect(lastView.startsWith('🤔 *Reasoning…*')).toBe(true);
+        expect(lastView.startsWith('🤔 *Thinking…*')).toBe(true);
+    expect(lastView).not.toContain('\n\n…');
         expect(lastView).toContain('> Thought 199.');
         expect(lastView).not.toContain('> Thought 259.');
         expect(lastView.length).toBeLessThanOrEqual(2000);
@@ -443,8 +445,36 @@ describe('LlmMessageTask', () => {
 
       const view = mocks.llmStreamingReplyServiceShowReasoning.mock.calls[0][1] as string;
 
-      expect(view.startsWith('🤔 *Reasoning…*')).toBe(true);
+      expect(view.startsWith('🤔 *Thinking…*')).toBe(true);
       expect(view).toContain('> Thought 2.');
+    });
+
+    it('caps the reasoning view to the configured line count', async (): Promise<void> => {
+      const mocks = buildMockServices(true, [], 10);
+
+      async function* longReasoningStream(): AsyncGenerator<LlmStreamChunk> {
+        for (let i = 0; i < 30; i++) {
+          await Promise.resolve();
+          yield { content: '', done: false, reasoning: `Thought ${i}.\n` } as LlmStreamChunk;
+        }
+
+        yield { content: '', done: true, promptTokens: 4, completionTokens: 6 } as LlmStreamChunk;
+      }
+
+      mocks.sendMessageAndGetStream.mockImplementationOnce(() => Promise.resolve({
+        exchange: { request: { model: 'test', messages: [] }, response: longReasoningStream() },
+        data: [],
+      } as unknown));
+
+      const task = new LlmMessageTask(mocks.container, mockDiscordMessage);
+      await task.process();
+
+      const view = mocks.llmStreamingReplyServiceShowReasoning.mock.calls[0][1] as string;
+      const quotedLineCount = view.split('\n').filter((line) => line.startsWith('> ')).length;
+
+      expect(quotedLineCount).toBe(10);
+      expect(view).toContain('> Thought 29.');
+      expect(view).not.toContain('> Thought 0.');
     });
   });
 });

@@ -67,6 +67,7 @@ function createMockConfigurationService(overrides: Partial<IConfigurationService
     llmTimeoutMinutes: 0,
     llmEmbeddingModel: null,
     llmTopK: 5,
+    llmReasoningViewLines: 25,
     llmContextWindow: null,
     llmContextCompressionThreshold: 0.75,
     llmEmbeddingInputLimit: 2000,

@@ -67,6 +67,7 @@ function createMockConfigurationService(port: number): IConfigurationService {
     llmTimeoutMinutes: 0,
     llmEmbeddingModel: 'embed-model',
     llmTopK: 5,
+    llmReasoningViewLines: 25,
     llmContextWindow: null,
     llmContextCompressionThreshold: 0.75,
     llmEmbeddingInputLimit: 2000,

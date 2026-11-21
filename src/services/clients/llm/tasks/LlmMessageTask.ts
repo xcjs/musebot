@@ -263,8 +263,11 @@ export class LlmMessageTask extends LlmBaseTask<void> {
   // message limit. Rendered fresh on every flush so the sliding window
   // follows the model's thinking.
   #renderReasoningView(reasoning: string): string {
-    const reasoningLabel = '🤔 *Reasoning…*';
-    const maxReasoningViewChars = 1800;
+    const reasoningLabel = '🤔 *Thinking…*';
+    // Reasoning must survive alongside the eventual answer, so hold a small
+    // margin under Discord's message character limit.
+    const maxReasoningViewChars = DiscordConstants.ContentMaxLength - 200;
+    const maxReasoningViewLines = this.configurationService.llmReasoningViewLines;
 
     if (reasoning.length === 0) {
       return reasoningLabel;
@@ -276,7 +279,7 @@ export class LlmMessageTask extends LlmBaseTask<void> {
     const tailLines: string[] = [];
     let budget = maxReasoningViewChars - reasoningLabel.length - 4;
 
-    for (let i = lines.length - 1; i >= 0 && budget > 0; i -= 1) {
+    for (let i = lines.length - 1; i >= 0 && budget > 0 && tailLines.length < maxReasoningViewLines; i -= 1) {
       const line = lines[i].length > 600 ? lines[i].slice(-600) : lines[i];
       const cost = line.length + 3; // "> " prefix plus a trailing newline
 
@@ -292,10 +295,9 @@ export class LlmMessageTask extends LlmBaseTask<void> {
       budget -= cost;
     }
 
-    const overflow = tailLines.length < lines.length ? '\u2026' : '';
     const quoted = tailLines.reverse().map((line) => `> ${line}`).join('\n');
 
-    return `${reasoningLabel}\n\n${overflow}${quoted}`;
+    return `${reasoningLabel}\n\n${quoted}`;
   }
 
   async #storeMemories(llmChatMessage: LlmChatMessage, botResponseContent: string): Promise<void> {
