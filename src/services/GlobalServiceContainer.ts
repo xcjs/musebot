@@ -11,7 +11,7 @@ import { IParallelizationStrategy } from './parallelization/IParallelizationStra
 import { ITaskChannelPostProcessor } from './parallelization/ITaskChannelPostProcessor.js';
 import { NoOpTaskChannelPostProcessor } from './parallelization/NoOpTaskChannelPostProcessor.js';
 import { ParallelStrategy } from './parallelization/ParallelStrategy.js';
-import { ResourceType } from './parallelization/ResourceType.js';
+import { CHILD_TASK_CHANNEL_SUFFIX, ResourceType } from './parallelization/ResourceType.js';
 import { SerialStrategy } from './parallelization/SerialStrategy.js';
 import { ITaskQueue } from './tasks/ITaskQueue.js';
 import { TaskQueue } from './tasks/TaskQueue.js';
@@ -42,10 +42,21 @@ export class GlobalServiceContainer implements IGlobalServiceContainer {
     } else if(channelName.startsWith(ResourceType.Media)) {
       return new ComfyUiTaskChannelPostProcessor(services);
     } else if(channelName.startsWith(ResourceType.GenerativeAI)) {
-      return new GenerativeAiChannelPostProcessor(services);
+      return new GenerativeAiChannelPostProcessor(services, this.#getChannelHostname(channelName));
     } else {
       return new NoOpTaskChannelPostProcessor();
     }
+  }
+
+  #getChannelHostname(channelName: string): string | null {
+    const parts: string[] = channelName.split('_');
+    const lastPart: string = parts[parts.length - 1];
+
+    if(parts.length < 2 || lastPart === CHILD_TASK_CHANNEL_SUFFIX) {
+      return null;
+    }
+
+    return lastPart;
   }
 
   constructor(globalConfiguration: IGlobalConfiguration) {

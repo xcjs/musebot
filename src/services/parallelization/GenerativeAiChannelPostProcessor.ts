@@ -11,12 +11,16 @@ export class GenerativeAiChannelPostProcessor implements ITaskChannelPostProcess
   readonly #llmClient: ILlmClient;
   readonly #comfyUiClient: ComfyUiClient;
 
+  readonly #channelHostname: string | null;
+
   readonly #logger: ILogger;
 
-  constructor(services: IBotServiceContainer) {
+  constructor(services: IBotServiceContainer, channelHostname: string | null = null) {
   this.#featureService = services.featureService;
   this.#llmClient = services.llmClient;
   this.#comfyUiClient = services.comfyUiClient;
+
+  this.#channelHostname = channelHostname;
 
   this.#logger = services.getLogger('GenerativeAiChannelPostProcessor');
   }
@@ -32,11 +36,23 @@ export class GenerativeAiChannelPostProcessor implements ITaskChannelPostProcess
       || this.#featureService.hasFeature(SupportedFeature.Img2Vid)
       || this.#featureService.hasFeature(SupportedFeature.Txt2Music)
       || this.#featureService.hasFeature(SupportedFeature.Txt2Vid)) {
-      await this.#comfyUiClient.free();
+      if(this.#matchesChannelHostname(this.#comfyUiClient.host.hostname)) {
+        await this.#comfyUiClient.free();
+      } else {
+        this.#logger.info(`Skipping ComfyUI free(): this channel is scoped to '${this.#channelHostname}' but the ComfyUI host is ${this.#comfyUiClient.host.hostname}.`);
+      }
   }
 
   if(this.#featureService.hasFeature(SupportedFeature.Txt2Txt)) {
-      await this.#llmClient.free();
+      if(this.#matchesChannelHostname(this.#llmClient.host.hostname)) {
+        await this.#llmClient.free();
+      } else {
+        this.#logger.info(`Skipping LLM free(): this channel is scoped to '${this.#channelHostname}' but the LLM host is ${this.#llmClient.host.hostname}.`);
+      }
   }
+  }
+
+  #matchesChannelHostname(hostname: string): boolean {
+  return this.#channelHostname === null || this.#channelHostname === hostname;
   }
 }
